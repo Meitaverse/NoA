@@ -113,7 +113,9 @@ describe("NoA Main Test", () => {
         eventId:  eventId,
         eventMetadataURI: "https://example.com/event/" + eventId.toString(),
       }
-      
+      let balanceOfUser1 = await this.token['balanceOf(address)'](user1.address);    
+      expect(balanceOfUser1.toNumber()).to.be.equal(0);
+  
       tx = await this.token.mint(
         slotDetail_,
         user1.address
@@ -123,7 +125,9 @@ describe("NoA Main Test", () => {
       let tokenId = transferEvent.args['tokenId'];
       // console.log("tokenId:", tokenId.toNumber());
       // console.log("");
-
+      balanceOfUser1 = await this.token['balanceOf(address)'](user1.address);    
+      expect(balanceOfUser1.toNumber()).to.be.equal(1);
+  
       expect(tokenId.toNumber()).to.be.equal(1);
 
       let owerOfToken = await this.token.ownerOf(tokenId.toNumber());
@@ -134,16 +138,11 @@ describe("NoA Main Test", () => {
       expect(await this.token.eventHasUser(eventId, user1.address)).to.equal(true);
       expect(await this.token.tokenEvent(await this.token.tokenOfOwnerByIndex(user1.address, 0))).to.equal(tokenId);
 
-      let count = await this.token.getNoACount(eventId);
-      // console.log("count:", count.toNumber());
-      // console.log("");
-
+  
       tx =  await this.token.mintEventToManyUsers(slotDetail_, [user2.address, user3.address]);
       receipt = await tx.wait();
       
-      // count = await this.token.getNoACount(eventId);
-      // console.log("count:", count.toNumber());
-      // console.log("");
+ 
 
       let slotDetails_ = [{
         name: 'BigShow',
@@ -162,6 +161,14 @@ describe("NoA Main Test", () => {
       // console.log("owerOfToken address:", owerOfToken);
       // console.log("");
       expect(owerOfToken).to.be.equal(user5.address);
+
+      expect(await this.token.slotCount()).to.be.equal(1); //equal events
+
+      let count = await this.token.getNoACount(eventId);
+      // console.log("getNoACount, count:", count.toNumber());
+      // console.log("");
+      expect(count).to.be.equal(4); //equal events
+
 
       
     });

@@ -40,20 +40,13 @@ contract NoAV1 is Initializable, ContextUpgradeable, INoAV1, ERC3525SlotEnumerab
         address owner
     );
 
-
-    struct NoAInfo {
-        uint256 count;
-        mapping(address => bool) reverseIndex;
-    }
-
     mapping(uint256 => bytes32)  _eventIdToMerkleRoots;
 
     //claimed bitmask
     mapping(uint256 => uint256) private nftClaimBitMask;
 
-    mapping(uint256 => NoAInfo) private _noaInfos;
+    mapping(uint256 => uint256) private _noaAmounts;
     mapping(uint256 => Event) private _eventInfos;
-
 
     // slot => slotDetail
     mapping(uint256 => SlotDetail) private _slotDetails;
@@ -64,14 +57,6 @@ contract NoAV1 is Initializable, ContextUpgradeable, INoAV1, ERC3525SlotEnumerab
         _;
     }
     
-    modifier userNotExist(uint256 eventId_, address user_) {
-        require(
-            !_noaInfos[eventId_].reverseIndex[user_],
-            "NoA: already assigned the event"
-        );
-        _;
-    }
-
     function initialize(
         string memory name_,
          string memory symbol_, 
@@ -118,15 +103,14 @@ contract NoAV1 is Initializable, ContextUpgradeable, INoAV1, ERC3525SlotEnumerab
         address to_
     ) external eventExist(slotDetail_.eventId) {
         Event storage eventInfo  = _eventInfos[slotDetail_.eventId];
-        NoAInfo storage noaInfo =  _noaInfos[slotDetail_.eventId];
-        require(noaInfo.count < eventInfo.mintMax, "NoA: max exceeded");
-        noaInfo.count ++;
-        _addEventUser(slotDetail_.eventId, to_);
+
+        require(_noaAmounts[slotDetail_.eventId] < eventInfo.mintMax, "NoA: max exceeded");
+        _noaAmounts[slotDetail_.eventId] ++;
 
         _lastId.increment(); //tokenId started at 1
         uint256 tokenId_ = _lastId.current();
 
-        uint256 slot = _getSlot(slotDetail_.eventId, tokenId_);
+        uint256 slot = slotDetail_.eventId;  //same slot
         _slotDetails[slot] = SlotDetail({
             eventId: slotDetail_.eventId,
             name: slotDetail_.name,
@@ -140,8 +124,7 @@ contract NoAV1 is Initializable, ContextUpgradeable, INoAV1, ERC3525SlotEnumerab
     }
     
     function getNoACount(uint256 eventId_) public view returns(uint256){
-        NoAInfo storage noaInfo  = _noaInfos[eventId_];
-        return noaInfo.count;
+        return  _noaAmounts[eventId_];
     }
     
      /**
@@ -155,14 +138,14 @@ contract NoAV1 is Initializable, ContextUpgradeable, INoAV1, ERC3525SlotEnumerab
        address[] memory to_
     ) external returns (bool) { //eventExist(slotDetail_.eventId) 
         Event storage eventInfo  = _eventInfos[slotDetail_.eventId];
-        NoAInfo storage noaInfo =  _noaInfos[slotDetail_.eventId];
-        require(noaInfo.count  + to_.length < eventInfo.mintMax, "NoA: max exceeded");
-        noaInfo.count += to_.length;
+
+        require( _noaAmounts[slotDetail_.eventId]  + to_.length < eventInfo.mintMax, "NoA: max exceeded");
+         _noaAmounts[slotDetail_.eventId] += to_.length;
 
         for (uint256 i = 0; i < to_.length; ++i) {
             _lastId.increment();
             uint256 tokenId_ = _lastId.current();
-            uint256 slot = _getSlot(slotDetail_.eventId, tokenId_);
+            uint256 slot = slotDetail_.eventId;  //same slot
             _slotDetails[slot] = SlotDetail({
                 eventId: slotDetail_.eventId,
                 name: slotDetail_.name,
@@ -171,7 +154,6 @@ contract NoAV1 is Initializable, ContextUpgradeable, INoAV1, ERC3525SlotEnumerab
                 eventMetadataURI: slotDetail_.eventMetadataURI
             });
 
-            _addEventUser(slotDetail_.eventId, to_[i]);
             ERC3525Upgradeable._mint(to_[i], tokenId_, slot, 1);
             emit EventToken(slotDetail_.eventId, tokenId_, eventInfo.organizer, to_[i]);
         }
@@ -193,13 +175,12 @@ contract NoAV1 is Initializable, ContextUpgradeable, INoAV1, ERC3525SlotEnumerab
         for (uint256 i = 0; i < slotDetails_.length; ++i) {
             
             Event storage eventInfo  = _eventInfos[slotDetails_[i].eventId];
-            NoAInfo storage noaInfo =  _noaInfos[slotDetails_[i].eventId];
-            require(noaInfo.count < eventInfo.mintMax, "NoA: max exceeded");
-            noaInfo.count ++;
+            require( _noaAmounts[slotDetails_[i].eventId] < eventInfo.mintMax, "NoA: max exceeded");
+            _noaAmounts[slotDetails_[i].eventId]  ++;
 
             _lastId.increment();
             uint256 tokenId_ = _lastId.current();
-            uint256 slot = _getSlot(slotDetails_[i].eventId, tokenId_);
+            uint256 slot = slotDetails_[i].eventId;  //same slot
             _slotDetails[slot] = SlotDetail({
                 eventId:slotDetails_[i].eventId,
                 name: slotDetails_[i].name,
@@ -207,7 +188,6 @@ contract NoAV1 is Initializable, ContextUpgradeable, INoAV1, ERC3525SlotEnumerab
                 image: slotDetails_[i].image,
                 eventMetadataURI: slotDetails_[i].eventMetadataURI
             });
-            _addEventUser(slotDetails_[i].eventId, to_);
             ERC3525Upgradeable._mint(to_, tokenId_, slot, 1);
             emit EventToken(slotDetails_[i].eventId, tokenId_, eventInfo.organizer, to_);
         }
@@ -218,7 +198,6 @@ contract NoAV1 is Initializable, ContextUpgradeable, INoAV1, ERC3525SlotEnumerab
         uint256 eventId_ = tokenEvent(tokenId_);
         require(_isApprovedOrOwner(_msgSender(), tokenId_), "NoA: caller is not token owner nor approved");
         ERC3525Upgradeable._burn(tokenId_);
-        _removeEventUser(eventId_, _msgSender());
         emit BurnToken(eventId_, tokenId_, msg.sender);
     }
 
@@ -237,18 +216,31 @@ contract NoAV1 is Initializable, ContextUpgradeable, INoAV1, ERC3525SlotEnumerab
         eventExist(eventId_)
         returns (bool)
     {
-        return _noaInfos[eventId_].reverseIndex[user_];
+        uint256 balance = balanceOf(user_);
+        if (balance == 0 ) {
+            return false;
+        } else {
+            for(uint i= 0; i< balance; i++){
+                uint tokeId_ =  tokenOfOwnerByIndex(user_, i);
+                 if (slotOf(tokeId_) > 0) {
+                     return true;
+                 }
+            } 
+        }
+
+     
+        return false ; 
     }
 
     function claimNoA(
-        SlotDetail memory slotDetails_,
+        SlotDetail memory slotDetail_,
         bytes32[] calldata proof_
     ) 
      external  
     {
-        require(isWhiteListed(slotDetails_.eventId, msg.sender, proof_), "Not in whitelisted");
+        require(isWhiteListed(slotDetail_.eventId, msg.sender, proof_), "Not in whitelisted");
         //only use one time
-        uint256 hash = _bytesToUint(abi.encodePacked(msg.sender, slotDetails_.eventId.toString()));
+        uint256 hash = _bytesToUint(abi.encodePacked(msg.sender, slotDetail_.eventId.toString()));
 
         require(!_isClaimed(hash), "NoA: Token already claimed!");
         _setClaimed(hash);
@@ -256,16 +248,15 @@ contract NoAV1 is Initializable, ContextUpgradeable, INoAV1, ERC3525SlotEnumerab
         _lastId.increment();//tokenId started at 1
         uint256 tokenId_ = _lastId.current();
 
-         uint256 slot = _getSlot(slotDetails_.eventId, tokenId_);
+        uint256 slot = slotDetail_.eventId;  //same slot
         _slotDetails[slot] = SlotDetail({
-            eventId: slotDetails_.eventId,
-            name: slotDetails_.name,
-            description: slotDetails_.description,
-            image: slotDetails_.image,
-            eventMetadataURI: slotDetails_.eventMetadataURI
+            eventId: slotDetail_.eventId,
+            name: slotDetail_.name,
+            description: slotDetail_.description,
+            image: slotDetail_.image,
+            eventMetadataURI: slotDetail_.eventMetadataURI
         });
 
-        _addEventUser(slotDetails_.eventId, msg.sender);
         ERC3525Upgradeable._mint(msg.sender, tokenId_, slot, 1);
 	}
 
@@ -283,9 +274,8 @@ contract NoAV1 is Initializable, ContextUpgradeable, INoAV1, ERC3525SlotEnumerab
         view
         returns (uint256)
     {
-        uint256 slot_ = slotOf(tokenId_);
-        SlotDetail storage slotDetail = _slotDetails[slot_];
-        return slotDetail.eventId;
+        //slotOf(..) is eventId
+        return slotOf(tokenId_);
     }
 
     //----internal functions----//
@@ -318,25 +308,6 @@ contract NoAV1 is Initializable, ContextUpgradeable, INoAV1, ERC3525SlotEnumerab
             number = number + uint8(b[i])*(2**(8*(b.length-(i+1))));
         }
         return  number;
-    }
-
-    function _addEventUser(uint256 eventId_, address user_)
-        internal
-        eventExist(eventId_)
-        userNotExist(eventId_, user_)
-    {
-        _noaInfos[eventId_].reverseIndex[user_] = true;
-    }
-
-    function _removeEventUser(uint256 eventId_, address user_)
-        internal
-        eventExist(eventId_)
-    {
-        require(
-            _noaInfos[eventId_].reverseIndex[user_],
-            "NoA: user didn't exist"
-        );
-        _noaInfos[eventId_].reverseIndex[user_] = false;
     }
 
     /**
