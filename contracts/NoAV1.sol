@@ -4,13 +4,12 @@ pragma solidity ^0.8.0;
 
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import "@openzeppelin/contracts-upgradeable/utils/ContextUpgradeable.sol";
-// import "@solvprotocol/erc-3525/contracts/ERC3525Upgradeable.sol";
 import "@solvprotocol/erc-3525/contracts/ERC3525SlotEnumerableUpgradeable.sol";
 import "@openzeppelin/contracts/utils/Strings.sol";
 import "@openzeppelin/contracts/utils/Base64.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
 import "./libralies/MerkleProof.sol";
-import "./INoAV1.sol";
+import "./interfaces/INoAV1.sol";
 
 contract NoAV1 is Initializable, ContextUpgradeable, INoAV1, ERC3525SlotEnumerableUpgradeable {
    using Strings for uint256;
@@ -34,18 +33,25 @@ contract NoAV1 is Initializable, ContextUpgradeable, INoAV1, ERC3525SlotEnumerab
         address organizer, 
         address owner
     );
+
     event BurnToken(
         uint256 eventId, 
         uint256 tokenId, 
         address owner
     );
 
-    mapping(uint256 => bytes32)  _eventIdToMerkleRoots;
+    struct EventData {
+      bytes32  merkleRoot;
+      uint256 amount;
+    }
+
+    // eventId => EventData
+    mapping(uint256 => EventData)  _eventIdToEventDatas;
 
     //claimed bitmask
-    mapping(uint256 => uint256) private nftClaimBitMask;
+    mapping(uint256 => uint256) private _nftClaimBitMask;
 
-    mapping(uint256 => uint256) private _noaAmounts;
+    // eventId => Event
     mapping(uint256 => Event) private _eventInfos;
 
     // slot => slotDetail
@@ -78,19 +84,17 @@ contract NoAV1 is Initializable, ContextUpgradeable, INoAV1, ERC3525SlotEnumerab
         return _slotDetails[slot_];
     }
 
-
     function isWhiteListed(uint256 eventId_, address account_, bytes32[] calldata proof_) public view returns(bool) {
         return _verify(eventId_, _leaf(account_), proof_);
     }
 
     function setMerkleRoot(uint256 eventId_, bytes32 merkleRoot_) public  {
-        _eventIdToMerkleRoots[eventId_] = merkleRoot_;
+        _eventIdToEventDatas[eventId_].merkleRoot = merkleRoot_;
     }
 
     function getLatestTokenId() public view returns(uint256) {
         return _lastId.current();
     }
-
 
     function createEvent(
         Event memory event_
@@ -98,14 +102,19 @@ contract NoAV1 is Initializable, ContextUpgradeable, INoAV1, ERC3525SlotEnumerab
        return _createEvent(event_);
     }
 
+     /**
+     * @dev Function to mint event to a user
+     * @param slotDetail_ for the new token
+     * @param to_ The  address that will receive the minted token.
+     */
     function mint(
         SlotDetail memory slotDetail_,
         address to_
-    ) external eventExist(slotDetail_.eventId) {
-        Event storage eventInfo  = _eventInfos[slotDetail_.eventId];
+    ) external payable eventExist(slotDetail_.eventId) returns (bool)  {
+        Event memory eventInfo  = _eventInfos[slotDetail_.eventId];
 
-        require(_noaAmounts[slotDetail_.eventId] < eventInfo.mintMax, "NoA: max exceeded");
-        _noaAmounts[slotDetail_.eventId] ++;
+        require(_eventIdToEventDatas[slotDetail_.eventId].amount < eventInfo.mintMax, "NoA: max exceeded");
+        _eventIdToEventDatas[slotDetail_.eventId].amount ++;
 
         _lastId.increment(); //tokenId started at 1
         uint256 tokenId_ = _lastId.current();
@@ -121,26 +130,28 @@ contract NoAV1 is Initializable, ContextUpgradeable, INoAV1, ERC3525SlotEnumerab
 
         ERC3525Upgradeable._mint(to_, tokenId_, slot, 1);
         emit EventToken(slotDetail_.eventId, tokenId_, eventInfo.organizer, to_);
+
+        return true;
     }
     
-    function getNoACount(uint256 eventId_) public view returns(uint256){
-        return  _noaAmounts[eventId_];
+    function getTokenAmountOfEventId(uint256 eventId_) public view returns(uint256){
+        return  _eventIdToEventDatas[eventId_].amount;
     }
     
      /**
-     * @dev Function to mint tokens
+     * @dev Function to mint event to many users
      * @param slotDetail_ for the new token
-     * @param to_ The array address that will receive the minted tokens.
+     * @param to_ The array o addresses that will receive the minted tokens.
      * @return A boolean that indicates if the operation was successful.
      */
     function mintEventToManyUsers(
        SlotDetail memory slotDetail_,
        address[] memory to_
-    ) external returns (bool) { //eventExist(slotDetail_.eventId) 
-        Event storage eventInfo  = _eventInfos[slotDetail_.eventId];
+    ) external payable returns (bool) { //eventExist(slotDetail_.eventId) 
+        Event memory eventInfo  = _eventInfos[slotDetail_.eventId];
 
-        require( _noaAmounts[slotDetail_.eventId]  + to_.length < eventInfo.mintMax, "NoA: max exceeded");
-         _noaAmounts[slotDetail_.eventId] += to_.length;
+        require( _eventIdToEventDatas[slotDetail_.eventId].amount  + to_.length < eventInfo.mintMax, "NoA: max exceeded");
+         _eventIdToEventDatas[slotDetail_.eventId].amount += to_.length;
 
         for (uint256 i = 0; i < to_.length; ++i) {
             _lastId.increment();
@@ -170,13 +181,13 @@ contract NoAV1 is Initializable, ContextUpgradeable, INoAV1, ERC3525SlotEnumerab
     function mintUserToManyEvents(
         SlotDetail[] memory slotDetails_,
         address to_
-    ) external  returns (bool) {
+    ) external payable  returns (bool) {
 
         for (uint256 i = 0; i < slotDetails_.length; ++i) {
             
-            Event storage eventInfo  = _eventInfos[slotDetails_[i].eventId];
-            require( _noaAmounts[slotDetails_[i].eventId] < eventInfo.mintMax, "NoA: max exceeded");
-            _noaAmounts[slotDetails_[i].eventId]  ++;
+            Event memory eventInfo  = _eventInfos[slotDetails_[i].eventId];
+            require( _eventIdToEventDatas[slotDetails_[i].eventId].amount < eventInfo.mintMax, "NoA: max exceeded");
+            _eventIdToEventDatas[slotDetails_[i].eventId].amount  ++;
 
             _lastId.increment();
             uint256 tokenId_ = _lastId.current();
@@ -227,8 +238,6 @@ contract NoAV1 is Initializable, ContextUpgradeable, INoAV1, ERC3525SlotEnumerab
                  }
             } 
         }
-
-     
         return false ; 
     }
 
@@ -285,21 +294,21 @@ contract NoAV1 is Initializable, ContextUpgradeable, INoAV1, ERC3525SlotEnumerab
     }
 
     function _verify(uint256 eventId_, bytes32 leaf_, bytes32[] memory proof_) internal view returns(bool) {
-        return MerkleProof.verify(proof_, _eventIdToMerkleRoots[eventId_], leaf_);
+        return MerkleProof.verify(proof_, _eventIdToEventDatas[eventId_].merkleRoot, leaf_);
     }
 
     function _isClaimed(uint256 hash) internal view returns (bool) {
         uint256 wordIndex = hash / 256;
         uint256 bitIndex = hash % 256;
         uint256 mask = 1 << bitIndex;
-        return nftClaimBitMask[wordIndex] & mask == mask;
+        return _nftClaimBitMask[wordIndex] & mask == mask;
     }
 
     function _setClaimed(uint256 hash) internal{
         uint256 wordIndex = hash / 256;
         uint256 bitIndex = hash % 256;
         uint256 mask = 1 << bitIndex;
-        nftClaimBitMask[wordIndex] |= mask;
+        _nftClaimBitMask[wordIndex] |= mask;
     }
 
     function _bytesToUint(bytes memory b) internal pure returns (uint256){
@@ -316,14 +325,16 @@ contract NoAV1 is Initializable, ContextUpgradeable, INoAV1, ERC3525SlotEnumerab
      */
     function _getSlot(
         uint256 eventId_,
-        uint256 tokenId_
+        uint256 tokenId_,
+        uint256 sbtId_
     ) internal pure virtual returns (uint256 slot_) {
         return
             uint256(
                 keccak256(
                     abi.encodePacked(
                         eventId_,
-                        tokenId_
+                        tokenId_,
+                        sbtId_
                     )
                 )
             );

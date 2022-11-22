@@ -164,8 +164,8 @@ describe("NoA Main Test", () => {
 
       expect(await this.token.slotCount()).to.be.equal(1); //equal events
 
-      let count = await this.token.getNoACount(eventId);
-      // console.log("getNoACount, count:", count.toNumber());
+      let count = await this.token.getTokenAmountOfEventId(eventId);
+      // console.log("getTokenAmountOfEventId, count:", count.toNumber());
       // console.log("");
       expect(count).to.be.equal(4); //equal events
 

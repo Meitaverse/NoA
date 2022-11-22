@@ -8,7 +8,7 @@ import {StringsUpgradeable} from "@openzeppelin/contracts-upgradeable/utils/Stri
 import {Base64Upgradeable} from "@openzeppelin/contracts-upgradeable/utils/Base64Upgradeable.sol";
 import {IERC3525MetadataDescriptor} from "@solvprotocol/erc-3525/contracts/periphery/interface/IERC3525MetadataDescriptor.sol";
 import {StringConvertor} from "./utils/StringConvertor.sol";
-import {INoAV1} from "./INoAV1.sol";
+import {INoAV1} from "./interfaces/INoAV1.sol";
 
 interface IERC20 {
   function decimals() external view returns (uint8);
@@ -57,6 +57,10 @@ contract MetadataDescriptor is IERC3525MetadataDescriptor {
               _slotDescription(slot_),
               '","image":"',
               _slotImage(slot_),
+              '","event_id":',
+              slot_.toString(),
+              '","event_metadata_uri":',
+              _sloteventMetadataURI(slot_),
               '","properties":',
               _slotProperties(slot_),
               '}'
@@ -114,42 +118,24 @@ contract MetadataDescriptor is IERC3525MetadataDescriptor {
 
     return abi.encodePacked(slotDetail.image);
   }
+
+  function _sloteventMetadataURI(uint256 slot_) internal view returns (bytes memory) {
+    INoAV1 dao = INoAV1(msg.sender);
+    INoAV1.SlotDetail memory slotDetail = dao.getSlotDetail(slot_);
+
+    return abi.encodePacked(slotDetail.eventMetadataURI);
+  }
+
    /**
      * @dev Generate the content of the `properties` field of `slotURI`.
      */
 
   function _slotProperties(uint256 slot_) internal view returns (string memory) {
-    INoAV1 dao = INoAV1(msg.sender);
-    INoAV1.SlotDetail memory slotDetail = dao.getSlotDetail(slot_);
+    // INoAV1 dao = INoAV1(msg.sender);
+    // INoAV1.SlotDetail memory slotDetail = dao.getSlotDetail(slot_);
 
-    return
-            string(
-                /* solhint-disable */
-                abi.encodePacked(
-                    "[",
-                    abi.encodePacked(
-                        '{"name":"event_id",',
-                        '"description":"event id for event.",',
-                        '"value":',
-                        slotDetail.eventId.toString(),
-                        ",",
-                        '"order":1,',
-                        '"display_type":"number"},'
-                    ),
-                    abi.encodePacked(
-                        '{"name":"event_metadata_uri",',
-                        '"description":"event metadata uri.",',
-                        '"value":',
-                        slotDetail.eventMetadataURI,
-                        ",",
-                        '"order":2,',
-                        '"display_type":"string"},'
-                    ),
-                   
-                    "]"
-                )
-                /* solhint-enable */
-            );
+    return "";
+            
   }
 
   function _tokenName(uint256 tokenId_) internal view returns (string memory) {
