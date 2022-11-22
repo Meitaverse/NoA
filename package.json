@@ -1,0 +1,79 @@
+{
+  "name": "showdao-protocol",
+  "version": "0.0.1",
+  "description": "Hold some nfts and split or merge to a new one",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/MeitaVerse/showdao-protocol.git"
+  },
+  "engines": {
+    "node": ">=12.10"
+  },
+  "contributors": [
+    "Sky Lee <zokesky@gmail.com>"
+  ],
+  "scripts": {
+    "hardhat-local": "hardhat node --hostname 0.0.0.0",
+    "deploy": "npx hardhat run scripts/deploy.js",
+    "deploy-alliance": "npx hardhat run alliance/deploy-alliance.js --network allianceChain",
+    "merkleTree": "node ./scripts/setMerkleTree.js",
+    "flatten": "npx hardhat flatten ./contracts/NoA.sol > audit/NoA.sol",
+    "upgrade-proxy": "npx hardhat run scripts/upgrade.js",
+    "test": "npx hardhat test --network hardhat",
+    "graph-local-node-start": "cd ./docker && docker-compose up",
+    "graph-local-node-stop": "cd ./docker &&  docker-compose down -v && docker-compose rm -v && rm -rf data/ipfs data/postgres",
+    "graph-local-codegen": "cd ./subgraph && npm run codegen",
+    "graph-local-build": "cd ./subgraph && npm run build",
+    "create-local-subgraph-node": "cd ./subgraph &&  npm run create-local",
+    "deploy-local-subgraph-node": "cd ./subgraph && npm run deploy-local",
+    "remove-local-subgraph-node": "cd ./subgraph && npm run remove-local"
+  },
+  "keywords": [
+    "solidity",
+    "ethereum",
+    "smart",
+    "contracts",
+    "erc-3525",
+    "erc3525"
+  ],
+  "author": "Solv Protocol <>",
+  "bugs": {
+    "url": "https://github.com/MeitaVerse/showdao-protocol/issues"
+  },
+  "homepage": "https://showdao.io/",
+  "devDependencies": {
+    "@nomicfoundation/hardhat-chai-matchers": "^1.0.3",
+    "@nomicfoundation/hardhat-network-helpers": "^1.0.4",
+    "@nomicfoundation/hardhat-toolbox": "^1.0.2",
+    "@openzeppelin/test-helpers": "^0.5.16",
+    "@solvprotocol/erc-3525": "git+https://github.com/solv-finance/erc-3525.git",
+    "dotenv": "^16.0.1",
+    "eslint": "^8.23.0",
+    "eslint-config-prettier": "^8.5.0",
+    "eslint-config-standard": "^17.0.0",
+    "eslint-plugin-import": "^2.26.0",
+    "eslint-plugin-node": "^11.1.0",
+    "eslint-plugin-prettier": "^4.2.1",
+    "eslint-plugin-promise": "^6.0.1",
+    "hardhat": "^2.10.2",
+    "hardhat-contract-sizer": "^2.6.1",
+    "hardhat-tracer": "^1.1.0-rc.8",
+    "solc": "^0.8.13",
+    "solhint": "^3.3.7",
+    "ts-node": "^10.9.1",
+    "typescript": "^4.9.3"
+  },
+  "dependencies": {
+    "@graphprotocol/graph-cli": "^0.36.1",
+    "@graphprotocol/graph-ts": "^0.29.0",
+    "@graphprotocol/hardhat-graph": "https://github.com/graphprotocol/hardhat-graph",
+    "@openzeppelin/contracts": "^4.7.3",
+    "@openzeppelin/contracts-upgradeable": "^4.7.3",
+    "@openzeppelin/hardhat-upgrades": "^1.21.0",
+    "chai": "^4.3.7",
+    "keccak256": "^1.0.6",
+    "matchstick-as": "^0.5.0",
+    "merkletreejs": "^0.2.32"
+  }
+}

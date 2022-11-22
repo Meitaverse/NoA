@@ -1,0 +1,16 @@
+{
+    "name": "MySubgraph",
+    "license": "UNLICENSED",
+    "scripts": {
+        "codegen": "graph codegen",
+        "build": "graph build",
+        "deploy": "graph deploy --node https://api.studio.thegraph.com/deploy/ NoA/MySubgraph",
+        "create-local": "graph create --node http://localhost:8020/ NoA/MySubgraph",
+        "remove-local": "graph remove --node http://localhost:8020/ NoA/MySubgraph",
+        "deploy-local": "graph deploy --node http://localhost:8020/ --ipfs http://localhost:5001 NoA/MySubgraph"
+    },
+    "dependencies": {
+        "@graphprotocol/graph-cli": "0.31.0",
+        "@graphprotocol/graph-ts": "0.27.0"
+    }
+}

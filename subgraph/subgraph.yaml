@@ -1,0 +1,45 @@
+specVersion: 0.0.4
+description: Showdao NoA Token
+repository: https://github.com/Meitaverse/noa
+schema:
+  file: ./schema.graphql
+dataSources:
+  - kind: ethereum/contract
+    name: showdao
+    network: mainnet
+    source:
+      address: "0xDc64a140Aa3E981100a9becA4E685f962f0cF6C9"
+      abi: NoA
+      startBlock: 0
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.5
+      language: wasm/assemblyscript
+      entities:
+        # - OrganizerAdded
+        # - OrganizerRemoved
+        - EventAdded
+        - EventToken
+        - BurnToken
+        # - SetOrganizerMainnetWallet
+        # - SetUserMainnetWallet
+      abis:
+        - name: NoA
+          file: ./abis/NoA.json
+      eventHandlers:
+        # - event:  OrganizerAdded(address,address,string,uint256)
+        #   handler: handleOrganizerAdded
+        # - event: OrganizerRemoved(indexed address)
+        #   handler: handleOrganizerRemoved
+        - event: EventAdded(address,uint256,string,string)
+          handler: handleEventAdded
+        - event: EventToken(uint256,uint256,string,string,address,address)
+          handler: handleEventToken
+        - event: BurnToken(uint256,uint256,address)
+          handler: handleBurnToken
+        # - event: SetOrganizerMainnetWallet(address,address,string,uint256)
+        #   handler: handleSetOrganizerMainnetWallet
+        # - event: SetUserMainnetWallet(address,address,string,uint256)
+        #   handler: handleSetUserMainnetWallet
+      file: ./src/mapping.ts
+  

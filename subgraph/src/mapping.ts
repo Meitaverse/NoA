@@ -1,0 +1,124 @@
+import { log,  BigInt, store } from "@graphprotocol/graph-ts"
+import {
+    NoA,
+    OrganizerAdded,
+    OrganizerRemoved,
+    EventAdded,
+    EventToken,
+    BurnToken,
+    SetOrganizerMainnetWallet,
+    SetUserMainnetWallet
+} from "../generated/showdao/NoA"
+
+import {
+    EventItem,
+    Organizer,
+    User,
+    History,
+    Token
+} from "../generated/schema"
+
+
+// export function handleOrganizerAdded(event: OrganizerAdded): void {
+//     let organizerString = event.params.organizer.toHexString()
+//     const organizer = Organizer.load(organizerString) || new Organizer(organizerString)
+
+//     if (organizer) {
+//         organizer.organizer = event.params.organizer
+//         organizer.mainnetWallet = event.params.mainnetWallet
+//         organizer.name = event.params.name
+//         organizer.cTokenId = event.params.cTokenId
+//         organizer.save()
+//     }
+// }
+
+// export function handleOrganizerRemoved(event: OrganizerRemoved): void {
+//     store.remove("Organizer", event.params.organizer.toHexString())
+// }
+
+export function handleEventAdded(event: EventAdded): void {
+    let eventIdString = event.params.eventId.toString();
+    const eventItem = EventItem.load(eventIdString) || new EventItem(eventIdString)
+    if (eventItem) {
+        eventItem.eventId = event.params.eventId
+        eventItem.eventName = event.params.eventName
+        eventItem.eventMetadataURI = event.params.eventMetadataURI
+        eventItem.organizer =  event.params.organizer.toHexString()
+        eventItem.save()
+    }
+    let organizerString = event.params.organizer.toHexString()
+    const organizer = Organizer.load(organizerString) || new Organizer(organizerString)
+
+    if (organizer) {
+        organizer.organizer = event.params.organizer
+        // organizer.mainnetWallet = event.params.mainnetWallet
+        // organizer.name = event.params.name
+        // organizer.cTokenId = event.params.cTokenId
+        organizer.save()
+    }
+    
+}
+
+export function handleEventToken(event: EventToken): void {
+    
+    let _idString = event.params.eventId.toString() + "-" + event.params.tokenId.toString()
+    const token = Token.load(_idString) || new Token(_idString)
+
+    if (token) {
+        token.eventId = event.params.eventId
+        token.tokenId = event.params.tokenId
+        token.tokenURI = event.params.tokenURI
+        token.metaURI = event.params.metadataURI
+        token.organizer = event.params.organizer.toHexString()
+        token.owner = event.params.owner.toHexString()
+        token.createdAtTimestamp = event.block.timestamp
+        token.save()
+
+        let user_idString = event.params.owner.toHexString()
+        const user = User.load(user_idString) || new User(user_idString)
+        if (user) {
+            user.localWallet = event.params.owner
+            user.save()
+        } 
+
+        const history = History.load(_idString) || new History(_idString) 
+        if (history) {
+            history.eventId = event.params.eventId
+            history.token = _idString
+            history.organizer = event.params.organizer.toHexString()
+            history.owner = user_idString
+            history.createdAtTimestamp = event.block.timestamp
+            history.save()
+        }
+    } 
+}
+
+export function handleBurnToken(event: BurnToken): void { 
+    let _idString = event.params.eventId.toString() + "-" + event.params.tokenId.toString()
+    store.remove("Token", _idString)
+    store.remove("History", _idString)
+}
+
+// export function handleSetOrganizerMainnetWallet(event: SetOrganizerMainnetWallet): void {
+//     let _idString =  event.params.organizer.toHexString()
+//     const organizer = Organizer.load(_idString) || new Organizer(_idString) 
+//     if (organizer) {
+//         organizer.mainnetWallet = event.params.mainnetWallet
+//         organizer.name = event.params.name
+//         organizer.cTokenId = event.params.cTokenId
+//         organizer.save()
+//     } 
+// }
+
+// export function handleSetUserMainnetWallet(event: SetUserMainnetWallet): void {
+//     let _idString =  event.params.user.toHexString()
+//     const user = User.load(_idString) || new User(_idString) 
+//     if (user) {
+//         user.localWallet = event.params.user
+//         user.mainnetWallet = event.params.mainnetWallet
+//         user.name = event.params.name
+//         user.sbTokenId = event.params.sbTokenId
+//         user.save()
+//     }
+// }
+  
