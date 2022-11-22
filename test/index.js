@@ -197,6 +197,10 @@ describe("NoA Main Test", () => {
       receipt = await tx.wait();
       expect(await this.token.eventHasUser(eventId, user2.address)).to.equal(true);
 
+      await expect(
+        this.token.connect(user2).claimNoA(slotDetail_, proof)
+      ).to.be.revertedWith('NoA: Token already claimed!');
+
     });
     
     it("burn testing...", async function () {

@@ -42,14 +42,10 @@ contract NoAV1 is Initializable, ContextUpgradeable, INoAV1, ERC3525SlotEnumerab
 
     struct EventData {
       bytes32  merkleRoot;
-      uint256 amount;
     }
 
     // eventId => EventData
     mapping(uint256 => EventData)  _eventIdToEventDatas;
-
-    //claimed bitmask
-    mapping(uint256 => uint256) private _nftClaimBitMask;
 
     // eventId => Event
     mapping(uint256 => Event) private _eventInfos;
@@ -113,8 +109,9 @@ contract NoAV1 is Initializable, ContextUpgradeable, INoAV1, ERC3525SlotEnumerab
     ) external payable eventExist(slotDetail_.eventId) returns (bool)  {
         Event memory eventInfo  = _eventInfos[slotDetail_.eventId];
 
-        require(_eventIdToEventDatas[slotDetail_.eventId].amount < eventInfo.mintMax, "NoA: max exceeded");
-        _eventIdToEventDatas[slotDetail_.eventId].amount ++;
+        require(!eventHasUser(slotDetail_.eventId, to_), "NoA: Token already claimed!");
+
+        require(tokenSupplyInSlot( slotDetail_.eventId) < eventInfo.mintMax, "NoA: max exceeded");
 
         _lastId.increment(); //tokenId started at 1
         uint256 tokenId_ = _lastId.current();
@@ -135,7 +132,7 @@ contract NoAV1 is Initializable, ContextUpgradeable, INoAV1, ERC3525SlotEnumerab
     }
     
     function getTokenAmountOfEventId(uint256 eventId_) public view returns(uint256){
-        return  _eventIdToEventDatas[eventId_].amount;
+        return tokenSupplyInSlot(eventId_);
     }
     
      /**
@@ -150,10 +147,12 @@ contract NoAV1 is Initializable, ContextUpgradeable, INoAV1, ERC3525SlotEnumerab
     ) external payable returns (bool) { //eventExist(slotDetail_.eventId) 
         Event memory eventInfo  = _eventInfos[slotDetail_.eventId];
 
-        require( _eventIdToEventDatas[slotDetail_.eventId].amount  + to_.length < eventInfo.mintMax, "NoA: max exceeded");
-         _eventIdToEventDatas[slotDetail_.eventId].amount += to_.length;
+        require(tokenSupplyInSlot(slotDetail_.eventId) + to_.length < eventInfo.mintMax, "NoA: max exceeded");
 
         for (uint256 i = 0; i < to_.length; ++i) {
+                        
+            require(!eventHasUser(slotDetail_.eventId, to_[i]), "NoA: Token already claimed!");
+
             _lastId.increment();
             uint256 tokenId_ = _lastId.current();
             uint256 slot = slotDetail_.eventId;  //same slot
@@ -186,8 +185,10 @@ contract NoAV1 is Initializable, ContextUpgradeable, INoAV1, ERC3525SlotEnumerab
         for (uint256 i = 0; i < slotDetails_.length; ++i) {
             
             Event memory eventInfo  = _eventInfos[slotDetails_[i].eventId];
-            require( _eventIdToEventDatas[slotDetails_[i].eventId].amount < eventInfo.mintMax, "NoA: max exceeded");
-            _eventIdToEventDatas[slotDetails_[i].eventId].amount  ++;
+            
+            require(!eventHasUser(slotDetails_[i].eventId, to_), "NoA: Token already claimed!");
+
+            require(tokenSupplyInSlot(slotDetails_[i].eventId) < eventInfo.mintMax, "NoA: max exceeded");
 
             _lastId.increment();
             uint256 tokenId_ = _lastId.current();
@@ -248,11 +249,8 @@ contract NoAV1 is Initializable, ContextUpgradeable, INoAV1, ERC3525SlotEnumerab
      external  
     {
         require(isWhiteListed(slotDetail_.eventId, msg.sender, proof_), "Not in whitelisted");
-        //only use one time
-        uint256 hash = _bytesToUint(abi.encodePacked(msg.sender, slotDetail_.eventId.toString()));
 
-        require(!_isClaimed(hash), "NoA: Token already claimed!");
-        _setClaimed(hash);
+        require(!eventHasUser(slotDetail_.eventId, msg.sender), "NoA: Token already claimed!");
 
         _lastId.increment();//tokenId started at 1
         uint256 tokenId_ = _lastId.current();
@@ -295,28 +293,6 @@ contract NoAV1 is Initializable, ContextUpgradeable, INoAV1, ERC3525SlotEnumerab
 
     function _verify(uint256 eventId_, bytes32 leaf_, bytes32[] memory proof_) internal view returns(bool) {
         return MerkleProof.verify(proof_, _eventIdToEventDatas[eventId_].merkleRoot, leaf_);
-    }
-
-    function _isClaimed(uint256 hash) internal view returns (bool) {
-        uint256 wordIndex = hash / 256;
-        uint256 bitIndex = hash % 256;
-        uint256 mask = 1 << bitIndex;
-        return _nftClaimBitMask[wordIndex] & mask == mask;
-    }
-
-    function _setClaimed(uint256 hash) internal{
-        uint256 wordIndex = hash / 256;
-        uint256 bitIndex = hash % 256;
-        uint256 mask = 1 << bitIndex;
-        _nftClaimBitMask[wordIndex] |= mask;
-    }
-
-    function _bytesToUint(bytes memory b) internal pure returns (uint256){
-        uint256 number;
-        for(uint i= 0; i<b.length; i++){
-            number = number + uint8(b[i])*(2**(8*(b.length-(i+1))));
-        }
-        return  number;
     }
 
     /**
