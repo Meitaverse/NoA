@@ -4,7 +4,7 @@ type EventItem @entity {
   organizer: Organizer!
   eventId: BigInt!
   eventName: String!
-  eventMetadataURI: String!
+  eventImage: String!
 }
 
 # 组织者

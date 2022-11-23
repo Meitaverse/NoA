@@ -341,7 +341,7 @@ contract NoAV1 is Initializable, ContextUpgradeable, INoAV1, ERC3525SlotEnumerab
         super._afterValueTransfer(from_, to_, fromTokenId_, toTokenId_, slot_, value_);
     }
 
-    
+
     //----internal functions----//
     
     function _leaf(address _account) internal pure returns(bytes32) {

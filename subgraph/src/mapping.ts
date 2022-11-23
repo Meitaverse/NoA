@@ -1,14 +1,14 @@
 import { log,  BigInt, store } from "@graphprotocol/graph-ts"
 import {
-    NoA,
-    OrganizerAdded,
-    OrganizerRemoved,
+    NoAV1,
+    // OrganizerAdded,
+    // OrganizerRemoved,
     EventAdded,
     EventToken,
     BurnToken,
-    SetOrganizerMainnetWallet,
-    SetUserMainnetWallet
-} from "../generated/showdao/NoA"
+    // SetOrganizerMainnetWallet,
+    // SetUserMainnetWallet
+} from "../generated/showdao/NoAV1"
 
 import {
     EventItem,
@@ -40,10 +40,12 @@ export function handleEventAdded(event: EventAdded): void {
     let eventIdString = event.params.eventId.toString();
     const eventItem = EventItem.load(eventIdString) || new EventItem(eventIdString)
     if (eventItem) {
+        eventItem.organizer =  event.params.organizer.toHexString()
         eventItem.eventId = event.params.eventId
         eventItem.eventName = event.params.eventName
-        eventItem.eventMetadataURI = event.params.eventMetadataURI
-        eventItem.organizer =  event.params.organizer.toHexString()
+        eventItem.eventDescription = event.params.eventDescription
+        eventItem.eventImage = event.params.eventImage
+        eventItem.mintMax = event.params.mintMax
         eventItem.save()
     }
     let organizerString = event.params.organizer.toHexString()
@@ -63,12 +65,13 @@ export function handleEventToken(event: EventToken): void {
     
     let _idString = event.params.eventId.toString() + "-" + event.params.tokenId.toString()
     const token = Token.load(_idString) || new Token(_idString)
-
+    const tokenURI = ""; //NoAV1.load("")
+    const slotURI = ""; //NoAV1.load("")
     if (token) {
         token.eventId = event.params.eventId
         token.tokenId = event.params.tokenId
-        token.tokenURI = event.params.tokenURI
-        token.metaURI = event.params.metadataURI
+        token.tokenURI = tokenURI
+        token.slotURI = slotURI
         token.organizer = event.params.organizer.toHexString()
         token.owner = event.params.owner.toHexString()
         token.createdAtTimestamp = event.block.timestamp
