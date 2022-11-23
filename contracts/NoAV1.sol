@@ -65,15 +65,24 @@ contract NoAV1 is Initializable, ContextUpgradeable, INoAV1, ERC3525SlotEnumerab
          uint8 decimals_,
          address metadataDescriptor
     ) public virtual initializer {
-        __ERC3525AllRound_init(name_, symbol_, decimals_);
+        __ERC3525AllRoundInit(name_, symbol_, decimals_);
         _setMetadataDescriptor(metadataDescriptor);
     }
 
-    function __ERC3525AllRound_init(string memory name_, string memory symbol_, uint8 decimals_) internal onlyInitializing {
+    function __ERC3525AllRoundInit(string memory name_, string memory symbol_, uint8 decimals_) internal onlyInitializing {
         __ERC3525_init_unchained(name_, symbol_, decimals_);
     }
 
     function __ERC3525AllRound_init_unchained() internal onlyInitializing{
+    }
+
+
+    //TODO only owner
+    function setMetadataDescriptor(address metadataDescriptor_) public returns(bool) {
+
+        _setMetadataDescriptor(metadataDescriptor_);
+        return true;
+
     }
 
     function getSlotDetail(uint256 slot_) public view returns (SlotDetail memory) {
@@ -131,6 +140,29 @@ contract NoAV1 is Initializable, ContextUpgradeable, INoAV1, ERC3525SlotEnumerab
         return true;
     }
     
+    
+    //mint spec token
+    function addSpecTokenSlot(
+        uint256 eventId_,
+        uint256 tokenIdSource_,
+        address to_
+    ) public {
+        _lastId.increment(); //tokenId started at 1
+        uint256 tokenId_ = _lastId.current();
+        uint256 slot_ = _getSlot(eventId_, tokenIdSource_);
+ 
+        _slotDetails[slot_] = SlotDetail({
+            eventId: eventId_,
+            name: "",
+            description: "",
+            image: "",            
+            eventMetadataURI: ""
+        });
+
+        ERC3525Upgradeable._mint(to_, tokenId_, slot_, 1);
+    }
+
+
     function getTokenAmountOfEventId(uint256 eventId_) public view returns(uint256){
         return tokenSupplyInSlot(eventId_);
     }
@@ -285,6 +317,31 @@ contract NoAV1 is Initializable, ContextUpgradeable, INoAV1, ERC3525SlotEnumerab
         return slotOf(tokenId_);
     }
 
+    //------override------------//
+    function _beforeValueTransfer(
+        address from_,
+        address to_,
+        uint256 fromTokenId_,
+        uint256 toTokenId_,
+        uint256 slot_,
+        uint256 value_
+    ) internal virtual override {
+        super._beforeValueTransfer(from_, to_, fromTokenId_, toTokenId_, slot_, value_);
+    }
+
+
+    function _afterValueTransfer(
+        address from_,
+        address to_,
+        uint256 fromTokenId_,
+        uint256 toTokenId_,
+        uint256 slot_,
+        uint256 value_
+    ) internal virtual override {
+        super._afterValueTransfer(from_, to_, fromTokenId_, toTokenId_, slot_, value_);
+    }
+
+    
     //----internal functions----//
     
     function _leaf(address _account) internal pure returns(bytes32) {
@@ -301,16 +358,14 @@ contract NoAV1 is Initializable, ContextUpgradeable, INoAV1, ERC3525SlotEnumerab
      */
     function _getSlot(
         uint256 eventId_,
-        uint256 tokenId_,
-        uint256 sbtId_
+        uint256 tokenId_
     ) internal pure virtual returns (uint256 slot_) {
         return
             uint256(
                 keccak256(
                     abi.encodePacked(
                         eventId_,
-                        tokenId_,
-                        sbtId_
+                        tokenId_
                     )
                 )
             );

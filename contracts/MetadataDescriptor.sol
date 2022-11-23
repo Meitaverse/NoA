@@ -130,10 +130,10 @@ contract MetadataDescriptor is IERC3525MetadataDescriptor {
      * @dev Generate the content of the `properties` field of `slotURI`.
      */
 
-  function _slotProperties(uint256 slot_) internal view returns (string memory) {
+  function _slotProperties(uint256 slot_) internal pure returns (string memory) {
     // INoAV1 dao = INoAV1(msg.sender);
     // INoAV1.SlotDetail memory slotDetail = dao.getSlotDetail(slot_);
-
+    slot_;
     return "";
             
   }
