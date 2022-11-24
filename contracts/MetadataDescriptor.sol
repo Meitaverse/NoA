@@ -112,18 +112,18 @@ contract MetadataDescriptor is IERC3525MetadataDescriptor {
     return slotDetail.description;
   }
 
-  function _slotImage(uint256 slot_) internal view returns (bytes memory) {
+  function _slotImage(uint256 slot_) internal view returns (string memory) {
     INoAV1 dao = INoAV1(msg.sender);
     INoAV1.SlotDetail memory slotDetail = dao.getSlotDetail(slot_);
 
-    return abi.encodePacked(slotDetail.image);
+    return string(slotDetail.image);
   }
 
-  function _sloteventMetadataURI(uint256 slot_) internal view returns (bytes memory) {
+  function _sloteventMetadataURI(uint256 slot_) internal view returns (string memory) {
     INoAV1 dao = INoAV1(msg.sender);
     INoAV1.SlotDetail memory slotDetail = dao.getSlotDetail(slot_);
 
-    return abi.encodePacked(slotDetail.eventMetadataURI);
+    return string(slotDetail.eventMetadataURI);
   }
 
    /**

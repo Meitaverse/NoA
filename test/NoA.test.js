@@ -58,7 +58,7 @@ describe('NoA', () => {
 
   beforeEach(async function () {
     this.token = await deployNoA(name, symbol, decimals);
-    console.log('NoA deployed to:',  this.token .address);
+    //console.log('NoA deployed to:',  this.token .address);
   })
 
   shouldBehaveLikeERC3525('NoA');
