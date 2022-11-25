@@ -108,8 +108,6 @@ function shouldBehaveLikeERC3525 (errorPrefix) {
       transferEvent = receipt.events.filter(e => e.event === 'EventToken')[0];
       tokenId = transferEvent.args['tokenId'];
      // console.log("third tokenId:", tokenId.toNumber());
-
-
       
       tx = await this.token.mint(slotDetail_2, secondOwner.address, []);
       receipt = await tx.wait();
@@ -159,6 +157,7 @@ function shouldBehaveLikeERC3525 (errorPrefix) {
       });
     });
 
+/*
     //同一地址的token之间转移value
     describe('transfer value from token to token', function () {
       const transferValue = 1;
@@ -664,165 +663,71 @@ function shouldBehaveLikeERC3525 (errorPrefix) {
         });
       });
     });
+ 
+*/
+    //token to address
+    describe('token to address', function () {
 
-    //授权
-    describe('approve value', function () {
-      let tx = null;
-      let receipt = null;
+      const shouldBurnTokenByUsers = function () {
+        //以owner身份call
+        context('when called by the owner', function () {
+          this.beforeEach(async function () {
+            const transferValue = 1;
+            this.fromOwner = firstOwner;
+            this.toOwner = secondOwner;
+            this.fromTokenId = firstTokenId;
+            let tx = await this.token.connect(this.fromOwner)['transferFrom(uint256,address,uint256)'](this.fromTokenId, this.toOwner.address, transferValue)
 
-      beforeEach(async function () {
-        this.allowance = 1;
-      });
+            await tx.wait();
 
-      const itClearsAllowance = function () {
-        it('clears allowance for the token ID', async function () {
-          expect(await this.token.allowance(firstTokenId, valueApproved.address)).to.be.equal(0);
+
+          })
+          
+          it('keep the ownership of the token', async function () {
+            expect(await this.token.ownerOf(this.fromTokenId)).to.be.equal(this.fromOwner.address);
+          });
+
+          it('the balance of the from token', async function () {
+
+            expect(await this.token['balanceOf(uint256)'](this.fromTokenId)).to.be.equal(0);
+
+          });
+
+          it('keeps the owner balance', async function () {
+            //保持owner的token层的数量不变，但是fromTokenId的对应的value已经为0
+           expect(await this.token.connect(this.fromOwner)['balanceOf(address)'](this.fromOwner.address)).to.be.equal(2);
+          });
+
+          it('keep the slot Of the token', async function () {
+            expect(await this.token.slotOf(this.fromTokenId)).to.be.equal(firstSlot);
+
+          });
         });
+
       };
 
-      const itSetsAllowance = function () {
-        it('sets allowance for the token ID', async function () {
-          expect(await this.token.allowance(firstTokenId, valueApproved.address)).to.be.equal(this.allowance);
-        });
-      };
-
-      const itEmitsApprovalValueEvent = function () {
-        it('emits approval value event', async function () {
-          expectEvent(receipt, 'ApprovalValue', {
-            _tokenId: firstTokenId,
-            _operator: valueApproved.address,
-            _value: this.allowance,
-          });
-        });
-      };
-
-      context('when clearing allowance', function () {
-        context('when set allowance to zero', function () {
-          beforeEach(async function () {
-            await this.token.connect(firstOwner)['approve(uint256,address,uint256)'](firstTokenId, valueApproved.address, this.allowance);
-            this.allowance = 0;
-            tx = await this.token.connect(firstOwner)['approve(uint256,address,uint256)'](firstTokenId, valueApproved.address, this.allowance);
-            receipt = await tx.wait();
-          });
-
-          itClearsAllowance();
-          itEmitsApprovalValueEvent();
-        });
-
-        context('when token was transfered', async function () {
-          beforeEach(async function () {
-            await this.token.connect(firstOwner)['approve(uint256,address,uint256)'](firstTokenId, valueApproved.address, this.allowance);
-            await this.token.connect(firstOwner)['transferFrom(address,address,uint256)'](firstOwner.address, secondOwner.address, firstTokenId);
-          });
-
-          itClearsAllowance();
-        });
-      });
-
-      context('when approving to a non-zero address', function () {
-        context('when where was no prior allowance', function () {
-          beforeEach(async function () {
-            tx = await this.token.connect(firstOwner)['approve(uint256,address,uint256)'](firstTokenId, valueApproved.address, this.allowance);
-            receipt = await tx.wait();
-          });
-
-          itSetsAllowance();
-          itEmitsApprovalValueEvent();
-        });
-
-        context('when there was a prior allowance to the same address', function () {
-          beforeEach(async function () {
-            await this.token.connect(firstOwner)['approve(uint256,address,uint256)'](firstTokenId, valueApproved.address, this.allowance - 1);            
-            tx = await this.token.connect(firstOwner)['approve(uint256,address,uint256)'](firstTokenId, valueApproved.address, this.allowance);
-            receipt = await tx.wait();
-          });
-
-          itSetsAllowance();
-          itEmitsApprovalValueEvent();
-        });
-
-        context('when there was a prior allowance to a different address', function () {
-          beforeEach(async function () {
-            await this.token.connect(firstOwner)['approve(uint256,address,uint256)'](firstTokenId, valueApproved.address, this.allowance);
-            tx = await this.token.connect(firstOwner)['approve(uint256,address,uint256)'](firstTokenId, anotherApproved.address, this.allowance - 1);
-            receipt = await tx.wait();
-          });
-
-          it('sets allowance to the second value approved individual', async function () {
-            expect(await this.token.allowance(firstTokenId, anotherApproved.address)).to.be.equal(this.allowance - 1);
-          });
-        });
-      });
-
-      context('when the address that receives the allowance is the owner', function () {
-        it('reverts', async function () {
-          await expect(
-            this.token.connect(firstOwner)['approve(uint256,address,uint256)'](firstTokenId, firstOwner.address, this.allowance)
-          ).to.revertedWith('ERC3525: approval to current owner');
-        });
-      });
-
-      context('when the sender does not own the given token ID', function () {
-        it('reverts', async function () {
-          await expect(
-            this.token.connect(other)['approve(uint256,address,uint256)'](firstTokenId, valueApproved.address, this.allowance)
-          ).to.revertedWith('ERC3525: approve caller is not owner nor approved for all');
-        });
-      });
-
-      context('when the sender is approved for the given token ID', function () {
-        it('reverts', async function () {
-          await this.token.connect(firstOwner)['approve(address,uint256)'](approved.address, firstTokenId);
-          await expect(
-            this.token.connect(approved)['approve(uint256,address,uint256)'](firstTokenId, valueApproved.address, this.allowance)
-          ).to.revertedWith('ERC3525: approve caller is not owner nor approved for all');
-        });
-      });
-
-      context('when the sender is an operator', function () {
-        beforeEach(async function () {
-          await this.token.connect(firstOwner).setApprovalForAll(operator.address, true);
-          tx = await this.token.connect(operator)['approve(uint256,address,uint256)'](firstTokenId, valueApproved.address, this.allowance);
-          receipt = await tx.wait();
-        });
-
-        itSetsAllowance();
-        itEmitsApprovalValueEvent();
-      });
-
-      context('when then given token ID does not exist', function () {
-        it('reverts', async function () {
-          await expect(
-            this.token.connect(firstOwner)['approve(uint256,address,uint256)'](nonExistentTokenId, valueApproved.address, this.allowance)
-          ).to.revertedWith('ERC3525: invalid token ID');
-        });
-      });
-
-      context('when set allowance to the zero address', function () {
-        it('reverts', async function () {
-          await expect(
-            this.token.connect(firstOwner)['approve(uint256,address,uint256)'](firstTokenId, ZERO_ADDRESS, this.allowance)
-          ).to.revertedWith('ERC3525: approve value to the zero address');
-        });
-      });
-
-    });
-
-    describe('allowance', function () {
-      context('when token is not minted', function () {
-        it('reverts', async function () {
-          await expect(
-            this.token.allowance(nonExistentTokenId, firstOwner.address)
-          ).to.revertedWith('ERC3525: invalid token ID');
-        });
+      describe('burn...', function () {
+        shouldBurnTokenByUsers();
       });
     });
 
-});
+
+  });
 
 }
 
-function shouldBehaveIsPoAP (errorPrefix) {
+function shouldBehaveLikeERC3525Metadata (errorPrefix) {
+  shouldSupportInterfaces([
+    'ERC721Metadata',
+    'ERC3525Metadata'
+  ]);
+
+}
+
+function shouldBehaveLikeERC3525SlotEnumerable (errorPrefix) {
+  shouldSupportInterfaces([
+    'ERC3525SlotEnumerable'
+  ]);
 }
 
 function shouldBehaveCanCombo (errorPrefix) {
@@ -1006,9 +911,8 @@ describe("NoA Main Test", () => {
 */
 module.exports = {
   shouldBehaveLikeERC3525,
-  shouldBehaveIsPoAP,
   shouldBehaveCanCombo,
-  // shouldBehaveLikeERC3525Metadata,
-  // shouldBehaveLikeERC3525SlotEnumerable,
+  shouldBehaveLikeERC3525Metadata,
+  shouldBehaveLikeERC3525SlotEnumerable,
   // shouldBehaveLikeERC3525SlotApprovable
 }

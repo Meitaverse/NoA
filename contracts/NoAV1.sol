@@ -2,16 +2,14 @@
 
 pragma solidity ^0.8.0;
 
-import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
-import "@openzeppelin/contracts-upgradeable/utils/ContextUpgradeable.sol";
 import "@solvprotocol/erc-3525/contracts/ERC3525SlotEnumerableUpgradeable.sol";
+import {IERC20Upgradeable} from "@openzeppelin/contracts-upgradeable/token/ERC20/IERC20Upgradeable.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
 import "./libralies/MerkleProof.sol";
 import "./interfaces/INoAV1.sol";
 
-contract NoAV1 is 
-    Initializable, 
-    ContextUpgradeable, 
+contract NoAV1
+    is 
     INoAV1, 
     ERC3525SlotEnumerableUpgradeable
  {
@@ -50,11 +48,12 @@ contract NoAV1 is
         address owner
     );
 
+    address private _receiver;
     address private _owner;
-    bool _isWhiteListedMint;
+    bool private _isWhiteListedMint;
 
     // eventId => EventData
-    mapping(uint256 => bytes32)  _eventIdTomerkleRoots;
+    mapping(uint256 => bytes32) private _eventIdTomerkleRoots;
 
     // eventId => Event
     mapping(uint256 => Event) private _eventInfos;
@@ -67,42 +66,38 @@ contract NoAV1 is
         require(_eventInfos[eventId_].organizer != address(0x0), "NoA: event not exists");
         _;
     }
+    modifier onlyOwner() {
+        require(msg.sender == _owner, "NoA: Not owner");
+        _;
+    }
 
     function initialize(
         string memory name_,
-         string memory symbol_, 
-         uint8 decimals_,
-         address metadataDescriptor
+        string memory symbol_, 
+        address metadataDescriptor,
+        address receiver_
     ) public virtual initializer {
-        __ERC3525AllRoundInit(name_, symbol_, decimals_);
+        __ERC3525_init_unchained(name_, symbol_, 0);
         _setMetadataDescriptor(metadataDescriptor);
-        _owner = _msgSender();
+        _owner = msg.sender;
         _isWhiteListedMint = false;
-    }
-
-    function __ERC3525AllRoundInit(string memory name_, string memory symbol_, uint8 decimals_) internal onlyInitializing {
-        __ERC3525_init_unchained(name_, symbol_, decimals_);
+        _receiver = receiver_;
     }
 
     //only owner
-    function setMetadataDescriptor(address metadataDescriptor_) public returns(bool) {
-        require(_msgSender() == _owner, "NoA: Not owner ");
+    function setMetadataDescriptor(address metadataDescriptor_) public onlyOwner returns(bool) {
         _setMetadataDescriptor(metadataDescriptor_);
         return true;
     }
 
     //only owner
-    function setWhiteListedMint(bool isWhiteListMint_) public returns(bool) {
-        require(_msgSender() == _owner, "NoA: Not owner ");
+    function setWhiteListedMint(bool isWhiteListMint_) public onlyOwner returns(bool) {
         _isWhiteListedMint = isWhiteListMint_;
         return true;
     }
 
-    function getSlotDetail(uint256 slot_) public view returns (SlotDetail memory) {
-        return _slotDetails[slot_];
-    }
-
     function setMerkleRoot(uint256 eventId_, bytes32 merkleRoot_) public  {
+        require( _eventInfos[eventId_].organizer == msg.sender, "NoA: Not organizer");
         _eventIdTomerkleRoots[eventId_] = merkleRoot_;
     }
 
@@ -118,7 +113,7 @@ contract NoAV1 is
         bytes32[] calldata proof_
     ) public payable eventExist(slotDetail_.eventId) returns (bool)  {
         if (_isWhiteListedMint){
-         require(isWhiteListed(slotDetail_.eventId, to_, proof_), "NoA: Not allow");
+         require(_isWhiteListed(slotDetail_.eventId, to_, proof_), "NoA: Not allow");
         }
 
         Event memory eventInfo  = _eventInfos[slotDetail_.eventId];
@@ -174,21 +169,25 @@ contract NoAV1 is
         return true;
     }
 
-    function merge(
+    function combo(
         uint256 eventId_ , 
         uint256[] memory fromTokenIds_, 
         string memory image_,
         string memory eventMetadataURI_,
-        address to_
+        address to_,
+        uint256 value_
     ) public payable returns (bool){
         require(fromTokenIds_.length>1 , "NoA: at least 2");
         //must same slot
         for (uint256 i = 0; i < fromTokenIds_.length; ++i) {
+            require(_isApprovedOrOwner(msg.sender, fromTokenIds_[i]), "NoA: caller is not token owner nor approved");
             require(eventId_  ==  slotOf(fromTokenIds_[i]), "NoA: event id error");
-            burn(fromTokenIds_[i]);
+            //cant not burn
+            transferFrom(fromTokenIds_[i], _receiver, 1);
+
         }
         Event memory eventInfo  = _eventInfos[eventId_];
-        SlotDetail memory slotDetail_ = getSlotDetail(eventId_);
+        SlotDetail memory slotDetail_ = _slotDetails[eventId_];
 
         _lastId.increment(); //tokenId started at 1
         uint256 tokenId_ = _lastId.current();
@@ -201,56 +200,28 @@ contract NoAV1 is
             image: image_,            
             eventMetadataURI: eventMetadataURI_
         });    
-        ERC3525Upgradeable._mint(to_, tokenId_, slot, 1);
-        emit EventToken(slotDetail_.eventId, tokenId_, eventInfo.organizer, to_);
-        return true;
-    }
+        if ( _eventInfos[eventId_].organizer == msg.sender) {
+            ERC3525Upgradeable._mint(to_, tokenId_, slot, value_);
 
-    function publish(
-        uint256 eventId_ , 
-        uint256[] memory fromTokenIds_, 
-        string memory image_,
-        string memory eventMetadataURI_,
-        uint256 value_
-    ) external payable returns (bool) {
-        require(fromTokenIds_.length>0 , "NoA: at least 1");
-        //must same slot
-        Event memory eventInfo  = _eventInfos[eventId_];
-        SlotDetail memory slotDetail_ = getSlotDetail(eventId_);
-
-        uint256 slot = slotDetail_.eventId;  //same slot
-        _slotDetails[slot] = SlotDetail({
-            eventId: slotDetail_.eventId,
-            name: slotDetail_.name,
-            description: slotDetail_.description,
-            image: image_,            
-            eventMetadataURI: eventMetadataURI_
-        });    
-
-        for (uint256 i = 0; i < fromTokenIds_.length; ++i) {
-            require(eventId_  ==  slotOf(fromTokenIds_[i]), "NoA: event id error");
-            
-            burn(fromTokenIds_[i]);
-            _lastId.increment(); //tokenId started at 1
-            address to_ = ownerOf(fromTokenIds_[i]);
-            ERC3525Upgradeable._mint(to_, _lastId.current(), slot, 1);
-            emit EventToken(slotDetail_.eventId, _lastId.current(), eventInfo.organizer, to_);
+        } else {
+             ERC3525Upgradeable._mint(to_, tokenId_, slot, 1);
         }
-        _lastId.increment(); //tokenId started at 1
-        ERC3525Upgradeable._mint(_msgSender(), _lastId.current(), slot, value_ - fromTokenIds_.length);
-        emit Publish(slotDetail_.eventId, _lastId.current(), eventInfo.organizer, _msgSender(), value_ - fromTokenIds_.length);
+        emit EventToken(slotDetail_.eventId, tokenId_, eventInfo.organizer, to_);
         return true;
     }
 
     function burn(uint256 tokenId_) public virtual {
         uint256 eventId_ = slotOf(tokenId_);
-        require(_isApprovedOrOwner(_msgSender(), tokenId_), "NoA: caller is not token owner nor approved");
+        require(_isApprovedOrOwner(msg.sender, tokenId_), "NoA: caller is not token owner nor approved");
         ERC3525Upgradeable._burn(tokenId_);
         emit BurnToken(eventId_, tokenId_, msg.sender);
     }
 
+    function getSlotDetail(uint256 slot_) public view returns (SlotDetail memory) {
+        return _slotDetails[slot_];
+    }
 
-     function getEventInfo(uint256 eventId_)
+    function getEventInfo(uint256 eventId_)
         public
         view
         eventExist(eventId_)
@@ -305,7 +276,7 @@ contract NoAV1 is
         return false ; 
     }
 
-    function isWhiteListed(uint256 eventId_, address account_, bytes32[] calldata proof_) private view returns(bool) {
+    function _isWhiteListed(uint256 eventId_, address account_, bytes32[] calldata proof_) private view returns(bool) {
         return _verify(eventId_, _leaf(account_), proof_);
     }
 

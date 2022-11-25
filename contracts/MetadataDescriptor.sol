@@ -166,6 +166,7 @@ contract MetadataDescriptor is IERC3525MetadataDescriptor {
   }
 
   function _tokenProperties(uint256 tokenId_) internal view returns (string memory) {
+    
     INoAV1 dao = INoAV1(msg.sender);
     uint256 slot = dao.slotOf(tokenId_);
     INoAV1.SlotDetail memory slotDetail = dao.getSlotDetail(slot);
