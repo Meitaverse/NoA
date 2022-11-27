@@ -1,20 +1,20 @@
 //SPDX-License-Identifier: MIT
 
-pragma solidity ^0.8.0;
+pragma solidity ^0.8.13;
 
 import "hardhat/console.sol";
 
 import {StringsUpgradeable} from "@openzeppelin/contracts-upgradeable/utils/StringsUpgradeable.sol";
 import {Base64Upgradeable} from "@openzeppelin/contracts-upgradeable/utils/Base64Upgradeable.sol";
 import {IERC3525MetadataDescriptor} from "@solvprotocol/erc-3525/contracts/periphery/interface/IERC3525MetadataDescriptor.sol";
-import {StringConvertor} from "./utils/StringConvertor.sol";
-import {INoAV1} from "./interfaces/INoAV1.sol";
+import {StringConvertor} from "../utils/StringConvertor.sol";
+import "../interface/INoAV1.sol";
 
 interface IERC20 {
   function decimals() external view returns (uint8);
 }
 
-contract MetadataDescriptor is IERC3525MetadataDescriptor {
+contract NoAMetadataDescriptor is IERC3525MetadataDescriptor {
   using StringConvertor for uint256;
   using StringConvertor for bytes;
 

@@ -17,6 +17,7 @@ const event_1 = {
   eventName: "First Event", //event名称
   eventDescription: "Test Slot Description",
   eventImage: "https://example.com/slot/test_slot.png",
+  eventMetadataURI: "",
   mintMax: 200
 };
 
@@ -25,6 +26,7 @@ const event_2 = {
   eventName: "Second Event", //event名称
   eventDescription: "Test Slot Description",
   eventImage: "https://example.com/slot/test_slot.png",
+  eventMetadataURI: "",
   mintMax: 100
 };
 
@@ -88,7 +90,6 @@ function shouldBehaveLikeERC3525 (errorPrefix) {
         eventMetadataURI: "https://example.com/event/" + eventId_2.toString(),
       };
       
-
       //铸造出4枚token, value分别是1
       tx = await this.token.mint(slotDetail_1, firstOwner.address, []);
       receipt = await tx.wait();
@@ -157,7 +158,7 @@ function shouldBehaveLikeERC3525 (errorPrefix) {
       });
     });
 
-/*
+
     //同一地址的token之间转移value
     describe('transfer value from token to token', function () {
       const transferValue = 1;
@@ -664,7 +665,6 @@ function shouldBehaveLikeERC3525 (errorPrefix) {
       });
     });
  
-*/
     //token to address
     describe('token to address', function () {
 
@@ -677,9 +677,12 @@ function shouldBehaveLikeERC3525 (errorPrefix) {
             this.toOwner = secondOwner;
             this.fromTokenId = firstTokenId;
             let tx = await this.token.connect(this.fromOwner)['transferFrom(uint256,address,uint256)'](this.fromTokenId, this.toOwner.address, transferValue)
+            let receipt = await tx.wait();
 
-            await tx.wait();
-
+            let transferEvent = receipt.events.filter(e => e.event === 'TransferValue')[1];
+            //铸造一个新的tokenId=5来接收value
+            this.toTokenId = transferEvent.args['_toTokenId'];
+            // console.log('this.toTokenId:',  this.toTokenId);
 
           })
           
@@ -687,10 +690,11 @@ function shouldBehaveLikeERC3525 (errorPrefix) {
             expect(await this.token.ownerOf(this.fromTokenId)).to.be.equal(this.fromOwner.address);
           });
 
+          //交易成功之后，token内的余额为0，也就是slot的value为0
           it('the balance of the from token', async function () {
-
-            expect(await this.token['balanceOf(uint256)'](this.fromTokenId)).to.be.equal(0);
-
+            expect(await this.token.connect(this.fromOwner)['balanceOf(uint256)'](this.fromTokenId)).to.be.equal(0);
+            //接收者的新的tokenId里的balanceOf=1
+            expect(await this.token.connect(this.toOwner)['balanceOf(uint256)'](this.toTokenId)).to.be.equal(1);
           });
 
           it('keeps the owner balance', async function () {
@@ -722,197 +726,309 @@ function shouldBehaveLikeERC3525Metadata (errorPrefix) {
     'ERC3525Metadata'
   ]);
 
+  describe('metadata', function () {
+    context('contract URI', function () {
+      it('return empty string by default', async function () {
+       // expect(await this.token.contractURI()).to.be.equal('');
+       const contractURI = await this.token.contractURI();
+      //  console.log("contractURI: ", contractURI);
+      });
+    });
+
+    context('slot URI', function () {
+      it('return empty string by default', async function () {
+        // expect(await this.token.slotURI(firstSlot)).to.be.equal('');
+        const slotURI = await this.token.slotURI(firstSlot);
+        // console.log("slotURI: ", slotURI);
+      });
+    });
+  });
+
 }
 
 function shouldBehaveLikeERC3525SlotEnumerable (errorPrefix) {
   shouldSupportInterfaces([
     'ERC3525SlotEnumerable'
   ]);
+
+  context('with minted tokens', function () {
+    beforeEach(async function () {
+      [firstOwner, secondOwner, approved, valueApproved, anotherApproved, operator, slotOperator, other, organizer, user1,user2,user3,user4,user5] = await ethers.getSigners();
+
+      let tx = await this.token.connect(organizer).createEvent(event_1);
+      let receipt = await tx.wait();
+      let transferEvent = receipt.events.filter(e => e.event === 'EventAdded')[0];
+      let eventId_1 = transferEvent.args['eventId'];
+      this.eventId = eventId_1;
+      // console.log("eventId_1:", eventId_1.toNumber());
+      // console.log("");
+
+      let slotDetail_1 = {
+        name: 'BigShow#1',
+        description: 'for testing desc',
+        image: 'https://example.com/img/1.jpg',
+        eventId:  eventId_1,
+        eventMetadataURI: "https://example.com/event/" + eventId_1.toString(),
+      };
+      
+      tx = await this.token.connect(organizer).createEvent(event_2);
+      receipt = await tx.wait();
+      transferEvent = receipt.events.filter(e => e.event === 'EventAdded')[0];
+      let  eventId_2 = transferEvent.args['eventId'];
+      //console.log("eventId_2:", eventId_2.toNumber());
+      // console.log("");
+
+      
+      let slotDetail_2 = {
+        name: 'BigShow#2',
+        description: 'for testing desc',
+        image: 'https://example.com/img/1.jpg',
+        eventId:  eventId_2,
+        eventMetadataURI: "https://example.com/event/" + eventId_2.toString(),
+      };
+      
+      //铸造出4枚token, value分别是1
+      tx = await this.token.mint(slotDetail_1, firstOwner.address, []);
+      receipt = await tx.wait();
+      transferEvent = receipt.events.filter(e => e.event === 'EventToken')[0];
+      let tokenId = transferEvent.args['tokenId'];
+      //console.log("first tokenId:", tokenId.toNumber());
+      // console.log("");
+
+      tx = await this.token.mint(slotDetail_1, secondOwner.address, []);
+      receipt = await tx.wait();
+      transferEvent = receipt.events.filter(e => e.event === 'EventToken')[0];
+      tokenId = transferEvent.args['tokenId'];
+      //console.log("second tokenId:", tokenId.toNumber());
+
+      tx = await this.token.mint(slotDetail_2, firstOwner.address, []);
+      receipt = await tx.wait();
+      transferEvent = receipt.events.filter(e => e.event === 'EventToken')[0];
+      tokenId = transferEvent.args['tokenId'];
+     // console.log("third tokenId:", tokenId.toNumber());
+      
+      tx = await this.token.mint(slotDetail_2, secondOwner.address, []);
+      receipt = await tx.wait();
+      transferEvent = receipt.events.filter(e => e.event === 'EventToken')[0];
+      tokenId = transferEvent.args['tokenId'];
+      //console.log("four tokenId:", tokenId.toNumber());
+    });
+
+    const afterTransferFromAddressToAddress = function (validateFunc) {
+      context('after transferring a token from address to address', function () {
+        beforeEach(async function () {
+          await this.token.connect(firstOwner)['transferFrom(address,address,uint256)'](firstOwner.address, secondOwner.address, firstTokenId);
+        });
+        validateFunc();
+      });
+    }
+
+    const afterTransferFromTokenToToken = function (validateFunc) {
+      context('after transferring value from token to token', function () {
+        beforeEach(async function () {
+          await this.token.connect(firstOwner)['transferFrom(uint256,uint256,uint256)'](firstTokenId, secondTokenId, 1);
+        });
+        validateFunc();
+      });
+    }
+
+    const afterTransferFromTokenToAddress = function (validateFunc) {
+      context('after transferring value from token to address', function () {
+        beforeEach(async function () {
+          const tx = await this.token.connect(firstOwner)['transferFrom(uint256,address,uint256)'](firstTokenId, secondOwner.address, 1);
+          const receipt = await tx.wait();
+          const transferEvent = receipt.events.filter(e => e.event === 'Transfer')[0];
+          this.newTokenId = transferEvent.args['_tokenId'];
+        });
+        validateFunc();
+      });
+    }
+
+    const afterBurningToken = function (validateFunc) {
+      context('after burning token', function () {
+        beforeEach(async function () {
+          await this.token.burn(firstTokenId);
+        });
+        validateFunc();
+      });
+    }
+
+    describe('slot count', function () {
+      it('returns total slot count', async function () {
+        expect(await this.token.slotCount()).to.be.equal(2);
+      });
+    });
+
+    
+    describe('slot by index', function () {
+      it('returns all slots', async function () {
+        const slotsListed = await Promise.all(
+          [0, 1].map(i => this.token.slotByIndex(i)),
+        );
+        expect(slotsListed.map(s => s.toNumber())).to.have.members([firstSlot, secondSlot]);
+      });
+
+      it('reverts if index is greater than slot count', async function () {
+        await expect(
+          this.token.slotByIndex(2)
+        ).to.revertedWith('ERC3525SlotEnumerable: slot index out of bounds')
+      });
+    });
+
+    describe('tokenSupplyInSlot', function () {
+      context('when there are tokens in the given slot', function () {
+        it('returns the number of tokens in the given slot', async function () {
+          expect(await this.token.tokenSupplyInSlot(firstSlot)).to.be.equal(2);
+          expect(await this.token.tokenSupplyInSlot(secondSlot)).to.be.equal(2);
+        });
+      });
+    });
+
+    context('when there are no tokens in the given slot', function () {
+      it('returns 0', async function () {
+        expect(await this.token.tokenSupplyInSlot(nonExistentSlot)).to.be.equal(0);
+      });
+    });
+
+    afterTransferFromAddressToAddress(function () {
+      it('tokenSupplyInSlot should remain the same', async function () {
+        expect(await this.token.tokenSupplyInSlot(firstSlot)).to.be.equal(2);
+      });
+    });
+
+    afterTransferFromTokenToToken(function () {
+      it('tokenSupplyInSlot should remain the same', async function () {
+        expect(await this.token.tokenSupplyInSlot(firstSlot)).to.be.equal(2);
+        expect(await this.token.tokenSupplyInSlot(secondSlot)).to.be.equal(2);
+      });
+    });
+
+    
+    afterTransferFromTokenToAddress(function () {
+      it('adjusts tokenSupplyInSlot', async function () {
+        expect(await this.token.tokenSupplyInSlot(firstSlot)).to.be.equal(3);
+      });
+    });
+
+    afterBurningToken(function () {
+      it('adjusts tokenSupplyInSlot', async function () {
+        expect(await this.token.tokenSupplyInSlot(firstSlot)).to.be.equal(1);
+      });
+    });
+
+    describe('setApprovalForSlot', function () {
+      context('when slot operator is not the owner', function () {
+        context('after being set as slot operator', function () {
+          let tx = null;
+          let receipt = null;
+
+          beforeEach(async function () {
+            tx = await this.token.connect(firstOwner).setApprovalForSlot(firstOwner.address, firstSlot, slotOperator.address, true);
+            receipt = await tx.wait();
+          });
+
+          it('approves the slot operator', async function () {
+            expect(await this.token.isApprovedForSlot(firstOwner.address, firstSlot, slotOperator.address)).to.be.equal(true);
+          });
+
+        });
+      });
+    });
+
+    describe('combo', function () {
+      context('with user', function () {
+        let tx = null;
+        let receipt = null;
+        let transferEvent =  null;
+
+        it('User Mint a Derivative NoA', async function () {
+          tx = await this.token.connect(secondOwner)['transferFrom(uint256,address,uint256)'](
+            secondTokenId, 
+            firstOwner.address, 
+            1
+          );
+          receipt = await tx.wait();
+          transferEvent = receipt.events.filter(e => e.event === 'Transfer')[0];
+          let newTokenId = transferEvent.args['_tokenId'];
+          // console.log("newTokenId:", newTokenId.toNumber());
+
+          tx = await this.token.connect(firstOwner).combo(
+            this.eventId, 
+            [firstTokenId, newTokenId], 
+            "image", 
+            "eventMetadataURI", 
+            firstOwner.address, 
+            10
+          );
+
+          receipt = await tx.wait();
+          transferEvent = receipt.events.filter(e => e.event === 'EventToken')[0];
+          let derivative_tokenId = transferEvent.args['tokenId'];
+          // console.log("derivative_tokenId:", derivative_tokenId.toNumber());
+
+         // expect(await this.token.isApprovedForSlot(firstOwner.address, firstSlot, slotOperator.address)).to.be.equal(true);
+        });
+
+      });
+      context('with organizer', function () {
+        let tx = null;
+        let receipt = null;
+        let transferEvent =  null;
+        const valueAfterCombo = 1000;
+
+        it('Organizer Mint many Derivative NoA', async function () {
+          tx = await this.token.connect(firstOwner)['transferFrom(uint256,address,uint256)'](
+            firstTokenId, 
+            organizer.address, 
+            1
+          );
+          receipt = await tx.wait();
+          transferEvent = receipt.events.filter(e => e.event === 'Transfer')[0];
+          newTokenId_organizer1 = transferEvent.args['_tokenId'];
+          // console.log("newTokenId_organizer1:", newTokenId_organizer1.toNumber());
+
+          tx = await this.token.connect(secondOwner)['transferFrom(uint256,address,uint256)'](
+            secondTokenId, 
+            organizer.address, 
+            1
+          );
+          receipt = await tx.wait();
+          transferEvent = receipt.events.filter(e => e.event === 'Transfer')[0];
+          newTokenId_organizer2 = transferEvent.args['_tokenId'];
+          // console.log("newTokenId_organizer2:", newTokenId_organizer2.toNumber());
+
+          tx = await this.token.connect(organizer).combo(
+            this.eventId, 
+            [newTokenId_organizer1, newTokenId_organizer2], 
+            "image", 
+            "eventMetadataURI", 
+            organizer.address, 
+            valueAfterCombo
+          );
+
+          receipt = await tx.wait();
+          transferEvent = receipt.events.filter(e => e.event === 'EventToken')[0];
+          let derivative_tokenId = transferEvent.args['tokenId'];
+          // console.log("derivative_tokenId:", derivative_tokenId.toNumber());
+          
+          expect(await this.token['balanceOf(uint256)'](derivative_tokenId)).to.be.equal(valueAfterCombo);
+        });
+
+      });
+    });
+
+  });
+
 }
+
 
 function shouldBehaveCanCombo (errorPrefix) {
 
 }
 
-/*
-
-describe("NoA Main Test", () => {
-
-  beforeEach(async function () {
-    [deployer, admin, organizer, user1, user2, user3, user4] = await ethers.getSigners();
-  
-
-    // Deploy the dao metadata descriptor contract
-    const MetadataDescriptor = await ethers.getContractFactory('MetadataDescriptor');
-    const descriptor = await MetadataDescriptor.deploy();
-    await descriptor.deployed();
-    // console.log('MetadataDescriptor deployed to:', descriptor.address);
-    // console.log("");
-
-    const NoA = await ethers.getContractFactory("NoAV1");
-
-    const proxyAdmin = await fetchOrDeployAdminProxy();
-    this.token = await deployProxy(proxyAdmin, NoA, [name, symbol, decimals, descriptor.address], { initializer: 'initialize' });
-
-    await  this.token.deployed();
-
-    // console.log("Proxy contract deployed to:",  this.token.address);
-
-    let tx = await this.token.connect(organizer).createEvent(event_);
-    
-    let receipt = await tx.wait();
-    let transferEvent = receipt.events.filter(e => e.event === 'EventAdded')[0];
-    eventId = transferEvent.args['eventId'];
-    // console.log("eventId:", eventId.toNumber());
-    // console.log("");
-    // expect(eventId.toNumber()).to.be.equal(1);
-
-
-
-  });
-
-      it("should return correct name", async function() {
-        expect(await this.token.name()).to.equal('Network Of Attendance');
-        expect(await this.token.symbol()).to.equal("NoA");
-      });
-    
-     
-  
-    it('mint and mintEventToManyUsers testing...', async function () {
-      [deployer, admin, organizer, user1, user2, user3, user4, user5] = await ethers.getSigners();
-
-
-      const [organizer_, eventName_, eventDescription_, eventImage_, mintMax_] = await this.token.getEventInfo(eventId);
-      // console.log("organizer_:", organizer_);
-      // console.log("eventName_:", eventName_);
-      // console.log("eventDescription_:", eventDescription_);
-      // console.log("eventImage_:", eventImage_);
-      // console.log("mintMax_:", mintMax_.toNumber());
-
-
-     slotDetail_ = {
-        name: 'BigShow',
-        description: 'for testing desc',
-        image: '',
-        eventId:  eventId,
-        eventMetadataURI: "https://example.com/event/" + eventId.toString(),
-      }
-      let balanceOfUser1 = await this.token['balanceOf(address)'](user1.address);    
-      expect(balanceOfUser1.toNumber()).to.be.equal(0);
-  
-      tx = await this.token.mint(
-        slotDetail_,
-        user1.address
-      );
-      receipt = await tx.wait();
-      transferEvent = receipt.events.filter(e => e.event === 'EventToken')[0];
-      let tokenId = transferEvent.args['tokenId'];
-      // console.log("tokenId:", tokenId.toNumber());
-      // console.log("");
-      balanceOfUser1 = await this.token['balanceOf(address)'](user1.address);    
-      expect(balanceOfUser1.toNumber()).to.be.equal(1);
-  
-      expect(tokenId.toNumber()).to.be.equal(1);
-
-      let owerOfToken = await this.token.ownerOf(tokenId.toNumber());
-      // console.log("owerOfToken address:", owerOfToken);
-      // console.log("");
-      expect(owerOfToken).to.be.equal(user1.address);
-
-   
-      tx =  await this.token.mintEventToManyUsers(slotDetail_, [user2.address, user3.address]);
-      receipt = await tx.wait();
-      
- 
-
-      let slotDetails_ = [{
-        name: 'BigShow',
-        description: 'for testing desc',
-        image: '',
-        eventId:  eventId,
-        eventMetadataURI: "https://example.com/event/" + eventId.toString(),
-      }];
-      
-      tx =  await this.token.mintUserToManyEvents(slotDetails_, user5.address);
-      receipt = await tx.wait();
-      transferEvent = receipt.events.filter(e => e.event === 'EventToken')[0];
-      let tokenId5 = transferEvent.args['tokenId'];
-
-      owerOfToken = await this.token.ownerOf(tokenId5);
-      // console.log("owerOfToken address:", owerOfToken);
-      // console.log("");
-      expect(owerOfToken).to.be.equal(user5.address);
-
-      expect(await this.token.slotCount()).to.be.equal(1); //equal events
-
-      let count = await this.token.getTokenAmountOfEventId(eventId);
-      // console.log("getTokenAmountOfEventId, count:", count.toNumber());
-      // console.log("");
-      expect(count).to.be.equal(4); //equal events
-
-
-      
-    });
-
-    it("claim testing...", async function () {
-   
-      const root = "0x185622dc03039bc70cbb9ac9a4a086aec201f986b154ec4c55dad48c0a474e23";
-      tx = await this.token.connect(organizer).setMerkleRoot(eventId, root);
-      receipt = await tx.wait();
-
-      const proof = [
-        "0xe5c951f74bc89efa166514ac99d872f6b7a3c11aff63f51246c3742dfa925c9b",
-        "0x0eaf89a9c884bb4179c071971269df40cd13505356686ff2db6e290749e043e5",
-        "0xd4453790033a2bd762f526409b7f358023773723d9e9bc42487e4996869162b6"
-       ]
-      
-      const slotDetail_ = {
-        name: 'BigShow',
-        description: 'for testing desc',
-        image: '',
-        eventId:  eventId,
-        eventMetadataURI: "https://example.com/event/" + eventId.toString(),
-      }
-      expect (await this.token.connect(user2).isWhiteListed(eventId, user2.address, proof)).to.equal(true);
-      tx = await this.token.connect(user2).claimNoA(slotDetail_, proof);
-      receipt = await tx.wait();
-      expect(await this.token.eventHasUser(eventId, user2.address)).to.equal(true);
-
-      await expect(
-        this.token.connect(user2).claimNoA(slotDetail_, proof)
-      ).to.be.revertedWith('NoA: Token already claimed!');
-
-    });
-    
-    it("burn testing...", async function () {
-      tx = await this.token.mint(
-        slotDetail_,
-        user4.address
-      );
-      let receipt = await tx.wait();
-
-      let transferEvent = receipt.events.filter(e => e.event === 'EventToken')[0];
-      let tokenId = transferEvent.args['tokenId'];
-      // console.log("tokenId:", tokenId.toNumber());
-      // console.log("");
-
-      tx = await this.token.connect(user4).burn(tokenId);
-      receipt = await tx.wait();
-      transferEvent = receipt.events.filter(e => e.event === 'BurnToken')[0];
-      eventId_ = transferEvent.args['eventId'];
-      tokenId_ = transferEvent.args['tokenId'];
-      // console.log("eventId_:", eventId_.toNumber());
-      // console.log("tokenId_:", tokenId_.toNumber());
-      // console.log("");
-      expect(eventId_).to.be.equal(eventId);
-      expect(tokenId_).to.be.equal(tokenId);
-  });
-})
-*/
 module.exports = {
   shouldBehaveLikeERC3525,
   shouldBehaveCanCombo,
   shouldBehaveLikeERC3525Metadata,
   shouldBehaveLikeERC3525SlotEnumerable,
-  // shouldBehaveLikeERC3525SlotApprovable
 }

@@ -43,10 +43,10 @@ async function main() {
   const decimals = 0;
 
   // Deploy the dao metadata descriptor contract
-  const MetadataDescriptor = await ethers.getContractFactory('MetadataDescriptor');
-  const descriptor = await MetadataDescriptor.deploy();
+  const NoAMetadataDescriptor = await ethers.getContractFactory('NoAMetadataDescriptor');
+  const descriptor = await NoAMetadataDescriptor.deploy();
   await descriptor.deployed();
-  console.log('MetadataDescriptor deployed to:', descriptor.address);
+  console.log('NoAMetadataDescriptor deployed to:', descriptor.address);
   console.log("");
 
   const NoA = await ethers.getContractFactory("NoAV1");

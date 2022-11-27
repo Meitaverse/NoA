@@ -16,3 +16,15 @@ Run `npm test` to run the unit tests
 
 
 ## The Graph
+
+Login AWS Server: 16.163.166.55
+```
+$ cd /home/ubuntu/developments/solidity/anvil-graph-node
+
+$ docker-compose up -d
+```
+
+查看docker 日志
+```
+$ docker-compose logs -f 
+```
