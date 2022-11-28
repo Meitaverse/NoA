@@ -27,14 +27,14 @@ Proxy contract deployed to: 0x322813Fd9A801c5507c9de605d63CEA4f2CE6c44
 ```
 ## The Graph
 
-Login AWS Server: 16.163.166.55
+### Login AWS Server: 16.163.166.55
 ```
 $ cd /home/ubuntu/developments/solidity/anvil-graph-node
 
 $ docker-compose up -d
 ```
 
-查看docker 日志
+### 查看docker 日志
 ```
 $ docker-compose logs -f -t --tail="100" anvil   
 
@@ -42,7 +42,7 @@ $ docker-compose logs -f -t --tail="100" graph-node
 
 ```
 
-部署
+### 部署
 ```
 Deployed to http://16.163.166.55:8000/subgraphs/name/NoA/MySubgraph/graphql
 
@@ -50,7 +50,7 @@ Subgraph endpoints:
 Queries (HTTP):     http://16.163.166.55:8000/subgraphs/name/NoA/MySubgraph
 ```
 
-查询所有组织者
+### 查询所有组织者
 ```
 query{
   organizers(first:100){
@@ -61,7 +61,19 @@ query{
 
 ```
 
-查询所有NoA
+### 查询所有event
+```
+{
+  eventItems(first: 100) {
+    id
+    eventId
+    eventName
+    eventDescription
+  }
+}
+```
+
+### 查询所有NoA
 ```
 query{
   tokens(first:100){
@@ -80,6 +92,5 @@ query{
     createdAtTimestamp
   }
 }
-
 
 ```

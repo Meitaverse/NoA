@@ -24,7 +24,7 @@
     "test": "npx hardhat test --network hardhat",
     "graph-local-node-start": "cd ./docker && docker-compose up -d",
     "graph-local-node-stop": "cd ./docker &&  docker-compose down -v && docker-compose rm -v && sudo rm -rf data/ipfs data/postgres",
-    "anvil-logs": "cd ./docker &&  docker-compose logs -f -t --tail=\"100\" anvil",
+    "node-logs": "cd ./docker &&  docker-compose logs -f -t --tail=\"100\" hardhat-node",
     "graph-node-logs": "cd ./docker &&  docker-compose logs -f -t --tail=\"100\" graph-node",
     "graph-local-codegen": "cd ./subgraph && npm run codegen",
     "graph-local-build": "cd ./subgraph && npm run build",

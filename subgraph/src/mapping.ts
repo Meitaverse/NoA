@@ -1,4 +1,5 @@
-import { log,  BigInt, store } from "@graphprotocol/graph-ts"
+import { log, Address, BigInt, Bytes, store, TypedMap } from "@graphprotocol/graph-ts";
+
 import {
     NoAV1,
     // OrganizerAdded,
@@ -37,7 +38,7 @@ import {
 // }
 
 export function handleEventAdded(event: EventAdded): void {
-    let eventIdString = event.params.eventId.toString();
+    let eventIdString = event.params.eventId.toString()
     const eventItem = EventItem.load(eventIdString) || new EventItem(eventIdString)
     if (eventItem) {
         eventItem.organizer =  event.params.organizer.toHexString()
@@ -62,11 +63,36 @@ export function handleEventAdded(event: EventAdded): void {
 }
 
 export function handleEventToken(event: EventToken): void {
-    
+    log.info("handleEventToken, event.address: {}", [event.address.toHexString()])
+    let noaContract = NoAV1.bind(event.address)
+   
+
+    // let noaContract = NoAV1.bind(Address.fromString("0x0165878A594ca255338adfa4d48449f69242Eb8F"));
+
+    let name = noaContract.name()
+    let symbol = noaContract.symbol()
+    log.info(
+        "handleEventToken, name:{},  symbol: {}",
+        [
+            name,
+            symbol
+        ]
+    )
+
     let _idString = event.params.eventId.toString() + "-" + event.params.tokenId.toString()
     const token = Token.load(_idString) || new Token(_idString)
-    const tokenURI = ""; //NoAV1.load("")
-    const slotURI = ""; //NoAV1.load("")
+    // let tokenURI = ""
+    // let slotURI = ""
+    let tokenURI = noaContract.tokenURI(event.params.tokenId)
+    let slotURI = noaContract.slotURI(event.params.eventId)
+    log.info(
+        "handleEventToken, tokenURI: {}, slotURI: {}",
+        [
+            tokenURI,
+            slotURI
+        ]
+      )
+
     if (token) {
         token.eventId = event.params.eventId
         token.tokenId = event.params.tokenId

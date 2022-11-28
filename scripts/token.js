@@ -16,17 +16,22 @@ async function main() {
 
   const contractProxy = await ethers.getContractAt(contract.abi, contractAddress);
 
-  const tokenId=1;
-  const eventId=1;
+  // const tokenId=1;
+  // const eventId=1;
 
-  console.log("eventId:", eventId);
-  console.log("");
+  // console.log("eventId:", eventId);
+  // console.log("");
 
-  const user_address = "0xFABB0ac9d68B0B445fB7357272Ff202C5651694a";
+  // const user_address = "0xFABB0ac9d68B0B445fB7357272Ff202C5651694a";
 
-  const count = await contractProxy['balanceOf(address)'](user_address);
-  console.log("user_address: ", user_address, "count:", count.toNumber());
-  console.log("");
+  // const count = await contractProxy['balanceOf(address)'](user_address);
+  // console.log("user_address: ", user_address, "count:", count.toNumber());
+  // console.log("");
+
+  const tokenName = await contractProxy.name();
+  console.log("name: ", tokenName);
+  const tokenSymbol = await contractProxy.symbol();
+  console.log("symbol: ", tokenSymbol);
 }
 
 main();

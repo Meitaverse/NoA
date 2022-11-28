@@ -77,6 +77,12 @@ async function main() {
   await contractProxy.deployed();
 
   console.log("Proxy contract deployed to:", contractProxy.address);
+  console.log("");
+  
+  const tokenName = await contractProxy.name();
+  console.log("name: ", tokenName);
+  const tokenSymbol = await contractProxy.symbol();
+  console.log("symbol: ", tokenSymbol);
 
   const event_ = {
     organizer: ZERO_ADDRESS,
