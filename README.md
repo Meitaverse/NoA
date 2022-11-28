@@ -1,49 +1,48 @@
 # NoA Protocol
 
 Description: 
-   Basically this protocol can hold some nfts and split or merge to a new one.
+   Basically this protocol can hold some erc3525 tokens and split or merge to a new one.
 
-Metadata:
-   We use slot[0] to store common characteristics and status. slot[1] to store special characteristic, such as digital model files uri. slot[2] to store sourse tokenIds.
     
 ### Setup
 
-Run `npm install` in the root directory
+Run  `yarn install` in the root directory
 
 ## Unit Tests
 
-Run `npm test` to run the unit tests
+Run `yarn test` to run the unit tests
 
 ## deploy
 ```
-$ npx hardhat run scripts/deploy.js
-NoAMetadataDescriptor deployed to: 0x68B1D87F95878fE05B998F19b66F4baba5De1aed
+$ yarn deploy
 
-uToken deployed to: 0xc6e7DF5E7b4f2A278906862b61205850344D4e7d
-
-ProxyAdmin deployed to: 0x59b670e9fA9D0A427751Af201D676719a970857b
-Proxy contract deployed to: 0x322813Fd9A801c5507c9de605d63CEA4f2CE6c44
+Proxy contract deployed to: 0x0165878A594ca255338adfa4d48449f69242Eb8F
 
 ```
+
 ## The Graph
 
 ### Login AWS Server: 16.163.166.55
 ```
-$ cd /home/ubuntu/developments/solidity/anvil-graph-node
+$ cd /home/ubuntu/developments/solidity/NoA.main
 
-$ docker-compose up -d
+$ yarn graph-local-node-start
 ```
 
 ### 查看docker 日志
 ```
-$ docker-compose logs -f -t --tail="100" anvil   
+$ yarn node-logs  
 
-$ docker-compose logs -f -t --tail="100" graph-node   
+$ yarn graph-node-logs
 
 ```
 
-### 部署
+### 部署Graph Node
 ```
+$  yarn graph-local-codegen && yarn graph-local-build
+
+$ yarn create-local-subgraph-node && yarn deploy-local-subgraph-node
+
 Deployed to http://16.163.166.55:8000/subgraphs/name/NoA/MySubgraph/graphql
 
 Subgraph endpoints:
