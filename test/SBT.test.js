@@ -3,6 +3,7 @@
  $ npx hardhat test test/SBT.test.js
  */
 const { ethers, upgrades } = require('hardhat');
+const { expect } = require('chai');
 
 
 async function deploySBT(name, symbol, deployer) {
@@ -16,12 +17,10 @@ async function deploySBT(name, symbol, deployer) {
 
     const SoulBoundTokenV1 = await ethers.getContractFactory('SoulBoundTokenV1');
 
-    // const name = "Soul Bound Token";
-    // const symbol = "SBT";
     const organization = "ShowDao";
     const transferable = false;
     const mintable = true;
-    const ownerofToken = deployer.address;
+    const ownerToken = deployer.address;
     const minterOfToken = deployer.address;
     const signer = deployer.address;
 
@@ -32,7 +31,7 @@ async function deploySBT(name, symbol, deployer) {
         organization,
         transferable,
         mintable,
-        ownerofToken,
+        ownerToken,
         minterOfToken,
         signer
     ], {
@@ -46,16 +45,21 @@ async function deploySBT(name, symbol, deployer) {
     return soulBoundToken;
 }
 
-describe('NoA', () => {
+describe('SBT', () => {
 
   const name = 'Soul Bound Token For ShowDao';
   const symbol = 'SBT';
 
   beforeEach(async function () {
-    let deployer  = await ethers.getSigners();
+    let [deployer]  = await ethers.getSigners();
     this.token = await deploySBT(name, symbol, deployer);
     console.log('SBT deployed to:',  this.token.address);
   })
 
+  describe("version", () => {
+    it('version should returns 1', async function () {
+      expect(await this.token.version()).to.be.equal(1);
+    });
+  });
 
 })

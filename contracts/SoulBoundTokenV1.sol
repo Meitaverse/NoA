@@ -11,8 +11,10 @@ import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/utils/cryptography/ECDSAUpgradeable.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
 import "./interface/ISoulBoundTokenV1.sol";
+import "./storage/SBTStorage.sol";
 
 contract SoulBoundTokenV1 is 
+    SBTStorage,
     Initializable,
     ISoulBoundTokenV1,
     AccessControlUpgradeable,
@@ -33,22 +35,6 @@ contract SoulBoundTokenV1 is
     bytes32 internal constant _UPGRADER_ROLE = keccak256("UPGRADER_ROLE");
     bytes32 internal constant _MINTER_ROLE = keccak256("MINTER_ROLE");
 
-   /**
-   * @notice Properties of the SBT, which determine the value of slot.
-   */
-    struct TokenOwnerInfo {
-        string nickName;
-        string role;
-    }
-
-    string internal _organization;
-    bool internal _transferable; 
-    bool internal _mintable;
-    address internal _signerAddress;
-    string internal _svgLogo;
-
-    mapping(uint256 => TokenOwnerInfo) internal _tokenOwnerInfo;
-    mapping(uint256 => address) internal _mintedTo;
 
     //===== Events =====//
 
@@ -223,10 +209,10 @@ contract SoulBoundTokenV1 is
         require(_exists(tokenId_), "SBT: token doesn't exist or has been burnt");
         require(_isApprovedOrOwner(_msgSender(), tokenId_) || hasRole(_MINTER_ROLE, msg.sender), "SBT: sender not owner or token owner");
         _;
-    }    
+    }
 
     //------override------------//
-    
+
     /**
      * @dev See {IERC165-supportsInterface}.
      */
