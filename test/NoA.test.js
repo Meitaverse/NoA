@@ -8,8 +8,8 @@ const {getInitializerData} = require("@openzeppelin/hardhat-upgrades/dist/utils"
 const { 
   shouldBehaveLikeERC3525, 
   shouldBehaveLikeERC3525Metadata, 
-  shouldBehaveLikeERC3525SlotEnumerable, 
-  shouldBehaveCanCombo } = require('./NoA.behavior');
+  shouldBehaveLikeERC3525SlotEnumerable
+ } = require('./NoA.behavior');
 const Error = [ 'None', 'RevertWithMessage', 'RevertWithoutMessage', 'Panic' ]
   .reduce((acc, entry, idx) => Object.assign({ [entry]: idx }, acc), {});
 
@@ -83,10 +83,9 @@ describe('NoA', () => {
     //console.log('NoA deployed to:',  this.token.address);
   })
 
-  shouldBehaveLikeERC3525('NoA');
-  shouldBehaveLikeERC3525Metadata('NoAMetadata');
+  // shouldBehaveLikeERC3525('NoA');
+  // shouldBehaveLikeERC3525Metadata('NoAMetadata');
   shouldBehaveLikeERC3525SlotEnumerable('NoASlotEnumerable');
-  shouldBehaveCanCombo('NoACanCombo');
   
 
 })

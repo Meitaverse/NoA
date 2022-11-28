@@ -44,7 +44,7 @@ type Token @entity {
   eventId: BigInt!
   tokenId: BigInt!
   tokenURI: String!
-  metaURI: String!
+  slotURI: String!
   organizer: Organizer!
   owner: User!
   history: [History!] @derivedFrom(field: "token")

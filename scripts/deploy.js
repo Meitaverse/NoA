@@ -7,6 +7,10 @@ const {getInitializerData} = require("@openzeppelin/hardhat-upgrades/dist/utils"
 const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000';
 let deployer, admin, organizer, user1, user2, user3, user4;
 
+const Error = [ 'None', 'RevertWithMessage', 'RevertWithoutMessage', 'Panic' ]
+  .reduce((acc, entry, idx) => Object.assign({ [entry]: idx }, acc), {});
+
+
 async function fetchOrDeployAdminProxy(proxyAdminAddress) {
     const address = proxyAdminAddress ? ethers.utils.getAddressFromAccount(ethers.utils.parseAccount(proxyAdminAddress)) : null;
     
@@ -38,8 +42,8 @@ async function deployProxy(proxyAdmin, ImplFactory, args, opts) {
 async function main() {
    [deployer, admin, organizer, user1, user2, user3, user4] = await ethers.getSigners();
   
-  const name = ' Proof Of Attendance Show';
-  const symbol = 'POAS';
+  const name = ' Network Of Attendance';
+  const symbol = 'NoA';
   const decimals = 0;
 
   // Deploy the dao metadata descriptor contract
@@ -49,21 +53,37 @@ async function main() {
   console.log('NoAMetadataDescriptor deployed to:', descriptor.address);
   console.log("");
 
+  //接收者
+  const ERC3525ReceiverMockFactory = await ethers.getContractFactory('ERC3525ReceiverMock');
+  const RECEIVER_MAGIC_VALUE = '0x009ce20b';
+
+  const receiver = await ERC3525ReceiverMockFactory.deploy(RECEIVER_MAGIC_VALUE, Error.None);
+  await receiver.deployed();
+
+  const UTokenV1 = await ethers.getContractFactory('UTokenV1');
+  const uToken = await upgrades.deployProxy(UTokenV1, [], {
+    initializer: 'initialize',
+  });
+  await uToken.deployed();
+  console.log('uToken deployed to:', uToken.address);
+  console.log("");
+
+
   const NoA = await ethers.getContractFactory("NoAV1");
 
   const proxyAdmin = await fetchOrDeployAdminProxy();
-  const contractProxy = await deployProxy(proxyAdmin, NoA, [name, symbol, decimals, descriptor.address], { initializer: 'initialize' });
+  const contractProxy = await deployProxy(proxyAdmin, NoA, [name, symbol, descriptor.address, receiver.address, uToken.address], { initializer: 'initialize' });
 
   await contractProxy.deployed();
 
   console.log("Proxy contract deployed to:", contractProxy.address);
 
-
   const event_ = {
     organizer: ZERO_ADDRESS,
-    eventName: "Test Slot", //event名称
-    eventDescription: "Test Slot Description",
+    eventName: "NoATest", //event名称
+    eventDescription: "Event Of NoA Test",
     eventImage: "https://example.com/slot/test_slot.png",
+    eventMetadataURI: "",
     mintMax: 200
   };
 
@@ -75,9 +95,12 @@ async function main() {
   console.log("eventId:", eventId.toNumber());
   console.log("");
 
+
+  
+
   const slotDetail_ = {
     name: 'BigShow',
-    description: 'for testing desc',
+    description: 'Testing NoA',
     image: '',
     eventId:  eventId.toNumber(),
     eventMetadataURI: "https://example.com/event/" + eventId.toString(),
@@ -85,7 +108,8 @@ async function main() {
 
   tx = await contractProxy.mint(
     slotDetail_,
-     user1.address
+    user1.address,
+    []
   );
    receipt = await tx.wait();
    transferEvent = receipt.events.filter(e => e.event === 'EventToken')[0];
@@ -100,7 +124,6 @@ async function main() {
   const count = await contractProxy['balanceOf(uint256)'](tokenId.toNumber());
   console.log("count:", count.toNumber());
   console.log("");
-
 
   const slotOf =  await contractProxy.slotOf(tokenId.toNumber());
   console.log("slotOf:", slotOf.toString());

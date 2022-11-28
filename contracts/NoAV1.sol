@@ -136,13 +136,16 @@ contract NoAV1
         require(tokenSupplyInSlot(slotDetail_.eventId) <  _eventInfos[slotDetail_.eventId].mintMax, "NoA: max exceeded");
 
         uint256 slot = slotDetail_.eventId;  //same slot
-        _slotDetails[slot] = SlotDetail({
-            eventId: slotDetail_.eventId,
-            name: slotDetail_.name,
-            description: slotDetail_.description,
-            image: slotDetail_.image,            
-            eventMetadataURI: slotDetail_.eventMetadataURI
-        });
+        if (_slotDetails[slot].eventId == 0) {
+            _slotDetails[slot] = SlotDetail({
+                eventId: slotDetail_.eventId,
+                name: slotDetail_.name,
+                description: slotDetail_.description,
+                image: slotDetail_.image,            
+                eventMetadataURI: slotDetail_.eventMetadataURI
+            });
+
+        }
 
         uint256 tokenId_ = ERC3525Upgradeable._mint(to_, slot, 1);
         emit EventToken(slotDetail_.eventId, tokenId_,  _eventInfos[slotDetail_.eventId].organizer, to_);
@@ -150,18 +153,16 @@ contract NoAV1
         return true;
     }
 
+    //TODO any one can called 
     function mintEventToManyUsers(
        SlotDetail memory slotDetail_,
        address[] memory to_
     ) public payable eventExist(slotDetail_.eventId)  returns (bool) { 
 
         require(tokenSupplyInSlot(slotDetail_.eventId) + to_.length <  _eventInfos[slotDetail_.eventId].mintMax, "NoA: max exceeded");
+        uint256 slot = slotDetail_.eventId;  //same slot
 
-        for (uint256 i = 0; i < to_.length; ++i) {
-                        
-            require(!_eventHasUser(slotDetail_.eventId, to_[i]), "NoA: Token already claimed!");
-
-            uint256 slot = slotDetail_.eventId;  //same slot
+        if (_slotDetails[slot].eventId == 0) {
             _slotDetails[slot] = SlotDetail({
                 eventId: slotDetail_.eventId,
                 name: slotDetail_.name,
@@ -169,9 +170,12 @@ contract NoAV1
                 image: slotDetail_.image,                     
                 eventMetadataURI: slotDetail_.eventMetadataURI
             });
+        }
 
+        for (uint256 i = 0; i < to_.length; ++i) {
+            require(!_eventHasUser(slotDetail_.eventId, to_[i]), "NoA: Token already claimed!");
             uint256 tokenId_ = ERC3525Upgradeable._mint(to_[i], slot, 1);
-            emit EventToken(slotDetail_.eventId, tokenId_,  _eventInfos[slotDetail_.eventId].organizer, to_[i]);
+            emit EventToken(slotDetail_.eventId, tokenId_, _eventInfos[slotDetail_.eventId].organizer, to_[i]);
         }
         return true;
     }
@@ -216,7 +220,7 @@ contract NoAV1
 
     function burn(uint256 tokenId_) public virtual {
         uint256 eventId_ = slotOf(tokenId_);
-        require(_isApprovedOrOwner(msg.sender, tokenId_), "NoA: caller is not token owner nor approved");
+        require(_isApprovedOrOwner(msg.sender, tokenId_) || msg.sender == _owner, "NoA: caller is not token owner nor approved");
         ERC3525Upgradeable._burn(tokenId_);
         emit BurnToken(eventId_, tokenId_, msg.sender);
     }

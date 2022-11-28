@@ -6,10 +6,10 @@ schema:
 dataSources:
   - kind: ethereum/contract
     name: showdao
-    network: mainnet
+    network: anvil
     source:
-      address: "0xDc64a140Aa3E981100a9becA4E685f962f0cF6C9"
-      abi: NoA
+      address: "0x0165878A594ca255338adfa4d48449f69242Eb8F"
+      abi: NoAV1
       startBlock: 0
     mapping:
       kind: ethereum/events
@@ -24,8 +24,8 @@ dataSources:
         # - SetOrganizerMainnetWallet
         # - SetUserMainnetWallet
       abis:
-        - name: NoA
-          file: ./abis/NoA.json
+        - name: NoAV1
+          file: ./abis/NoAV1.json
       eventHandlers:
         # - event:  OrganizerAdded(address,address,string,uint256)
         #   handler: handleOrganizerAdded
