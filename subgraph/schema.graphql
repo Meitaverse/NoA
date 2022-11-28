@@ -4,7 +4,9 @@ type EventItem @entity {
   organizer: Organizer!
   eventId: BigInt!
   eventName: String!
+  eventDescription: String!
   eventImage: String!
+  mintMax: BigInt!
 }
 
 # 组织者
