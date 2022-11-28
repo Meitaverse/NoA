@@ -70,6 +70,7 @@ query{
     tokenId,
     tokenURI,
     slotURI,
+    owner,
     organizer {
       id
     },
