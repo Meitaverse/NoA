@@ -16,9 +16,5 @@ interface ISoulBoundTokenV1 is IERC3525Metadata {
 
     function organization() external view returns (string memory);
 
-    function transferable() external view returns (bool);
-    
-    function mintable() external view returns (bool);
-
     function mintedTo(uint256 tokenId) external view returns (address);
 }

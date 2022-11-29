@@ -22,14 +22,23 @@ contract SBTStorage  {
         string role;
     }
 
+    struct SlotDetail {
+        string nickName;
+        string role;
+        bool locked;
+        uint256 reputation;
+    }
+    
     string internal _organization;
-    bool internal _transferable; 
-    bool internal _mintable;
     address internal _signerAddress;
     string internal _svgLogo;
 
     mapping(uint256 => TokenOwnerInfo) internal _tokenOwnerInfo;
     
     mapping(uint256 => address) internal _mintedTo;
+
+    // slot => slotDetail
+    mapping(uint256 => SlotDetail) internal _slotDetails;
+
 
 }

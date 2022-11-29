@@ -13,7 +13,7 @@ async function main() {
   const contractProxy = await ethers.getContractAt(contract.abi, contractAddress);
 
 
-  const to_ = await user2.getAddress();
+  const to_ = await deployer.getAddress();
   console.log(
     "to_ Address:",
     to_

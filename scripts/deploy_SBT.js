@@ -22,8 +22,6 @@ async function main() {
         const name = "Soul Bound Token";
         const symbol = "SBT";
         const organization = "ShowDao";
-        const transferable = false;
-        const mintable = true;
         const minterOfToken = deployer.address;
         const signer = deployer.address;
 
@@ -32,8 +30,6 @@ async function main() {
             symbol, 
             sbtDescriptor.address,
             organization,
-            transferable,
-            mintable,
             ownerofToken.address,
             minterOfToken,
             signer

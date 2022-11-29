@@ -28,21 +28,17 @@ contract SoulBoundNFTFactory is Ownable {
     string memory symbol,
     address metadataDescriptor,
     string memory organization,
-    bool transferable,
-    bool mintable,
     address tokenOwner,
     address minterOfToken,
     address signerAddress
   ) internal pure returns (bytes memory) {
     return
       abi.encodeWithSignature(
-        "initialize(string,string,address,string,bool,bool,address,address,address)",
+        "initialize(string,string,address,string,address,address,address)",
         name,
         symbol,
         metadataDescriptor,
         organization,
-        transferable,
-        mintable,
         tokenOwner,
         minterOfToken,
         signerAddress
@@ -67,14 +63,12 @@ contract SoulBoundNFTFactory is Ownable {
     string memory symbol,
     address metadataDescriptor,
     string memory organization,
-    bool transferable,
-    bool mintable,
     address tokenOwner,
     address minterOfToken,
     address signerAddress
   ) public returns (BeaconProxy beaconProxy) {
     address beaconAddress = proxyRegistry.beaconAddress();
-    bytes memory data = _payload(name, symbol, metadataDescriptor, organization, transferable, mintable, tokenOwner, minterOfToken, signerAddress);
+    bytes memory data = _payload(name, symbol, metadataDescriptor, organization, tokenOwner, minterOfToken, signerAddress);
     beaconProxy = new BeaconProxy(beaconAddress, data);
     proxyRegistry.registerBeaconProxy(address(beaconProxy), name, symbol, organization, tokenOwner);
     emit BeaconProxyCreated(beaconAddress, address(beaconProxy));

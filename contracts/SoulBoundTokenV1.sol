@@ -11,11 +11,13 @@ import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/utils/cryptography/ECDSAUpgradeable.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
 import "./interface/ISoulBoundTokenV1.sol";
+import "./interface/IERC5192.sol";
 import "./storage/SBTStorage.sol";
 
 contract SoulBoundTokenV1 is 
     SBTStorage,
     Initializable,
+    IERC5192,
     ISoulBoundTokenV1,
     AccessControlUpgradeable,
     PausableUpgradeable,
@@ -36,11 +38,6 @@ contract SoulBoundTokenV1 is
     bytes32 internal constant _MINTER_ROLE = keccak256("MINTER_ROLE");
 
 
-    //===== Events =====//
-
-    event ToggleTransferable(bool transferable);
-    event ToggleMintable(bool mintable);
-
     //===== Initializer =====//
 
     /// @custom:oz-upgrades-unsafe-allow constructor
@@ -53,8 +50,6 @@ contract SoulBoundTokenV1 is
         string memory symbol_, 
         address metadataDescriptor_,
         string memory organization_,
-        bool transferable_,
-        bool mintable_,
         address tokenOwner_,
         address minterOfToken_,
         address signerAddress_
@@ -72,8 +67,6 @@ contract SoulBoundTokenV1 is
         _setMetadataDescriptor(metadataDescriptor_);
         
         _organization = organization_;
-        _transferable = transferable_;
-        _mintable = mintable_;
         _signerAddress = signerAddress_;
         
         _grantRole(DEFAULT_ADMIN_ROLE, msg.sender);
@@ -102,32 +95,17 @@ contract SoulBoundTokenV1 is
     function setSvgLogo(string calldata svgLogo_) external onlyRole(_MINTER_ROLE) {
         _svgLogo = svgLogo_;
     }
-
-    function toggleTransferable() external onlyRole(_PAUSER_ROLE) returns (bool) {
-        if (_transferable) {
-        _transferable = false;
-        } else {
-        _transferable = true;
-        }
-        emit ToggleTransferable(_transferable);
-        return _transferable;
-    }
-
-    function toggleMintable() external onlyRole(_MINTER_ROLE) returns (bool) {
-        if (_mintable) {
-            _mintable = false;
-        } else {
-            _mintable = true;
-        }
-        emit ToggleMintable(_mintable);
-        return _mintable;
-    }
     
     function setMetadataDescriptor(address metadataDescriptor_) external onlyRole(DEFAULT_ADMIN_ROLE) {
         _setMetadataDescriptor(metadataDescriptor_);
     }
-    
+
     //===== Public Functions =====//
+    function locked(uint256 tokenId_) public view returns (bool) {
+        require(ownerOf(tokenId_) != address(0));
+        return _slotDetails[slotOf(tokenId_)].locked;
+    }
+    
     function svgLogo() public view returns (string memory) {
         return _svgLogo;
     }
@@ -152,17 +130,14 @@ contract SoulBoundTokenV1 is
         return _organization;
     }
     
-    function transferable() public view returns (bool) {
-        return _transferable;
-    }   
-
-    function mintable() public view returns (bool) {
-        return _mintable;
-    }
-
     function mintedTo(uint256 tokenId_) public view returns (address) {
         return _mintedTo[tokenId_];
     }
+
+    function getMessageHash(string memory nickName,string memory role, address to) public pure returns(bytes32){
+        return keccak256(abi.encodePacked(nickName, role, to));
+    }
+
 
     function mint(
         string calldata nickName_,
@@ -170,18 +145,30 @@ contract SoulBoundTokenV1 is
         address to_,
         bytes calldata signature_
     ) public whenNotPaused {
-        require(balanceOf(to_)==0, "SBT:Only mint one time");
-        if (_mintable && !hasRole(_MINTER_ROLE, msg.sender)) {
-            bytes32 digest = keccak256(
-                abi.encodePacked(
-                    "\x19\x01",
-                    keccak256(abi.encode(_MINT_HASH,nickName_,role_,to_))
-            ));
-            require(digest.recover(signature_) == _signerAddress, "SBT:Invalid Signature");
+        require(balanceOf(to_)==0, "SBT: Only mint one time per address");
+        if (!hasRole(_MINTER_ROLE, msg.sender)) {
+            // bytes32 digest = keccak256(
+            //     abi.encodePacked(
+            //         "\x19\x01",
+            //         keccak256(abi.encode(_MINT_HASH,nickName_,role_,to_))
+            // ));
+            // require(digest.recover(signature_) == _signerAddress, "SBT:Invalid Signature");
+            bytes32 msgHash = getMessageHash(nickName_,role_,to_); 
+            bytes32 ethSignedMessageHash = ECDSAUpgradeable.toEthSignedMessageHash(msgHash); 
+            require(_verify(ethSignedMessageHash, signature_), "SBT: Invalid signature"); 
         } else {
             require(hasRole(_MINTER_ROLE, msg.sender), "SBT: not allowed to mint!");
         }
+
         uint slot_ = _getSlot(role_);
+
+        _slotDetails[slot_] = SlotDetail({
+            nickName: nickName_,
+            role: role_,
+            locked: true,
+            reputation: 0
+        });
+
         uint256 tokenId_ = ERC3525Upgradeable._mint(to_, slot_, 1);
         _tokenOwnerInfo[tokenId_] = TokenOwnerInfo({
             nickName: nickName_,
@@ -195,8 +182,8 @@ contract SoulBoundTokenV1 is
 
     //===== Modifiers =====//
 
-    modifier isTransferable() {
-        require(transferable() == true, "SBT: not transferable");
+    modifier isTransferAllowed(uint256 tokenId_) {
+        require(!_slotDetails[slotOf(tokenId_)].locked, "SBT: not allowed");
         _;
     }
 
@@ -212,12 +199,36 @@ contract SoulBoundTokenV1 is
     }
 
     //------override------------//
+    function transferFrom(
+        address from_,
+        address to_,
+        uint256 tokenId_
+    ) public payable virtual override(ERC3525Upgradeable, IERC721) isTransferAllowed(tokenId_)   {
+        super.transferFrom(from_, to_, tokenId_);
+    }
 
+    function safeTransferFrom(
+        address from_,
+        address to_,
+        uint256 tokenId_,
+        bytes memory data_
+    ) public payable virtual override(ERC3525Upgradeable, IERC721)  isTransferAllowed(tokenId_)  {
+        super.safeTransferFrom(from_, to_, tokenId_, data_);
+    }
+
+    function approve(address to_, uint256 tokenId_) public payable virtual override(ERC3525Upgradeable, IERC721) isTransferAllowed(tokenId_)  {
+        super.approve(to_, tokenId_);
+    }
+    
     /**
      * @dev See {IERC165-supportsInterface}.
      */
     function supportsInterface(bytes4 interfaceId) public view virtual override(IERC165, AccessControlUpgradeable, ERC3525SlotEnumerableUpgradeable) returns (bool) {
-        return interfaceId == type(IAccessControlUpgradeable).interfaceId || super.supportsInterface(interfaceId);
+        return 
+        interfaceId == type(IAccessControlUpgradeable).interfaceId || 
+        interfaceId == type(IERC165).interfaceId ||
+        interfaceId == type(IERC5192).interfaceId ||
+        super.supportsInterface(interfaceId);
     }
 
     function _authorizeUpgrade(
@@ -226,18 +237,10 @@ contract SoulBoundTokenV1 is
         require(hasRole(_UPGRADER_ROLE, msg.sender), "SBT: Unauthorized Upgrade");
     }
 
-    function _beforeValueTransfer(
-        address from_,
-        address to_,
-        uint256 fromTokenId_,
-        uint256 toTokenId_,
-        uint256 slot_,
-        uint256 value_
-    ) internal virtual override isTransferable() {
-        super._beforeValueTransfer(from_, to_, fromTokenId_, toTokenId_, slot_, value_);
-    }
-
     //----internal functions----//
+    function _verify(bytes32 ethSignedMessageHash, bytes memory signature) internal view returns (bool) {
+        return ECDSAUpgradeable.recover(ethSignedMessageHash, signature) == _signerAddress;
+    }
 
     function _getSlot(string memory role_) internal pure returns(uint256) {
         if (keccak256(abi.encodePacked(role_)) == keccak256(abi.encodePacked("Orginazer"))) {

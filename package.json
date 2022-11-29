@@ -17,7 +17,7 @@
     "hardhat-local": "hardhat node --hostname 0.0.0.0",
     "deploy": "npx hardhat run scripts/deploy.js",
     "deploy_UToken": "npx hardhat run scripts/deploy_UToken.js",
-    "deploy-alliance": "npx hardhat run alliance/deploy-alliance.js --network allianceChain",
+    "deploy_SBT": "npx hardhat run scripts/deploy_SBT.js",
     "merkleTree": "node ./scripts/setMerkleTree.js",
     "flatten": "npx hardhat flatten ./contracts/NoAV1.sol > audit/NoAV1.sol",
     "upgrade-proxy": "npx hardhat run scripts/upgrade.js",
