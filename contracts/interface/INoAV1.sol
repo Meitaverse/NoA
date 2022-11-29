@@ -6,8 +6,8 @@ import {IERC3525Metadata} from "@solvprotocol/erc-3525/contracts/extensions/IERC
 
 interface INoAV1 is IERC3525Metadata { 
   /**
-     * @dev  Store orginazer create event 
-     * @param organizer Event of orginazer
+     * @dev  Store Organizer create event 
+     * @param organizer Event of Organizer
      * @param eventName Event name 
      * @param eventDescription Description of event
      * @param eventImage Image of event, ipfs or arweave url

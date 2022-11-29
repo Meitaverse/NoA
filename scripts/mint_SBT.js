@@ -12,7 +12,6 @@ async function main() {
   const contractAddress = '0x9A676e781A523b5d0C0e43731313A708CB607508';
   const contractProxy = await ethers.getContractAt(contract.abi, contractAddress);
 
-
   const to_ = await admin.getAddress();
   console.log(
     "to_ Address:",
@@ -20,8 +19,8 @@ async function main() {
   );
 
   const nickName = "Sky Lee";
-  const role = "Orgnizer";
-  const signature = 0x00;
+  const role = "Organizer";
+  let signature = 0x00;
   
 
   let tx = await contractProxy.connect(deployer).mint(nickName, role, to_, signature);

@@ -134,10 +134,6 @@ contract SoulBoundTokenV1 is
         return _mintedTo[tokenId_];
     }
 
-    function getMessageHash(string memory nickName,string memory role, address to) public pure returns(bytes32){
-        return keccak256(abi.encodePacked(nickName, role, to));
-    }
-
 
     function mint(
         string calldata nickName_,
@@ -147,13 +143,7 @@ contract SoulBoundTokenV1 is
     ) public whenNotPaused {
         require(balanceOf(to_)==0, "SBT: Only mint one time per address");
         if (!hasRole(_MINTER_ROLE, msg.sender)) {
-            // bytes32 digest = keccak256(
-            //     abi.encodePacked(
-            //         "\x19\x01",
-            //         keccak256(abi.encode(_MINT_HASH,nickName_,role_,to_))
-            // ));
-            // require(digest.recover(signature_) == _signerAddress, "SBT:Invalid Signature");
-            bytes32 msgHash = getMessageHash(nickName_,role_,to_); 
+            bytes32 msgHash = _getMessageHash(nickName_,role_,to_); 
             bytes32 ethSignedMessageHash = ECDSAUpgradeable.toEthSignedMessageHash(msgHash); 
             require(_verify(ethSignedMessageHash, signature_), "SBT: Invalid signature"); 
         } else {
@@ -238,15 +228,23 @@ contract SoulBoundTokenV1 is
     }
 
     //----internal functions----//
+    function _getMessageHash(string memory nickName,string memory role, address to) internal pure returns(bytes32){
+        return keccak256(abi.encodePacked(nickName, role, to));
+    }
+
     function _verify(bytes32 ethSignedMessageHash, bytes memory signature) internal view returns (bool) {
         return ECDSAUpgradeable.recover(ethSignedMessageHash, signature) == _signerAddress;
     }
 
     function _getSlot(string memory role_) internal pure returns(uint256) {
-        if (keccak256(abi.encodePacked(role_)) == keccak256(abi.encodePacked("Orginazer"))) {
-            return 2;
-        }  else {
-             return 1;
+        if (keccak256(abi.encodePacked(role_)) == keccak256(abi.encodePacked("GuildLeader"))) {
+            return 1;
+        } else if (keccak256(abi.encodePacked(role_)) == keccak256(abi.encodePacked("Organizer"))) {
+             return 2;
+        } else if (keccak256(abi.encodePacked(role_)) == keccak256(abi.encodePacked("User"))) {
+             return 3;
+        } else {
+            return 4;
         }
     }
 
