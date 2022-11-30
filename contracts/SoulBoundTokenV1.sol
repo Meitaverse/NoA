@@ -32,7 +32,6 @@ contract SoulBoundTokenV1 is
     // revertedWithCustomError
     error ZeroAddress();
 
-    bytes32 internal constant _MINT_HASH =  keccak256("Mint(string nickName,string role,address to)");
     bytes32 internal constant _PAUSER_ROLE = keccak256("PAUSER_ROLE");
     bytes32 internal constant _UPGRADER_ROLE = keccak256("UPGRADER_ROLE");
     bytes32 internal constant _MINTER_ROLE = keccak256("MINTER_ROLE");
@@ -134,12 +133,11 @@ contract SoulBoundTokenV1 is
         return _mintedTo[tokenId_];
     }
 
-
     function mint(
-        string calldata nickName_,
-        string calldata role_,
+        string memory nickName_,
+        string memory role_,
         address to_,
-        bytes calldata signature_
+        bytes memory signature_
     ) public whenNotPaused {
         require(balanceOf(to_)==0, "SBT: Only mint one time per address");
         if (!hasRole(_MINTER_ROLE, msg.sender)) {
