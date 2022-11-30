@@ -4,12 +4,13 @@ $ npx hardhat run scripts/mint_SBT.js
 */
 
 const { ethers } = require('hardhat');
-const contract = require('../artifacts/contracts/SoulBoundTokenV1.sol/SoulBoundTokenV1.json');
+const contract = artifacts.require('SoulBoundTokenV1');
+const { SBT_ADDRESS } = require('./addresses.js');
 
 async function main() {
   const [deployer, admin, organizer, user1, user2,user3,user4] = await ethers.getSigners();
 
-  const contractAddress = '0x9A676e781A523b5d0C0e43731313A708CB607508';
+  const contractAddress = SBT_ADDRESS; // '0x9A676e781A523b5d0C0e43731313A708CB607508';
   const contractProxy = await ethers.getContractAt(contract.abi, contractAddress);
 
   const to_ = await admin.getAddress();

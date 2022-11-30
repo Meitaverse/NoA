@@ -1,8 +1,37 @@
-require("@nomicfoundation/hardhat-toolbox");
-require('@openzeppelin/hardhat-upgrades');
-require('dotenv').config();
 
-module.exports = {
+import "@nomicfoundation/hardhat-toolbox";
+import "@openzeppelin/hardhat-upgrades";
+import "@nomiclabs/hardhat-truffle5";
+// import "@typechain/hardhat";
+// import "@nomiclabs/hardhat-ethers";
+// import "solidity-coverage";
+// import "hardhat-gas-reporter";
+// import "@nomiclabs/hardhat-etherscan";
+
+import { HardhatUserConfig } from "hardhat/types";
+
+import { config as dotEnvConfig } from "dotenv";
+dotEnvConfig();
+
+task("accounts", "Prints the list of accounts", async (taskArgs, hre) => {
+  const accounts = await hre.ethers.getSigners();
+
+  for (const account of accounts) {
+    console.log(account.address);
+  }
+});
+
+task("balance", "Prints an account's balance")
+  .addParam("account", "The account's address")
+  .setAction(async (taskArgs, hre) => {
+    const balance = await hre.ethers.provider.getBalance(taskArgs.account);
+
+    console.log(hre.ethers.utils.formatEther(balance), "ETH");
+  });
+
+import("./tasks").catch((e) => console.log("Cannot load tasks", e.toString()));
+
+const config: HardhatUserConfig = {
   solidity: {
     version: "0.8.15",
     settings: {
@@ -25,5 +54,10 @@ module.exports = {
     coverage: {
       url: "http://127.0.0.1:8555", // Coverage launches its own ganache-cli client
     },
-  }
+  },
+  typechain: {
+    outDir: "./typechain",
+  },
 };
+
+export default config;

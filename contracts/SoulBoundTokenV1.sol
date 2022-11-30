@@ -235,7 +235,7 @@ contract SoulBoundTokenV1 is
     }
 
     function _getSlot(string memory role_) internal pure returns(uint256) {
-        if (keccak256(abi.encodePacked(role_)) == keccak256(abi.encodePacked("GuildLeader"))) {
+        if (keccak256(abi.encodePacked(role_)) == keccak256(abi.encodePacked("Contributor"))) {
             return 1;
         } else if (keccak256(abi.encodePacked(role_)) == keccak256(abi.encodePacked("Organizer"))) {
              return 2;

@@ -18,8 +18,6 @@ async function deploySBT(name, symbol, deployer) {
     const SoulBoundTokenV1 = await ethers.getContractFactory('SoulBoundTokenV1');
 
     const organization = "ShowDao";
-    const transferable = false;
-    const mintable = true;
     const ownerToken = deployer.address;
     const minterOfToken = deployer.address;
     const signer = deployer.address;
@@ -29,8 +27,6 @@ async function deploySBT(name, symbol, deployer) {
         symbol, 
         sbtDescriptor.address,
         organization,
-        transferable,
-        mintable,
         ownerToken,
         minterOfToken,
         signer

@@ -4,12 +4,13 @@ $ npx hardhat run scripts/mint.js
 */
 
 const { ethers } = require('hardhat');
-const contract = require('../artifacts/contracts/NoAV1.sol/NoAV1.json');
+const contract = artifacts.require('NoAV1');
+const { NOAV1_ADDRESS } = require('./addresses.js');
 
 async function main() {
   const [deployer, admin, organizer, user1, user2,user3,user4] = await ethers.getSigners();
 
-  const contractAddress = '0x0165878A594ca255338adfa4d48449f69242Eb8F';
+  const contractAddress = NOAV1_ADDRESS;
   const contractProxy = await ethers.getContractAt(contract.abi, contractAddress);
 
 
