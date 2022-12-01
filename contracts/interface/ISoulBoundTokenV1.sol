@@ -6,15 +6,15 @@ import {IERC3525Metadata} from "@solvprotocol/erc-3525/contracts/extensions/IERC
 
 interface ISoulBoundTokenV1 is IERC3525Metadata { 
 
-    function version() external view returns (uint256);
+    // function version() external view returns (uint256);
 
     function svgLogo() external view returns (string memory);
 
-     function nickNameOf(uint256 tokenId) external view returns (string memory);
+    //  function nickNameOf(uint256 tokenId) external view returns (string memory);
 
-     function roleOf(uint256 tokenId) external view returns (string memory);
+    //  function roleOf(uint256 tokenId) external view returns (string memory);
 
-    function organization() external view returns (string memory);
+    // function organization() external view returns (string memory);
 
-    function mintedTo(uint256 tokenId) external view returns (address);
+    // function mintedTo(uint256 tokenId) external view returns (address);
 }

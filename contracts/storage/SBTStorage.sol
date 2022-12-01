@@ -7,20 +7,20 @@ contract SBTStorage  {
     struct TokenInfoData {
         uint256 id;
         address owner;
-        address mintedTo;
+        // address mintedTo;
         string nickName;
         string role;
-        string organization;
+        // string organization;
         string tokenName;
     }
 
    /**
    * @notice Properties of the SBT, which determine the value of slot.
    */
-    struct TokenOwnerInfo {
-        string nickName;
-        string role;
-    }
+    // struct TokenOwnerInfo {
+    //     string nickName;
+    //     string role;
+    // }
 
     struct SlotDetail {
         string nickName;
@@ -29,13 +29,13 @@ contract SBTStorage  {
         uint256 reputation;
     }
     
-    string internal _organization;
+    // string internal _organization;
     address internal _signerAddress;
     string internal _svgLogo;
 
-    mapping(uint256 => TokenOwnerInfo) internal _tokenOwnerInfo;
+    // mapping(uint256 => TokenOwnerInfo) internal _tokenOwnerInfo;
     
-    mapping(uint256 => address) internal _mintedTo;
+    // mapping(uint256 => address) internal _mintedTo;
 
     // slot => slotDetail
     mapping(uint256 => SlotDetail) internal _slotDetails;

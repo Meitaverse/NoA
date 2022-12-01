@@ -12,13 +12,14 @@ import "@openzeppelin/contracts/utils/Base64.sol";
 import {StringConvertor} from "../utils/StringConvertor.sol";
 import "../interface/ISoulBoundTokenV1.sol";
 
-interface IERC20 {
-  function decimals() external view returns (uint8);
-}
+// interface IERC20 {
+//   function decimals() external view returns (uint8);
+// }
 
 contract SBTMetadataDescriptor is IERC3525MetadataDescriptor {
   using StringConvertor for uint256;
   using StringConvertor for bytes;
+ 
 
   function constructContractURI() external view override returns (string memory) {
     ISoulBoundTokenV1 sbt = ISoulBoundTokenV1(msg.sender);
@@ -78,13 +79,15 @@ contract SBTMetadataDescriptor is IERC3525MetadataDescriptor {
           "<svg xmlns='http://www.w3.org/2000/svg' xmlns:xlink='http://www.w3.org/1999/xlink' viewBox='0 0 1200 1600' width='1200' height='1600' style='background-color:white'>",
           _svgLogo(),
           "<text style='font: bold 100px sans-serif;' text-anchor='middle' alignment-baseline='central' x='600' y='1250'>",
-          sbt.nickNameOf(tokenId_),
+          // sbt.nickNameOf(tokenId_),
+          "nameOf",
           "</text>",
           "<text style='font: bold 100px sans-serif;' text-anchor='middle' alignment-baseline='central' x='600' y='1350'>",
-          sbt.roleOf(tokenId_),
+          // sbt.roleOf(tokenId_),
+          "roleOf",
           "</text>",
           "<text style='font: bold 100px sans-serif;' text-anchor='middle' alignment-baseline='central' x='600' y='1450'>",
-          sbt.organization(),
+          "ShowDao",
           "</text>",
           "</svg>"
         )
@@ -98,11 +101,13 @@ contract SBTMetadataDescriptor is IERC3525MetadataDescriptor {
           '{ "id": ',
           Strings.toString(tokenId_),
           ', "nickName": "',
-          sbt.nickNameOf(tokenId_),
+          // sbt.nickNameOf(tokenId_),
+          'nicknameOf',
           '", "role": "',
-          sbt.roleOf(tokenId_),
+          // sbt.roleOf(tokenId_),
+         'roleOf',
           '", "organization": "',
-         sbt.organization(),
+          'ShowDao',
           '", "tokenName": "',
           sbt.name(),
           '", "image": "data:image/svg+xml;base64,',
@@ -119,6 +124,7 @@ contract SBTMetadataDescriptor is IERC3525MetadataDescriptor {
     ISoulBoundTokenV1 sbt = ISoulBoundTokenV1(msg.sender);
     return sbt.svgLogo();
   }
+  
 
   function _slotName(uint256 slot_) internal pure returns (string memory) {
     if (slot_ == 1) {
@@ -151,5 +157,6 @@ contract SBTMetadataDescriptor is IERC3525MetadataDescriptor {
   function _contractImage() internal pure returns (bytes memory) {
     return "http://showdao.io/logo.png";
   }
+
 
 }

@@ -2,11 +2,6 @@
 import "@nomicfoundation/hardhat-toolbox";
 import "@openzeppelin/hardhat-upgrades";
 import "@nomiclabs/hardhat-truffle5";
-// import "@typechain/hardhat";
-// import "@nomiclabs/hardhat-ethers";
-// import "solidity-coverage";
-// import "hardhat-gas-reporter";
-// import "@nomiclabs/hardhat-etherscan";
 
 import { HardhatUserConfig } from "hardhat/types";
 

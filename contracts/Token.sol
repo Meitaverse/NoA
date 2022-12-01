@@ -12,9 +12,10 @@ MyToken合约是一种特殊类型的ERC20合约，它实现了ERC20Votes扩展�
 */
 contract MyToken is ERC20, ERC20Permit, ERC20Votes {
     constructor() ERC20("MyToken", "MTK") ERC20Permit("MyToken") {
-        _mint(msg.sender, 1000);
+        _mint(msg.sender, 1000); //铸造1000枚MTK，同时存入快照
     }
 
+    //ERC20Permit里的，必须要override,当erc20交易之后，投票权重也随之转移
     function _afterTokenTransfer(address from, address to, uint256 amount)
         internal
         override(ERC20, ERC20Votes)
@@ -37,7 +38,7 @@ contract MyToken is ERC20, ERC20Permit, ERC20Votes {
     }
     
     //发行
-    function issueToken(address to, uint256 amount) public{
+    function issueToken(address to, uint256 amount) public {
       _mint(to, amount);
     }
 }
