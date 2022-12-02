@@ -25,8 +25,8 @@ contract SoulBoundTokenV1 is
     // using ECDSAUpgradeable for bytes32;
 
 
-    bytes32 private constant _MINT_TYPEHASH =
-        keccak256("Delegation(string memory nickName,string memory role, address to,uint256 value)");
+    // bytes32 private constant _MINT_TYPEHASH =
+    //     keccak256("Delegation(string memory nickName,string memory role, address to,uint256 value)");
 
     // bytes32 internal constant _PAUSER_ROLE = keccak256("PAUSER_ROLE");
     bytes32 internal constant _UPGRADER_ROLE = keccak256("UPGRADER_ROLE");
@@ -53,18 +53,18 @@ contract SoulBoundTokenV1 is
 
         _setMetadataDescriptor(metadataDescriptor_);
         
-        _signerAddress =  msg.sender;
+        // _signerAddress =  msg.sender;
         
         _grantRole(DEFAULT_ADMIN_ROLE, msg.sender);
-        // _grantRole(_UPGRADER_ROLE, msg.sender);
+        _grantRole(_UPGRADER_ROLE, msg.sender);
         // _grantRole(_MINTER_ROLE, msg.sender);
     }
     
     //===== Public Functions =====//
-    function setSigner(address signerAddress_) external onlyRole(DEFAULT_ADMIN_ROLE) {
-        require(signerAddress_ != address(0), "SBT: invalid signer address");
-        _signerAddress = signerAddress_;
-    }
+    // function setSigner(address signerAddress_) external onlyRole(DEFAULT_ADMIN_ROLE) {
+    //     require(signerAddress_ != address(0), "SBT: invalid signer address");
+    //     _signerAddress = signerAddress_;
+    // }
 
     function setMetadataDescriptor(address metadataDescriptor_) external onlyRole(DEFAULT_ADMIN_ROLE) {
         _setMetadataDescriptor(metadataDescriptor_);
@@ -79,7 +79,7 @@ contract SoulBoundTokenV1 is
     }
         
     function tokenDataOf(uint256 tokenId) public view returns (TokenInfoData memory) {
-        return TokenInfoData(tokenId, ownerOf(tokenId), _tokenDetails[tokenId].nickName, _tokenDetails[tokenId].role, name());
+        return TokenInfoData(tokenId, ownerOf(tokenId), _slotDetails[tokenId].nickName, _slotDetails[tokenId].role, name());
     }
 
     function mint(
@@ -88,42 +88,36 @@ contract SoulBoundTokenV1 is
         uint slot_,
         address to_,
         uint256 value_
-    ) public  { 
-        
+    ) public returns(bool) { 
+        require(hasRole(_MINTER_ROLE, msg.sender), "ERR: not allowed");
         require(balanceOf(to_)==0, "ERR: minted");
-        // if (!hasRole(_MINTER_ROLE, msg.sender)) {
-        //     bytes32 msgHash = _getMessageHash(nickName_,role_,to_); 
-        //     bytes32 ethSignedMessageHash = ECDSAUpgradeable.toEthSignedMessageHash(msgHash); 
-        //     require(_verify(ethSignedMessageHash, signature_), "ERR: Invalid signature"); 
-        //     tokenId_ = _mint(to_, slot_, 1);
-        // } else {
-            require(hasRole(_MINTER_ROLE, msg.sender), "ERR: not allowed");
-            uint256 tokenId_ = _mint(to_, slot_, value_);
-        // }
-
-        _tokenDetails[tokenId_] = TokenDetail({
+        uint256 tokenId_ = _mint(to_, slot_, value_);
+ 
+        _slotDetails[tokenId_] = SlotDetail({
             nickName: nickName_,
             role: role_,
             locked: true,
             reputation: 0
         });
+        return true;
     }
 
-    function mintBySig(
-        string memory nickName_,
-        string memory role_,
-        uint slot_,
-        address to_,
-        uint256 value_,
-        uint256 nonce,
-        uint256 expiry,
-        uint8 v,
-        bytes32 r,
-        bytes32 s
-    ) public {
-        //
-    }
+    // function mintBySig(
+    //     string memory nickName_,
+    //     string memory role_,
+    //     uint slot_,
+    //     address to_,
+    //     uint256 value_,
+    //     uint256 nonce,
+    //     uint256 expiry,
+    //     uint8 v,
+    //     bytes32 r,
+    //     bytes32 s
+    // ) public {
+    //     //
+    // }
 
+ 
     function burn(uint256 tokenId_) public virtual { 
         require(_isApprovedOrOwner(msg.sender, tokenId_), "ERR: not owner nor approved");
         _burn(tokenId_);
@@ -134,13 +128,19 @@ contract SoulBoundTokenV1 is
         _burnValue(tokenId_, burnValue_);
     }
 
+    //===== Modifiers =====//
+
+    modifier isTransferAllowed(uint256 tokenId_) {
+        require(!_slotDetails[tokenId_].locked, "ERR: not allowed");
+        _;
+    }
+
     //-- orverride -- //
     function transferFrom(
         address from_,
         address to_,
         uint256 tokenId_
-    ) public payable virtual override(ERC3525Upgradeable, IERC721)  {
-        require(!_tokenDetails[tokenId_].locked, "ERR: not allowed");
+    ) public payable virtual override(ERC3525Upgradeable, IERC721) isTransferAllowed(tokenId_)   {
         super.transferFrom(from_, to_, tokenId_);
     }
 
@@ -149,8 +149,7 @@ contract SoulBoundTokenV1 is
         address to_,
         uint256 tokenId_,
         bytes memory data_
-    ) public payable virtual override(ERC3525Upgradeable, IERC721) {
-        require(!_tokenDetails[tokenId_].locked, "ERR: not allowed");
+    ) public payable virtual override(ERC3525Upgradeable, IERC721)  isTransferAllowed(tokenId_)  {
         super.safeTransferFrom(from_, to_, tokenId_, data_);
     }
 
@@ -194,7 +193,7 @@ contract SoulBoundTokenV1 is
         return 
             // interfaceId == type(ERC3525Upgradeable).interfaceId ||
             interfaceId == type(ERC3525Votes).interfaceId ||        
-            interfaceId == type(IAccessControlUpgradeable).interfaceId || 
+            // interfaceId == type(IAccessControlUpgradeable).interfaceId || 
             interfaceId == type(IERC165).interfaceId ||
             super.supportsInterface(interfaceId);
     }

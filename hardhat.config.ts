@@ -2,8 +2,7 @@
 import "@nomicfoundation/hardhat-toolbox";
 import "@openzeppelin/hardhat-upgrades";
 import "@nomiclabs/hardhat-truffle5";
-// import "hardhat-contract-sizer";
-
+import "hardhat-contract-sizer";
 
 import { HardhatUserConfig } from "hardhat/types";
 
@@ -54,6 +53,13 @@ const config: HardhatUserConfig = {
   },
   typechain: {
     outDir: "./typechain",
+  },
+  contractSizer: {
+    alphaSort: true,
+    disambiguatePaths: false,
+    runOnCompile: true,
+    strict: true,
+    only: [':SoulBoundTokenV1$',':NoAV1$'],
   },
 };
 
