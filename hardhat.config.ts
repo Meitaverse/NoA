@@ -2,6 +2,8 @@
 import "@nomicfoundation/hardhat-toolbox";
 import "@openzeppelin/hardhat-upgrades";
 import "@nomiclabs/hardhat-truffle5";
+// import "hardhat-contract-sizer";
+
 
 import { HardhatUserConfig } from "hardhat/types";
 

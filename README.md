@@ -93,3 +93,13 @@ query{
 }
 
 ```
+
+## 获取合约大小
+```
+$ yarn add --dev hardhat-contract-sizer
+
+or 
+
+$ npm instal --save-dev hardhat-contract-sizer
+```
+

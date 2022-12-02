@@ -22,7 +22,7 @@ contract SBTStorage  {
     //     string role;
     // }
 
-    struct SlotDetail {
+    struct TokenDetail {
         string nickName;
         string role;
         bool locked;
@@ -38,7 +38,7 @@ contract SBTStorage  {
     // mapping(uint256 => address) internal _mintedTo;
 
     // slot => slotDetail
-    mapping(uint256 => SlotDetail) internal _slotDetails;
+    mapping(uint256 => TokenDetail) internal _tokenDetails;
 
 
 }

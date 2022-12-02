@@ -56,8 +56,8 @@ contract SoulBoundTokenV1 is
         _signerAddress =  msg.sender;
         
         _grantRole(DEFAULT_ADMIN_ROLE, msg.sender);
-        _grantRole(_UPGRADER_ROLE, msg.sender);
-        _grantRole(_MINTER_ROLE, msg.sender);
+        // _grantRole(_UPGRADER_ROLE, msg.sender);
+        // _grantRole(_MINTER_ROLE, msg.sender);
     }
     
     //===== Public Functions =====//
@@ -79,7 +79,7 @@ contract SoulBoundTokenV1 is
     }
         
     function tokenDataOf(uint256 tokenId) public view returns (TokenInfoData memory) {
-        return TokenInfoData(tokenId, ownerOf(tokenId), _slotDetails[tokenId].nickName, _slotDetails[tokenId].role, name());
+        return TokenInfoData(tokenId, ownerOf(tokenId), _tokenDetails[tokenId].nickName, _tokenDetails[tokenId].role, name());
     }
 
     function mint(
@@ -88,7 +88,6 @@ contract SoulBoundTokenV1 is
         uint slot_,
         address to_,
         uint256 value_
-        // bytes memory signature_
     ) public  { 
         
         require(balanceOf(to_)==0, "ERR: minted");
@@ -102,7 +101,7 @@ contract SoulBoundTokenV1 is
             uint256 tokenId_ = _mint(to_, slot_, value_);
         // }
 
-        _slotDetails[tokenId_] = SlotDetail({
+        _tokenDetails[tokenId_] = TokenDetail({
             nickName: nickName_,
             role: role_,
             locked: true,
@@ -135,19 +134,13 @@ contract SoulBoundTokenV1 is
         _burnValue(tokenId_, burnValue_);
     }
 
-    //===== Modifiers =====//
-
-    modifier isTransferAllowed(uint256 tokenId_) {
-        require(!_slotDetails[tokenId_].locked, "ERR: not allowed");
-        _;
-    }
-
     //-- orverride -- //
     function transferFrom(
         address from_,
         address to_,
         uint256 tokenId_
-    ) public payable virtual override(ERC3525Upgradeable, IERC721) isTransferAllowed(tokenId_)   {
+    ) public payable virtual override(ERC3525Upgradeable, IERC721)  {
+        require(!_tokenDetails[tokenId_].locked, "ERR: not allowed");
         super.transferFrom(from_, to_, tokenId_);
     }
 
@@ -156,7 +149,8 @@ contract SoulBoundTokenV1 is
         address to_,
         uint256 tokenId_,
         bytes memory data_
-    ) public payable virtual override(ERC3525Upgradeable, IERC721)  isTransferAllowed(tokenId_)  {
+    ) public payable virtual override(ERC3525Upgradeable, IERC721) {
+        require(!_tokenDetails[tokenId_].locked, "ERR: not allowed");
         super.safeTransferFrom(from_, to_, tokenId_, data_);
     }
 
