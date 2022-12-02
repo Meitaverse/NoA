@@ -7,6 +7,7 @@ import "@openzeppelin/contracts-upgradeable/access/AccessControlUpgradeable.sol"
 import "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
 // import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 // import "@openzeppelin/contracts-upgradeable/utils/cryptography/ECDSAUpgradeable.sol";
+
 import "./interface/ISoulBoundTokenV1.sol";
 import "./extensions/ERC3525Votes.sol";
 import "./storage/SBTStorage.sol";
@@ -23,6 +24,9 @@ contract SoulBoundTokenV1 is
 {
     // using ECDSAUpgradeable for bytes32;
 
+
+    bytes32 private constant _MINT_TYPEHASH =
+        keccak256("Delegation(string memory nickName,string memory role, address to,uint256 value)");
 
     // bytes32 internal constant _PAUSER_ROLE = keccak256("PAUSER_ROLE");
     bytes32 internal constant _UPGRADER_ROLE = keccak256("UPGRADER_ROLE");
@@ -42,6 +46,7 @@ contract SoulBoundTokenV1 is
     ) public virtual initializer {
         __ERC3525_init_unchained(name_, symbol_, 0);
         __ERC3525Permit_init(name_);
+        __ERC3525Permit_init_unchained(name_);
 
          __AccessControl_init();
         //  __Ownable_init();
@@ -85,7 +90,6 @@ contract SoulBoundTokenV1 is
         uint256 value_
         // bytes memory signature_
     ) public  { 
-        uint256 tokenId_;
         
         require(balanceOf(to_)==0, "ERR: minted");
         // if (!hasRole(_MINTER_ROLE, msg.sender)) {
@@ -95,7 +99,7 @@ contract SoulBoundTokenV1 is
         //     tokenId_ = _mint(to_, slot_, 1);
         // } else {
             require(hasRole(_MINTER_ROLE, msg.sender), "ERR: not allowed");
-            tokenId_ = _mint(to_, slot_, value_);
+            uint256 tokenId_ = _mint(to_, slot_, value_);
         // }
 
         _slotDetails[tokenId_] = SlotDetail({
@@ -104,6 +108,21 @@ contract SoulBoundTokenV1 is
             locked: true,
             reputation: 0
         });
+    }
+
+    function mintBySig(
+        string memory nickName_,
+        string memory role_,
+        uint slot_,
+        address to_,
+        uint256 value_,
+        uint256 nonce,
+        uint256 expiry,
+        uint8 v,
+        bytes32 r,
+        bytes32 s
+    ) public {
+        //
     }
 
     function burn(uint256 tokenId_) public virtual { 

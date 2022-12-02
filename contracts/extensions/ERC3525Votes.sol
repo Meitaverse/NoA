@@ -2,12 +2,11 @@
 
 pragma solidity ^0.8.0;
 
-import "./draft-ERC3525Permit.sol";
-import "@openzeppelin/contracts/utils/math/Math.sol";
-import "@openzeppelin/contracts/governance/utils/IVotes.sol";
-import "@openzeppelin/contracts/utils/math/SafeCast.sol";
-import "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
-
+import "./draft-ERC3525PermitUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/utils/math/MathUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/governance/utils/IVotesUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/utils/math/SafeCastUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/utils/cryptography/ECDSAUpgradeable.sol";
 /**
  * @dev Extension of ERC20 to support Compound-like voting and delegation. This version is more generic than Compound's,
  * and supports token supply up to 2^224^ - 1, while COMP is limited to 2^96^ - 1.
@@ -23,7 +22,7 @@ import "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
  *
  * _Available since v4.2._
  */
-abstract contract ERC3525Votes is IVotes, ERC3525PermitUpgradeable {
+abstract contract ERC3525Votes is IVotesUpgradeable, ERC3525PermitUpgradeable {
     struct Checkpoint {
         uint32 fromBlock;
         uint224 votes;
@@ -47,7 +46,7 @@ abstract contract ERC3525Votes is IVotes, ERC3525PermitUpgradeable {
      * @dev Get number of checkpoints for `account`.
      */
     function numCheckpoints(address account) public view virtual returns (uint32) {
-        return SafeCast.toUint32(_checkpoints[account].length);
+        return SafeCastUpgradeable.toUint32(_checkpoints[account].length);
     }
 
     /**
@@ -151,7 +150,7 @@ abstract contract ERC3525Votes is IVotes, ERC3525PermitUpgradeable {
         bytes32 s
     ) public virtual override {
         require(block.timestamp <= expiry, "ERC20Votes: signature expired");
-        address signer = ECDSA.recover(
+        address signer = ECDSAUpgradeable.recover(
             _hashTypedDataV4(keccak256(abi.encode(_DELEGATION_TYPEHASH, delegatee, nonce, expiry))),
             v,
             r,
@@ -250,9 +249,9 @@ abstract contract ERC3525Votes is IVotes, ERC3525PermitUpgradeable {
         newWeight = op(oldWeight, delta);
 
         if (pos > 0 && oldCkpt.fromBlock == block.number) {
-            _unsafeAccess(ckpts, pos - 1).votes = SafeCast.toUint224(newWeight);
+            _unsafeAccess(ckpts, pos - 1).votes = SafeCastUpgradeable.toUint224(newWeight);
         } else {
-            ckpts.push(Checkpoint({fromBlock: SafeCast.toUint32(block.number), votes: SafeCast.toUint224(newWeight)}));
+            ckpts.push(Checkpoint({fromBlock: SafeCastUpgradeable.toUint32(block.number), votes: SafeCastUpgradeable.toUint224(newWeight)}));
         }
     }
 

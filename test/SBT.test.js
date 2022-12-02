@@ -25,11 +25,11 @@ async function deploySBT(name, symbol, deployer) {
     const soulBoundToken = await upgrades.deployProxy(SoulBoundTokenV1, [
         name, 
         symbol, 
-        sbtDescriptor.address,
-        organization,
-        ownerToken,
-        minterOfToken,
-        signer
+        sbtDescriptor.address
+        // organization,
+        // ownerToken,
+        // minterOfToken,
+        // signer
     ], {
       initializer: "initialize",
       kind: "uups",
