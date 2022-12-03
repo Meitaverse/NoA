@@ -2,11 +2,9 @@
 pragma solidity ^0.8.13;
 
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
-// import "@solvprotocol/erc-3525/contracts/ERC3525Upgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/access/AccessControlUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
-// import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
-// import "@openzeppelin/contracts-upgradeable/utils/cryptography/ECDSAUpgradeable.sol";
+// import "@solvprotocol/erc-3525/contracts/ERC3525Upgradeable.sol";
 
 import "./interface/ISoulBoundTokenV1.sol";
 import "./extensions/ERC3525Votes.sol";
@@ -19,16 +17,8 @@ contract SoulBoundTokenV1 is
     ISoulBoundTokenV1,
     AccessControlUpgradeable,
     UUPSUpgradeable
-    // OwnableUpgradeable,
-    // ERC3525Upgradeable
 {
-    // using ECDSAUpgradeable for bytes32;
-
-
-    // bytes32 private constant _MINT_TYPEHASH =
-    //     keccak256("Delegation(string memory nickName,string memory role, address to,uint256 value)");
-
-    // bytes32 internal constant _PAUSER_ROLE = keccak256("PAUSER_ROLE");
+    
     bytes32 internal constant _UPGRADER_ROLE = keccak256("UPGRADER_ROLE");
     bytes32 internal constant _MINTER_ROLE = keccak256("MINTER_ROLE");
 
@@ -47,13 +37,9 @@ contract SoulBoundTokenV1 is
         __ERC3525_init_unchained(name_, symbol_, 0);
         __ERC3525Permit_init(name_);
         __ERC3525Permit_init_unchained(name_);
-
-         __AccessControl_init();
-        //  __Ownable_init();
-
+        __AccessControl_init();
+       
         _setMetadataDescriptor(metadataDescriptor_);
-        
-        // _signerAddress =  msg.sender;
         
         _grantRole(DEFAULT_ADMIN_ROLE, msg.sender);
         _grantRole(_UPGRADER_ROLE, msg.sender);
@@ -61,10 +47,6 @@ contract SoulBoundTokenV1 is
     }
     
     //===== Public Functions =====//
-    // function setSigner(address signerAddress_) external onlyRole(DEFAULT_ADMIN_ROLE) {
-    //     require(signerAddress_ != address(0), "SBT: invalid signer address");
-    //     _signerAddress = signerAddress_;
-    // }
 
     function setMetadataDescriptor(address metadataDescriptor_) external onlyRole(DEFAULT_ADMIN_ROLE) {
         _setMetadataDescriptor(metadataDescriptor_);
@@ -102,22 +84,6 @@ contract SoulBoundTokenV1 is
         return true;
     }
 
-    // function mintBySig(
-    //     string memory nickName_,
-    //     string memory role_,
-    //     uint slot_,
-    //     address to_,
-    //     uint256 value_,
-    //     uint256 nonce,
-    //     uint256 expiry,
-    //     uint8 v,
-    //     bytes32 r,
-    //     bytes32 s
-    // ) public {
-    //     //
-    // }
-
- 
     function burn(uint256 tokenId_) public virtual { 
         require(_isApprovedOrOwner(msg.sender, tokenId_), "ERR: not owner nor approved");
         _burn(tokenId_);
@@ -199,13 +165,6 @@ contract SoulBoundTokenV1 is
     }
 
     //----internal functions----//
-    // function _getMessageHash(string memory nickName,string memory role, address to) internal pure returns(bytes32){
-    //     return keccak256(abi.encodePacked(nickName, role, to));
-    // }
-
-    // function _verify(bytes32 ethSignedMessageHash, bytes memory signature) internal view returns (bool) {
-    //     return ECDSAUpgradeable.recover(ethSignedMessageHash, signature) == _signerAddress;
-    // }
 
     // function _getSlot(string memory role_) internal pure returns(uint256) {
     //     if (keccak256(abi.encodePacked(role_)) == keccak256(abi.encodePacked("Contributor"))) {
