@@ -6,7 +6,8 @@ import "@openzeppelin/contracts-upgradeable/access/AccessControlUpgradeable.sol"
 import "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
 // import "@solvprotocol/erc-3525/contracts/ERC3525Upgradeable.sol";
 
-import "./interface/ISoulBoundTokenV1.sol";
+import "./libraries/Errors.sol";
+import "./interfaces/ISoulBoundTokenV1.sol";
 import "./extensions/ERC3525Votes.sol";
 import "./storage/SBTStorage.sol";
 

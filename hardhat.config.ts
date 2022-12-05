@@ -59,7 +59,7 @@ const config: HardhatUserConfig = {
     disambiguatePaths: false,
     runOnCompile: true,
     strict: true,
-    only: [':SoulBoundTokenV1$',':NoAV1$'],
+    only: [':Manager$',':SoulBoundTokenV1$',':NoAV1$'],
   },
 };
 

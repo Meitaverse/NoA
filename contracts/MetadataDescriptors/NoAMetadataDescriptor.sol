@@ -8,7 +8,7 @@ import {StringsUpgradeable} from "@openzeppelin/contracts-upgradeable/utils/Stri
 import {Base64Upgradeable} from "@openzeppelin/contracts-upgradeable/utils/Base64Upgradeable.sol";
 import {IERC3525MetadataDescriptor} from "@solvprotocol/erc-3525/contracts/periphery/interface/IERC3525MetadataDescriptor.sol";
 import {StringConvertor} from "../utils/StringConvertor.sol";
-import "../interface/INoAV1.sol";
+import "../interfaces/INoAV1.sol";
 
 
 interface IERC20 {

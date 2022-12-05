@@ -8,8 +8,8 @@ import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/utils/cryptography/ECDSAUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
-import "../interface/INoAV1.sol";
-import "../interface/ISoulBoundTokenV1.sol";
+import "../interfaces/INoAV1.sol";
+import "../interfaces/ISoulBoundTokenV1.sol";
 
 contract Manager is 
     Initializable, 
@@ -44,7 +44,7 @@ contract Manager is
 
         _noAV1 = noAV1_;
         _soulBoundTokenV1 = soulBoundTokenV1_;
-        
+
         _setupRole(DEFAULT_ADMIN_ROLE, _msgSender());
         _grantRole(_UPGRADER_ROLE, _msgSender());
         _grantRole(_PAUSER_ROLE, _msgSender());
@@ -61,8 +61,8 @@ contract Manager is
         _signerAddress = signerAddress_;
     }
     
-    //-- external -- //
 
+    //-- external -- //
     function pause() external {
         require(hasRole(_PAUSER_ROLE, _msgSender()), "ERR: Unauthorized");
         _pause();

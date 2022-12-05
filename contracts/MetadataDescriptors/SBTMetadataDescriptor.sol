@@ -10,7 +10,7 @@ import {IERC3525MetadataDescriptor} from "@solvprotocol/erc-3525/contracts/perip
 import "@openzeppelin/contracts/utils/Strings.sol";
 import "@openzeppelin/contracts/utils/Base64.sol";
 import {StringConvertor} from "../utils/StringConvertor.sol";
-import "../interface/ISoulBoundTokenV1.sol";
+import "../interfaces/ISoulBoundTokenV1.sol";
 
 // interface IERC20 {
 //   function decimals() external view returns (uint8);

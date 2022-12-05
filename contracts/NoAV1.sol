@@ -9,27 +9,17 @@ import {SafeMathUpgradeable} from "@openzeppelin/contracts-upgradeable/utils/mat
 import "@openzeppelin/contracts/utils/Counters.sol";
 import "@openzeppelin/contracts/utils/introspection/IERC165.sol";
 
-import "./libralies/MerkleProof.sol";
-import "./interface/INoAV1.sol";
+import {Events} from "./libraries/Events.sol";
+import "./libraries/MerkleProof.sol";
+import "./libraries/Errors.sol";
+import "./interfaces/INoAV1.sol";
 
-contract NoAV1
-    is 
+contract NoAV1 is 
     Initializable,
     INoAV1, 
     ERC3525SlotEnumerableUpgradeable
  {
-/* ========== error definitions ========== */
-// revertedWithCustomError
-  error InsufficientFund();
-  error InsufficientBalance();
-  error ZeroValue();
-  error NotAllowed();
-  error NotAuthorised();
-  error NotSameSlot();
-  error NotSameOwnerOfBothTokenId();
-  error TokenAlreadyExisted(uint256 tokenId);
-  error ZeroAddress();
-  error EventNotExists();
+ 
 
    using Counters for Counters.Counter;
    using SafeMathUpgradeable for uint256;
@@ -56,11 +46,6 @@ contract NoAV1
     mapping(uint256 => SlotDetail) private _slotDetails;
 
     // modifer
-    modifier eventExist(uint256 eventId_) {
-        require(_eventInfos[eventId_].organizer != address(0x0), "NoA: event not exists");
-        _;
-    }
-
     modifier onlyOwner() {
         require(msg.sender == _owner, "NoA: Not owner");
         _;
@@ -81,13 +66,13 @@ contract NoAV1
         address uToken_
     ) public virtual initializer {
         if (metadataDescriptor_ == address(0x0)) {
-            revert ZeroAddress();
+            revert Errors.ZeroAddress();
         }
         if (receiver_ == address(0x0)) {
-            revert ZeroAddress();
+            revert  Errors.ZeroAddress();
         }
         if (uToken_ == address(0x0)) {
-            revert ZeroAddress();
+            revert Errors.ZeroAddress();
         }
 
         __ERC3525_init_unchained(name_, symbol_, 0);
@@ -115,7 +100,9 @@ contract NoAV1
     }
 
     function setMerkleRoot(uint256 eventId_, bytes32 merkleRoot_) public  {
-        require( _eventInfos[eventId_].organizer == msg.sender, "NoA: Not organizer");
+        if ( _eventInfos[eventId_].organizer != msg.sender) {
+            revert Errors.NotAllowed();
+        }
         _eventIdTomerkleRoots[eventId_] = merkleRoot_;
     }
 
@@ -129,13 +116,20 @@ contract NoAV1
         SlotDetail memory slotDetail_,
         address to_,
         bytes32[] calldata proof_
-    ) public payable eventExist(slotDetail_.eventId) returns (bool)  {
-        if (_isWhiteListedMint){
-         require(_isWhiteListed(slotDetail_.eventId, to_, proof_), "NoA: Not allow");
+    ) public payable returns (bool)  {
+        if (_eventInfos[slotDetail_.eventId].organizer == address(0x0)) {
+             revert Errors.EventIdNotExists();
         }
-        require(!_eventHasUser(slotDetail_.eventId, to_), "NoA: Token already claimed!");
 
-        require(tokenSupplyInSlot(slotDetail_.eventId) <  _eventInfos[slotDetail_.eventId].mintMax, "NoA: max exceeded");
+        if(_isWhiteListedMint && !_isWhiteListed(slotDetail_.eventId, to_, proof_)) {
+             revert Errors.NotAllowed();
+        }
+        if(_eventHasUser(slotDetail_.eventId, to_)) { 
+            revert Errors.TokenIsClaimed();
+        }
+        if (tokenSupplyInSlot(slotDetail_.eventId) >=  _eventInfos[slotDetail_.eventId].mintMax) {
+            revert Errors.MaxExceeded();
+        }
 
         uint256 slot = slotDetail_.eventId;  //same slot
         if (_slotDetails[slot].eventId == 0) {
@@ -150,7 +144,7 @@ contract NoAV1
         }
 
         uint256 tokenId_ = ERC3525Upgradeable._mint(to_, slot, 1);
-        emit EventToken(slotDetail_.eventId, tokenId_,  _eventInfos[slotDetail_.eventId].organizer, to_);
+        emit Events.EventToken(slotDetail_.eventId, tokenId_,  _eventInfos[slotDetail_.eventId].organizer, to_);
 
         return true;
     }
@@ -159,9 +153,15 @@ contract NoAV1
     function mintEventToManyUsers(
        SlotDetail memory slotDetail_,
        address[] memory to_
-    ) public payable eventExist(slotDetail_.eventId)  returns (bool) { 
+    ) public payable  returns (bool) { 
+        if (_eventInfos[slotDetail_.eventId].organizer == address(0x0)) {
+             revert Errors.EventIdNotExists();
+        }
 
-        require(tokenSupplyInSlot(slotDetail_.eventId) + to_.length <  _eventInfos[slotDetail_.eventId].mintMax, "NoA: max exceeded");
+        if (tokenSupplyInSlot(slotDetail_.eventId) + to_.length  >=  _eventInfos[slotDetail_.eventId].mintMax) {
+            revert Errors.MaxExceeded();
+        }
+        
         uint256 slot = slotDetail_.eventId;  //same slot
 
         if (_slotDetails[slot].eventId == 0) {
@@ -175,9 +175,12 @@ contract NoAV1
         }
 
         for (uint256 i = 0; i < to_.length; ++i) {
-            require(!_eventHasUser(slotDetail_.eventId, to_[i]), "NoA: Token already claimed!");
+            if(_eventHasUser(slotDetail_.eventId, to_[i])) { 
+                revert Errors.TokenIsClaimed();
+            }
+
             uint256 tokenId_ = ERC3525Upgradeable._mint(to_[i], slot, 1);
-            emit EventToken(slotDetail_.eventId, tokenId_, _eventInfos[slotDetail_.eventId].organizer, to_[i]);
+            emit Events.EventToken(slotDetail_.eventId, tokenId_, _eventInfos[slotDetail_.eventId].organizer, to_[i]);
         }
         return true;
     }
@@ -190,11 +193,19 @@ contract NoAV1
         address to_,
         uint256 value_
     ) public payable returns (bool){
-        require(fromTokenIds_.length >= 2, "NoA: combo must need at least 2 tokens");
+        if(fromTokenIds_.length < 2) {
+            revert Errors.ComboLengthNotEnough();
+        } //, "NoA: combo must need at least 2 tokens");
         //must same slot
         for (uint256 i = 0; i < fromTokenIds_.length; ++i) {
-            require(_isApprovedOrOwner(msg.sender, fromTokenIds_[i]), "NoA: caller is not token owner nor approved");
-            require(eventId_  ==  slotOf(fromTokenIds_[i]), "NoA: event id error");
+            if (!(_isApprovedOrOwner(msg.sender, fromTokenIds_[i]))) {
+                revert Errors.NotOwnerNorApproved();
+            }
+
+            if(eventId_  !=  slotOf(fromTokenIds_[i])) {
+                revert Errors.EventIdNotSame();
+            }
+
             //cant not burn
             transferFrom(fromTokenIds_[i], _receiver, 1);
         }
@@ -216,15 +227,22 @@ contract NoAV1
             tokenId_ = ERC3525Upgradeable._mint(to_, slot, 1);
         }
         _validating(amount_.mul(_price));
-        emit EventToken( _slotDetails[eventId_].eventId, tokenId_, _eventInfos[eventId_].organizer, to_);
+        emit Events.EventToken( _slotDetails[eventId_].eventId, tokenId_, _eventInfos[eventId_].organizer, to_);
         return true;
     }
 
+    // Publications
+    // function publish(uint256 tokenId_, uint256 value_) public virtual {
+
+    // }
+
     function burn(uint256 tokenId_) public virtual {
         uint256 eventId_ = slotOf(tokenId_);
-        require(_isApprovedOrOwner(msg.sender, tokenId_) || msg.sender == _owner, "NoA: caller is not token owner nor approved");
+        if (!(_isApprovedOrOwner(msg.sender, tokenId_) || msg.sender == _owner)) {
+            revert Errors.NotAllowed();
+        } 
         ERC3525Upgradeable._burn(tokenId_);
-        emit BurnToken(eventId_, tokenId_, msg.sender);
+        emit Events.BurnToken(eventId_, tokenId_, msg.sender);
     }
 
     function getSlotDetail(uint256 slot_) public view returns (SlotDetail memory) {
@@ -234,9 +252,12 @@ contract NoAV1
     function getEventInfo(uint256 eventId_)
         public
         view
-        eventExist(eventId_)
         returns (Event memory)
     {
+        if (_eventInfos[eventId_].organizer == address(0x0)) {
+             revert Errors.EventIdNotExists();
+        }
+
         return _eventInfos[eventId_];
     }
 
@@ -286,7 +307,7 @@ contract NoAV1
         _eventInfos[eventId].eventDescription = event_.eventDescription;
         _eventInfos[eventId].mintMax = event_.mintMax;
 
-        emit EventAdded(msg.sender, eventId, event_.eventName, event_.eventDescription, event_.eventImage, event_.mintMax);
+        emit Events.EventAdded(msg.sender, eventId, event_.eventName, event_.eventDescription, event_.eventImage, event_.mintMax);
         return eventId;
     }
 
@@ -303,19 +324,19 @@ contract NoAV1
 
         // if uToken is zero address then see the slot receives ETH (only if it's on Ethereum/Goerli)
         if (_uToken == address(0)) {
-            revert ZeroAddress();
+            revert Errors.ZeroAddress();
         }
 
         if (_uToken != address(0)) {
             if (msg.value > 0) { // just in case the user send ETH accidently
-                revert NotAllowed();
+                revert Errors.NotAllowed();
             }
 
             if (IERC20Upgradeable(_uToken).balanceOf(_msgSender()) < value_) {
-                revert InsufficientBalance();
+                revert Errors.InsufficientBalance();
             }
             if (IERC20Upgradeable(_uToken).allowance(_msgSender(), _receiver) < value_) {
-                revert InsufficientFund();
+                revert Errors.InsufficientFund();
             }
             
             IERC20Upgradeable(_uToken).transferFrom(_msgSender(), _receiver, value_);
@@ -330,7 +351,9 @@ contract NoAV1
         address operator_,
         bool approved_
     ) public payable virtual  {
-        require(_msgSender() == owner_ || isApprovedForAll(owner_, _msgSender()), "NoA: caller is not owner nor approved for all");
+        if (!(_msgSender() == owner_ || isApprovedForAll(owner_, _msgSender()))) {
+            revert Errors.NotAllowed();
+        }
         _setApprovalForSlot(owner_, slot_, operator_, approved_);
     }
 
@@ -348,9 +371,11 @@ contract NoAV1
         address operator_,
         bool approved_
     ) internal virtual {
-        require(owner_ != operator_, "NoA: approve to owner");
+        if (owner_ == operator_) {
+            revert Errors.ApproveToOwner();
+        }
         _slotApprovals[owner_][slot_][operator_] = approved_;
-        emit ApprovalForSlot(owner_, slot_, operator_, approved_);
+        emit Events.ApprovalForSlot(owner_, slot_, operator_, approved_);
     }
 
 
