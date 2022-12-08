@@ -8,8 +8,8 @@ import {StringsUpgradeable} from "@openzeppelin/contracts-upgradeable/utils/Stri
 import {Base64Upgradeable} from "@openzeppelin/contracts-upgradeable/utils/Base64Upgradeable.sol";
 import {IERC3525MetadataDescriptor} from "@solvprotocol/erc-3525/contracts/periphery/interface/IERC3525MetadataDescriptor.sol";
 import {StringConvertor} from "../utils/StringConvertor.sol";
-import "../interfaces/INoAV1.sol";
-
+import "../interfaces/IDerivativeNFTV1.sol";
+import {DataTypes} from '../libraries/DataTypes.sol';
 
 interface IERC20 {
   function decimals() external view returns (uint8);
@@ -20,7 +20,7 @@ contract NoAMetadataDescriptor is IERC3525MetadataDescriptor {
   using StringConvertor for bytes;
 
   function constructContractURI() external view override returns (string memory) {
-    INoAV1 dao = INoAV1(msg.sender);
+    IDerivativeNFTV1 dao = IDerivativeNFTV1(msg.sender);
     return 
       string(
         abi.encodePacked(
@@ -73,7 +73,7 @@ contract NoAMetadataDescriptor is IERC3525MetadataDescriptor {
   }
 
   function constructTokenURI(uint256 tokenId_) external view override returns (string memory) {
-    INoAV1 dao = INoAV1(msg.sender);
+    IDerivativeNFTV1 dao = IDerivativeNFTV1(msg.sender);
     return 
       string(
         abi.encodePacked(
@@ -102,27 +102,27 @@ contract NoAMetadataDescriptor is IERC3525MetadataDescriptor {
   }
 
   function _slotName(uint256 slot_) internal view returns (string memory) {
-    INoAV1 dao = INoAV1(msg.sender);
-    INoAV1.SlotDetail memory slotDetail = dao.getSlotDetail(slot_);
+    IDerivativeNFTV1 dao = IDerivativeNFTV1(msg.sender);
+    DataTypes.SlotDetail memory slotDetail = dao.getSlotDetail(slot_);
     return slotDetail.name;
   }
 
   function _slotDescription(uint256 slot_) internal view returns (string memory) {
-    INoAV1 dao = INoAV1(msg.sender);
-    INoAV1.SlotDetail memory slotDetail = dao.getSlotDetail(slot_);
+    IDerivativeNFTV1 dao = IDerivativeNFTV1(msg.sender);
+    DataTypes.SlotDetail memory slotDetail = dao.getSlotDetail(slot_);
     return slotDetail.description;
   }
 
   function _slotImage(uint256 slot_) internal view returns (string memory) {
-    INoAV1 dao = INoAV1(msg.sender);
-    INoAV1.SlotDetail memory slotDetail = dao.getSlotDetail(slot_);
+    IDerivativeNFTV1 dao = IDerivativeNFTV1(msg.sender);
+    DataTypes.SlotDetail memory slotDetail = dao.getSlotDetail(slot_);
 
     return string(slotDetail.image);
   }
 
   function _sloteventMetadataURI(uint256 slot_) internal view returns (string memory) {
-    INoAV1 dao = INoAV1(msg.sender);
-    INoAV1.SlotDetail memory slotDetail = dao.getSlotDetail(slot_);
+    IDerivativeNFTV1 dao = IDerivativeNFTV1(msg.sender);
+    DataTypes.SlotDetail memory slotDetail = dao.getSlotDetail(slot_);
 
     return string(slotDetail.eventMetadataURI);
   }
@@ -132,15 +132,15 @@ contract NoAMetadataDescriptor is IERC3525MetadataDescriptor {
      */
 
   function _slotProperties(uint256 slot_) internal pure returns (string memory) {
-    // INoAV1 dao = INoAV1(msg.sender);
-    // INoAV1.SlotDetail memory slotDetail = dao.getSlotDetail(slot_);
+    // IDerivativeNFTV1 dao = IDerivativeNFTV1(msg.sender);
+    // DataTypes.SlotDetail memory slotDetail = dao.getSlotDetail(slot_);
     slot_;
     return "";
             
   }
 
   function _tokenName(uint256 tokenId_) internal view returns (string memory) {
-    INoAV1 dao = INoAV1(msg.sender);
+    IDerivativeNFTV1 dao = IDerivativeNFTV1(msg.sender);
     uint256 slot = dao.slotOf(tokenId_);
     // solhint-disable-next-line
     return 
@@ -153,25 +153,25 @@ contract NoAMetadataDescriptor is IERC3525MetadataDescriptor {
   }
 
   function _tokenDescription(uint256 tokenId_) internal view returns (string memory) {
-    INoAV1 dao = INoAV1(msg.sender);
+    IDerivativeNFTV1 dao = IDerivativeNFTV1(msg.sender);
     uint256 slot = dao.slotOf(tokenId_);
-    INoAV1.SlotDetail memory sd = dao.getSlotDetail(slot);
+    DataTypes.SlotDetail memory sd = dao.getSlotDetail(slot);
     return sd.description;
   }
 
   function _tokenImage(uint256 tokenId_) internal view returns (string memory) {
-     INoAV1 dao = INoAV1(msg.sender);
+     IDerivativeNFTV1 dao = IDerivativeNFTV1(msg.sender);
     uint256 slot = dao.slotOf(tokenId_);
-    INoAV1.SlotDetail memory sd = dao.getSlotDetail(slot);
+    DataTypes.SlotDetail memory sd = dao.getSlotDetail(slot);
     return sd.image;
   }
 
   function _tokenProperties(uint256 tokenId_) internal view returns (string memory) {
     
-    INoAV1 dao = INoAV1(msg.sender);
+    IDerivativeNFTV1 dao = IDerivativeNFTV1(msg.sender);
     uint256 slot = dao.slotOf(tokenId_);
-    INoAV1.SlotDetail memory slotDetail = dao.getSlotDetail(slot);
-    INoAV1.Event memory event_ = dao.getEventInfo(slotDetail.eventId);
+    DataTypes.SlotDetail memory slotDetail = dao.getSlotDetail(slot);
+    DataTypes.Event memory event_ = dao.getEventInfo(slotDetail.eventId);
 
     return 
       string(

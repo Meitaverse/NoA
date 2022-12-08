@@ -22,5 +22,30 @@ library Errors {
   error ApproveToOwner();
   error ComboLengthNotEnough();
   error EventIdNotSame();
+  error Initialized();
+  error InvalidParameter();
+  error NotSoulBoundTokenOwner();
+  error CannotInitImplementation();
+  error NotGovernance();
+  error NotManager();
+  error EmergencyAdminCannotUnpause();
+  error NotGovernanceOrEmergencyAdmin();
+  error PublicationDoesNotExist();
+  error ArrayMismatch();
+  error FollowInvalid();
 
+  // Module Errors
+  error InitParamsInvalid();
+  error ModuleDataMismatch();
+  error TokenDoesNotExist();
+
+  // MultiState Errors
+  error Paused();
+  error PublishingPaused();
+
+
+  //Receiver Errors
+  error RevertWithMessage();
+  error RevertWithoutMessage();
+  // error Panic();
 }

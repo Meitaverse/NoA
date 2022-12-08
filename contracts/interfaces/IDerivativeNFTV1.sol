@@ -3,35 +3,30 @@
 pragma solidity ^0.8.0;
 
 import {IERC3525Metadata} from "@solvprotocol/erc-3525/contracts/extensions/IERC3525Metadata.sol";
+import {DataTypes} from '../libraries/DataTypes.sol';
 
-interface INoAV1 is IERC3525Metadata { 
-  /**
-     * @dev  Store Organizer create event 
-     * @param organizer Event of Organizer
-     * @param eventName Event name 
-     * @param eventDescription Description of event
-     * @param eventImage Image of event, ipfs or arweave url
-     * @param mintMax Max count can mint
-     */
-  struct Event {
-    address organizer;
-    string eventName;
-    string eventDescription;
-    string eventImage;
-    string eventMetadataURI;
-    uint256 mintMax;
-  }
+interface IDerivativeNFTV1 is IERC3525Metadata { 
   
-   /**
-   * @notice Properties of the slot, which determine the value of slot.
-   */
-  struct SlotDetail {
-    string name;
-    string description;
-    string image;
-    uint256 eventId;
-    string eventMetadataURI;
-  }
+    /**
+     * @notice Initializes the DerivativeNFT, setting the initial governance address as well as the name and symbol in
+     * the NoABase contract.
+     *
+     * @param name_ The name to set for the derivative NFT.
+     * @param symbol_ The symbol to set for the derivative NFT.
+     * @param  soulBoundTokenId_ The token id of the SoulBoundToken.
+     * @param metadataDescriptor_ The Descriptor address to set.
+     * @param receiver_ The DerivativeNFT receiver address to set.
+     * @param governance_ The governance address to set.
+     */
+    function initialize(
+        string memory name_,
+        string memory symbol_,
+        uint256 soulBoundTokenId_,
+        address metadataDescriptor_,
+        address receiver_,
+        address governance_
+    ) external;
+
 
     /**
      * @notice Approve or disapprove an operator to manage all of `_owner`'s tokens with the
@@ -73,13 +68,11 @@ interface INoAV1 is IERC3525Metadata {
    *
    * @param  slotDetail_ The slot detail.
    * @param to_ is the address that can receive a new token.
-   * @param proof_ is the array of whitelist merkle proof
    * @return bool whether the call correctly returned true.
    */
   function mint(
-    SlotDetail memory slotDetail_,
-    address to_,
-    bytes32[] calldata proof_
+    DataTypes.SlotDetail memory slotDetail_,
+    address to_
   ) external payable returns (bool);
 
 
@@ -110,13 +103,43 @@ interface INoAV1 is IERC3525Metadata {
    * @param eventId_ The event id
    * @return Event.
    */
-  function getEventInfo(uint256 eventId_) external view returns (Event memory);
+  function getEventInfo(uint256 eventId_) external view returns (DataTypes.Event memory);
 
   /**
    * @notice get slot detail.
    * @param slot_ The slot id
    * @return Event.
    */
-  function getSlotDetail(uint256 slot_) external view returns (SlotDetail memory);
+  function getSlotDetail(uint256 slot_) external view returns (DataTypes.SlotDetail memory);
+
+
+
+    /**
+     * @notice Sets the privileged governance role. This function can only be called by the current governance
+     * address.
+     *
+     * @param newGovernance The new governance address to set.
+     */
+    function setGovernance(address newGovernance) external;
+
+    /**
+     * @notice Sets the emergency admin, which is a permissioned role able to set the protocol state. This function
+     * can only be called by the governance address.
+     *
+     * @param newEmergencyAdmin The new emergency admin address to set.
+     */
+    function setEmergencyAdmin(address newEmergencyAdmin) external;
+
+    /**
+     * @notice Sets the protocol state to either a global pause, a publishing pause or an unpaused state. This function
+     * can only be called by the governance address or the emergency admin address.
+     *
+     * Note that this reverts if the emergency admin calls it if:
+     *      1. The emergency admin is attempting to unpause.
+     *      2. The emergency admin is calling while the protocol is already paused.
+     *
+     * @param newState The state to set, as a member of the ProtocolState enum.
+     */
+    function setState(DataTypes.ProtocolState newState) external;
 
 }

@@ -35,6 +35,7 @@ const config: HardhatUserConfig = {
         enabled: true,
         runs: 200,
       },
+      viaIR: false,
     },
   },
   defaultNetwork: "localhost",
@@ -59,7 +60,7 @@ const config: HardhatUserConfig = {
     disambiguatePaths: false,
     runOnCompile: true,
     strict: true,
-    only: [':Manager$',':SoulBoundTokenV1$',':NoAV1$'],
+    only: [':Manager$',':Incubator$',':SoulBoundTokenV1$',':DerivativeNFTV1$', ':NFTDerivativeProtocolTokenV1$'],
   },
 };
 
