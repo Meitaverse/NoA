@@ -9,6 +9,7 @@ import {Base64Upgradeable} from "@openzeppelin/contracts-upgradeable/utils/Base6
 import {IERC3525MetadataDescriptor} from "@solvprotocol/erc-3525/contracts/periphery/interface/IERC3525MetadataDescriptor.sol";
 import {StringConvertor} from "../utils/StringConvertor.sol";
 import "../interface/INoAV1.sol";
+import {IERC3525Metadata} from "@solvprotocol/erc-3525/contracts/extensions/IERC3525Metadata.sol";
 
 interface IERC20 {
   function decimals() external view returns (uint8);
@@ -19,7 +20,7 @@ contract NoAMetadataDescriptor is IERC3525MetadataDescriptor {
   using StringConvertor for bytes;
 
   function constructContractURI() external view override returns (string memory) {
-    INoAV1 dao = INoAV1(msg.sender);
+    IERC3525Metadata dao = IERC3525Metadata(msg.sender);
     return 
       string(
         abi.encodePacked(
@@ -72,7 +73,8 @@ contract NoAMetadataDescriptor is IERC3525MetadataDescriptor {
   }
 
   function constructTokenURI(uint256 tokenId_) external view override returns (string memory) {
-    INoAV1 dao = INoAV1(msg.sender);
+    // INoAV1 dao = INoAV1(msg.sender);
+    IERC3525Metadata dao = IERC3525Metadata(msg.sender);
     return 
       string(
         abi.encodePacked(
@@ -139,7 +141,8 @@ contract NoAMetadataDescriptor is IERC3525MetadataDescriptor {
   }
 
   function _tokenName(uint256 tokenId_) internal view returns (string memory) {
-    INoAV1 dao = INoAV1(msg.sender);
+    // INoAV1 dao = INoAV1(msg.sender);
+    IERC3525Metadata dao = IERC3525Metadata(msg.sender);
     uint256 slot = dao.slotOf(tokenId_);
     // solhint-disable-next-line
     return 
@@ -153,14 +156,15 @@ contract NoAMetadataDescriptor is IERC3525MetadataDescriptor {
 
   function _tokenDescription(uint256 tokenId_) internal view returns (string memory) {
     INoAV1 dao = INoAV1(msg.sender);
-    uint256 slot = dao.slotOf(tokenId_);
+   
+    uint256 slot = IERC3525Metadata(msg.sender).slotOf(tokenId_);
     INoAV1.SlotDetail memory sd = dao.getSlotDetail(slot);
     return sd.description;
   }
 
   function _tokenImage(uint256 tokenId_) internal view returns (string memory) {
      INoAV1 dao = INoAV1(msg.sender);
-    uint256 slot = dao.slotOf(tokenId_);
+    uint256 slot = IERC3525Metadata(msg.sender).slotOf(tokenId_);
     INoAV1.SlotDetail memory sd = dao.getSlotDetail(slot);
     return sd.image;
   }
@@ -168,7 +172,7 @@ contract NoAMetadataDescriptor is IERC3525MetadataDescriptor {
   function _tokenProperties(uint256 tokenId_) internal view returns (string memory) {
     
     INoAV1 dao = INoAV1(msg.sender);
-    uint256 slot = dao.slotOf(tokenId_);
+    uint256 slot = IERC3525Metadata(msg.sender).slotOf(tokenId_);
     INoAV1.SlotDetail memory slotDetail = dao.getSlotDetail(slot);
     INoAV1.Event memory event_ = dao.getEventInfo(slotDetail.eventId);
 

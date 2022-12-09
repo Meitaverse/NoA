@@ -2,9 +2,7 @@
 
 pragma solidity ^0.8.0;
 
-import {IERC3525Metadata} from "@solvprotocol/erc-3525/contracts/extensions/IERC3525Metadata.sol";
-
-interface INoAV1 is IERC3525Metadata { 
+interface INoAV1 {
   /**
      * @dev  Store orginazer create event 
      * @param organizer Event of orginazer

@@ -1,5 +1,6 @@
 require("@nomicfoundation/hardhat-toolbox");
 require('@openzeppelin/hardhat-upgrades');
+require('hardhat-gas-reporter');
 
 module.exports = {
   solidity: {
@@ -24,5 +25,14 @@ module.exports = {
     coverage: {
       url: "http://127.0.0.1:8555", // Coverage launches its own ganache-cli client
     },
-  }
+  },
+  gasReporter: {
+    enabled: true,
+    currency: "USD", //USD
+    showTimeSpent: true,
+    showMethodSig: true,
+    coinmarketcap: "b7d62a59-7758-4be6-8438-1a5f7a705989",
+    gasPriceApi:
+      "https://api.polygonscan.com/api?module=proxy&action=eth_gasPrice",
+  },
 };

@@ -10,11 +10,8 @@ import "@openzeppelin/contracts/utils/Counters.sol";
 import "./libralies/MerkleProof.sol";
 import "./interface/INoAV1.sol";
 
-contract NoAV1
-    is 
-    Initializable,
-    INoAV1, 
-    ERC3525SlotEnumerableUpgradeable
+
+contract NoAV1 is Initializable, INoAV1, ERC3525SlotEnumerableUpgradeable
  {
 /* ========== error definitions ========== */
 // revertedWithCustomError

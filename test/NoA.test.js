@@ -83,8 +83,8 @@ describe('NoA', () => {
     //console.log('NoA deployed to:',  this.token.address);
   })
 
-  // shouldBehaveLikeERC3525('NoA');
-  // shouldBehaveLikeERC3525Metadata('NoAMetadata');
+  shouldBehaveLikeERC3525('NoA');
+  shouldBehaveLikeERC3525Metadata('NoAMetadata');
   shouldBehaveLikeERC3525SlotEnumerable('NoASlotEnumerable');
   
 
