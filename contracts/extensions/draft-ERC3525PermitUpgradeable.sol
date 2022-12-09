@@ -43,10 +43,12 @@ abstract contract ERC3525PermitUpgradeable is Initializable, ERC3525Upgradeable,
      *
      * It's a good idea to use the same `name` that is defined as the ERC20 token name.
      */
+    // solhint-disable-next-line func-name-mixedcase
     function __ERC3525Permit_init(string memory name) internal onlyInitializing {
         __EIP712_init_unchained(name, "1");
     }
-
+    
+    // solhint-disable-next-line func-name-mixedcase
     function __ERC3525Permit_init_unchained(string memory) internal onlyInitializing {}
 
     /**

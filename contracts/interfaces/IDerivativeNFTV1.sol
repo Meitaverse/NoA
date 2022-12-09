@@ -2,10 +2,9 @@
 
 pragma solidity ^0.8.0;
 
-import {IERC3525Metadata} from "@solvprotocol/erc-3525/contracts/extensions/IERC3525Metadata.sol";
 import {DataTypes} from '../libraries/DataTypes.sol';
 
-interface IDerivativeNFTV1 is IERC3525Metadata { 
+interface IDerivativeNFTV1 { 
   
     /**
      * @notice Initializes the DerivativeNFT, setting the initial governance address as well as the name and symbol in

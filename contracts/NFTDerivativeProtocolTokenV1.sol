@@ -21,8 +21,9 @@ contract NFTDerivativeProtocolTokenV1 is INFTDerivativeProtocolTokenV1, ERC3525S
     using SafeMathUpgradeable for uint256;
 
     bool private _initialized;
-
-    address internal MANAGER;
+    
+    // solhint-disable-next-line var-name-mixedcase
+    address internal _MANAGER;
 
     // @dev owner => slot => operator => approved
     mapping(address => mapping(uint256 => mapping(address => bool))) private _slotApprovals;
@@ -52,7 +53,7 @@ contract NFTDerivativeProtocolTokenV1 is INFTDerivativeProtocolTokenV1, ERC3525S
         _initialized = true;
 
         __ERC3525_init_unchained(name, symbol, decimals);
-        MANAGER = manager;
+        _MANAGER = manager;
     }
 
     function mint(address mintTo, uint256 tokenId, uint256 slot, uint256 value) external payable onlyManager {
@@ -102,7 +103,7 @@ contract NFTDerivativeProtocolTokenV1 is INFTDerivativeProtocolTokenV1, ERC3525S
     /// ****************************
 
     function _validateCallerIsManager() internal view {
-        if (msg.sender != MANAGER) revert Errors.NotManager();
+        if (msg.sender != _MANAGER) revert Errors.NotManager();
     }
 
     uint256[50] private __gap;

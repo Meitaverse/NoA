@@ -2,7 +2,8 @@
 
 pragma solidity ^0.8.13;
 
-import "@solvprotocol/erc-3525/contracts/ERC3525SlotEnumerableUpgradeable.sol";
+// import "@solvprotocol/erc-3525/contracts/ERC3525SlotEnumerableUpgradeable.sol";
+import "@solvprotocol/erc-3525/contracts/IERC3525.sol";
 import "@solvprotocol/erc-3525/contracts/ERC3525Upgradeable.sol";
 import {IERC20Upgradeable} from "@openzeppelin/contracts-upgradeable/token/ERC20/IERC20Upgradeable.sol";
 import {SafeMathUpgradeable} from "@openzeppelin/contracts-upgradeable/utils/math/SafeMathUpgradeable.sol";
@@ -21,7 +22,7 @@ import {IDerivativeNFTV1} from "./interfaces/IDerivativeNFTV1.sol";
  * 
  * , and includes built-in governance power and delegation mechanisms.
  */
-contract DerivativeNFTV1 is NoAMultiState, IDerivativeNFTV1, ERC3525SlotEnumerableUpgradeable {
+contract DerivativeNFTV1 is NoAMultiState, IDerivativeNFTV1, ERC3525Upgradeable {
     using Counters for Counters.Counter;
     using SafeMathUpgradeable for uint256;
 
@@ -33,15 +34,17 @@ contract DerivativeNFTV1 is NoAMultiState, IDerivativeNFTV1, ERC3525SlotEnumerab
     address internal _governance;
     address internal _emergencyAdmin;
     address internal _receiver;
-
-    address private immutable MANAGER;
-    address private immutable SOULBOUNDTOKEN;
+    
+    // solhint-disable-next-line var-name-mixedcase
+    address private immutable _MANAGER;
+    // solhint-disable-next-line var-name-mixedcase
+    address private immutable _SOULBOUNDTOKEN;
 
     uint256 internal _royaltyBasisPoints; //版税佣金点数
 
     // bytes4(keccak256('royaltyInfo(uint256,uint256)')) == 0x2a55205a
-    bytes4 internal constant INTERFACE_ID_ERC2981 = 0x2a55205a;
-    uint16 internal constant BASIS_POINTS = 10000;
+    bytes4 internal constant _INTERFACE_ID_ERC2981 = 0x2a55205a;
+    uint16 internal constant _BASIS_POINTS = 10000;
 
     // @dev owner => slot => operator => approved
     mapping(address => mapping(uint256 => mapping(address => bool))) private _slotApprovals;
@@ -78,8 +81,8 @@ contract DerivativeNFTV1 is NoAMultiState, IDerivativeNFTV1, ERC3525SlotEnumerab
     // call the `initialize` method on the implementation (this contract)
     constructor(address manager, address soulBoundToken) initializer {
         if (manager == address(0)) revert Errors.InitParamsInvalid();
-        MANAGER = manager;
-        SOULBOUNDTOKEN = soulBoundToken;
+        _MANAGER = manager;
+        _SOULBOUNDTOKEN = soulBoundToken;
     }
 
     function initialize(
@@ -124,10 +127,11 @@ contract DerivativeNFTV1 is NoAMultiState, IDerivativeNFTV1, ERC3525SlotEnumerab
         if (_eventHasUser(slotDetail_.eventId, to_)) {
             revert Errors.TokenIsClaimed();
         }
-
-        if (tokenSupplyInSlot(slotDetail_.eventId) >= _eventInfos[slotDetail_.eventId].mintMax) {
-            revert Errors.MaxExceeded();
-        }
+        
+        //TODO
+        // if (tokenSupplyInSlot(slotDetail_.eventId) >= _eventInfos[slotDetail_.eventId].mintMax) {
+        //     revert Errors.MaxExceeded();
+        // }
 
         uint256 slot = slotDetail_.eventId; //same slot
         if (_slotDetails[slot].eventId == 0) {
@@ -154,10 +158,11 @@ contract DerivativeNFTV1 is NoAMultiState, IDerivativeNFTV1, ERC3525SlotEnumerab
         if (_eventInfos[slotDetail_.eventId].organizer == address(0x0)) {
             revert Errors.EventIdNotExists();
         }
-
-        if (tokenSupplyInSlot(slotDetail_.eventId) + to_.length >= _eventInfos[slotDetail_.eventId].mintMax) {
-            revert Errors.MaxExceeded();
-        }
+        
+        //TODO
+        // if (tokenSupplyInSlot(slotDetail_.eventId) + to_.length >= _eventInfos[slotDetail_.eventId].mintMax) {
+        //     revert Errors.MaxExceeded();
+        // }
 
         uint256 slot = slotDetail_.eventId; //same slot
 
@@ -257,13 +262,11 @@ contract DerivativeNFTV1 is NoAMultiState, IDerivativeNFTV1, ERC3525SlotEnumerab
     //------override------------//
     function supportsInterface(
         bytes4 interfaceId
-    ) public view virtual override(IERC165, ERC3525SlotEnumerableUpgradeable) returns (bool) {
+    ) public view virtual override returns (bool) {
         return
-            interfaceId == type(IERC3525SlotEnumerable).interfaceId ||
-            interfaceId == INTERFACE_ID_ERC2981 ||
+            interfaceId == _INTERFACE_ID_ERC2981 ||
             super.supportsInterface(interfaceId);
     }
-
 
     //----internal functions----//
     function _eventHasUser(uint256 eventId_, address user_) internal view returns (bool) {
@@ -336,8 +339,8 @@ contract DerivativeNFTV1 is NoAMultiState, IDerivativeNFTV1, ERC3525SlotEnumerab
      *                           represents 0.01%.
      */
     function setRoyalty(uint256 royaltyBasisPoints) external {
-        if (IERC3525(SOULBOUNDTOKEN).ownerOf(_soulBoundTokenId) == msg.sender) {
-            if (royaltyBasisPoints > BASIS_POINTS) {
+        if (IERC3525(_SOULBOUNDTOKEN).ownerOf(_soulBoundTokenId) == msg.sender) {
+            if (royaltyBasisPoints > _BASIS_POINTS) {
                 revert Errors.InvalidParameter();
             } else {
                 _royaltyBasisPoints = royaltyBasisPoints;
@@ -358,7 +361,7 @@ contract DerivativeNFTV1 is NoAMultiState, IDerivativeNFTV1, ERC3525SlotEnumerab
      * payment amount for the given sale price.
      */
     function royaltyInfo(uint256 tokenId, uint256 salePrice) external view returns (address, uint256) {
-        return (IERC3525(SOULBOUNDTOKEN).ownerOf(_soulBoundTokenId), (salePrice * _royaltyBasisPoints) / BASIS_POINTS);
+        return (IERC3525(_SOULBOUNDTOKEN).ownerOf(_soulBoundTokenId), (salePrice * _royaltyBasisPoints) / _BASIS_POINTS);
     }
 
     /// ***********************
@@ -401,7 +404,7 @@ contract DerivativeNFTV1 is NoAMultiState, IDerivativeNFTV1, ERC3525SlotEnumerab
     }
 
     function _validateCallerIsManager() internal view {
-        if (msg.sender != MANAGER) revert Errors.NotManager();
+        if (msg.sender != _MANAGER) revert Errors.NotManager();
     }
 
 

@@ -4,6 +4,8 @@ pragma solidity ^0.8.13;
 
 import "hardhat/console.sol";
 
+import {IERC3525Metadata} from "@solvprotocol/erc-3525/contracts/extensions/IERC3525Metadata.sol";
+import "@solvprotocol/erc-3525/contracts/IERC3525.sol";
 import {StringsUpgradeable} from "@openzeppelin/contracts-upgradeable/utils/StringsUpgradeable.sol";
 import {Base64Upgradeable} from "@openzeppelin/contracts-upgradeable/utils/Base64Upgradeable.sol";
 import {IERC3525MetadataDescriptor} from "@solvprotocol/erc-3525/contracts/periphery/interface/IERC3525MetadataDescriptor.sol";
@@ -22,7 +24,6 @@ contract SBTMetadataDescriptor is IERC3525MetadataDescriptor {
  
 
   function constructContractURI() external view override returns (string memory) {
-    ISoulBoundTokenV1 sbt = ISoulBoundTokenV1(msg.sender);
     return 
       string(
         abi.encodePacked(
@@ -31,13 +32,13 @@ contract SBTMetadataDescriptor is IERC3525MetadataDescriptor {
           Base64Upgradeable.encode(
             abi.encodePacked(
               '{"name":"', 
-              sbt.name(),
+              IERC3525Metadata(msg.sender).name(),
               '","description":"',
               _contractDescription(),
               '","image":"',
               _contractImage(),
               '","valueDecimals":"', 
-              uint256(sbt.valueDecimals()).toString(),
+              uint256(IERC3525Metadata(msg.sender).valueDecimals()).toString(),
               '"}'
             )
           )
@@ -109,7 +110,7 @@ contract SBTMetadataDescriptor is IERC3525MetadataDescriptor {
           '", "organization": "',
           'ShowDao',
           '", "tokenName": "',
-          sbt.name(),
+          IERC3525Metadata(msg.sender).name(),
           '", "image": "data:image/svg+xml;base64,',
           svg,
           '" }'

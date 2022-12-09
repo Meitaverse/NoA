@@ -111,7 +111,7 @@ abstract contract ERC3525Votes is IVotesUpgradeable, ERC3525PermitUpgradeable {
         uint256 high = length;
 
         if (length > 5) {
-            uint256 mid = length - Math.sqrt(length);
+            uint256 mid = length - MathUpgradeable.sqrt(length);
             if (_unsafeAccess(ckpts, mid).fromBlock > blockNumber) {
                 high = mid;
             } else {
@@ -120,7 +120,7 @@ abstract contract ERC3525Votes is IVotesUpgradeable, ERC3525PermitUpgradeable {
         }
 
         while (low < high) {
-            uint256 mid = Math.average(low, high);
+            uint256 mid = MathUpgradeable.average(low, high);
             if (_unsafeAccess(ckpts, mid).fromBlock > blockNumber) {
                 high = mid;
             } else {

@@ -4,14 +4,13 @@ pragma solidity ^0.8.13;
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import "@openzeppelin/contracts-upgradeable/access/AccessControlUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
-// import "@solvprotocol/erc-3525/contracts/ERC3525Upgradeable.sol";
+import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
 
 import "./libraries/DataTypes.sol";
 import "./libraries/Errors.sol";
 import "./storage/SBTStorage.sol";
 import "./interfaces/ISoulBoundTokenV1.sol";
 import "./extensions/ERC3525Votes.sol";
-
 
 contract SoulBoundTokenV1 is
     Initializable,
@@ -114,7 +113,7 @@ contract SoulBoundTokenV1 is
         address from_,
         address to_,
         uint256 tokenId_
-    ) public payable virtual override(ERC3525Upgradeable, IERC721) isTransferAllowed(tokenId_) {
+    ) public payable virtual override isTransferAllowed(tokenId_) {
         super.transferFrom(from_, to_, tokenId_);
     }
 
@@ -123,13 +122,13 @@ contract SoulBoundTokenV1 is
         address to_,
         uint256 tokenId_,
         bytes memory data_
-    ) public payable virtual override(ERC3525Upgradeable, IERC721) isTransferAllowed(tokenId_) {
+    ) public payable virtual override isTransferAllowed(tokenId_) {
         super.safeTransferFrom(from_, to_, tokenId_, data_);
     }
 
     function supportsInterface(
         bytes4 interfaceId
-    ) public view override(IERC165, AccessControlUpgradeable, ERC3525Upgradeable) returns (bool) {
+    ) public view override(AccessControlUpgradeable, ERC3525Upgradeable) returns (bool) {
             return
         interfaceId == type(ERC3525Votes).interfaceId ||
         super.supportsInterface(interfaceId);

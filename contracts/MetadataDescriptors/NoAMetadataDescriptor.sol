@@ -4,6 +4,8 @@ pragma solidity ^0.8.13;
 
 import "hardhat/console.sol";
 
+import {IERC3525Metadata} from "@solvprotocol/erc-3525/contracts/extensions/IERC3525Metadata.sol";
+import "@solvprotocol/erc-3525/contracts/IERC3525.sol";
 import {StringsUpgradeable} from "@openzeppelin/contracts-upgradeable/utils/StringsUpgradeable.sol";
 import {Base64Upgradeable} from "@openzeppelin/contracts-upgradeable/utils/Base64Upgradeable.sol";
 import {IERC3525MetadataDescriptor} from "@solvprotocol/erc-3525/contracts/periphery/interface/IERC3525MetadataDescriptor.sol";
@@ -20,7 +22,7 @@ contract NoAMetadataDescriptor is IERC3525MetadataDescriptor {
   using StringConvertor for bytes;
 
   function constructContractURI() external view override returns (string memory) {
-    IDerivativeNFTV1 dao = IDerivativeNFTV1(msg.sender);
+    // IDerivativeNFTV1 dao = IDerivativeNFTV1(msg.sender);
     return 
       string(
         abi.encodePacked(
@@ -29,13 +31,13 @@ contract NoAMetadataDescriptor is IERC3525MetadataDescriptor {
           Base64Upgradeable.encode(
             abi.encodePacked(
               '{"name":"', 
-              dao.name(),
+              IERC3525Metadata(msg.sender).name(),
               '","description":"',
               _contractDescription(),
               '","image":"',
               _contractImage(),
               '","valueDecimals":"', 
-              uint256(dao.valueDecimals()).toString(),
+              uint256(IERC3525Metadata(msg.sender).valueDecimals()).toString(),
               '"}'
             )
           )
@@ -73,7 +75,6 @@ contract NoAMetadataDescriptor is IERC3525MetadataDescriptor {
   }
 
   function constructTokenURI(uint256 tokenId_) external view override returns (string memory) {
-    IDerivativeNFTV1 dao = IDerivativeNFTV1(msg.sender);
     return 
       string(
         abi.encodePacked(
@@ -88,9 +89,9 @@ contract NoAMetadataDescriptor is IERC3525MetadataDescriptor {
              '","image":"',
               _tokenImage(tokenId_),
               '","balance":"',
-              dao.balanceOf(tokenId_).toString(),
+              IERC3525(msg.sender).balanceOf(tokenId_).toString(),
               '","slot":"',
-              dao.slotOf(tokenId_).toString(),
+              IERC3525(msg.sender).slotOf(tokenId_).toString(),
               '","properties":',
               _tokenProperties(tokenId_),
               "}"
@@ -102,27 +103,23 @@ contract NoAMetadataDescriptor is IERC3525MetadataDescriptor {
   }
 
   function _slotName(uint256 slot_) internal view returns (string memory) {
-    IDerivativeNFTV1 dao = IDerivativeNFTV1(msg.sender);
-    DataTypes.SlotDetail memory slotDetail = dao.getSlotDetail(slot_);
+    DataTypes.SlotDetail memory slotDetail = IDerivativeNFTV1(msg.sender).getSlotDetail(slot_);
     return slotDetail.name;
   }
 
   function _slotDescription(uint256 slot_) internal view returns (string memory) {
-    IDerivativeNFTV1 dao = IDerivativeNFTV1(msg.sender);
-    DataTypes.SlotDetail memory slotDetail = dao.getSlotDetail(slot_);
+    DataTypes.SlotDetail memory slotDetail = IDerivativeNFTV1(msg.sender).getSlotDetail(slot_);
     return slotDetail.description;
   }
 
   function _slotImage(uint256 slot_) internal view returns (string memory) {
-    IDerivativeNFTV1 dao = IDerivativeNFTV1(msg.sender);
-    DataTypes.SlotDetail memory slotDetail = dao.getSlotDetail(slot_);
+    DataTypes.SlotDetail memory slotDetail = IDerivativeNFTV1(msg.sender).getSlotDetail(slot_);
 
     return string(slotDetail.image);
   }
 
   function _sloteventMetadataURI(uint256 slot_) internal view returns (string memory) {
-    IDerivativeNFTV1 dao = IDerivativeNFTV1(msg.sender);
-    DataTypes.SlotDetail memory slotDetail = dao.getSlotDetail(slot_);
+    DataTypes.SlotDetail memory slotDetail = IDerivativeNFTV1(msg.sender).getSlotDetail(slot_);
 
     return string(slotDetail.eventMetadataURI);
   }
@@ -140,8 +137,7 @@ contract NoAMetadataDescriptor is IERC3525MetadataDescriptor {
   }
 
   function _tokenName(uint256 tokenId_) internal view returns (string memory) {
-    IDerivativeNFTV1 dao = IDerivativeNFTV1(msg.sender);
-    uint256 slot = dao.slotOf(tokenId_);
+    uint256 slot = IERC3525(msg.sender).slotOf(tokenId_);
     // solhint-disable-next-line
     return 
       string(
@@ -153,25 +149,22 @@ contract NoAMetadataDescriptor is IERC3525MetadataDescriptor {
   }
 
   function _tokenDescription(uint256 tokenId_) internal view returns (string memory) {
-    IDerivativeNFTV1 dao = IDerivativeNFTV1(msg.sender);
-    uint256 slot = dao.slotOf(tokenId_);
-    DataTypes.SlotDetail memory sd = dao.getSlotDetail(slot);
+    uint256 slot = IERC3525(msg.sender).slotOf(tokenId_);
+    DataTypes.SlotDetail memory sd = IDerivativeNFTV1(msg.sender).getSlotDetail(slot);
     return sd.description;
   }
 
   function _tokenImage(uint256 tokenId_) internal view returns (string memory) {
-     IDerivativeNFTV1 dao = IDerivativeNFTV1(msg.sender);
-    uint256 slot = dao.slotOf(tokenId_);
-    DataTypes.SlotDetail memory sd = dao.getSlotDetail(slot);
+    uint256 slot = IERC3525(msg.sender).slotOf(tokenId_);
+    DataTypes.SlotDetail memory sd = IDerivativeNFTV1(msg.sender).getSlotDetail(slot);
     return sd.image;
   }
 
   function _tokenProperties(uint256 tokenId_) internal view returns (string memory) {
     
-    IDerivativeNFTV1 dao = IDerivativeNFTV1(msg.sender);
-    uint256 slot = dao.slotOf(tokenId_);
-    DataTypes.SlotDetail memory slotDetail = dao.getSlotDetail(slot);
-    DataTypes.Event memory event_ = dao.getEventInfo(slotDetail.eventId);
+    uint256 slot = IERC3525(msg.sender).slotOf(tokenId_);
+    DataTypes.SlotDetail memory slotDetail = IDerivativeNFTV1(msg.sender).getSlotDetail(slot);
+    DataTypes.Event memory event_ = IDerivativeNFTV1(msg.sender).getEventInfo(slotDetail.eventId);
 
     return 
       string(
