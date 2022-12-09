@@ -12,8 +12,7 @@ import "@openzeppelin/contracts/utils/introspection/IERC165.sol";
 import {Errors} from "./libraries/Errors.sol";
 import {DataTypes} from './libraries/DataTypes.sol';
 import {Events} from "./libraries/Events.sol";
-import {NoAMultiState} from './base/NoAMultiState.sol';
-import {IDerivativeNFTV1} from "./interfaces/IDerivativeNFTV1.sol";
+import {INoAV1} from "./interfaces/INoAV1.sol";
 
 /**
  *  @title Derivative NFT
@@ -21,7 +20,7 @@ import {IDerivativeNFTV1} from "./interfaces/IDerivativeNFTV1.sol";
  * 
  * , and includes built-in governance power and delegation mechanisms.
  */
-contract DerivativeNFTV1 is NoAMultiState, IDerivativeNFTV1, ERC3525SlotEnumerableUpgradeable {
+contract NoAV1 is INoAV1, ERC3525SlotEnumerableUpgradeable {
     using Counters for Counters.Counter;
     using SafeMathUpgradeable for uint256;
 
@@ -33,9 +32,6 @@ contract DerivativeNFTV1 is NoAMultiState, IDerivativeNFTV1, ERC3525SlotEnumerab
     address internal _governance;
     address internal _emergencyAdmin;
     address internal _receiver;
-
-    address private immutable MANAGER;
-    address private immutable SOULBOUNDTOKEN;
 
     uint256 internal _royaltyBasisPoints; //版税佣金点数
 
@@ -55,40 +51,21 @@ contract DerivativeNFTV1 is NoAMultiState, IDerivativeNFTV1, ERC3525SlotEnumerab
     // slot => slotDetail
     mapping(uint256 => DataTypes.SlotDetail) private _slotDetails;
 
-    /**
-     * @dev This modifier reverts if the caller is not the configured governance address.
-     */
-    modifier onlyGov() {
-        _validateCallerIsGovernance();
-        _;
-    }
-
-    /**
-     * @dev This modifier reverts if the caller is not the configured governance address.
-     */
-    modifier onlyManager() {
-        _validateCallerIsManager();
-        _;
-    }
 
     //===== Initializer =====//
 
     /// @custom:oz-upgrades-unsafe-allow constructor
     // `initializer` marks the contract as initialized to prevent third parties to
     // call the `initialize` method on the implementation (this contract)
-    constructor(address manager, address soulBoundToken) initializer {
-        if (manager == address(0)) revert Errors.InitParamsInvalid();
-        MANAGER = manager;
-        SOULBOUNDTOKEN = soulBoundToken;
+    constructor() initializer {
+
     }
 
     function initialize(
         string memory name_,
         string memory symbol_,
-        uint256 soulBoundTokenId_,
         address metadataDescriptor_,
-        address receiver_,
-        address governance_
+        address receiver_
     ) external override initializer {
         if (_initialized) revert Errors.Initialized();
         _initialized = true;
@@ -99,24 +76,19 @@ contract DerivativeNFTV1 is NoAMultiState, IDerivativeNFTV1, ERC3525SlotEnumerab
         __ERC3525_init_unchained(name_, symbol_, 0);
         _setMetadataDescriptor(metadataDescriptor_);
 
-        _soulBoundTokenId = soulBoundTokenId_;
         _receiver = receiver_;
-        _governance = governance_;
     }
 
     //only owner
-    function setMetadataDescriptor(address metadataDescriptor_) external onlyGov {
+    function setMetadataDescriptor(address metadataDescriptor_) external {
         _setMetadataDescriptor(metadataDescriptor_);
     }
 
-    function createEvent(DataTypes.Event memory event_) external onlyManager returns (uint256) {
+    function createEvent(DataTypes.Event memory event_) external returns (uint256) {
         return _createEvent(event_);
     }
 
-    function mint(
-        DataTypes.SlotDetail memory slotDetail_,
-        address to_
-    ) external payable onlyManager returns(bool) {
+    function mint(DataTypes.SlotDetail memory slotDetail_, address to_) external payable returns (bool) {
         if (_eventInfos[slotDetail_.eventId].organizer == address(0x0)) {
             revert Errors.EventIdNotExists();
         }
@@ -150,7 +122,7 @@ contract DerivativeNFTV1 is NoAMultiState, IDerivativeNFTV1, ERC3525SlotEnumerab
     function mintEventToManyUsers(
         DataTypes.SlotDetail memory slotDetail_,
         address[] memory to_
-    ) external payable onlyManager returns (bool) {
+    ) external payable returns (bool) {
         if (_eventInfos[slotDetail_.eventId].organizer == address(0x0)) {
             revert Errors.EventIdNotExists();
         }
@@ -189,10 +161,10 @@ contract DerivativeNFTV1 is NoAMultiState, IDerivativeNFTV1, ERC3525SlotEnumerab
         string memory eventMetadataURI_,
         address to_,
         uint256 value_
-    ) external payable onlyManager returns (bool) {
+    ) external payable returns (bool) {
         if (fromTokenIds_.length < 2) {
             revert Errors.ComboLengthNotEnough();
-        } 
+        }
         //must same slot
         for (uint256 i = 0; i < fromTokenIds_.length; ++i) {
             if (!(_isApprovedOrOwner(msg.sender, fromTokenIds_[i]))) {
@@ -264,7 +236,6 @@ contract DerivativeNFTV1 is NoAMultiState, IDerivativeNFTV1, ERC3525SlotEnumerab
             super.supportsInterface(interfaceId);
     }
 
-
     //----internal functions----//
     function _eventHasUser(uint256 eventId_, address user_) internal view returns (bool) {
         uint256 balance = balanceOf(user_);
@@ -328,88 +299,12 @@ contract DerivativeNFTV1 is NoAMultiState, IDerivativeNFTV1, ERC3525SlotEnumerab
         emit Events.ApprovalForSlot(owner_, slot_, operator_, approved_);
     }
 
-    /**
-     * @notice Changes the royalty percentage for secondary sales. Can only be called publication's
-     *         soulBoundToken owner.
-     *
-     * @param royaltyBasisPoints The royalty percentage meassured in basis points. Each basis point
-     *                           represents 0.01%.
-     */
-    function setRoyalty(uint256 royaltyBasisPoints) external {
-        if (IERC3525(SOULBOUNDTOKEN).ownerOf(_soulBoundTokenId) == msg.sender) {
-            if (royaltyBasisPoints > BASIS_POINTS) {
-                revert Errors.InvalidParameter();
-            } else {
-                _royaltyBasisPoints = royaltyBasisPoints;
-            }
-        } else {
-            revert Errors.NotSoulBoundTokenOwner();
-        }
-    }
-
-    /**
-     * @notice Called with the sale price to determine how much royalty
-     *         is owed and to whom.
-     *
-     *
-     * @param tokenId The token ID of the NoA queried for royalty information.
-     * @param salePrice The sale price of the NoA specified.
-     * @return A tuple with the address who should receive the royalties and the royalty
-     * payment amount for the given sale price.
-     */
-    function royaltyInfo(uint256 tokenId, uint256 salePrice) external view returns (address, uint256) {
-        return (IERC3525(SOULBOUNDTOKEN).ownerOf(_soulBoundTokenId), (salePrice * _royaltyBasisPoints) / BASIS_POINTS);
-    }
-
-    /// ***********************
-    /// *****GOV FUNCTIONS*****
-    /// ***********************
-
-    function setGovernance(address newGovernance) external override onlyGov {
-        _setGovernance(newGovernance);
-    }
-
-    function setEmergencyAdmin(address newEmergencyAdmin) external override onlyGov {
-        address prevEmergencyAdmin = _emergencyAdmin;
-        _emergencyAdmin = newEmergencyAdmin;
-        emit Events.EmergencyAdminSet(msg.sender, prevEmergencyAdmin, newEmergencyAdmin, block.timestamp);
-    }
-
-    function setState(DataTypes.ProtocolState newState) external override {
-        if (msg.sender == _emergencyAdmin) {
-            if (newState == DataTypes.ProtocolState.Unpaused) revert Errors.EmergencyAdminCannotUnpause();
-            _validateNotPaused();
-        } else if (msg.sender != _governance) {
-            revert Errors.NotGovernanceOrEmergencyAdmin();
-        }
-        _setState(newState);
-    }
 
     // function getRevision() internal pure virtual override returns (uint256) {
     //     return REVISION;
     // }
 
-    /// ****************************
-    /// *****INTERNAL FUNCTIONS*****
-    /// ****************************
-
-    function _setGovernance(address newGovernance) internal {
-        address prevGovernance = _governance;
-        _governance = newGovernance;
-
-        emit Events.GovernanceSet(msg.sender, prevGovernance, newGovernance, block.timestamp);
-    }
-
-    function _validateCallerIsManager() internal view {
-        if (msg.sender != MANAGER) revert Errors.NotManager();
-    }
-
-
-    function _validateCallerIsGovernance() internal view {
-        if (msg.sender != _governance) revert Errors.NotGovernance();
-    }
+   
 
     uint256[50] private __gap;
-
-
 }

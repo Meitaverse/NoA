@@ -63,9 +63,11 @@ function shouldBehaveLikeERC3525 (errorPrefix) {
       let tx = await this.token.connect(organizer).createEvent(event_1);
       let receipt = await tx.wait();
       let transferEvent = receipt.events.filter(e => e.event === 'EventAdded')[0];
+      console.log("transferEvent:", transferEvent);
+
       let eventId_1 = transferEvent.args['eventId'];
-     // console.log("eventId_1:", eventId_1.toNumber());
-      // console.log("");
+     console.log("eventId_1:", eventId_1.toNumber());
+      console.log("");
 
       let slotDetail_1 = {
         name: 'BigShow#1',
@@ -1024,7 +1026,7 @@ function shouldBehaveLikeERC3525SlotEnumerable (errorPrefix) {
       [firstOwner, secondOwner, approved, valueApproved, anotherApproved, operator, slotOperator, other, organizer, user1,user2,user3,user4,user5] = await ethers.getSigners();
 
       let tx = await this.token.connect(organizer).createEvent(event_1);
-      let receipt = await tx.wait();
+      let receipt = await tx.wait(1);
       let transferEvent = receipt.events.filter(e => e.event === 'EventAdded')[0];
       let eventId_1 = transferEvent.args['eventId'];
       this.eventId = eventId_1;
@@ -1061,6 +1063,6 @@ function shouldBehaveLikeERC3525SlotEnumerable (errorPrefix) {
 
 module.exports = {
   shouldBehaveLikeERC3525,
-  shouldBehaveLikeERC3525Metadata,
-  shouldBehaveLikeERC3525SlotEnumerable,
+  // shouldBehaveLikeERC3525Metadata,
+  // shouldBehaveLikeERC3525SlotEnumerable,
 }

@@ -161,6 +161,4 @@ contract Manager is
     function getDNFTImpl() external view override returns (address) {
         return DNFT_IMPL;
     }
-
-
 }

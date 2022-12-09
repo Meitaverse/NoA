@@ -48,8 +48,8 @@ async function deployNoA(name, symbol) {
     const NoAMetadataDescriptor = await ethers.getContractFactory('NoAMetadataDescriptor');
     const descriptor = await NoAMetadataDescriptor.deploy();
     await descriptor.deployed();
-    // console.log('NoAMetadataDescriptor deployed to:', descriptor.address);
-    // console.log("");
+    console.log('NoAMetadataDescriptor deployed to:', descriptor.address);
+    console.log("");
 
     //接收者
     const ERC3525ReceiverMockFactory = await ethers.getContractFactory('ERC3525ReceiverMock');
@@ -59,16 +59,16 @@ async function deployNoA(name, symbol) {
     await receiver.deployed();
     const NoA = await ethers.getContractFactory("NoAV1");
 
-    const UTokenV1 = await ethers.getContractFactory('UTokenV1');
-    const uToken = await upgrades.deployProxy(UTokenV1, [], {
-      initializer: 'initialize',
-    });
-    await uToken.deployed();
+    // const UTokenV1 = await ethers.getContractFactory('UTokenV1');
+    // const uToken = await upgrades.deployProxy(UTokenV1, [], {
+    //   initializer: 'initialize',
+    // });
+    // await uToken.deployed();
     // console.log('uToken deployed to:', uToken.address);
     // console.log("");
 
     const proxyAdmin = await fetchOrDeployAdminProxy();
-    const noa = await deployProxy(proxyAdmin, NoA, [name, symbol, descriptor.address, receiver.address, uToken.address], { initializer: 'initialize' });
+    const noa = await deployProxy(proxyAdmin, NoA, [name, symbol, descriptor.address, receiver.address], { initializer: 'initialize' });
     await noa.deployed();
     return noa;
 }
@@ -80,12 +80,12 @@ describe('NoA', () => {
 
   beforeEach(async function () {
     this.token = await deployNoA(name, symbol);
-    //console.log('NoA deployed to:',  this.token.address);
+    console.log('NoA deployed to:',  this.token.address);
   })
 
-  // shouldBehaveLikeERC3525('NoA');
+  shouldBehaveLikeERC3525('NoA');
   // shouldBehaveLikeERC3525Metadata('NoAMetadata');
-  shouldBehaveLikeERC3525SlotEnumerable('NoASlotEnumerable');
+  // shouldBehaveLikeERC3525SlotEnumerable('NoASlotEnumerable');
   
 
 })

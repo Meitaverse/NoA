@@ -3,6 +3,7 @@ import "@nomicfoundation/hardhat-toolbox";
 import "@openzeppelin/hardhat-upgrades";
 import "@nomiclabs/hardhat-truffle5";
 import "hardhat-contract-sizer";
+import "hardhat-gas-reporter";
 
 import { HardhatUserConfig } from "hardhat/types";
 
@@ -60,7 +61,16 @@ const config: HardhatUserConfig = {
     disambiguatePaths: false,
     runOnCompile: true,
     strict: true,
-    only: [':Manager$',':Incubator$',':SoulBoundTokenV1$',':DerivativeNFTV1$', ':NFTDerivativeProtocolTokenV1$'],
+    only: [':NoAV1$',':Manager$',':Incubator$',':SoulBoundTokenV1$',':DerivativeNFTV1$', ':NFTDerivativeProtocolTokenV1$'],
+  },
+  gasReporter: {
+    enabled: true,
+    currency: 'USD', //USD
+    showTimeSpent: true,
+    showMethodSig: true,
+    coinmarketcap: 'b7d62a59-7758-4be6-8438-1a5f7a705989',
+    gasPriceApi:
+      'https://api.polygonscan.com/api?module=proxy&action=eth_gasPrice',
   },
 };
 
