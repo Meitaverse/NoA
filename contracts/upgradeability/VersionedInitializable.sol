@@ -21,32 +21,32 @@ import {Errors} from '../libraries/Errors.sol';
  * Initializable contract
  */
 abstract contract VersionedInitializable {
-    address private immutable originalImpl;
+    address private immutable _originalImpl;
 
     /**
      * @dev Indicates that the contract has been initialized.
      */
-    uint256 private lastInitializedRevision = 0;
+    uint256 private _lastInitializedRevision = 0;
 
     /**
      * @dev Modifier to use in the initializer function of a contract.
      */
     modifier initializer() {
-        uint256 revision = getRevision();
-        if (address(this) == originalImpl) revert Errors.CannotInitImplementation();
+        uint256 revision = _getRevision();
+        if (address(this) == _originalImpl) revert Errors.CannotInitImplementation();
 
-        if (revision <= lastInitializedRevision) revert Errors.Initialized();
-        lastInitializedRevision = revision;
+        if (revision <= _lastInitializedRevision) revert Errors.Initialized();
+        _lastInitializedRevision = revision;
         _;
     }
 
     constructor() {
-        originalImpl = address(this);
+        _originalImpl = address(this);
     }
 
     /**
      * @dev returns the revision number of the contract
      * Needs to be defined in the inherited class as a constant.
      **/
-    function getRevision() internal pure virtual returns (uint256);
+    function _getRevision() internal pure virtual returns (uint256);
 }

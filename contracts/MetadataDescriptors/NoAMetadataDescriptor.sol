@@ -58,8 +58,8 @@ contract NoAMetadataDescriptor is IERC3525MetadataDescriptor {
               _slotName(slot_),
               '","description":"',
               _slotDescription(slot_),
-              '","image":"',
-              _slotImage(slot_),
+              // '","image":"',
+              // _slotImage(slot_),
               '","event_id":',
               slot_.toString(),
               '","event_metadata_uri":',
@@ -86,8 +86,8 @@ contract NoAMetadataDescriptor is IERC3525MetadataDescriptor {
               _tokenName(tokenId_),
               '","description":"',
               _tokenDescription(tokenId_),
-             '","image":"',
-              _tokenImage(tokenId_),
+            //  '","image":"',
+            //   _tokenImage(tokenId_),
               '","balance":"',
               IERC3525(msg.sender).balanceOf(tokenId_).toString(),
               '","slot":"',
@@ -112,11 +112,11 @@ contract NoAMetadataDescriptor is IERC3525MetadataDescriptor {
     return slotDetail.description;
   }
 
-  function _slotImage(uint256 slot_) internal view returns (string memory) {
-    DataTypes.SlotDetail memory slotDetail = IDerivativeNFTV1(msg.sender).getSlotDetail(slot_);
+  // function _slotImage(uint256 slot_) internal view returns (string memory) {
+  //   DataTypes.SlotDetail memory slotDetail = IDerivativeNFTV1(msg.sender).getSlotDetail(slot_);
 
-    return string(slotDetail.image);
-  }
+  //   return string(slotDetail.image);
+  // }
 
   function _sloteventMetadataURI(uint256 slot_) internal view returns (string memory) {
     DataTypes.SlotDetail memory slotDetail = IDerivativeNFTV1(msg.sender).getSlotDetail(slot_);
@@ -154,11 +154,11 @@ contract NoAMetadataDescriptor is IERC3525MetadataDescriptor {
     return sd.description;
   }
 
-  function _tokenImage(uint256 tokenId_) internal view returns (string memory) {
-    uint256 slot = IERC3525(msg.sender).slotOf(tokenId_);
-    DataTypes.SlotDetail memory sd = IDerivativeNFTV1(msg.sender).getSlotDetail(slot);
-    return sd.image;
-  }
+  // function _tokenImage(uint256 tokenId_) internal view returns (string memory) {
+  //   uint256 slot = IERC3525(msg.sender).slotOf(tokenId_);
+  //   DataTypes.SlotDetail memory sd = IDerivativeNFTV1(msg.sender).getSlotDetail(slot);
+  //   return sd.image;
+  // }
 
   function _tokenProperties(uint256 tokenId_) internal view returns (string memory) {
     

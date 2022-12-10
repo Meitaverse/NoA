@@ -10,7 +10,7 @@ import {Errors} from "../libraries/Errors.sol";
 /**
  * @title NoAMultiState
  *
- * @notice This is an abstract contract that implements internal ShowDao Manager state setting and validation.
+ * @notice This is an abstract contract that implements internal Manager state setting and validation.
  *
  * whenNotPaused: Either publishingPaused or Unpaused.
  * whenPublishingEnabled: When Unpaused only.

@@ -13,16 +13,16 @@ import "@openzeppelin/contracts/utils/introspection/IERC165.sol";
 import {Errors} from "./libraries/Errors.sol";
 import {DataTypes} from './libraries/DataTypes.sol';
 import {Events} from "./libraries/Events.sol";
-import {NoAMultiState} from './base/NoAMultiState.sol';
+import {IManager} from "./interfaces/IManager.sol";
 import {IDerivativeNFTV1} from "./interfaces/IDerivativeNFTV1.sol";
-
+ 
 /**
  *  @title Derivative NFT
  * 
  * 
  * , and includes built-in governance power and delegation mechanisms.
  */
-contract DerivativeNFTV1 is NoAMultiState, IDerivativeNFTV1, ERC3525Upgradeable {
+contract DerivativeNFTV1 is IDerivativeNFTV1, ERC3525Upgradeable {
     using Counters for Counters.Counter;
     using SafeMathUpgradeable for uint256;
 
@@ -31,10 +31,10 @@ contract DerivativeNFTV1 is NoAMultiState, IDerivativeNFTV1, ERC3525Upgradeable 
     Counters.Counter private _eventIds;
 
     uint256 internal _soulBoundTokenId;
-    address internal _governance;
+
     address internal _emergencyAdmin;
     address internal _receiver;
-    
+
     // solhint-disable-next-line var-name-mixedcase
     address private immutable _MANAGER;
     // solhint-disable-next-line var-name-mixedcase
@@ -61,14 +61,6 @@ contract DerivativeNFTV1 is NoAMultiState, IDerivativeNFTV1, ERC3525Upgradeable 
     /**
      * @dev This modifier reverts if the caller is not the configured governance address.
      */
-    modifier onlyGov() {
-        _validateCallerIsGovernance();
-        _;
-    }
-
-    /**
-     * @dev This modifier reverts if the caller is not the configured governance address.
-     */
     modifier onlyManager() {
         _validateCallerIsManager();
         _;
@@ -89,26 +81,22 @@ contract DerivativeNFTV1 is NoAMultiState, IDerivativeNFTV1, ERC3525Upgradeable 
         string memory name_,
         string memory symbol_,
         uint256 soulBoundTokenId_,
-        address metadataDescriptor_,
-        address receiver_,
-        address governance_
+        address metadataDescriptor_
     ) external override initializer {
         if (_initialized) revert Errors.Initialized();
         _initialized = true;
 
         if (metadataDescriptor_ == address(0x0)) revert Errors.ZeroAddress();
-        if (receiver_ == address(0x0)) revert Errors.ZeroAddress();
 
         __ERC3525_init_unchained(name_, symbol_, 0);
         _setMetadataDescriptor(metadataDescriptor_);
 
         _soulBoundTokenId = soulBoundTokenId_;
-        _receiver = receiver_;
-        _governance = governance_;
+        _receiver = IManager(_MANAGER).getReceiver();
     }
 
     //only owner
-    function setMetadataDescriptor(address metadataDescriptor_) external onlyGov {
+    function setMetadataDescriptor(address metadataDescriptor_) external onlyManager {
         _setMetadataDescriptor(metadataDescriptor_);
     }
 
@@ -116,9 +104,34 @@ contract DerivativeNFTV1 is NoAMultiState, IDerivativeNFTV1, ERC3525Upgradeable 
         return _createEvent(event_);
     }
 
+    // Publications
+    function publish(
+        DataTypes.SlotDetail memory slotDetail_,
+        address to_,
+        uint256 value_
+    ) external virtual returns (uint256) {
+        if (_eventInfos[slotDetail_.eventId].organizer == address(0x0)) revert Errors.EventIdNotExists();
+        if (_eventHasUser(slotDetail_.eventId, to_)) revert Errors.TokenIsClaimed();
+
+        uint256 slot = slotDetail_.eventId; //same slot
+        if (_slotDetails[slot].eventId == 0) {
+            _slotDetails[slot] = DataTypes.SlotDetail({
+                eventId: slotDetail_.eventId,
+                name: slotDetail_.name,
+                description: slotDetail_.description,
+                eventMetadataURI: slotDetail_.eventMetadataURI
+            });
+        }
+
+        return ERC3525Upgradeable._mint(to_, slot, value_);
+    }
+
+
+    /*
     function mint(
         DataTypes.SlotDetail memory slotDetail_,
-        address to_
+        address to_,
+        uint256 value_
     ) external payable onlyManager returns(bool) {
         if (_eventInfos[slotDetail_.eventId].organizer == address(0x0)) {
             revert Errors.EventIdNotExists();
@@ -139,17 +152,17 @@ contract DerivativeNFTV1 is NoAMultiState, IDerivativeNFTV1, ERC3525Upgradeable 
                 eventId: slotDetail_.eventId,
                 name: slotDetail_.name,
                 description: slotDetail_.description,
-                image: slotDetail_.image,
                 eventMetadataURI: slotDetail_.eventMetadataURI
             });
         }
 
-        uint256 tokenId_ = ERC3525Upgradeable._mint(to_, slot, 1);
+        uint256 tokenId_ = ERC3525Upgradeable._mint(to_, slot, value_);
         emit Events.EventToken(slotDetail_.eventId, tokenId_, _eventInfos[slotDetail_.eventId].organizer, to_);
 
         return true;
     }
-
+*/
+    /*
     //TODO any one can called
     function mintEventToManyUsers(
         DataTypes.SlotDetail memory slotDetail_,
@@ -171,7 +184,6 @@ contract DerivativeNFTV1 is NoAMultiState, IDerivativeNFTV1, ERC3525Upgradeable 
                 eventId: slotDetail_.eventId,
                 name: slotDetail_.name,
                 description: slotDetail_.description,
-                image: slotDetail_.image,
                 eventMetadataURI: slotDetail_.eventMetadataURI
             });
         }
@@ -186,30 +198,23 @@ contract DerivativeNFTV1 is NoAMultiState, IDerivativeNFTV1, ERC3525Upgradeable 
         }
         return true;
     }
+*/
 
     function combo(
-        uint256 eventId_,
         uint256[] memory fromTokenIds_,
-        string memory image_,
         string memory eventMetadataURI_,
-        address to_,
-        uint256 value_
-    ) external payable onlyManager returns (bool) {
-        if (fromTokenIds_.length < 2) {
-            revert Errors.ComboLengthNotEnough();
-        } 
-        //must same slot
-        for (uint256 i = 0; i < fromTokenIds_.length; ++i) {
-            if (!(_isApprovedOrOwner(msg.sender, fromTokenIds_[i]))) {
-                revert Errors.NotOwnerNorApproved();
-            }
+        address to_
+    ) external payable onlyManager returns (uint256) {
+        if (fromTokenIds_.length == 0)revert Errors.ComboLengthNotEnough();
 
-            if (eventId_ != slotOf(fromTokenIds_[i])) {
-                revert Errors.EventIdNotSame();
-            }
+        //must same slot
+        uint256 eventId_;
+        for (uint256 i = 0; i < fromTokenIds_.length; ++i) {
+            if (!(_isApprovedOrOwner(msg.sender, fromTokenIds_[i])))  revert Errors.NotOwnerNorApproved();
+            eventId_ = this.slotOf(fromTokenIds_[i]);
 
             //cant not burn
-            transferFrom(fromTokenIds_[i], _receiver, 1);
+            this.transferFrom(fromTokenIds_[i], _receiver, 1);
         }
 
         uint256 slot = _slotDetails[eventId_].eventId; //same slot
@@ -217,30 +222,19 @@ contract DerivativeNFTV1 is NoAMultiState, IDerivativeNFTV1, ERC3525Upgradeable 
             eventId: _slotDetails[eventId_].eventId,
             name: _slotDetails[eventId_].name,
             description: _slotDetails[eventId_].description,
-            image: image_,
             eventMetadataURI: eventMetadataURI_
         });
 
-        uint256 amount_ = 1;
-        uint256 tokenId_;
-        if (_eventInfos[eventId_].organizer == msg.sender) {
-            amount_ = value_;
-            tokenId_ = ERC3525Upgradeable._mint(to_, slot, value_);
-        } else {
-            tokenId_ = ERC3525Upgradeable._mint(to_, slot, 1);
-        }
+        uint256 tokenId_ = ERC3525Upgradeable._mint(to_, slot, 1);
+
         emit Events.EventToken(_slotDetails[eventId_].eventId, tokenId_, _eventInfos[eventId_].organizer, to_);
-        return true;
+
+        return tokenId_;
     }
-
-    // Publications
-    // function publish(uint256 tokenId_, uint256 value_) external virtual {
-
-    // }
 
     function burn(uint256 tokenId_) external virtual {
         uint256 eventId_ = slotOf(tokenId_);
-        if (!(_isApprovedOrOwner(msg.sender, tokenId_) || msg.sender == _governance)) {
+        if (!_isApprovedOrOwner(msg.sender, tokenId_)) {
             revert Errors.NotAllowed();
         }
         ERC3525Upgradeable._burn(tokenId_);
@@ -260,12 +254,8 @@ contract DerivativeNFTV1 is NoAMultiState, IDerivativeNFTV1, ERC3525Upgradeable 
     }
 
     //------override------------//
-    function supportsInterface(
-        bytes4 interfaceId
-    ) public view virtual override returns (bool) {
-        return
-            interfaceId == _INTERFACE_ID_ERC2981 ||
-            super.supportsInterface(interfaceId);
+    function supportsInterface(bytes4 interfaceId) public view virtual override returns (bool) {
+        return interfaceId == _INTERFACE_ID_ERC2981 || super.supportsInterface(interfaceId);
     }
 
     //----internal functions----//
@@ -361,58 +351,20 @@ contract DerivativeNFTV1 is NoAMultiState, IDerivativeNFTV1, ERC3525Upgradeable 
      * payment amount for the given sale price.
      */
     function royaltyInfo(uint256 tokenId, uint256 salePrice) external view returns (address, uint256) {
-        return (IERC3525(_SOULBOUNDTOKEN).ownerOf(_soulBoundTokenId), (salePrice * _royaltyBasisPoints) / _BASIS_POINTS);
+        return (
+            IERC3525(_SOULBOUNDTOKEN).ownerOf(_soulBoundTokenId),
+            (salePrice * _royaltyBasisPoints) / _BASIS_POINTS
+        );
     }
-
-    /// ***********************
-    /// *****GOV FUNCTIONS*****
-    /// ***********************
-
-    function setGovernance(address newGovernance) external override onlyGov {
-        _setGovernance(newGovernance);
-    }
-
-    function setEmergencyAdmin(address newEmergencyAdmin) external override onlyGov {
-        address prevEmergencyAdmin = _emergencyAdmin;
-        _emergencyAdmin = newEmergencyAdmin;
-        emit Events.EmergencyAdminSet(msg.sender, prevEmergencyAdmin, newEmergencyAdmin, block.timestamp);
-    }
-
-    function setState(DataTypes.ProtocolState newState) external override {
-        if (msg.sender == _emergencyAdmin) {
-            if (newState == DataTypes.ProtocolState.Unpaused) revert Errors.EmergencyAdminCannotUnpause();
-            _validateNotPaused();
-        } else if (msg.sender != _governance) {
-            revert Errors.NotGovernanceOrEmergencyAdmin();
-        }
-        _setState(newState);
-    }
-
-    // function getRevision() internal pure virtual override returns (uint256) {
-    //     return REVISION;
-    // }
 
     /// ****************************
     /// *****INTERNAL FUNCTIONS*****
     /// ****************************
 
-    function _setGovernance(address newGovernance) internal {
-        address prevGovernance = _governance;
-        _governance = newGovernance;
-
-        emit Events.GovernanceSet(msg.sender, prevGovernance, newGovernance, block.timestamp);
-    }
-
     function _validateCallerIsManager() internal view {
         if (msg.sender != _MANAGER) revert Errors.NotManager();
     }
 
-
-    function _validateCallerIsGovernance() internal view {
-        if (msg.sender != _governance) revert Errors.NotGovernance();
-    }
-
     uint256[50] private __gap;
-
 
 }

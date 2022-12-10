@@ -8,14 +8,16 @@ import {Address} from '@openzeppelin/contracts/utils/Address.sol';
 
 contract DerivativeNFTProxy is Proxy {
     using Address for address;
-    address immutable MANAGER;
+    
+    // solhint-disable-next-line var-name-mixedcase
+    address immutable _MANAGER;
 
     constructor(bytes memory data) {
-        MANAGER = msg.sender;
+        _MANAGER = msg.sender;
         IManager(msg.sender).getDNFTImpl().functionDelegateCall(data);
     }
 
     function _implementation() internal view override returns (address) {
-        return IManager(MANAGER).getDNFTImpl();
+        return IManager(_MANAGER).getDNFTImpl();
     }
 }

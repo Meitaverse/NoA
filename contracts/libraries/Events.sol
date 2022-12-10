@@ -221,7 +221,6 @@ library Events {
 
     /**
      * @dev Emitted when a Incubator clone is deployed using a lazy deployment pattern.
-\
      * @param soulBoundTokenId The collector's SoulBound token ID.
      * @param incubatorContract The address of the newly deployed incubator clone.
      * @param timestamp The current block timestamp.
@@ -232,9 +231,58 @@ library Events {
         uint256 timestamp
     );
 
+    /**
+     * @dev Emitted when a DerivativeNFT clone is deployed using a lazy deployment pattern.
+     * @param soulBoundTokenId The collector's SoulBound token ID.
+     * @param derivativeNFT The address of the newly deployed DerivativeNFT clone.
+     * @param timestamp The current block timestamp.
+     */
     event DerivativeNFTDeployed(
         uint256 indexed soulBoundTokenId,
         address indexed derivativeNFT,
+        uint256 timestamp
+    );
+
+
+    /**
+     * @dev Emitted when Manager call to mint of NDPT Tokens.
+     * @param mintTo The address mint to
+     * @param tokenId The token id of NDPT
+     * @param slot The slot of  NDPT
+     * @param value The value of mint NDPT
+     * @param timestamp The current block timestamp.
+     */
+    event MintNDPTBySig(
+        address mintTo, uint256 tokenId, uint256 slot, uint256 value,
+        uint256 timestamp
+    );
+
+    /**
+     * @dev Emitted when Manager call to mintValue of NDPT Tokens.
+     * @param tokenId The token id of NDPT
+     * @param value The value of mint NDPT
+     * @param timestamp The current block timestamp.
+     */
+    event MintNDPTValueBySig(
+        uint256 tokenId,uint256 value,
+        uint256 timestamp
+    );
+
+    event CollectDerivativeNFT(
+        uint256 fromSoulBoundTokenId,
+        address  collector,
+        uint256 toSoulBoundTokenId,
+        uint256 tokenId,
+        uint256 value,
+        uint256 timestamp
+    );
+
+    event PublishDerivativeNFT(
+        uint256 soulBoundTokenId,
+        address incubator,
+        uint256 eventId,
+        uint256 tokenId,
+        uint256 value,
         uint256 timestamp
     );
 

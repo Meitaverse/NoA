@@ -49,7 +49,6 @@ library DataTypes {
     struct SlotDetail {
       string name;
       string description;
-      string image;
       uint256 eventId;
       string eventMetadataURI;
     }

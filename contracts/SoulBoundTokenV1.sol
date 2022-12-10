@@ -76,8 +76,8 @@ contract SoulBoundTokenV1 is
         DataTypes.CreateProfileData calldata vars,
         string memory nickName
     ) external override returns (uint256) {
-        require(hasRole(_MINTER_ROLE, msg.sender), "ERR: not allowed");
-        require(balanceOf(vars.to) == 0, "ERR: minted");
+        if (!(hasRole(_MINTER_ROLE, msg.sender))) revert Errors.Unauthorized();
+        if (balanceOf(vars.to) > 0) revert Errors.TokenIsClaimed(); 
 
         uint256 tokenId_ = _mint(vars.to, 1, 1);
 
@@ -92,19 +92,20 @@ contract SoulBoundTokenV1 is
     }
 
     function burn(uint256 tokenId_) public virtual {
-        require(_isApprovedOrOwner(msg.sender, tokenId_), "ERR: not owner nor approved");
+        if (!_isApprovedOrOwner(msg.sender, tokenId_)) revert Errors.NotOwnerNorApproved(); 
+        
         _burn(tokenId_);
     }
 
     function burnValue(uint256 tokenId_, uint256 burnValue_) public virtual {
-        require(_isApprovedOrOwner(msg.sender, tokenId_), "ERR: not owner nor approved");
+        if (!_isApprovedOrOwner(msg.sender, tokenId_)) revert Errors.NotOwnerNorApproved(); 
         _burnValue(tokenId_, burnValue_);
     }
 
     //===== Modifiers =====//
 
     modifier isTransferAllowed(uint256 tokenId_) {
-        require(!_sbtDetails[tokenId_].locked, "ERR: not allowed");
+        if(_sbtDetails[tokenId_].locked) revert Errors.Locked(); 
         _;
     }
 
@@ -169,7 +170,7 @@ contract SoulBoundTokenV1 is
     }
 
     function _authorizeUpgrade(address /*newImplementation*/) internal virtual override {
-        require(hasRole(_UPGRADER_ROLE, msg.sender), "ERR: Unauthorized");
+        if (!hasRole(_UPGRADER_ROLE, msg.sender)) revert Errors.Unauthorized();
     }
 
 

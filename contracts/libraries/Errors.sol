@@ -9,6 +9,8 @@ library Errors {
   error InsufficientBalance();
   error ZeroValue();
   error NotAllowed();
+  error Unauthorized();
+  error Locked();
   error EventIdNotExists();
   error NotOwnerNorApproved();
   error NotAuthorised();
@@ -33,6 +35,10 @@ library Errors {
   error PublicationDoesNotExist();
   error ArrayMismatch();
   error FollowInvalid();
+  error ZeroSpender();
+  error ZeroIncubator();
+  error SignatureExpired();
+  error SignatureInvalid();
 
   // Module Errors
   error InitParamsInvalid();
