@@ -28,20 +28,28 @@ library PublishLogic {
         uint256 amount, 
         bytes[] calldata datas
     ) external returns(uint256) {
-       uint256 tokenId =  IDerivativeNFTV1(derivatveNFT).publish(slotDetail_, incubator, amount);
+       uint256 newTokenId =  IDerivativeNFTV1(derivatveNFT).publish(slotDetail_, incubator, amount);
        
        emit Events.PublishDerivativeNFT(
             soulBoundTokenId,
             incubator,
             slotDetail_.eventId,
-            tokenId,
+            newTokenId,
             amount,
             block.timestamp
        );
 
         //TODO publishModule
+        emit Events.PublishDerivativeNFT(
+            soulBoundTokenId,
+            incubator,
+            slotDetail_.eventId,
+            newTokenId,
+            amount,
+            block.timestamp
+         );
 
-       return tokenId;
+       return newTokenId;
     }
 
      function combo(

@@ -165,7 +165,7 @@ interface IManager {
     ) external returns(uint256);
 
     /**
-     * @notice Split a dNFTs to two parts in same incubator.
+     * @notice Split a dNFT to two parts in same incubator.
      *
      * @param eventId Event Id  
      * @param soulBoundTokenId From SBT Id  
@@ -182,5 +182,23 @@ interface IManager {
         uint256 amount, 
         bytes[] calldata datas
     ) external returns(uint256) ;
+
+    /**
+     * @notice Transfer a dNFT to a address from incubator.
+     *
+     * @param soulBoundTokenId From SBT Id  
+     * @param eventId Event Id  
+     * @param to address to
+     * @param tokenId The tokenId of dNFT.
+     * @param data The arbitrary data  to pass.
+     *
+     */
+    function transferDerivativeNFT(
+        uint256 soulBoundTokenId,
+        uint256 eventId,
+        address to,
+        uint256 tokenId,
+        bytes calldata data
+    ) external;
 
 }

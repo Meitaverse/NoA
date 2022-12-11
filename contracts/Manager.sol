@@ -278,7 +278,42 @@ contract Manager is
     ) external whenNotPaused {
         //TODO
     }
-    
+
+    function split(
+        uint256 eventId, 
+        uint256 soulBoundTokenId, 
+        uint256 tokenId, 
+        uint256 amount, 
+        bytes[] calldata datas
+    ) external override whenNotPaused onlyGov returns(uint256) {
+        address derivatveNFT = _derivativeNFTByEventId[eventId];
+        if (derivatveNFT== address(0)) revert Errors.InvalidParameter();
+        
+        address incubator = _incubatorBySoulBoundTokenId[soulBoundTokenId];
+        if (incubator== address(0)) revert Errors.InvalidParameter();
+
+        return PublishLogic.split(
+            derivatveNFT,
+            incubator,
+            soulBoundTokenId,
+            tokenId,
+            amount,
+            datas
+        );
+    }
+
+    function splitBySig(
+        uint256 eventId, 
+        uint256 soulBoundTokenId, 
+        uint256 tokenId, 
+        uint256 amount, 
+        bytes[] calldata datas,
+        uint256 nonce,
+        DataTypes.EIP712Signature calldata sig
+    ) external whenNotPaused{
+
+    }
+
     function collect(
         uint256 eventId, 
         address collector,
@@ -310,34 +345,50 @@ contract Manager is
 
     }
 
-    function follow(
-        uint256[] calldata soulBoundTokenIds,
-        bytes[] calldata datas
-    ) external override whenNotPaused  onlyGov{
-        InteractionLogic.follow(msg.sender, soulBoundTokenIds, datas, _profileById, _profileIdByHandleHash);
-    }
+    function transferDerivativeNFT(
+        uint256 soulBoundTokenId,
+        uint256 eventId,
+        address to,
+        uint256 tokenId,
+        bytes calldata data
+    ) external whenNotPaused onlyGov {
+        if (to == address(0)) revert Errors.InvalidParameter();
 
-    function split(
-        uint256 eventId, 
-        uint256 soulBoundTokenId, 
-        uint256 tokenId, 
-        uint256 amount, 
-        bytes[] calldata datas
-    ) external override whenNotPaused onlyGov returns(uint256) {
         address derivatveNFT = _derivativeNFTByEventId[eventId];
-        if (derivatveNFT== address(0)) revert Errors.InvalidParameter();
+        if (derivatveNFT == address(0)) revert Errors.InvalidParameter();
         
         address incubator = _incubatorBySoulBoundTokenId[soulBoundTokenId];
         if (incubator== address(0)) revert Errors.InvalidParameter();
-
-        return PublishLogic.split(
+        
+        InteractionLogic.transferDerivativeNFT(
             derivatveNFT,
             incubator,
             soulBoundTokenId,
-            tokenId,
-            amount,
-            datas
+            eventId,
+            to,
+            tokenId, 
+            data
         );
+
+    }
+
+     function transferDerivativeNFTBySig(
+        uint256 soulBoundTokenId,
+        uint256 eventId,
+        address to,
+        uint256 tokenId,
+        bytes calldata data,
+        uint256 nonce,
+        DataTypes.EIP712Signature calldata sig
+    ) external whenNotPaused {
+        //TODO
+    }
+
+    function follow(
+        uint256[] calldata soulBoundTokenIds,
+        bytes[] calldata datas
+    ) external override whenNotPaused onlyGov {
+        InteractionLogic.follow(msg.sender, soulBoundTokenIds, datas, _profileById, _profileIdByHandleHash);
     }
 
 
@@ -380,7 +431,6 @@ contract Manager is
         }
         _setState(newState);
     }
-
 
     function setGovernance(address newGovernance) external override onlyOwner {
         _setGovernance(newGovernance);

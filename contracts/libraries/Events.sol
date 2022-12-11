@@ -282,7 +282,7 @@ library Events {
         uint256 soulBoundTokenId,
         address incubator,
         uint256 eventId,
-        uint256 tokenId,
+        uint256 newTokenId,
         uint256 value,
         uint256 timestamp
     );
@@ -303,6 +303,15 @@ library Events {
         uint256 ororiginalValue,
         uint256 newTokenId,
         uint256 splitValue,
+        uint256 timestamp
+    );
+
+    event TransferDerivativeNFT(
+        uint256 soulBoundTokenId,
+        uint256 eventId,
+        address incubator,
+        address to,
+        uint256 tokenId,
         uint256 timestamp
     );
 }

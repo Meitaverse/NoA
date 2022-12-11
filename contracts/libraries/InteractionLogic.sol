@@ -217,4 +217,27 @@ library InteractionLogic {
         return derivativeNFT;
     }
     
+     function transferDerivativeNFT(
+        address derivatveNFT,
+        address incubator,
+        uint256 soulBoundTokenId,
+        uint256 eventId,
+        address to,
+        uint256 tokenId,
+        bytes calldata data
+    ) external {
+    
+         IERC3525(derivatveNFT).transferFrom(incubator, to, tokenId);
+
+         //TODO process data
+
+         emit Events.TransferDerivativeNFT(
+            soulBoundTokenId,
+            eventId,
+            incubator,
+            to,
+            tokenId,
+            block.timestamp
+         );
+    }
 }
