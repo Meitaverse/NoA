@@ -104,22 +104,22 @@ library InteractionLogic {
      * @notice Collects the given publication, executing the necessary logic and module call before minting the
      * collect NFT to the collector.
      *收集给定的发布(非NFT), 在铸造collectNFT之前执行必要的逻辑及call模块
+     * @param derivatveNFT The address derivatveNFT contract 
      * @param collector The address executing the collect.
      * @param fromSoulBoundTokenId The SBT ID of the publication.
      * @param toSoulBoundTokenId The SBT ID of the collector.
      * @param tokenId The publication ID of the publication being collected. 要收集的发布的发布ID
-     * @param value The data to pass to the publication's collect module.
      * @param collectModuleData The data to pass to the publication's collect module.
      * @param _pubByIdByProfile A pointer to the storage mapping of publications by pubId by profile ID.
      * @param _incubatorBySoulBoundTokenId storage of incubator mapping
      *
      */
     function collectDerivativeNFT(
+        address derivatveNFT,
         address collector,
         uint256 fromSoulBoundTokenId,
         uint256 toSoulBoundTokenId,
         uint256 tokenId,
-        uint256 value,
         bytes calldata collectModuleData,
         mapping(uint256 => mapping(uint256 => DataTypes.PublicationStruct))
             storage _pubByIdByProfile,
@@ -132,8 +132,10 @@ library InteractionLogic {
             toIncubator = _deployIncubatorContract(toSoulBoundTokenId);
             _incubatorBySoulBoundTokenId[toSoulBoundTokenId] = toIncubator;
         }
-        address fromIncubator =  _incubatorBySoulBoundTokenId[fromSoulBoundTokenId];
-        IERC3525(fromIncubator).transferFrom(tokenId, toIncubator, value);
+        address fromIncubator = _incubatorBySoulBoundTokenId[fromSoulBoundTokenId];
+        
+        //transfer one
+        uint256 newTokenId = IDerivativeNFTV1(derivatveNFT).split(tokenId, toIncubator, 1);
 
         //后续调用processCollect进行处理，此机制能扩展出联动合约调用
         address collectModule = _pubByIdByProfile[fromSoulBoundTokenId][tokenId].collectModule;
@@ -143,19 +145,21 @@ library InteractionLogic {
             collector,
             toSoulBoundTokenId,
             tokenId,
-            value,
+            1,
             collectModuleData
         );
 
         emit Events.CollectDerivativeNFT(
+            derivatveNFT,
             fromSoulBoundTokenId,
             collector,
             toSoulBoundTokenId,
             tokenId,
-            value,
+            newTokenId,
             block.timestamp
         );
     }
+
 
     function _deployIncubatorContract(
        uint256  soulBoundTokenId
@@ -193,17 +197,6 @@ library InteractionLogic {
 
         return eventId;
         
-    }
-
-
-    function transfer(
-        uint256 fromSoulBoundTokenId, 
-        uint256 toSoulBoundTokenId, 
-        uint256 tokenId, 
-        uint256 amount, 
-        bytes[] calldata datas
-    ) external{
-        //TODO
     }
 
     function _deployDerivativeNFT(

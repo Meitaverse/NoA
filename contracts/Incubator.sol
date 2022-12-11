@@ -239,7 +239,7 @@ contract Incubator is IIncubator, IERC165, IERC3525Receiver, AccessControl
                 )
             );
     }
-
+    
     /**
      * @dev Calculates EIP712 digest based on the current DOMAIN_SEPARATOR.
      *
@@ -260,7 +260,8 @@ contract Incubator is IIncubator, IERC165, IERC3525Receiver, AccessControl
     function getDomainSeparator() external view override returns (bytes32) {
         return _calculateDomainSeparator();
     }
-    
+
+
      //TODO
      // split
      // combo

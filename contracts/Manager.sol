@@ -200,7 +200,7 @@ contract Manager is
             _derivativeNFTByEventId
         );
     }
-    
+
     function createEventBySig(
         uint256 soulBoundTokenId,
         DataTypes.Event memory event_,
@@ -220,14 +220,14 @@ contract Manager is
         bytes[] calldata datas
     ) external onlyGov returns(uint256){
         //TODO
-        if (slotDetail_.eventId ==0) revert Errors.InvalidParameter();
+        if (slotDetail_.eventId == 0) revert Errors.InvalidParameter();
         address derivatveNFT = _derivativeNFTByEventId[slotDetail_.eventId];
         if (derivatveNFT== address(0)) revert Errors.InvalidParameter();
 
         address incubator = _incubatorBySoulBoundTokenId[soulBoundTokenId];
         if (incubator== address(0)) revert Errors.InvalidParameter();
 
-       return PublishLogic.publish(
+        return PublishLogic.publish(
             slotDetail_,
             derivatveNFT,
             soulBoundTokenId,
@@ -236,7 +236,6 @@ contract Manager is
             datas 
         );
     }
-
 
     function publishBySig(
         DataTypes.SlotDetail memory slotDetail_,
@@ -256,7 +255,18 @@ contract Manager is
         uint256[] memory fromTokenIds,
        bytes[] calldata datas
     )  external onlyGov returns(uint256){
-        //TODO
+        if (slotDetail_.eventId == 0) revert Errors.InvalidParameter();
+        address derivatveNFT = _derivativeNFTByEventId[slotDetail_.eventId];
+        if (derivatveNFT== address(0)) revert Errors.InvalidParameter();
+
+        return PublishLogic.combo(
+            slotDetail_,
+            derivatveNFT,
+            soulBoundTokenId,
+            fromTokenIds,
+            datas,
+            _incubatorBySoulBoundTokenId
+        );
     }
     
     function comboBySig(
@@ -270,18 +280,20 @@ contract Manager is
     }
     
     function collect(
+        uint256 eventId, 
         address collector,
         uint256 fromSoulBoundTokenId,
         uint256 toSoulBoundTokenId,
         uint256 tokenId,
-        uint256 value,
         bytes calldata data
     ) external whenNotPaused onlyGov {
+        address derivatveNFT = _derivativeNFTByEventId[eventId];
+        if (derivatveNFT== address(0)) revert Errors.InvalidParameter();
+
         return  InteractionLogic.collectDerivativeNFT(
-           collector, fromSoulBoundTokenId, toSoulBoundTokenId, tokenId, value,
+           derivatveNFT, collector, fromSoulBoundTokenId, toSoulBoundTokenId, tokenId,
            data, _pubByIdByProfile, _incubatorBySoulBoundTokenId
         );
-        
     }
 
     function collectBySig(
@@ -294,36 +306,40 @@ contract Manager is
         uint256 nonce,
         DataTypes.EIP712Signature calldata sig
     ) external whenNotPaused {
-        return  InteractionLogic.collectDerivativeNFT(
-           collector, fromSoulBoundTokenId, toSoulBoundTokenId, tokenId, value,
-           data, _pubByIdByProfile, _incubatorBySoulBoundTokenId
-        );
+
 
     }
 
     function follow(
         uint256[] calldata soulBoundTokenIds,
         bytes[] calldata datas
-    ) external override whenNotPaused  {
+    ) external override whenNotPaused  onlyGov{
         InteractionLogic.follow(msg.sender, soulBoundTokenIds, datas, _profileById, _profileIdByHandleHash);
     }
 
-    function transfer(
-        uint256 fromSoulBoundTokenId, 
-        uint256 toSoulBoundTokenId, 
+    function split(
+        uint256 eventId, 
+        uint256 soulBoundTokenId, 
         uint256 tokenId, 
         uint256 amount, 
         bytes[] calldata datas
-    ) external override whenNotPaused  {
-        //TODO
-        InteractionLogic.transfer(
-            fromSoulBoundTokenId,
-            toSoulBoundTokenId,
+    ) external override whenNotPaused onlyGov returns(uint256) {
+        address derivatveNFT = _derivativeNFTByEventId[eventId];
+        if (derivatveNFT== address(0)) revert Errors.InvalidParameter();
+        
+        address incubator = _incubatorBySoulBoundTokenId[soulBoundTokenId];
+        if (incubator== address(0)) revert Errors.InvalidParameter();
+
+        return PublishLogic.split(
+            derivatveNFT,
+            incubator,
+            soulBoundTokenId,
             tokenId,
             amount,
             datas
         );
     }
+
 
     function getFollowModule(uint256 soulBoundTokenId) external view override returns (address) {
         return _profileById[soulBoundTokenId].followModule;

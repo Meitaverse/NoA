@@ -109,7 +109,7 @@ contract DerivativeNFTV1 is IDerivativeNFTV1, ERC3525Upgradeable {
         DataTypes.SlotDetail memory slotDetail_,
         address to_,
         uint256 value_
-    ) external virtual returns (uint256) {
+    ) external virtual onlyManager returns (uint256) {
         if (_eventInfos[slotDetail_.eventId].organizer == address(0x0)) revert Errors.EventIdNotExists();
         if (_eventHasUser(slotDetail_.eventId, to_)) revert Errors.TokenIsClaimed();
 
@@ -122,10 +122,22 @@ contract DerivativeNFTV1 is IDerivativeNFTV1, ERC3525Upgradeable {
                 eventMetadataURI: slotDetail_.eventMetadataURI
             });
         }
-
+        if (!ERC3525Upgradeable.isApprovedForAll(to_, _MANAGER)) {
+            ERC3525Upgradeable.setApprovalForAll(_MANAGER, true);
+        }
         return ERC3525Upgradeable._mint(to_, slot, value_);
     }
 
+    function split(
+        uint256 fromTokenId_, 
+        address to_, 
+        uint256 value_
+    ) external onlyManager returns(uint256) {
+        if (!ERC3525Upgradeable.isApprovedForAll(to_, _MANAGER)) {
+            ERC3525Upgradeable.setApprovalForAll(_MANAGER, true);
+        }
+        return ERC3525Upgradeable.transferFrom(fromTokenId_, to_, value_);
+    }
 
     /*
     function mint(
@@ -199,10 +211,9 @@ contract DerivativeNFTV1 is IDerivativeNFTV1, ERC3525Upgradeable {
         return true;
     }
 */
-
     function combo(
+        DataTypes.SlotDetail memory slotDetail_,
         uint256[] memory fromTokenIds_,
-        string memory eventMetadataURI_,
         address to_
     ) external payable onlyManager returns (uint256) {
         if (fromTokenIds_.length == 0)revert Errors.ComboLengthNotEnough();
@@ -220,9 +231,9 @@ contract DerivativeNFTV1 is IDerivativeNFTV1, ERC3525Upgradeable {
         uint256 slot = _slotDetails[eventId_].eventId; //same slot
         _slotDetails[slot] = DataTypes.SlotDetail({
             eventId: _slotDetails[eventId_].eventId,
-            name: _slotDetails[eventId_].name,
-            description: _slotDetails[eventId_].description,
-            eventMetadataURI: eventMetadataURI_
+            name: slotDetail_.name,
+            description: slotDetail_.description,
+            eventMetadataURI: slotDetail_.eventMetadataURI
         });
 
         uint256 tokenId_ = ERC3525Upgradeable._mint(to_, slot, 1);

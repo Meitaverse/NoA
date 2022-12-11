@@ -132,8 +132,7 @@ interface IManager {
     ) external  returns (uint256);
     
     /**
-     * @notice Publish the dNFT, executing each collect module logic when collect the dNFT.
-     *
+     * @notice Publish some amount of dNFTs
      *
      * @param slotDetail_ The slot D\detail event
      * @param soulBoundTokenId The SBT ID  of the organizer to publish.
@@ -147,24 +146,41 @@ interface IManager {
         uint256 amount, 
         bytes[] calldata datas) external returns(uint256);
 
+
+    /**
+     * @notice Combo into a new token.
+     *
+     * @param slotDetail_ detail of event
+     * @param soulBoundTokenId From SBT Id  
+     * @param fromTokenIds The array of dNFT.
+     * @param datas The arbitrary data array to pass to the collect module for each profile if needed.
+     *
+     * @return new tokenId
+     */
     function combo(
         DataTypes.SlotDetail memory slotDetail_,
         uint256 soulBoundTokenId, 
         uint256[] memory fromTokenIds,
-       bytes[] calldata datas
+        bytes[] calldata datas
     ) external returns(uint256);
 
     /**
-     * @notice Transfer the dNFT from owner incubator to other incubator.
+     * @notice Split a dNFTs to two parts in same incubator.
      *
-     *
-     * @param fromSoulBoundTokenId From SBT Id  
-     * @param toSoulBoundTokenId To SBT Id  
+     * @param eventId Event Id  
+     * @param soulBoundTokenId From SBT Id  
      * @param tokenId The tokenId of dNFT.
-     * @param amount The amount of dNFT.
+     * @param amount The amount to split.
      * @param datas The arbitrary data array to pass to the collect module for each profile if needed.
      *
+     * @return new tokenId
      */
-    function transfer(uint256 fromSoulBoundTokenId, uint256 toSoulBoundTokenId, uint256 tokenId, uint256 amount, bytes[] calldata datas) external;
+    function split(
+        uint256 eventId, 
+        uint256 soulBoundTokenId, 
+        uint256 tokenId, 
+        uint256 amount, 
+        bytes[] calldata datas
+    ) external returns(uint256) ;
 
 }

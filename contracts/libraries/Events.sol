@@ -269,11 +269,12 @@ library Events {
     );
 
     event CollectDerivativeNFT(
+        address derivatveNFT,
         uint256 fromSoulBoundTokenId,
-        address  collector,
+        address collector,
         uint256 toSoulBoundTokenId,
         uint256 tokenId,
-        uint256 value,
+        uint256 newTokenId,
         uint256 timestamp
     );
 
@@ -285,6 +286,24 @@ library Events {
         uint256 value,
         uint256 timestamp
     );
+    
+    event ComboDerivativeNFT(
+        uint256 soulBoundTokenId,
+        address incubator,
+        uint256 eventId,
+        uint256[] fromTokenIds,
+        uint256 newTokenId,
+        uint256 timestamp
+    );
 
+    event SplitDerivativeNFT(
+        uint256 soulBoundTokenId,
+        address incubator,
+        uint256 ororiginalTokenId,
+        uint256 ororiginalValue,
+        uint256 newTokenId,
+        uint256 splitValue,
+        uint256 timestamp
+    );
 }
 

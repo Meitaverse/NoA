@@ -34,6 +34,7 @@ interface ICommunityModule {
      * @param collector The collector address.
      * @param soulBoundTokenId The token ID of the profile associated with the publication being collected.
      * @param tokenId The NoA publication token ID associated with the publication being collected.
+     * @param value The value
      * @param data Arbitrary data __passed from the collector!__ to be decoded.
      */
     function processCollect(

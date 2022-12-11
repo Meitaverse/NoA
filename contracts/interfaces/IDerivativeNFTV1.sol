@@ -78,15 +78,15 @@ interface IDerivativeNFTV1 {
    * @dev Emits the EventToken event. 
    *  Only authorised owner or operator can execute.
    *
+   * @param slotDetail_ slot detail.
    * @param fromTokenIds_ The tokens to be merged from.
-   * @param eventMetadataURI_ new event metadata
    * @param to_ new token who received
    * 
    * @return bool whether the call correctly returned true.
    */
   function combo(        
+    DataTypes.SlotDetail memory slotDetail_,
     uint256[] memory fromTokenIds_, 
-    string memory eventMetadataURI_,
     address to_
   ) external payable returns (uint256);
 
@@ -106,11 +106,33 @@ interface IDerivativeNFTV1 {
 
   function setMetadataDescriptor(address metadataDescriptor_) external;
 
-  function createEvent(DataTypes.Event memory event_) external returns (uint256) ;
+  function createEvent(DataTypes.Event memory event_) external returns (uint256);
 
+  /**
+   * @notice Publish some value to organizer's incubator, only call by manager and owner of token is incubator
+   *        
+   * @param slotDetail_ The LlotDetail of token
+   * @param to_ Owner of new token, incubator 
+   * @param value_ amount to split
+   * @return uint256 The new tokenId.
+   */
   function publish(
     DataTypes.SlotDetail memory slotDetail_,
     address to_, 
     uint256 value_
   ) external returns(uint256);
+
+   /**
+     * @notice Split some value to a incubator, only call by manager
+     *
+     * @param fromTokenId_ The tokenId to be split
+     * @param to_ Address to be received, incubator or wallet address
+     * @param value_ amount to split
+     * @return uint256 The new tokenId.
+     */
+    function split(
+        uint256 fromTokenId_, 
+        address to_, 
+        uint256 value_
+    ) external returns(uint256);
 }

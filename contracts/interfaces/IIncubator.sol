@@ -70,9 +70,5 @@ interface IIncubator {
      */
     function getDomainSeparator() external view returns (bytes32);
 
-     //TODO
-     // split
-     // combo
-     // publish
      //TODO withdraw deposit royalties
 }
