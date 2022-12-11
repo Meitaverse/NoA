@@ -9,13 +9,23 @@ pragma solidity ^0.8.13;
  * @notice A standard library of data types used throughout the ShowDao Protocol.
  */
 library DataTypes {
+    enum PriceType {FIXED, DECLIINING_BY_TIME}
+
+    enum FeeType {
+        BY_AMOUNT,
+        FIXED
+    }
+
+    enum FeePayType {
+        SELLER_PAY,
+        BUYER_PAY
+    }
+    
      struct TokenInfoData {
         uint256 id;
         address owner;
-        // address mintedTo;
         string nickName;
         string handle;
-        // string organization;
         string tokenName;
     }
     struct SoulBoundTokenDetail {
@@ -52,6 +62,38 @@ library DataTypes {
       uint256 eventId;
       string eventMetadataURI;
     }
+
+        
+    /**
+     * @notice Properties of the Market Item
+     */
+    struct Market {
+        bool isValid;
+        uint64 precision;
+        FeeType feeType;
+        FeePayType feePayType;
+        uint128 feeAmount;
+        uint16 feeRate;
+    }
+
+    struct Sale {
+        uint24 saleId;
+        uint256 soundBoundTokenId;
+        uint256 eventId;
+        uint256 tokenId;
+        uint32 startTime;
+        address seller;
+        uint128 price;
+        PriceType priceType;
+        uint256 total; //sale units
+        uint128 units; //current units
+        uint128 min; //min units
+        uint128 max; //max units
+        address derivativeNFT; //sale asset
+        address currency; //pay currency
+        bool useAllowList;
+        bool isValid;
+     }
 
     /**
      * @notice An enum containing the different states the protocol can be in, limiting certain actions.

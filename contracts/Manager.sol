@@ -7,6 +7,8 @@ import "@openzeppelin/contracts-upgradeable/access/AccessControlUpgradeable.sol"
 import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/utils/cryptography/ECDSAUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/utils/structs/EnumerableSetUpgradeable.sol";
+import "@openzeppelin/contracts/utils/Counters.sol";
 import "./interfaces/IDerivativeNFTV1.sol";
 import "./interfaces/INFTDerivativeProtocolTokenV1.sol";
 import "./interfaces/IManager.sol";
@@ -16,9 +18,12 @@ import {DataTypes} from './libraries/DataTypes.sol';
 import {Events} from"./libraries/Events.sol";
 import {InteractionLogic} from './libraries/InteractionLogic.sol';
 import {PublishLogic} from './libraries/PublishLogic.sol';
+import {MarketLogic} from './libraries/MarketLogic.sol';
+import {PriceManager} from './libraries/PriceManager.sol';
 import {ManagerStorage} from  "./storage/ManagerStorage.sol";
-// import {VersionedInitializable} from './upgradeability/VersionedInitializable.sol';
+import "./libraries/SafeMathUpgradeable128.sol";
 
+// import {VersionedInitializable} from './upgradeability/VersionedInitializable.sol';
 contract Manager is
     Initializable,
     IManager,
@@ -27,9 +32,16 @@ contract Manager is
     OwnableUpgradeable,
     NoAMultiState,
     ManagerStorage,
+    PriceManager,
     // VersionedInitializable,
     UUPSUpgradeable
 {
+    // using SafeMathUpgradeable for uint256;
+    using SafeMathUpgradeable128 for uint128;
+    using EnumerableSetUpgradeable for EnumerableSetUpgradeable.UintSet;
+    using EnumerableSetUpgradeable for EnumerableSetUpgradeable.AddressSet;
+
+
     uint256 internal constant _REVISION = 1;
     // solhint-disable-next-line var-name-mixedcase
     address internal immutable _INCUBATOR_IMPL;
@@ -49,6 +61,12 @@ contract Manager is
 
     bytes32 private constant _MINT_SBT_TYPEHASH =
         keccak256("MintSBT(string nickName,string role,address to,uint256 value)");
+
+    using Counters for Counters.Counter;
+
+
+    Counters.Counter private _nextSaleId;
+    Counters.Counter private _nextTradeId;
 
     /**
      * @dev This modifier reverts if the caller is not the configured governance address.
@@ -212,7 +230,6 @@ contract Manager is
        //TODO
     }
 
-    
     function publish(
         DataTypes.SlotDetail memory slotDetail_,
         uint256 soulBoundTokenId, 
@@ -341,8 +358,7 @@ contract Manager is
         uint256 nonce,
         DataTypes.EIP712Signature calldata sig
     ) external whenNotPaused {
-
-
+        //TODO
     }
 
     function transferDerivativeNFT(
@@ -369,7 +385,6 @@ contract Manager is
             tokenId, 
             data
         );
-
     }
 
      function transferDerivativeNFTBySig(
@@ -380,8 +395,85 @@ contract Manager is
         bytes calldata data,
         uint256 nonce,
         DataTypes.EIP712Signature calldata sig
-    ) external whenNotPaused {
+    ) external whenNotPaused onlyGov{
         //TODO
+    }
+
+    function publishFixedPrice(
+        DataTypes.Sale memory sale
+    ) external whenNotPaused onlyGov{
+       uint24  saleId = _generateNextSaleId();
+       _derivativeNFTSales[sale.derivativeNFT].add(saleId);
+       PriceManager.setFixedPrice(saleId, sale.price);
+       MarketLogic.publishFixedPrice(
+            sale,
+            markets,
+            sales
+       );
+    }
+
+    function removeSale(
+        uint24 saleId_
+    ) external whenNotPaused onlyGov{
+        MarketLogic.removeSale(
+            saleId_,
+            sales
+        );
+    }
+
+    function addMarket(
+        address derivativeNFT_,
+        uint64 precision_,
+        uint8 feePayType_,
+        uint8 feeType_,
+        uint128 feeAmount_,
+        uint16 feeRate_
+    ) external whenNotPaused onlyGov{
+        MarketLogic.addMarket(
+            derivativeNFT_,
+            precision_,
+            feePayType_,
+            feeType_,
+            feeAmount_,
+            feeRate_,
+            markets
+        );
+    }
+
+    function removeMarket(
+        address derivativeNFT_
+    ) external whenNotPaused onlyGov{
+        MarketLogic.removeMarket(
+            derivativeNFT_,
+            markets
+        );
+    }
+
+    function buyByUnits(
+        address buyer_,
+        uint24 saleId_, 
+        uint128 units_
+    ) external whenNotPaused onlyGov returns (uint256 amount_, uint128 fee_){
+        if (sales[saleId_].max > 0) {
+            require( saleRecords[sales[saleId_].saleId][buyer_].add(units_) <= sales[saleId_].max, "exceeds purchase limit");
+            saleRecords[sales[saleId_].saleId][buyer_] =  saleRecords[sales[saleId_].saleId][buyer_].add(units_);
+        }
+
+        if (sales[saleId_].useAllowList) {
+            require(
+                _allowAddresses[sales[saleId_].derivativeNFT].contains(buyer_),
+                "not in allow list"
+            );
+        }
+        return MarketLogic.buyByUnits(
+            _generateNextTradeId(),
+            buyer_,
+            saleId_,
+            PriceManager.price(DataTypes.PriceType.FIXED, saleId_),
+            units_,
+            markets,
+            sales
+        );
     }
 
     function follow(
@@ -391,6 +483,14 @@ contract Manager is
         InteractionLogic.follow(msg.sender, soulBoundTokenIds, datas, _profileById, _profileIdByHandleHash);
     }
 
+    function followBySig(
+        uint256[] calldata soulBoundTokenIds,
+        bytes calldata data,
+        uint256 nonce,
+        DataTypes.EIP712Signature calldata sig
+    ) external {
+        //TODO
+    }
 
     function getFollowModule(uint256 soulBoundTokenId) external view override returns (address) {
         return _profileById[soulBoundTokenId].followModule;
@@ -446,6 +546,17 @@ contract Manager is
         _governance = newGovernance;
 
         emit Events.GovernanceSet(msg.sender, prevGovernance, newGovernance, block.timestamp);
+    }
+    
+
+    function _generateNextSaleId() internal returns (uint24) {
+        _nextSaleId.increment();
+        return uint24(_nextSaleId.current());
+    }
+
+    function _generateNextTradeId() internal returns (uint24) {
+        _nextTradeId.increment();
+        return uint24(_nextTradeId.current());
     }
 
     // function _getRevision() internal pure virtual override returns (uint256) {

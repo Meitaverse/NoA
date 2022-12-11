@@ -201,4 +201,8 @@ interface IManager {
         bytes calldata data
     ) external;
 
+     function publishFixedPrice(
+        DataTypes.Sale memory sale
+    ) external;
+
 }

@@ -314,5 +314,64 @@ library Events {
         uint256 tokenId,
         uint256 timestamp
     );
+
+    event FixedPriceSet (
+       address   derivatveNFT,
+       uint128   saleId,
+       uint256   eventId,
+       uint256   tokenId,
+       uint128   units,
+       uint8     priceType,
+       uint128   price
+    );
+
+    event PublishSale(
+        address derivativeNFT,
+        address seller,
+        uint256 tokenId,
+        uint128 saleId,
+        uint8 priceType,
+        uint128 units,
+        uint32  startTime,
+        address currency,
+        uint128 min,
+        uint128 max,
+        bool useAllowList
+    );
+
+   event AddMarket(
+        address derivativeNFT,
+        uint64 precision,
+        uint8 feePayType,
+        uint8 feeType,
+        uint128 feeAmount,
+        uint16 feeRate
+    );
+
+   event RemoveMarket(address derivativeNFT);
+
+   event RemoveSale(
+         address    derivativeNFT,
+         address    seller,
+         uint128    saleId,
+         uint256    total,
+         uint256   saled
+    ); 
+    
+    event Traded(
+        address indexed buyer,
+        uint24 indexed saleId,
+        address indexed derivativeNFT,
+        uint256 tokenId,
+        uint256 tradeId,
+        uint32 tradeTime,
+        address currency,
+        uint8 priceType,
+        uint128 price,
+        uint128 tradedUnits,
+        uint256 tradedAmount,
+        // uint8 feePayType,
+        uint128 fee
+    );
 }
 

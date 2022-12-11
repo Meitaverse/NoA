@@ -3,6 +3,7 @@
 pragma solidity ^0.8.13;
 
 import {DataTypes} from '../libraries/DataTypes.sol';
+import "@openzeppelin/contracts-upgradeable/utils/structs/EnumerableSetUpgradeable.sol";
 
 /**
  * @title ManagerStorage
@@ -13,6 +14,7 @@ import {DataTypes} from '../libraries/DataTypes.sol';
  * storage variables should be done solely at the bottom of this contract.
  */
 abstract contract ManagerStorage {
+
     // bytes32 internal constant SET_DEFAULT_PROFILE_WITH_SIG_TYPEHASH =
     //     keccak256(
     //         'SetDefaultProfileWithSig(address wallet,uint256 profileId,uint256 nonce,uint256 deadline)'
@@ -76,9 +78,22 @@ abstract contract ManagerStorage {
     address internal _emergencyAdmin;
 
    
-
-
     string internal _svgLogo;
 
+    // --- market place --- //
 
+    // derivativeNFT => Market
+    mapping(address => DataTypes.Market) internal markets;
+
+    //saleId => struct Sale
+    mapping(uint24 => DataTypes.Sale) internal sales;
+    
+    // records of user purchased units from an order
+    mapping(uint24 => mapping(address => uint128)) internal saleRecords;
+
+    //derivativeNFT => saleId
+    mapping(address => EnumerableSetUpgradeable.UintSet) internal _derivativeNFTSales;
+    mapping(address => EnumerableSetUpgradeable.AddressSet) internal _allowAddresses;
+
+    
 }

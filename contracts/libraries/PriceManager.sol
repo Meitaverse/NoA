@@ -2,10 +2,10 @@
 
 pragma solidity ^0.8.13;
 
+import {DataTypes} from '../libraries/DataTypes.sol';
 
 contract PriceManager {
-    enum PriceType {FIXED, DECLIINING_BY_TIME}
-
+    
     struct DecliningPrice {
         uint128 highest; //起始价格
         uint128 lowest; //最终价格
@@ -18,16 +18,16 @@ contract PriceManager {
     mapping(uint24 => DecliningPrice) internal decliningPrices;
     mapping(uint24 => uint128) internal fixedPrices;
 
-    function price(PriceType priceType_, uint24 saleId_)
+    function price(DataTypes.PriceType priceType_, uint24 saleId_)
         internal
         view
         returns (uint128)
     {
-        if (priceType_ == PriceType.FIXED) {
+        if (priceType_ == DataTypes.PriceType.FIXED) {
             return fixedPrices[saleId_];
         }
 
-        if (priceType_ == PriceType.DECLIINING_BY_TIME) {
+        if (priceType_ == DataTypes.PriceType.DECLIINING_BY_TIME) {
             DecliningPrice storage price_ = decliningPrices[saleId_];
             if (block.timestamp >= price_.startTime + price_.duration) {
                 return price_.lowest;
