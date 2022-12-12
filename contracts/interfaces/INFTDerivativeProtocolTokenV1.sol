@@ -2,6 +2,7 @@
 
 pragma solidity ^0.8.0;
 
+import {DataTypes} from "../libraries/DataTypes.sol";
 
 interface INFTDerivativeProtocolTokenV1  { 
   
@@ -12,13 +13,15 @@ interface INFTDerivativeProtocolTokenV1  {
      * @param name The name to set for the Token.
      * @param symbol The symbol to set for the Token.
      * @param decimals The decimal to set for the Token.
-     * @param governance The governance address to set.
+     * @param manager The manager address to set.
+     * @param bankTreasury The bankTreasury address to set.
      */
     function initialize(
         string memory name,
         string memory symbol,
         uint8 decimals,
-        address governance
+        address manager,
+         address bankTreasury
     ) external ;
 
     /**
@@ -69,7 +72,15 @@ interface INFTDerivativeProtocolTokenV1  {
         uint256 slot,
         uint256 value
     ) external payable;
+  
+    function createProfile(
+       DataTypes.CreateProfileData calldata vars,
+       string memory nickName
+    ) external returns(uint256);
 
+    // function version() external view returns (uint256);
+
+    function svgLogo() external view returns (string memory);
 
     /**
      * @notice Mint value to a tokenId.

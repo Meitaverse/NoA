@@ -18,22 +18,41 @@ interface IBankTreasury {
     function initialize(address goverance) external;
 
     /**
-     * @notice Burns an NDPT, removing it from circulation and essentially destroying it. This function can only
-     * be called by the NDPT to burn's owner.
-     *
-     * @param tokenId The token ID of the token to burn.
-     * @param value The value of the token ID to burn.
-     */
-    function burnValue(uint256 tokenId, uint256 value) external;
-
-    /**
      * @notice Implementation of an EIP-712 permit-style function for token burning. Allows anyone to burn
      * a token on behalf of the owner with a signature.
      *
-     * @param tokenId The token ID of the token to burn.
-     * @param value The value of the token ID to burn.
-     * @param sig The EIP712 signature struct.
+     * @param currency The ERC3525 contract token address.
+     * @param fromTokenId  the token ID from.
+     * @param toTokenId token ID to.
+     * @param value The value of the token ID.
      */
-    function burnValueWithSig(uint256 tokenId, uint256 value, DataTypes.EIP712Signature calldata sig) external;
+    //  * @param nonce nonce of sig.
+    //  * @param sig The EIP712 signature struct.
+    function withdrawERC3525(
+        address currency, 
+        uint256 fromTokenId, 
+        uint256 toTokenId, 
+        uint256 value
+        // uint256 nonce, 
+        // DataTypes.EIP712Signature calldata sig
+    ) external;
+
+
+    function exchangeNDPT(       
+        address currency, 
+        uint256 fromTokenId, 
+        uint256 toTokenId, 
+        uint256 value
+        // uint256 nonce, 
+        // DataTypes.EIP712Signature calldata sig
+    )  external payable;
+
+
+    //TODO
+    // function stake() external;
+    // function redeem() external;
+
+
+
 
 }

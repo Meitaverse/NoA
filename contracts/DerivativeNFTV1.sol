@@ -37,7 +37,7 @@ contract DerivativeNFTV1 is IDerivativeNFTV1, ERC3525Upgradeable {
     // solhint-disable-next-line var-name-mixedcase
     address private immutable _MANAGER;
     // solhint-disable-next-line var-name-mixedcase
-    address private immutable _SOULBOUNDTOKEN;
+    address private immutable _NDPT;
 
     uint256 internal _royaltyBasisPoints; //版税佣金点数
 
@@ -70,10 +70,10 @@ contract DerivativeNFTV1 is IDerivativeNFTV1, ERC3525Upgradeable {
     /// @custom:oz-upgrades-unsafe-allow constructor
     // `initializer` marks the contract as initialized to prevent third parties to
     // call the `initialize` method on the implementation (this contract)
-    constructor(address manager, address soulBoundToken) initializer {
+    constructor(address manager, address ndpt) initializer {
         if (manager == address(0)) revert Errors.InitParamsInvalid();
         _MANAGER = manager;
-        _SOULBOUNDTOKEN = soulBoundToken;
+        _NDPT = ndpt;
     }
 
     function initialize(
@@ -98,6 +98,7 @@ contract DerivativeNFTV1 is IDerivativeNFTV1, ERC3525Upgradeable {
     function setMetadataDescriptor(address metadataDescriptor_) external onlyManager {
         _setMetadataDescriptor(metadataDescriptor_);
     }
+
 
     function createEvent(DataTypes.Event memory event_) external onlyManager returns (uint256) {
         return _createEvent(event_);
@@ -268,6 +269,13 @@ contract DerivativeNFTV1 is IDerivativeNFTV1, ERC3525Upgradeable {
         return interfaceId == _INTERFACE_ID_ERC2981 || super.supportsInterface(interfaceId);
     }
 
+    // function setApprovalForAll(
+    //     address operator_, 
+    //     bool approved_
+    // ) public virtual override onlyManager{
+    //     super._setApprovalForAll(_msgSender(), operator_, approved_);
+    // }
+
     //----internal functions----//
     function _eventHasUser(uint256 eventId_, address user_) internal view returns (bool) {
         uint256 balance = balanceOf(user_);
@@ -339,7 +347,7 @@ contract DerivativeNFTV1 is IDerivativeNFTV1, ERC3525Upgradeable {
      *                           represents 0.01%.
      */
     function setRoyalty(uint256 royaltyBasisPoints) external {
-        if (IERC3525(_SOULBOUNDTOKEN).ownerOf(_soulBoundTokenId) == msg.sender) {
+        if (IERC3525(_NDPT).ownerOf(_soulBoundTokenId) == msg.sender) {
             if (royaltyBasisPoints > _BASIS_POINTS) {
                 revert Errors.InvalidParameter();
             } else {
@@ -362,7 +370,7 @@ contract DerivativeNFTV1 is IDerivativeNFTV1, ERC3525Upgradeable {
      */
     function royaltyInfo(uint256 tokenId, uint256 salePrice) external view returns (address, uint256) {
         return (
-            IERC3525(_SOULBOUNDTOKEN).ownerOf(_soulBoundTokenId),
+            IERC3525(_NDPT).ownerOf(_soulBoundTokenId),
             (salePrice * _royaltyBasisPoints) / _BASIS_POINTS
         );
     }

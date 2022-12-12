@@ -21,6 +21,12 @@ library DataTypes {
         BUYER_PAY
     }
     
+    enum CurrencyType {
+        ETHER,
+        ERC20,
+        ERC3525
+    }
+    
      struct TokenInfoData {
         uint256 id;
         address owner;

@@ -7,9 +7,9 @@ import "@solvprotocol/erc-3525/contracts/ERC3525SlotEnumerableUpgradeable.sol";
 import "@solvprotocol/erc-3525/contracts/ERC3525Upgradeable.sol";
 import {IERC20Upgradeable} from "@openzeppelin/contracts-upgradeable/token/ERC20/IERC20Upgradeable.sol";
 import {SafeMathUpgradeable} from "@openzeppelin/contracts-upgradeable/utils/math/SafeMathUpgradeable.sol";
-
 import {Errors} from "./libraries/Errors.sol";
 import {Events} from "./libraries/Events.sol";
+import "./storage/SBTStorage.sol";
 import {INFTDerivativeProtocolTokenV1} from "./interfaces/INFTDerivativeProtocolTokenV1.sol";
 
 /**
@@ -18,7 +18,11 @@ import {INFTDerivativeProtocolTokenV1} from "./interfaces/INFTDerivativeProtocol
  * 
  * , and includes built-in governance power and delegation mechanisms.
  */
-contract NFTDerivativeProtocolTokenV1 is INFTDerivativeProtocolTokenV1, ERC3525SlotEnumerableUpgradeable {
+contract NFTDerivativeProtocolTokenV1 is 
+    SBTStorage,
+    INFTDerivativeProtocolTokenV1, 
+    ERC3525SlotEnumerableUpgradeable 
+{
     using SafeMathUpgradeable for uint256;
 
     bool private _initialized;
@@ -26,14 +30,24 @@ contract NFTDerivativeProtocolTokenV1 is INFTDerivativeProtocolTokenV1, ERC3525S
     // solhint-disable-next-line var-name-mixedcase
     address internal _MANAGER;
 
+    // solhint-disable-next-line var-name-mixedcase
+    address internal _BankTreasury;
+
     // @dev owner => slot => operator => approved
     mapping(address => mapping(uint256 => mapping(address => bool))) private _slotApprovals;
+    
+    //===== Modifiers =====//
 
     /**
      * @dev This modifier reverts if the caller is not the configured governance address.
      */
     modifier onlyManager() {
         _validateCallerIsManager();
+        _;
+    }
+
+    modifier isTransferAllowed(uint256 tokenId_) {
+        if(_sbtDetails[tokenId_].locked) revert Errors.Locked(); 
         _;
     }
 
@@ -48,17 +62,49 @@ contract NFTDerivativeProtocolTokenV1 is INFTDerivativeProtocolTokenV1, ERC3525S
         string memory name,
         string memory symbol,
         uint8 decimals,
-        address manager
+        address manager,
+        address bankTreasury
     ) external override initializer {
         if (_initialized) revert Errors.Initialized();
         _initialized = true;
 
         __ERC3525_init_unchained(name, symbol, decimals);
         _MANAGER = manager;
+        _BankTreasury = bankTreasury;
+    }
+
+    function svgLogo() public view returns (string memory) {
+        return _svgLogo;
+    }
+
+    function setSvgLogo(string calldata svgLogo_) external onlyManager{
+        _svgLogo = svgLogo_;
+    }
+ 
+    function createProfile(
+        DataTypes.CreateProfileData calldata vars,
+        string memory nickName
+    ) external override onlyManager returns (uint256) {
+        // if (!(hasRole(_MINTER_ROLE, msg.sender))) revert Errors.Unauthorized();
+        if (balanceOf(vars.to) > 0) revert Errors.TokenIsClaimed(); 
+
+        uint256 tokenId_ = ERC3525Upgradeable._mint(vars.to, 1, 0);
+
+        _sbtDetails[tokenId_] = DataTypes.SoulBoundTokenDetail({
+            nickName: nickName,
+            handle: vars.handle,
+            locked: true,
+            reputation: 0
+        });
+
+        return tokenId_;
     }
 
     function mint(address mintTo, uint256 tokenId, uint256 slot, uint256 value) external payable onlyManager {
         ERC3525Upgradeable._mint(mintTo, tokenId, slot, value);
+        // if (mintTo ==_BankTreasury) {
+        //     setApprovalForAll(_BankTreasury, true);
+        // }
     }
 
     function mintValue(uint256 tokenId, uint256 value) external payable onlyManager {
@@ -75,6 +121,33 @@ contract NFTDerivativeProtocolTokenV1 is INFTDerivativeProtocolTokenV1, ERC3525S
     }
 
     //-----approval functions----//
+    // function setApprovalForAll(
+    //     address operator_, 
+    //     bool approved_
+    // ) public virtual override(ERC3525Upgradeable,IERC721Upgradeable) onlyManager{
+    //     super._setApprovalForAll(_msgSender(), operator_, approved_);
+    // }
+
+
+
+    //-- orverride -- //
+    function transferFrom(
+        address from_,
+        address to_,
+        uint256 tokenId_
+    ) public payable virtual override(ERC3525Upgradeable, IERC721Upgradeable) isTransferAllowed(tokenId_) {
+        super.transferFrom(from_, to_, tokenId_);
+    }
+
+    function safeTransferFrom(
+        address from_,
+        address to_,
+        uint256 tokenId_,
+        bytes memory data_
+    ) public payable virtual override(ERC3525Upgradeable, IERC721Upgradeable) isTransferAllowed(tokenId_) {
+        super.safeTransferFrom(from_, to_, tokenId_, data_);
+    }
+
     function setApprovalForSlot(
         address owner_,
         uint256 slot_,

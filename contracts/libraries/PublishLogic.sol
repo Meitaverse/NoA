@@ -2,13 +2,13 @@
 
 pragma solidity ^0.8.13;
 
+import {IERC3525} from "@solvprotocol/erc-3525/contracts/IERC3525.sol";
 import {DataTypes} from './DataTypes.sol';
 import {Errors} from './Errors.sol';
 import {Events} from './Events.sol';
 import {Constants} from './Constants.sol';
 import {IIncubator} from '../interfaces/IIncubator.sol';
 import {IDerivativeNFTV1} from "../interfaces/IDerivativeNFTV1.sol";
-import {IERC3525} from "@solvprotocol/erc-3525/contracts/IERC3525.sol";
 
 /**
  * @title PublishLogic

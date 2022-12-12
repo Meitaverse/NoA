@@ -75,17 +75,17 @@ contract Incubator is IIncubator, IERC165, IERC3525Receiver, AccessControl
     // solhint-disable-next-line var-name-mixedcase
     address private immutable _MANAGER;
     // solhint-disable-next-line var-name-mixedcase
-    address private immutable _SOULBOUNDTOKEN;
+    address private immutable _NDPT;
 
     constructor(
         address manager,
-        address soulBoundToken
+        address ndpt
     ) {
         if (manager == address(0)) revert Errors.InitParamsInvalid();
-        if (soulBoundToken == address(0)) revert Errors.InitParamsInvalid();
+        if (ndpt == address(0)) revert Errors.InitParamsInvalid();
 
         _MANAGER = manager;
-        _SOULBOUNDTOKEN = soulBoundToken;
+        _NDPT = ndpt;
         _grantRole(DEFAULT_ADMIN_ROLE, msg.sender);
     }
 

@@ -41,7 +41,6 @@ contract Manager is
     using EnumerableSetUpgradeable for EnumerableSetUpgradeable.UintSet;
     using EnumerableSetUpgradeable for EnumerableSetUpgradeable.AddressSet;
 
-
     uint256 internal constant _REVISION = 1;
     // solhint-disable-next-line var-name-mixedcase
     address internal immutable _INCUBATOR_IMPL;
@@ -49,13 +48,10 @@ contract Manager is
     address internal immutable _DNFT_IMPL;
     // solhint-disable-next-line var-name-mixedcase
     address public immutable NDPT;
-    // solhint-disable-next-line var-name-mixedcase
-    address public immutable SOULBOUNDTOKEN;
 
     address internal _governance;
     address internal _receiver;
     
-
     bytes32 internal constant _PAUSER_ROLE = keccak256("PAUSER_ROLE");
     bytes32 internal constant _UPGRADER_ROLE = keccak256("UPGRADER_ROLE");
 
@@ -79,12 +75,10 @@ contract Manager is
     /// @custom:oz-upgrades-unsafe-allow constructor
     constructor(
         address ndptV1_, 
-        address soulBoundTokenV1_, 
         address noAV1_, 
         address incubator_
     ) initializer {
         NDPT = ndptV1_;
-        SOULBOUNDTOKEN = soulBoundTokenV1_;
         _INCUBATOR_IMPL = incubator_;
         _DNFT_IMPL = noAV1_;
     }
@@ -190,7 +184,7 @@ contract Manager is
         DataTypes.CreateProfileData calldata vars, 
         string memory nickName
     ) external onlyGov returns (uint256) {
-        return ISoulBoundTokenV1(SOULBOUNDTOKEN).mint(vars, nickName);
+        return INFTDerivativeProtocolTokenV1(NDPT).createProfile(vars, nickName);
     }
 
     function createSoulBoundTokenBySig(
@@ -200,7 +194,7 @@ contract Manager is
         DataTypes.EIP712Signature calldata sig
     ) external whenNotPaused returns (uint256) {
         //TODO
-        return ISoulBoundTokenV1(SOULBOUNDTOKEN).mint(vars, nickName);
+        return INFTDerivativeProtocolTokenV1(NDPT).createProfile(vars, nickName);
     } 
 
     function createEvent(
@@ -449,11 +443,11 @@ contract Manager is
         );
     }
 
-    function buyByUnits(
+    function buyUnits(
         address buyer_,
         uint24 saleId_, 
         uint128 units_
-    ) external whenNotPaused onlyGov returns (uint256 amount_, uint128 fee_){
+    ) external payable whenNotPaused onlyGov returns (uint256 amount_, uint128 fee_){
         if (sales[saleId_].max > 0) {
             require( saleRecords[sales[saleId_].saleId][buyer_].add(units_) <= sales[saleId_].max, "exceeds purchase limit");
             saleRecords[sales[saleId_].saleId][buyer_] =  saleRecords[sales[saleId_].saleId][buyer_].add(units_);
@@ -474,6 +468,16 @@ contract Manager is
             markets,
             sales
         );
+    }
+
+    function buyUnitsBySig(
+        address buyer_,
+        uint24 saleId_, 
+        uint128 units_,
+        uint256 nonce,
+        DataTypes.EIP712Signature calldata sig
+    ) external payable whenNotPaused returns (uint256 amount_, uint128 fee_){
+        //TODO
     }
 
     function follow(
@@ -497,7 +501,7 @@ contract Manager is
     }
 
     function getSoulBoundToken() external view returns (address) {
-        return SOULBOUNDTOKEN;
+        return NDPT;
     }
 
     function getIncubatorOfSoulBoundTokenId(uint256 soulBoundTokenId) external view override returns (address) {
@@ -548,7 +552,6 @@ contract Manager is
         emit Events.GovernanceSet(msg.sender, prevGovernance, newGovernance, block.timestamp);
     }
     
-
     function _generateNextSaleId() internal returns (uint24) {
         _nextSaleId.increment();
         return uint24(_nextSaleId.current());
