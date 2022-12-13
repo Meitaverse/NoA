@@ -129,6 +129,10 @@ contract Manager is
         emit Events.ProfileCreatorWhitelisted(profileCreator, whitelist, block.timestamp);
     }
 
+    function setStateDerivative(address derivativeNFT, DataTypes.ProtocolState newState) external override onlyGov{
+        IDerivativeNFTV1(derivativeNFT).setState(newState);
+    }
+
     function mintNDPT(
         uint256 tokenId, 
         uint256 slot, 

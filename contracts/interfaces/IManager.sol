@@ -40,6 +40,7 @@ interface IManager {
    * @param newState The state to set, as a member of the ProtocolState enum.
    */
    function setState(DataTypes.ProtocolState newState) external;
+   function setStateDerivative(address derivativeNFT, DataTypes.ProtocolState newState) external;
 
     function mintNDPT(
         uint256 tokenId, 
