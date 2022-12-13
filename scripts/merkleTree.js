@@ -30,9 +30,9 @@ async function main() {
 
 
   //设置event的root
-  const eventId = 1;
+  const projectId = 1;
   const root = "0x185622dc03039bc70cbb9ac9a4a086aec201f986b154ec4c55dad48c0a474e23";
-  await contractProxy.connect(organizer).setMerkleRoot(eventId, root);
+  await contractProxy.connect(organizer).setMerkleRoot(projectId, root);
 
 
 }

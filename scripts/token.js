@@ -17,9 +17,9 @@ async function main() {
   const contractProxy = await ethers.getContractAt(contract.abi, contractAddress);
 
   // const tokenId=1;
-  // const eventId=1;
+  // const projectId=1;
 
-  // console.log("eventId:", eventId);
+  // console.log("projectId:", projectId);
   // console.log("");
 
   // const user_address = "0xFABB0ac9d68B0B445fB7357272Ff202C5651694a";

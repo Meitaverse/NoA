@@ -3,7 +3,7 @@
 pragma solidity ^0.8.13;
 
 import "hardhat/console.sol";
-
+import "@solvprotocol/erc-3525/contracts/ERC3525Upgradeable.sol";
 import {IERC3525Metadata} from "@solvprotocol/erc-3525/contracts/extensions/IERC3525Metadata.sol";
 import "@solvprotocol/erc-3525/contracts/IERC3525.sol";
 import {StringsUpgradeable} from "@openzeppelin/contracts-upgradeable/utils/StringsUpgradeable.sol";
@@ -104,12 +104,12 @@ contract NoAMetadataDescriptor is IERC3525MetadataDescriptor {
 
   function _slotName(uint256 slot_) internal view returns (string memory) {
     DataTypes.SlotDetail memory slotDetail = IDerivativeNFTV1(msg.sender).getSlotDetail(slot_);
-    return slotDetail.name;
+    return slotDetail.publication.name;
   }
 
   function _slotDescription(uint256 slot_) internal view returns (string memory) {
     DataTypes.SlotDetail memory slotDetail = IDerivativeNFTV1(msg.sender).getSlotDetail(slot_);
-    return slotDetail.description;
+    return slotDetail.publication.description;
   }
 
   // function _slotImage(uint256 slot_) internal view returns (string memory) {
@@ -121,7 +121,8 @@ contract NoAMetadataDescriptor is IERC3525MetadataDescriptor {
   function _sloteventMetadataURI(uint256 slot_) internal view returns (string memory) {
     DataTypes.SlotDetail memory slotDetail = IDerivativeNFTV1(msg.sender).getSlotDetail(slot_);
 
-    return string(slotDetail.eventMetadataURI);
+    // return string(slotDetail.publication.materialURIs);
+    return string("TODO");
   }
 
    /**
@@ -151,7 +152,7 @@ contract NoAMetadataDescriptor is IERC3525MetadataDescriptor {
   function _tokenDescription(uint256 tokenId_) internal view returns (string memory) {
     uint256 slot = IERC3525(msg.sender).slotOf(tokenId_);
     DataTypes.SlotDetail memory sd = IDerivativeNFTV1(msg.sender).getSlotDetail(slot);
-    return sd.description;
+    return sd.publication.description;
   }
 
   // function _tokenImage(uint256 tokenId_) internal view returns (string memory) {
@@ -164,20 +165,21 @@ contract NoAMetadataDescriptor is IERC3525MetadataDescriptor {
     
     uint256 slot = IERC3525(msg.sender).slotOf(tokenId_);
     DataTypes.SlotDetail memory slotDetail = IDerivativeNFTV1(msg.sender).getSlotDetail(slot);
-    DataTypes.Event memory event_ = IDerivativeNFTV1(msg.sender).getEventInfo(slotDetail.eventId);
-
+    DataTypes.Project memory project_ = IDerivativeNFTV1(msg.sender).getProjectInfo(slotDetail.projectId);
+    uint256 totalSupply = ERC3525Upgradeable(msg.sender).totalSupply();
+    
     return 
       string(
         abi.encodePacked(
           /* solhint-disable */
-          '{"eventName":"',
-             event_.eventName,
-             '","eventDescription":"',
-             event_.eventDescription,
-             '","eventImage":"',
-             event_.eventImage,
-             '","mintMax":"',
-              event_.mintMax.toString(),
+          '{"name":"',
+             slotDetail.publication.name,
+             '","description":"',
+             slotDetail.publication.description,
+             '","image":"',
+             project_.image,
+             '","totalSupply":"',
+              totalSupply,
           '"}'
           /* solhint-enable */
         )

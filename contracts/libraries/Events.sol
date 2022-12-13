@@ -6,24 +6,23 @@ import {DataTypes} from "./DataTypes.sol";
 
 library Events {
 
-  event EventAdded(
+  event ProjectAdded(
       address organizer, 
-      uint256 eventId,
-      string eventName,
-      string eventDescription,
-      string eventImage,
-      uint256 mintMax
+      uint256 projectId,
+      string name,
+      string description,
+      string image
   );
     
-  event EventToken(
-      uint256 eventId, 
+  event ProjectToken(
+      uint256 projectId, 
       uint256 tokenId, 
-      address organizer, 
+    //   address organizer, 
       address owner
   );
     
   event BurnToken(
-      uint256 eventId, 
+      uint256 projectId, 
       uint256 tokenId, 
       address owner
   );
@@ -238,6 +237,7 @@ library Events {
      * @param timestamp The current block timestamp.
      */
     event DerivativeNFTDeployed(
+        uint256 indexed hubId,
         uint256 indexed soulBoundTokenId,
         address indexed derivativeNFT,
         uint256 timestamp
@@ -280,8 +280,7 @@ library Events {
 
     event PublishDerivativeNFT(
         uint256 soulBoundTokenId,
-        address incubator,
-        uint256 eventId,
+        uint256 projectId,
         uint256 newTokenId,
         uint256 value,
         uint256 timestamp
@@ -290,15 +289,15 @@ library Events {
     event ComboDerivativeNFT(
         uint256 soulBoundTokenId,
         address incubator,
-        uint256 eventId,
+        uint256 projectId,
         uint256[] fromTokenIds,
         uint256 newTokenId,
         uint256 timestamp
     );
 
     event SplitDerivativeNFT(
-        uint256 soulBoundTokenId,
-        address incubator,
+        uint256 fromSoulBoundTokenId,
+        uint256 toSoulBoundTokenId,
         uint256 ororiginalTokenId,
         uint256 ororiginalValue,
         uint256 newTokenId,
@@ -308,7 +307,7 @@ library Events {
 
     event TransferDerivativeNFT(
         uint256 soulBoundTokenId,
-        uint256 eventId,
+        uint256 projectId,
         address incubator,
         address to,
         uint256 tokenId,
@@ -318,7 +317,7 @@ library Events {
     event FixedPriceSet (
        address   derivatveNFT,
        uint128   saleId,
-       uint256   eventId,
+       uint256   projectId,
        uint256   tokenId,
        uint128   units,
        uint8     priceType,
@@ -372,6 +371,13 @@ library Events {
         uint256 tradedAmount,
         // uint8 feePayType,
         uint128 fee
+    );
+
+    event CreateHub(
+        address indexed creater,
+        uint256 soulBoundTokenId,
+        uint256 hubId,
+        uint32 createdTime
     );
 }
 

@@ -65,9 +65,9 @@ query{
 {
   eventItems(first: 100) {
     id
-    eventId
-    eventName
-    eventDescription
+    projectId
+    name
+    description
   }
 }
 ```
@@ -77,7 +77,7 @@ query{
 query{
   tokens(first:100){
     id,
-    eventId,
+    projectId,
     tokenId,
     tokenURI,
     slotURI,

@@ -63,6 +63,8 @@ contract Manager is
 
     Counters.Counter private _nextSaleId;
     Counters.Counter private _nextTradeId;
+    Counters.Counter private _nextHubId;
+    Counters.Counter private _nextProjectId;
 
     /**
      * @dev This modifier reverts if the caller is not the configured governance address.
@@ -197,116 +199,90 @@ contract Manager is
         return INFTDerivativeProtocolTokenV1(NDPT).createProfile(vars, nickName);
     } 
 
-    function createEvent(
+    function createHub(
+        address creater, 
+        uint256 soulBoundTokenId
+    ) external payable {
+        //TODO After user pay ether to create hub
+        uint256 hubId =  _generateNextHubId();
+        _hubBySoulBoundTokenId[soulBoundTokenId] = hubId; 
+        emit Events.CreateHub(creater, soulBoundTokenId, hubId, uint32(block.timestamp));
+    } 
+
+
+    function createProject(
+        uint256 hubId,
         uint256 soulBoundTokenId,
-        DataTypes.Event memory event_,
-        address metadataDescriptor_,
-        bytes calldata collectModuleData
+        DataTypes.Project memory project,
+        address metadataDescriptor,
+        bytes calldata projectModuleData
     ) external onlyGov returns (uint256) {
-      return  InteractionLogic.createEvent(
+       if  (_projectNameHashByEventId[keccak256(bytes(project.name))]  > 0) {
+            revert Errors.ProjectExisted();
+       }
+
+       uint256 projectId = _generateNextProjectId();
+       _projectNameHashByEventId[keccak256(bytes(project.name))] = projectId;
+       InteractionLogic.createProject(
+            hubId,
+            projectId,
             soulBoundTokenId,
-            event_, 
-            metadataDescriptor_,
-            collectModuleData,
-            _eventNameHashByEventId,
-            _derivativeNFTByEventId
+            project, 
+            metadataDescriptor,
+            projectModuleData,
+            _derivativeNFTByProjectId
         );
+    
+        _projectInfoByProjectId[projectId] = DataTypes.Project({
+            hubId: hubId,
+            organizer: project.organizer,
+            name: project.name,
+            description: project.description,
+            image: project.image,
+            metadataURI: project.metadataURI
+        });
+        return projectId;
     }
 
-    function createEventBySig(
-        uint256 soulBoundTokenId,
-        DataTypes.Event memory event_,
-        address metadataDescriptor_,
-        bytes calldata collectModuleData,
-        uint256 nonce,
-        DataTypes.EIP712Signature calldata sig
-    ) external whenNotPaused returns (uint256) {
-       //TODO
+    function getProjectInfo(uint256 projectId_) external view returns (DataTypes.Project memory) {
+        if (_projectInfoByProjectId[projectId_].organizer == address(0x0)) {
+            revert Errors.EventIdNotExists();
+        }
+        return _projectInfoByProjectId[projectId_];
     }
 
     function publish(
-        DataTypes.SlotDetail memory slotDetail_,
+        uint256 projectId,
+        DataTypes.Publication memory publication,
         uint256 soulBoundTokenId, 
-        uint256 amount, 
-        bytes[] calldata datas
+        uint256 amount
     ) external onlyGov returns(uint256){
-        //TODO
-        if (slotDetail_.eventId == 0) revert Errors.InvalidParameter();
-        address derivatveNFT = _derivativeNFTByEventId[slotDetail_.eventId];
-        if (derivatveNFT== address(0)) revert Errors.InvalidParameter();
-
-        address incubator = _incubatorBySoulBoundTokenId[soulBoundTokenId];
-        if (incubator== address(0)) revert Errors.InvalidParameter();
+        address derivatveNFT = _derivativeNFTByProjectId[projectId];
+        if (derivatveNFT == address(0)) revert Errors.InvalidParameter();
 
         return PublishLogic.publish(
-            slotDetail_,
+            projectId,
+            publication,
             derivatveNFT,
-            soulBoundTokenId,
-            incubator,
-            amount, 
-            datas 
+            soulBoundTokenId, 
+            amount
         );
-    }
-
-    function publishBySig(
-        DataTypes.SlotDetail memory slotDetail_,
-        uint256 soulBoundTokenId, 
-        uint256 eventId, 
-        uint256 amount, 
-        bytes[] calldata datas,
-        uint256 nonce,
-        DataTypes.EIP712Signature calldata sig
-    ) external whenNotPaused  {
-        //TODO
-    }
-    
-    function combo(
-        DataTypes.SlotDetail memory slotDetail_,
-        uint256 soulBoundTokenId, 
-        uint256[] memory fromTokenIds,
-       bytes[] calldata datas
-    )  external onlyGov returns(uint256){
-        if (slotDetail_.eventId == 0) revert Errors.InvalidParameter();
-        address derivatveNFT = _derivativeNFTByEventId[slotDetail_.eventId];
-        if (derivatveNFT== address(0)) revert Errors.InvalidParameter();
-
-        return PublishLogic.combo(
-            slotDetail_,
-            derivatveNFT,
-            soulBoundTokenId,
-            fromTokenIds,
-            datas,
-            _incubatorBySoulBoundTokenId
-        );
-    }
-    
-    function comboBySig(
-        uint256[] memory fromTokenIds,
-        string memory eventMetadataURI,
-        address to,
-        uint256 nonce,
-        DataTypes.EIP712Signature calldata sig
-    ) external whenNotPaused {
-        //TODO
     }
 
     function split(
-        uint256 eventId, 
-        uint256 soulBoundTokenId, 
+        uint256 projectId, 
+        uint256 fromSoulBoundTokenId, 
+        uint256 toSoulBoundTokenId, 
         uint256 tokenId, 
         uint256 amount, 
         bytes[] calldata datas
     ) external override whenNotPaused onlyGov returns(uint256) {
-        address derivatveNFT = _derivativeNFTByEventId[eventId];
+        address derivatveNFT = _derivativeNFTByProjectId[projectId];
         if (derivatveNFT== address(0)) revert Errors.InvalidParameter();
-        
-        address incubator = _incubatorBySoulBoundTokenId[soulBoundTokenId];
-        if (incubator== address(0)) revert Errors.InvalidParameter();
-
         return PublishLogic.split(
             derivatveNFT,
-            incubator,
-            soulBoundTokenId,
+            fromSoulBoundTokenId,
+            toSoulBoundTokenId,
             tokenId,
             amount,
             datas
@@ -314,31 +290,40 @@ contract Manager is
     }
 
     function splitBySig(
-        uint256 eventId, 
-        uint256 soulBoundTokenId, 
+        uint256 projectId, 
+        uint256 fromSoulBoundTokenId, 
+        uint256 toSoulBoundTokenId, 
         uint256 tokenId, 
         uint256 amount, 
         bytes[] calldata datas,
         uint256 nonce,
         DataTypes.EIP712Signature calldata sig
     ) external whenNotPaused{
-
+        //TODO
     }
 
     function collect(
-        uint256 eventId, 
+        uint256 projectId, 
         address collector,
         uint256 fromSoulBoundTokenId,
         uint256 toSoulBoundTokenId,
         uint256 tokenId,
+        uint256 value,
         bytes calldata data
     ) external whenNotPaused onlyGov {
-        address derivatveNFT = _derivativeNFTByEventId[eventId];
+        address derivatveNFT = _derivativeNFTByProjectId[projectId];
         if (derivatveNFT== address(0)) revert Errors.InvalidParameter();
 
         return  InteractionLogic.collectDerivativeNFT(
-           derivatveNFT, collector, fromSoulBoundTokenId, toSoulBoundTokenId, tokenId,
-           data, _pubByIdByProfile, _incubatorBySoulBoundTokenId
+           derivatveNFT, 
+           collector, 
+           fromSoulBoundTokenId, 
+           toSoulBoundTokenId, 
+           tokenId,
+           value,
+           data, 
+           _pubByIdByProfile, 
+           _incubatorBySoulBoundTokenId
         );
     }
 
@@ -357,14 +342,14 @@ contract Manager is
 
     function transferDerivativeNFT(
         uint256 soulBoundTokenId,
-        uint256 eventId,
+        uint256 projectId,
         address to,
         uint256 tokenId,
         bytes calldata data
     ) external whenNotPaused onlyGov {
         if (to == address(0)) revert Errors.InvalidParameter();
 
-        address derivatveNFT = _derivativeNFTByEventId[eventId];
+        address derivatveNFT = _derivativeNFTByProjectId[projectId];
         if (derivatveNFT == address(0)) revert Errors.InvalidParameter();
         
         address incubator = _incubatorBySoulBoundTokenId[soulBoundTokenId];
@@ -374,7 +359,7 @@ contract Manager is
             derivatveNFT,
             incubator,
             soulBoundTokenId,
-            eventId,
+            projectId,
             to,
             tokenId, 
             data
@@ -383,7 +368,7 @@ contract Manager is
 
      function transferDerivativeNFTBySig(
         uint256 soulBoundTokenId,
-        uint256 eventId,
+        uint256 projectId,
         address to,
         uint256 tokenId,
         bytes calldata data,
@@ -560,6 +545,15 @@ contract Manager is
     function _generateNextTradeId() internal returns (uint24) {
         _nextTradeId.increment();
         return uint24(_nextTradeId.current());
+    }
+
+    function _generateNextHubId() internal returns (uint256) {
+        _nextHubId.increment();
+        return uint24(_nextHubId.current());
+    }
+    function _generateNextProjectId() internal returns (uint256) {
+        _nextProjectId.increment();
+        return uint24(_nextProjectId.current());
     }
 
     // function _getRevision() internal pure virtual override returns (uint256) {

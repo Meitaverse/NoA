@@ -27,13 +27,14 @@ library DataTypes {
         ERC3525
     }
     
-     struct TokenInfoData {
+    struct TokenInfoData {
         uint256 id;
         address owner;
         string nickName;
         string handle;
         string tokenName;
     }
+    
     struct SoulBoundTokenDetail {
         string nickName;
         string handle;
@@ -43,32 +44,48 @@ library DataTypes {
     
 
     /**
-     * @dev  Store Organizer create event 
-     * @param organizer Event of Organizer
-     * @param eventName Event name 
-     * @param eventDescription Description of event
-     * @param eventImage Image of event, ipfs or arweave url
-     * @param mintMax Max count can mint
+     * @dev  Store Organizer create project 
+     * @param hubId hub id
+     * @param organizer Organizer of project
+     * @param name project name 
+     * @param description Description of project
+     * @param image Image of project, ipfs or arweave url
+     * @param metadataURI metadata 
      */
-    struct Event {
-      address organizer;
-      string eventName;
-      string eventDescription;
-      string eventImage;
-      string eventMetadataURI;
-      uint256 mintMax;
+    struct Project {
+        uint256 hubId;
+        address organizer;
+        string name;
+        string description;
+        string image;
+        string metadataURI;
     }
     
     /**
      * @notice Properties of the slot, which determine the value of slot.
      */
     struct SlotDetail {
-      string name;
-      string description;
-      uint256 eventId;
-      string eventMetadataURI;
+        uint256 soulBoundTokenId;
+        Publication publication;
+        // uint256[] previousDerivativeNFTIds;     //from array of dNFT Ids
+        // uint256[] previousSoulBoundTokenIds;  //NDPT token id
+        uint256 projectId;
+        uint256 timestamp;
     }
 
+    /**
+     * @notice Properties of the Publication, using with publish 
+     * @param name name of publication
+     * @param description description of publication
+     * @param materialURIs array of  material URI,  ipfs or arweave uri
+     * @param fromTokenIds array of from tokenIds
+     */
+    struct Publication {
+      string name;
+      string description;
+      string[] materialURIs;
+      uint256[] fromTokenIds;
+    }
         
     /**
      * @notice Properties of the Market Item
@@ -85,7 +102,7 @@ library DataTypes {
     struct Sale {
         uint24 saleId;
         uint256 soundBoundTokenId;
-        uint256 eventId;
+        uint256 projectId;
         uint256 tokenId;
         uint32 startTime;
         address seller;

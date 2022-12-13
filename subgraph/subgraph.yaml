@@ -19,8 +19,8 @@ dataSources:
       entities:
         # - OrganizerAdded
         # - OrganizerRemoved
-        - EventAdded
-        - EventToken
+        - ProjectAdded
+        - ProjectToken
         - BurnToken
         # - SetOrganizerMainnetWallet
         # - SetUserMainnetWallet
@@ -32,9 +32,9 @@ dataSources:
         #   handler: handleOrganizerAdded
         # - event: OrganizerRemoved(indexed address)
         #   handler: handleOrganizerRemoved
-        - event: EventAdded(address,uint256,string,string,string,uint256)
+        - event: ProjectAdded(address,uint256,string,string,string,uint256)
           handler: handleEventAdded
-        - event: EventToken(uint256,uint256,address,address)
+        - event: ProjectToken(uint256,uint256,address,address)
           handler: handleEventToken
         - event: BurnToken(uint256,uint256,address)
           handler: handleBurnToken

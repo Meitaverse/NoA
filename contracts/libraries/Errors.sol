@@ -19,7 +19,9 @@ library Errors {
   error TokenExisted(uint256 tokenId);
   error ZeroAddress();
   error EventNotExists();
+  error ProjectExisted();
   error TokenIsClaimed();
+  error PublicationIsExisted();
   error MaxExceeded();
   error ApproveToOwner();
   error ComboLengthNotEnough();

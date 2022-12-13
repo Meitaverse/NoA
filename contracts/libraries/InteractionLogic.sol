@@ -68,7 +68,6 @@ library InteractionLogic {
 
     }
    
-
     /**
      * @notice Emits the `Collected` event that signals that a successful collect action has occurred.
      *
@@ -108,7 +107,8 @@ library InteractionLogic {
      * @param collector The address executing the collect.
      * @param fromSoulBoundTokenId The SBT ID of the publication.
      * @param toSoulBoundTokenId The SBT ID of the collector.
-     * @param tokenId The publication ID of the publication being collected. 要收集的发布的发布ID
+     * @param tokenId The token id 
+     * @param value  value to collect
      * @param collectModuleData The data to pass to the publication's collect module.
      * @param _pubByIdByProfile A pointer to the storage mapping of publications by pubId by profile ID.
      * @param _incubatorBySoulBoundTokenId storage of incubator mapping
@@ -120,6 +120,7 @@ library InteractionLogic {
         uint256 fromSoulBoundTokenId,
         uint256 toSoulBoundTokenId,
         uint256 tokenId,
+        uint256 value,
         bytes calldata collectModuleData,
         mapping(uint256 => mapping(uint256 => DataTypes.PublicationStruct))
             storage _pubByIdByProfile,
@@ -132,10 +133,10 @@ library InteractionLogic {
             toIncubator = _deployIncubatorContract(toSoulBoundTokenId);
             _incubatorBySoulBoundTokenId[toSoulBoundTokenId] = toIncubator;
         }
-        address fromIncubator = _incubatorBySoulBoundTokenId[fromSoulBoundTokenId];
+        // address fromIncubator = _incubatorBySoulBoundTokenId[fromSoulBoundTokenId];
         
         //transfer one
-        uint256 newTokenId = IDerivativeNFTV1(derivatveNFT).split(tokenId, toIncubator, 1);
+        uint256 newTokenId = IDerivativeNFTV1(derivatveNFT).split(tokenId, toSoulBoundTokenId, value);
 
         //后续调用processCollect进行处理，此机制能扩展出联动合约调用
         address collectModule = _pubByIdByProfile[fromSoulBoundTokenId][tokenId].collectModule;
@@ -145,7 +146,7 @@ library InteractionLogic {
             collector,
             toSoulBoundTokenId,
             tokenId,
-            1,
+            value,
             collectModuleData
         );
 
@@ -160,7 +161,6 @@ library InteractionLogic {
         );
     }
 
-
     function _deployIncubatorContract(
        uint256  soulBoundTokenId
     ) private returns (address) {
@@ -173,55 +173,61 @@ library InteractionLogic {
         return incubatorContract;
     }
 
-    function createEvent(
+    function createProject(
+        uint256 hubId,
+        uint256 projectId,
         uint256 soulBoundTokenId,
-        DataTypes.Event memory event_,
-        address metadataDescriptor_,
-        bytes calldata collectModuleData,
-        mapping(bytes32 => uint256) storage _eventNameHashByEventId,
-        mapping(uint256 => address) storage _derivativeNFTByEventId
+        DataTypes.Project memory project,
+        address metadataDescriptor,
+        bytes calldata projectModuleData,
+        mapping(uint256 => address) storage _derivativeNFTByProjectId
     ) external returns(uint256) {
          
-        uint256 eventId = _eventNameHashByEventId[keccak256(bytes(event_.eventName))];
-        if (eventId == 0) {
+        if(_derivativeNFTByProjectId[projectId] == address(0)) {
                address derivatveNFT = _deployDerivativeNFT(
+                    hubId,
+                    projectId,
                     soulBoundTokenId,
-                    event_.eventName,event_.eventDescription,
-                    metadataDescriptor_
+                    project.name, 
+                    project.description,
+                    metadataDescriptor
                 );
-                eventId = IDerivativeNFTV1(derivatveNFT).createEvent(event_);
-                _derivativeNFTByEventId[eventId] = derivatveNFT;
-
-                //TODO 
+                _derivativeNFTByProjectId[projectId] = derivatveNFT;
         }
+        //TODO, pre and toggle
+        projectModuleData;
 
-        return eventId;
+        return projectId;
         
     }
 
     function _deployDerivativeNFT(
-       uint256  soulBoundTokenId,
-       string memory name_,
-       string memory symbol_,
-       address metadataDescriptor_
+        uint256 hubId,
+        uint256 projectId,
+        uint256  soulBoundTokenId,
+        string memory name_,
+        string memory symbol_,
+        address metadataDescriptor_
     ) private returns (address) {
         bytes memory functionData = abi.encodeWithSelector(
             IDerivativeNFTV1.initialize.selector,
             name_,
             symbol_,
+            hubId,
+            projectId,
             soulBoundTokenId,
             metadataDescriptor_
         );
         address derivativeNFT = address(new DerivativeNFTProxy(functionData));
-        emit Events.DerivativeNFTDeployed(soulBoundTokenId, derivativeNFT, block.timestamp);
+        emit Events.DerivativeNFTDeployed(hubId, soulBoundTokenId, derivativeNFT, block.timestamp);
         return derivativeNFT;
-    }
+    } 
     
      function transferDerivativeNFT(
         address derivatveNFT,
         address incubator,
         uint256 soulBoundTokenId,
-        uint256 eventId,
+        uint256 projectId,
         address to,
         uint256 tokenId,
         bytes calldata data
@@ -233,7 +239,7 @@ library InteractionLogic {
 
          emit Events.TransferDerivativeNFT(
             soulBoundTokenId,
-            eventId,
+            projectId,
             incubator,
             to,
             tokenId,

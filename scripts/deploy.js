@@ -84,21 +84,21 @@ async function main() {
   const tokenSymbol = await contractProxy.symbol();
   console.log("symbol: ", tokenSymbol);
 
-  const event_ = {
+  const project_ = {
     organizer: ZERO_ADDRESS,
-    eventName: "NoATest", //event名称
-    eventDescription: "Event Of NoA Test",
-    eventImage: "https://example.com/slot/test_slot.png",
-    eventMetadataURI: "",
+    name: "NoATest", //event名称
+    description: "Event Of NoA Test",
+    image: "https://example.com/slot/test_slot.png",
+    metadataURI: "",
     mintMax: 200
   };
 
-  let tx = await contractProxy.connect(organizer).createEvent(event_);
+  let tx = await contractProxy.connect(organizer).createProject(project_);
 
   let receipt = await tx.wait();
-  let transferEvent = receipt.events.filter(e => e.event === 'EventAdded')[0];
-  const eventId = transferEvent.args['eventId'];
-  console.log("eventId:", eventId.toNumber());
+  let transferEvent = receipt.events.filter(e => e.event === 'ProjectAdded')[0];
+  const projectId = transferEvent.args['projectId'];
+  console.log("projectId:", projectId.toNumber());
   console.log("");
 
 
@@ -108,8 +108,8 @@ async function main() {
     name: 'BigShow',
     description: 'Testing NoA',
     image: '',
-    eventId:  eventId.toNumber(),
-    eventMetadataURI: "https://example.com/event/" + eventId.toString(),
+    projectId:  projectId.toNumber(),
+    metadataURI: "https://example.com/event/" + projectId.toString(),
   }
 
   tx = await contractProxy.mint(
@@ -118,7 +118,7 @@ async function main() {
     []
   );
    receipt = await tx.wait();
-   transferEvent = receipt.events.filter(e => e.event === 'EventToken')[0];
+   transferEvent = receipt.events.filter(e => e.event === 'ProjectToken')[0];
    let tokenId = transferEvent.args['tokenId'];
    console.log("tokenId:", tokenId.toNumber());
    console.log("");

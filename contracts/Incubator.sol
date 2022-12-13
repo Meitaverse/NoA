@@ -264,7 +264,6 @@ contract Incubator is IIncubator, IERC165, IERC3525Receiver, AccessControl
 
      //TODO
      // split
-     // combo
      // publish
     //TODO withdraw deposit royalties
 

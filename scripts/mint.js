@@ -20,14 +20,14 @@ async function main() {
     to_
   );
 
-  const eventId = 1;
+  const projectId = 1;
   
   let slotDetail_ = {
     name: 'BigShow#1',
     description: 'Testing desc',
     image: 'https://bitsoul.me/img/1.jpg',
-    eventId:  eventId,
-    eventMetadataURI: "https://bitsoul.me/event/" + eventId.toString(),
+    projectId:  projectId,
+    metadataURI: "https://bitsoul.me/event/" + projectId.toString(),
   };
   
 
@@ -36,7 +36,7 @@ async function main() {
   let tx = await contractProxy.connect(deployer).mint(slotDetail_, to_, proof);
 
   let receipt = await tx.wait();
-  let transferEvent = receipt.events.filter(e => e.event === 'EventToken')[0];
+  let transferEvent = receipt.events.filter(e => e.event === 'ProjectToken')[0];
   let tokenId = transferEvent.args['tokenId'];
 
   console.log(

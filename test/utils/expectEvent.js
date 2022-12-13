@@ -8,9 +8,9 @@ function expectEvent (receipt, expectEventName, expectEventArgs = {}) {
   return inLogs(logs, expectEventName, expectEventArgs);
 }
 
-function inLogs (logs, eventName, eventArgs = {}) {
-  const events = logs.filter(e => e.event === eventName);
-  expect(events.length > 0).to.equal(true, `No '${eventName}' events found`);
+function inLogs (logs, name, eventArgs = {}) {
+  const events = logs.filter(e => e.event === name);
+  expect(events.length > 0).to.equal(true, `No '${name}' events found`);
 
   const exception = [];
   const event = events.find(function (e) {

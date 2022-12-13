@@ -44,7 +44,7 @@ library MarketLogic {
         sales[sale.saleId] = DataTypes.Sale({
             saleId: sale.saleId,
             soundBoundTokenId: sale.soundBoundTokenId,
-            eventId : sale.eventId,
+            projectId : sale.projectId,
             seller: msg.sender,
             price: sale.price,
             tokenId: sale.tokenId,
@@ -77,7 +77,7 @@ library MarketLogic {
         emit Events.FixedPriceSet(
             sale.derivativeNFT,
             sale.saleId,
-            sale.eventId,
+            sale.projectId,
             sale.tokenId,
             uint128(units),
             uint8(sale.priceType),

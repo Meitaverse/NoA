@@ -12,12 +12,15 @@ interface IDerivativeNFTV1 {
      *
      * @param name_ The name to set for the derivative NFT.
      * @param symbol_ The symbol to set for the derivative NFT.
+     * @param  hubId_ The id of the Hub.
      * @param  soulBoundTokenId_ The token id of the SoulBoundToken.
      * @param metadataDescriptor_ The Descriptor address to set.
      */
     function initialize(
         string memory name_,
         string memory symbol_,
+        uint256 hubId_,
+        uint256 publishId_,
         uint256 soulBoundTokenId_,
         address metadataDescriptor_
     ) external;
@@ -56,46 +59,13 @@ interface IDerivativeNFTV1 {
         address _operator
     ) external view returns (bool);
 
-  /**
-   * @notice Mint to a address with event info.
-   * @dev Emits the EventToken event. 
-   *  Only admin can execute.
-   *
-   * @param slotDetail_ The slot detail.
-   * @param to_ is the address that can receive a new token.
-   * @param value_ is the value of token.
-   * @return bool whether the call correctly returned true.
-   */
-  // function mint(
-  //   DataTypes.SlotDetail memory slotDetail_,
-  //   address to_,
-  //   uint256 value_
-  // ) external payable returns (bool);
 
   /**
-   * @notice Combo a list of tokens with same slot to a new token.
-   *  After new token minted, source tokens are burned.
-   * @dev Emits the EventToken event. 
-   *  Only authorised owner or operator can execute.
-   *
-   * @param slotDetail_ slot detail.
-   * @param fromTokenIds_ The tokens to be merged from.
-   * @param to_ new token who received
-   * 
-   * @return bool whether the call correctly returned true.
+   * @notice get project infomation.
+   * @param projectId_ The project Id
+   * @return Project struct data.
    */
-  function combo(        
-    DataTypes.SlotDetail memory slotDetail_,
-    uint256[] memory fromTokenIds_, 
-    address to_
-  ) external payable returns (uint256);
-
-  /**
-   * @notice get event infomation.
-   * @param eventId_ The event id
-   * @return Event.
-   */
-  function getEventInfo(uint256 eventId_) external view returns (DataTypes.Event memory);
+  function getProjectInfo(uint256 projectId_) external view returns (DataTypes.Project memory);
 
   /**
    * @notice get slot detail.
@@ -106,33 +76,33 @@ interface IDerivativeNFTV1 {
 
   function setMetadataDescriptor(address metadataDescriptor_) external;
 
-  function createEvent(DataTypes.Event memory event_) external returns (uint256);
+  // function createProject(DataTypes.Project memory project_) external returns (uint256);
 
   /**
    * @notice Publish some value to organizer's incubator, only call by manager and owner of token is incubator
    *        
-   * @param slotDetail_ The LlotDetail of token
-   * @param to_ Owner of new token, incubator 
+   * @param soulBoundTokenId NDPT id
+   * @param publication The publication infomation
    * @param value_ amount to split
    * @return uint256 The new tokenId.
    */
   function publish(
-    DataTypes.SlotDetail memory slotDetail_,
-    address to_, 
-    uint256 value_
+      uint256 soulBoundTokenId,
+      DataTypes.Publication memory publication,
+      uint256 value_
   ) external returns(uint256);
 
    /**
      * @notice Split some value to a incubator, only call by manager
      *
+     * @param toSoulBoundTokenId_ soulBoundTokenId send to
      * @param fromTokenId_ The tokenId to be split
-     * @param to_ Address to be received, incubator or wallet address
      * @param value_ amount to split
      * @return uint256 The new tokenId.
      */
     function split(
+        uint256 toSoulBoundTokenId_,
         uint256 fromTokenId_, 
-        address to_, 
         uint256 value_
     ) external returns(uint256);
 }

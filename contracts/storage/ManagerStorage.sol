@@ -61,9 +61,11 @@ abstract contract ManagerStorage {
     mapping(address => bool) internal _collectModuleWhitelisted;
     mapping(address => bool) internal _referenceModuleWhitelisted;
 
+    mapping(uint256 => uint256) internal _hubBySoulBoundTokenId;
+    mapping(bytes32 => uint256) internal _projectNameHashByEventId;
+    mapping(uint256 => DataTypes.Project) internal _projectInfoByProjectId;
+    mapping(uint256 => address) internal _derivativeNFTByProjectId;
     mapping(uint256 => address) internal _incubatorBySoulBoundTokenId;
-    mapping(uint256 => address) internal _derivativeNFTByEventId;
-    mapping(bytes32 => uint256) internal _eventNameHashByEventId;
     
     mapping(uint256 => address) internal _dispatcherByProfile;
     mapping(bytes32 => uint256) internal _profileIdByHandleHash;

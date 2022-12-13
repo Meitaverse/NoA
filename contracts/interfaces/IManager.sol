@@ -115,36 +115,35 @@ interface IManager {
      */
     function follow(uint256[] calldata soulBoundTokenIds, bytes[] calldata datas) external;
 
-    function createEvent(
+    function createProject(
+        uint256 hubId,
         uint256 soulBoundTokenId,
-        DataTypes.Event memory event_,
-        address metadataDescriptor_,
-        bytes calldata collectModuleData
+        DataTypes.Project memory project,
+        address metadataDescriptor,
+        bytes calldata projectModuleData
     ) external returns (uint256);
 
-    function createEventBySig(
-        uint256 soulBoundTokenId,
-        DataTypes.Event memory event_,
-        address metadataDescriptor_,
-        bytes calldata collectModuleData,
-        uint256 nonce,
-        DataTypes.EIP712Signature calldata sig
-    ) external  returns (uint256);
-    
+    /**
+     * @notice get project infomation.
+     * @param projectId_ The project Id
+     * @return Project struct data.
+     */
+    function getProjectInfo(uint256 projectId_) external view returns (DataTypes.Project memory);
+
     /**
      * @notice Publish some amount of dNFTs
      *
-     * @param slotDetail_ The slot D\detail event
+     * @param publication publication infomation
      * @param soulBoundTokenId The SBT ID  of the organizer to publish.
      * @param amount The amount of dNFT that publish.
-     * @param datas The arbitrary data array to collect
      *
      */
     function publish(
-        DataTypes.SlotDetail memory slotDetail_,
-        uint256 soulBoundTokenId, 
-        uint256 amount, 
-        bytes[] calldata datas) external returns(uint256);
+        uint256 projectId,
+        DataTypes.Publication memory publication,
+        uint256 soulBoundTokenId,       
+        uint256 amount
+    ) external returns(uint256);
 
 
     /**
@@ -157,18 +156,20 @@ interface IManager {
      *
      * @return new tokenId
      */
+    /*
     function combo(
         DataTypes.SlotDetail memory slotDetail_,
         uint256 soulBoundTokenId, 
         uint256[] memory fromTokenIds,
         bytes[] calldata datas
     ) external returns(uint256);
-
+*/
     /**
      * @notice Split a dNFT to two parts in same incubator.
      *
-     * @param eventId Event Id  
-     * @param soulBoundTokenId From SBT Id  
+     * @param projectId Event Id  
+     * @param fromSoulBoundTokenId From SBT Id  
+     * @param toSoulBoundTokenId to SBT Id  
      * @param tokenId The tokenId of dNFT.
      * @param amount The amount to split.
      * @param datas The arbitrary data array to pass to the collect module for each profile if needed.
@@ -176,8 +177,9 @@ interface IManager {
      * @return new tokenId
      */
     function split(
-        uint256 eventId, 
-        uint256 soulBoundTokenId, 
+        uint256 projectId, 
+        uint256 fromSoulBoundTokenId, 
+        uint256 toSoulBoundTokenId, 
         uint256 tokenId, 
         uint256 amount, 
         bytes[] calldata datas
@@ -187,7 +189,7 @@ interface IManager {
      * @notice Transfer a dNFT to a address from incubator.
      *
      * @param soulBoundTokenId From SBT Id  
-     * @param eventId Event Id  
+     * @param projectId Event Id  
      * @param to address to
      * @param tokenId The tokenId of dNFT.
      * @param data The arbitrary data  to pass.
@@ -195,7 +197,7 @@ interface IManager {
      */
     function transferDerivativeNFT(
         uint256 soulBoundTokenId,
-        uint256 eventId,
+        uint256 projectId,
         address to,
         uint256 tokenId,
         bytes calldata data

@@ -14,19 +14,19 @@ const MAX_UINT256 = BigNumber.from('0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
 
 const event_1 = {
   organizer: ZERO_ADDRESS,
-  eventName: "First Event", //event名称
-  eventDescription: "Test Slot Description",
-  eventImage: "https://example.com/slot/test_slot.png",
-  eventMetadataURI: "",
+  name: "First Event", //event名称
+  description: "Test Slot Description",
+  image: "https://example.com/slot/test_slot.png",
+  metadataURI: "",
   mintMax: 200
 };
 
 const event_2 = {
   organizer: ZERO_ADDRESS,
-  eventName: "Second Event", //event名称
-  eventDescription: "Test Slot Description",
-  eventImage: "https://example.com/slot/test_slot.png",
-  eventMetadataURI: "",
+  name: "Second Event", //event名称
+  description: "Test Slot Description",
+  image: "https://example.com/slot/test_slot.png",
+  metadataURI: "",
   mintMax: 100
 };
 
@@ -60,12 +60,12 @@ function shouldBehaveLikeERC3525 (errorPrefix) {
     beforeEach(async function () {
       [firstOwner, secondOwner, approved, valueApproved, anotherApproved, operator, slotOperator, other, organizer, user1,user2,user3,user4,user5] = await ethers.getSigners();
 
-      let tx = await this.token.connect(organizer).createEvent(event_1);
+      let tx = await this.token.connect(organizer).createProject(event_1);
       let receipt = await tx.wait();
-      let transferEvent = receipt.events.filter(e => e.event === 'EventAdded')[0];
+      let transferEvent = receipt.events.filter(e => e.event === 'ProjectAdded')[0];
       console.log("transferEvent:", transferEvent);
 
-      let eventId_1 = transferEvent.args['eventId'];
+      let eventId_1 = transferEvent.args['projectId'];
      console.log("eventId_1:", eventId_1.toNumber());
       console.log("");
 
@@ -73,14 +73,14 @@ function shouldBehaveLikeERC3525 (errorPrefix) {
         name: 'BigShow#1',
         description: 'for testing desc',
         image: 'https://example.com/img/1.jpg',
-        eventId:  eventId_1,
-        eventMetadataURI: "https://example.com/event/" + eventId_1.toString(),
+        projectId:  eventId_1,
+        metadataURI: "https://example.com/event/" + eventId_1.toString(),
       };
       
-      tx = await this.token.connect(organizer).createEvent(event_2);
+      tx = await this.token.connect(organizer).createProject(event_2);
       receipt = await tx.wait();
-      transferEvent = receipt.events.filter(e => e.event === 'EventAdded')[0];
-      let  eventId_2 = transferEvent.args['eventId'];
+      transferEvent = receipt.events.filter(e => e.event === 'ProjectAdded')[0];
+      let  eventId_2 = transferEvent.args['projectId'];
       //console.log("eventId_2:", eventId_2.toNumber());
       // console.log("");
       
@@ -88,33 +88,33 @@ function shouldBehaveLikeERC3525 (errorPrefix) {
         name: 'BigShow#2',
         description: 'for testing desc',
         image: 'https://example.com/img/1.jpg',
-        eventId:  eventId_2,
-        eventMetadataURI: "https://example.com/event/" + eventId_2.toString(),
+        projectId:  eventId_2,
+        metadataURI: "https://example.com/event/" + eventId_2.toString(),
       };
       
       //铸造出4枚token, value分别是1
       tx = await this.token.mint(slotDetail_1, firstOwner.address, []);
       receipt = await tx.wait();
-      transferEvent = receipt.events.filter(e => e.event === 'EventToken')[0];
+      transferEvent = receipt.events.filter(e => e.event === 'ProjectToken')[0];
       let tokenId = transferEvent.args['tokenId'];
       //console.log("first tokenId:", tokenId.toNumber());
       // console.log("");
 
       tx = await this.token.mint(slotDetail_1, secondOwner.address, []);
       receipt = await tx.wait();
-      transferEvent = receipt.events.filter(e => e.event === 'EventToken')[0];
+      transferEvent = receipt.events.filter(e => e.event === 'ProjectToken')[0];
       tokenId = transferEvent.args['tokenId'];
       //console.log("second tokenId:", tokenId.toNumber());
 
       tx = await this.token.mint(slotDetail_2, firstOwner.address, []);
       receipt = await tx.wait();
-      transferEvent = receipt.events.filter(e => e.event === 'EventToken')[0];
+      transferEvent = receipt.events.filter(e => e.event === 'ProjectToken')[0];
       tokenId = transferEvent.args['tokenId'];
      // console.log("third tokenId:", tokenId.toNumber());
       
       tx = await this.token.mint(slotDetail_2, secondOwner.address, []);
       receipt = await tx.wait();
-      transferEvent = receipt.events.filter(e => e.event === 'EventToken')[0];
+      transferEvent = receipt.events.filter(e => e.event === 'ProjectToken')[0];
       tokenId = transferEvent.args['tokenId'];
       //console.log("four tokenId:", tokenId.toNumber());
 
@@ -364,12 +364,12 @@ function shouldBehaveLikeERC3525 (errorPrefix) {
           name: 'BigShow#1',
           description: 'for testing desc',
           image: 'https://example.com/img/1.jpg',
-          eventId:  1,
-          eventMetadataURI: "https://example.com/event/1",
+          projectId:  1,
+          metadataURI: "https://example.com/event/1",
         };
         let tx = await this.token.mint(slotDetail_1, this.toOwner.address, []);
         let receipt = await tx.wait();
-        let transferEvent = receipt.events.filter(e => e.event === 'EventToken')[0];
+        let transferEvent = receipt.events.filter(e => e.event === 'ProjectToken')[0];
         this.toTokenId = transferEvent.args['tokenId'];
 
         this.toOwnerBalance = await this.token['balanceOf(address)'](this.toOwner.address);      
@@ -385,12 +385,12 @@ function shouldBehaveLikeERC3525 (errorPrefix) {
             name: 'BigShow#1',
             description: 'for testing desc',
             image: 'https://example.com/img/1.jpg',
-            eventId:  1,
-            eventMetadataURI: "https://example.com/event/1",
+            projectId:  1,
+            metadataURI: "https://example.com/event/1",
           };
           let tx = await this.token.mint(slotDetail_1, this.toOwner.address, []);
           let receipt = await tx.wait();
-          let transferEvent = receipt.events.filter(e => e.event === 'EventToken')[0];
+          let transferEvent = receipt.events.filter(e => e.event === 'ProjectToken')[0];
           this.toTokenId = transferEvent.args['tokenId'];
  
           this.toOwnerBalance = await this.token['balanceOf(address)'](this.toOwner.address);   
@@ -757,11 +757,11 @@ function shouldBehaveLikeERC3525SlotEnumerable (errorPrefix) {
   //   beforeEach(async function () {
   //     [firstOwner, secondOwner, approved, valueApproved, anotherApproved, operator, slotOperator, other, organizer, user1,user2,user3,user4,user5] = await ethers.getSigners();
 
-  //     let tx = await this.token.connect(organizer).createEvent(event_1);
+  //     let tx = await this.token.connect(organizer).createProject(event_1);
   //     let receipt = await tx.wait();
-  //     let transferEvent = receipt.events.filter(e => e.event === 'EventAdded')[0];
-  //     let eventId_1 = transferEvent.args['eventId'];
-  //     this.eventId = eventId_1;
+  //     let transferEvent = receipt.events.filter(e => e.event === 'ProjectAdded')[0];
+  //     let eventId_1 = transferEvent.args['projectId'];
+  //     this.projectId = eventId_1;
   //     // console.log("eventId_1:", eventId_1.toNumber());
   //     // console.log("");
 
@@ -769,14 +769,14 @@ function shouldBehaveLikeERC3525SlotEnumerable (errorPrefix) {
   //       name: 'BigShow#1',
   //       description: 'for testing desc',
   //       image: 'https://example.com/img/1.jpg',
-  //       eventId:  eventId_1,
-  //       eventMetadataURI: "https://example.com/event/" + eventId_1.toString(),
+  //       projectId:  eventId_1,
+  //       metadataURI: "https://example.com/event/" + eventId_1.toString(),
   //     };
       
-  //     tx = await this.token.connect(organizer).createEvent(event_2);
+  //     tx = await this.token.connect(organizer).createProject(event_2);
   //     receipt = await tx.wait();
-  //     transferEvent = receipt.events.filter(e => e.event === 'EventAdded')[0];
-  //     let  eventId_2 = transferEvent.args['eventId'];
+  //     transferEvent = receipt.events.filter(e => e.event === 'ProjectAdded')[0];
+  //     let  eventId_2 = transferEvent.args['projectId'];
   //     //console.log("eventId_2:", eventId_2.toNumber());
   //     // console.log("");
 
@@ -785,33 +785,33 @@ function shouldBehaveLikeERC3525SlotEnumerable (errorPrefix) {
   //       name: 'BigShow#2',
   //       description: 'for testing desc',
   //       image: 'https://example.com/img/1.jpg',
-  //       eventId:  eventId_2,
-  //       eventMetadataURI: "https://example.com/event/" + eventId_2.toString(),
+  //       projectId:  eventId_2,
+  //       metadataURI: "https://example.com/event/" + eventId_2.toString(),
   //     };
       
   //     //铸造出4枚token, value分别是1
   //     tx = await this.token.mint(slotDetail_1, firstOwner.address, []);
   //     receipt = await tx.wait();
-  //     transferEvent = receipt.events.filter(e => e.event === 'EventToken')[0];
+  //     transferEvent = receipt.events.filter(e => e.event === 'ProjectToken')[0];
   //     let tokenId = transferEvent.args['tokenId'];
   //     //console.log("first tokenId:", tokenId.toNumber());
   //     // console.log("");
 
   //     tx = await this.token.mint(slotDetail_1, secondOwner.address, []);
   //     receipt = await tx.wait();
-  //     transferEvent = receipt.events.filter(e => e.event === 'EventToken')[0];
+  //     transferEvent = receipt.events.filter(e => e.event === 'ProjectToken')[0];
   //     tokenId = transferEvent.args['tokenId'];
   //     //console.log("second tokenId:", tokenId.toNumber());
 
   //     tx = await this.token.mint(slotDetail_2, firstOwner.address, []);
   //     receipt = await tx.wait();
-  //     transferEvent = receipt.events.filter(e => e.event === 'EventToken')[0];
+  //     transferEvent = receipt.events.filter(e => e.event === 'ProjectToken')[0];
   //     tokenId = transferEvent.args['tokenId'];
   //    // console.log("third tokenId:", tokenId.toNumber());
       
   //     tx = await this.token.mint(slotDetail_2, secondOwner.address, []);
   //     receipt = await tx.wait();
-  //     transferEvent = receipt.events.filter(e => e.event === 'EventToken')[0];
+  //     transferEvent = receipt.events.filter(e => e.event === 'ProjectToken')[0];
   //     tokenId = transferEvent.args['tokenId'];
   //     //console.log("four tokenId:", tokenId.toNumber());
   //   });
@@ -955,16 +955,16 @@ function shouldBehaveLikeERC3525SlotEnumerable (errorPrefix) {
   //         // console.log("newTokenId:", newTokenId.toNumber());
 
   //         tx = await this.token.connect(firstOwner).combo(
-  //           this.eventId, 
+  //           this.projectId, 
   //           [firstTokenId, newTokenId], 
   //           "image", 
-  //           "eventMetadataURI", 
+  //           "metadataURI", 
   //           firstOwner.address, 
   //           10
   //         );
 
   //         receipt = await tx.wait();
-  //         transferEvent = receipt.events.filter(e => e.event === 'EventToken')[0];
+  //         transferEvent = receipt.events.filter(e => e.event === 'ProjectToken')[0];
   //         let derivative_tokenId = transferEvent.args['tokenId'];
   //         // console.log("derivative_tokenId:", derivative_tokenId.toNumber());
 
@@ -1000,16 +1000,16 @@ function shouldBehaveLikeERC3525SlotEnumerable (errorPrefix) {
   //         // console.log("newTokenId_organizer2:", newTokenId_organizer2.toNumber());
 
   //         tx = await this.token.connect(organizer).combo(
-  //           this.eventId, 
+  //           this.projectId, 
   //           [newTokenId_organizer1, newTokenId_organizer2], 
   //           "image", 
-  //           "eventMetadataURI", 
+  //           "metadataURI", 
   //           organizer.address, 
   //           valueAfterCombo
   //         );
 
   //         receipt = await tx.wait();
-  //         transferEvent = receipt.events.filter(e => e.event === 'EventToken')[0];
+  //         transferEvent = receipt.events.filter(e => e.event === 'ProjectToken')[0];
   //         let derivative_tokenId = transferEvent.args['tokenId'];
   //         // console.log("derivative_tokenId:", derivative_tokenId.toNumber());
           
@@ -1025,11 +1025,11 @@ function shouldBehaveLikeERC3525SlotEnumerable (errorPrefix) {
     beforeEach(async function () {
       [firstOwner, secondOwner, approved, valueApproved, anotherApproved, operator, slotOperator, other, organizer, user1,user2,user3,user4,user5] = await ethers.getSigners();
 
-      let tx = await this.token.connect(organizer).createEvent(event_1);
+      let tx = await this.token.connect(organizer).createProject(event_1);
       let receipt = await tx.wait(1);
-      let transferEvent = receipt.events.filter(e => e.event === 'EventAdded')[0];
-      let eventId_1 = transferEvent.args['eventId'];
-      this.eventId = eventId_1;
+      let transferEvent = receipt.events.filter(e => e.event === 'ProjectAdded')[0];
+      let eventId_1 = transferEvent.args['projectId'];
+      this.projectId = eventId_1;
       console.log("eventId_1:", eventId_1.toNumber());
       console.log("");
 
@@ -1037,14 +1037,14 @@ function shouldBehaveLikeERC3525SlotEnumerable (errorPrefix) {
         name: 'BigShow#1',
         description: 'for testing desc',
         image: 'https://example.com/img/1.jpg',
-        eventId:  eventId_1,
-        eventMetadataURI: "https://example.com/event/" + eventId_1.toString(),
+        projectId:  eventId_1,
+        metadataURI: "https://example.com/event/" + eventId_1.toString(),
       };
       
       //批量铸造
       tx = await this.token.mintEventToManyUsers(slotDetail_1, [ firstOwner.address, secondOwner.address]);
       receipt = await tx.wait();
-      transferEvent = receipt.events.filter(e => e.event === 'EventToken')[0];
+      transferEvent = receipt.events.filter(e => e.event === 'ProjectToken')[0];
       let tokenId = transferEvent.args['tokenId'];
       console.log("tokenId:", tokenId.toNumber());
       console.log("");

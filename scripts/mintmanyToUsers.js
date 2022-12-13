@@ -14,14 +14,14 @@ async function main() {
   const contractAddress = NOAV1_ADDRESS;
   const contractProxy = await ethers.getContractAt(contract.abi, contractAddress);
 
-  const eventId = 1;
+  const projectId = 1;
 
   let slotDetail_ = {
     name: 'BigShow#1',
     description: 'Testing desc',
     image: 'https://bitsoul.me/img/1.jpg',
-    eventId:  eventId,
-    eventMetadataURI: "https://bitsoul.me/event/" + eventId.toString(),
+    projectId:  projectId,
+    metadataURI: "https://bitsoul.me/event/" + projectId.toString(),
   };
   
   let to = [

@@ -10,6 +10,7 @@ import {Constants} from './Constants.sol';
 import {IIncubator} from '../interfaces/IIncubator.sol';
 import {IDerivativeNFTV1} from "../interfaces/IDerivativeNFTV1.sol";
 
+
 /**
  * @title PublishLogic
  * @author bitsoul.xyz
@@ -21,81 +22,53 @@ import {IDerivativeNFTV1} from "../interfaces/IDerivativeNFTV1.sol";
 library PublishLogic {
 
     function publish(
-        DataTypes.SlotDetail memory slotDetail_,
+        uint256 projectId,
+        DataTypes.Publication memory publication,
         address derivatveNFT,
         uint256 soulBoundTokenId, 
-        address incubator,
-        uint256 amount, 
-        bytes[] calldata datas
+        uint256 amount
     ) external returns(uint256) {
-       uint256 newTokenId =  IDerivativeNFTV1(derivatveNFT).publish(slotDetail_, incubator, amount);
+       uint256 newTokenId =  IDerivativeNFTV1(derivatveNFT).publish(
+            soulBoundTokenId, 
+            publication, 
+            amount
+        );
        
-       emit Events.PublishDerivativeNFT(
-            soulBoundTokenId,
-            incubator,
-            slotDetail_.eventId,
-            newTokenId,
-            amount,
-            block.timestamp
-       );
-
-        //TODO publishModule
         emit Events.PublishDerivativeNFT(
             soulBoundTokenId,
-            incubator,
-            slotDetail_.eventId,
+            projectId,
             newTokenId,
             amount,
             block.timestamp
-         );
+        ); 
+
+        //TODO publishModule
 
        return newTokenId;
     }
 
-     function combo(
-        DataTypes.SlotDetail memory slotDetail_,
-        address derivatveNFT,
-        uint256 soulBoundTokenId, 
-        uint256[] memory fromTokenIds_,
-        bytes[] calldata datas,
-        mapping(uint256 => address) storage _incubatorBySoulBoundTokenId
-    ) external returns(uint256) {
-        address toIncubator = _incubatorBySoulBoundTokenId[soulBoundTokenId];
-        uint256 newTokenId =  IDerivativeNFTV1(derivatveNFT).combo(slotDetail_, fromTokenIds_, toIncubator);
-
-        //TODO comboModule
-        emit Events.ComboDerivativeNFT(
-            soulBoundTokenId,
-            toIncubator,
-            slotDetail_.eventId,
-            fromTokenIds_,
-            newTokenId,
-            block.timestamp
-        );
-        return newTokenId;
-    }
-
     function split(
         address derivatveNFT,
-        address incubator,
-        uint256 soulBoundTokenId, 
+        uint256 fromSoulBoundTokenId, 
+        uint256 toSoulBoundTokenId, 
         uint256 tokenId, 
         uint256 amount, 
         bytes[] calldata datas
     ) external returns(uint256){
-        //TODO
-        uint256 originalValue = IERC3525(derivatveNFT).balanceOf(tokenId);
-        if (originalValue <= amount) revert Errors.InsufficientFund();
+         //TODO
+         uint256 originalValue = IERC3525(derivatveNFT).balanceOf(tokenId);
+         if (originalValue <= amount) revert Errors.InsufficientFund();
 
-         uint256 newTokenId =  IDerivativeNFTV1(derivatveNFT).split(
+         uint256 newTokenId = IDerivativeNFTV1(derivatveNFT).split(
+            toSoulBoundTokenId,
             tokenId,
-            incubator,
             amount
          );
          
+         
          emit Events.SplitDerivativeNFT(
-            soulBoundTokenId,
-            incubator,
+            fromSoulBoundTokenId,
+            toSoulBoundTokenId,
             tokenId,
             originalValue,
             newTokenId,

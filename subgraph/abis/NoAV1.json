@@ -172,7 +172,7 @@
       {
         "indexed": false,
         "internalType": "uint256",
-        "name": "eventId",
+        "name": "projectId",
         "type": "uint256"
       },
       {
@@ -203,25 +203,25 @@
       {
         "indexed": false,
         "internalType": "uint256",
-        "name": "eventId",
+        "name": "projectId",
         "type": "uint256"
       },
       {
         "indexed": false,
         "internalType": "string",
-        "name": "eventName",
+        "name": "name",
         "type": "string"
       },
       {
         "indexed": false,
         "internalType": "string",
-        "name": "eventDescription",
+        "name": "description",
         "type": "string"
       },
       {
         "indexed": false,
         "internalType": "string",
-        "name": "eventImage",
+        "name": "image",
         "type": "string"
       },
       {
@@ -231,7 +231,7 @@
         "type": "uint256"
       }
     ],
-    "name": "EventAdded",
+    "name": "ProjectAdded",
     "type": "event"
   },
   {
@@ -240,7 +240,7 @@
       {
         "indexed": false,
         "internalType": "uint256",
-        "name": "eventId",
+        "name": "projectId",
         "type": "uint256"
       },
       {
@@ -262,7 +262,7 @@
         "type": "address"
       }
     ],
-    "name": "EventToken",
+    "name": "ProjectToken",
     "type": "event"
   },
   {
@@ -486,7 +486,7 @@
     "inputs": [
       {
         "internalType": "uint256",
-        "name": "eventId_",
+        "name": "projectId_",
         "type": "uint256"
       },
       {
@@ -550,22 +550,22 @@
           },
           {
             "internalType": "string",
-            "name": "eventName",
+            "name": "name",
             "type": "string"
           },
           {
             "internalType": "string",
-            "name": "eventDescription",
+            "name": "description",
             "type": "string"
           },
           {
             "internalType": "string",
-            "name": "eventImage",
+            "name": "image",
             "type": "string"
           },
           {
             "internalType": "string",
-            "name": "eventMetadataURI",
+            "name": "metadataURI",
             "type": "string"
           },
           {
@@ -575,11 +575,11 @@
           }
         ],
         "internalType": "struct INoAV1.Event",
-        "name": "event_",
+        "name": "project_",
         "type": "tuple"
       }
     ],
-    "name": "createEvent",
+    "name": "createProject",
     "outputs": [
       {
         "internalType": "uint256",
@@ -613,11 +613,11 @@
     "inputs": [
       {
         "internalType": "uint256",
-        "name": "eventId_",
+        "name": "projectId_",
         "type": "uint256"
       }
     ],
-    "name": "getEventInfo",
+    "name": "getProjectInfo",
     "outputs": [
       {
         "components": [
@@ -628,22 +628,22 @@
           },
           {
             "internalType": "string",
-            "name": "eventName",
+            "name": "name",
             "type": "string"
           },
           {
             "internalType": "string",
-            "name": "eventDescription",
+            "name": "description",
             "type": "string"
           },
           {
             "internalType": "string",
-            "name": "eventImage",
+            "name": "image",
             "type": "string"
           },
           {
             "internalType": "string",
-            "name": "eventMetadataURI",
+            "name": "metadataURI",
             "type": "string"
           },
           {
@@ -689,12 +689,12 @@
           },
           {
             "internalType": "uint256",
-            "name": "eventId",
+            "name": "projectId",
             "type": "uint256"
           },
           {
             "internalType": "string",
-            "name": "eventMetadataURI",
+            "name": "metadataURI",
             "type": "string"
           }
         ],
@@ -826,12 +826,12 @@
           },
           {
             "internalType": "uint256",
-            "name": "eventId",
+            "name": "projectId",
             "type": "uint256"
           },
           {
             "internalType": "string",
-            "name": "eventMetadataURI",
+            "name": "metadataURI",
             "type": "string"
           }
         ],
@@ -882,12 +882,12 @@
           },
           {
             "internalType": "uint256",
-            "name": "eventId",
+            "name": "projectId",
             "type": "uint256"
           },
           {
             "internalType": "string",
-            "name": "eventMetadataURI",
+            "name": "metadataURI",
             "type": "string"
           }
         ],
@@ -1058,7 +1058,7 @@
     "inputs": [
       {
         "internalType": "uint256",
-        "name": "eventId_",
+        "name": "projectId_",
         "type": "uint256"
       },
       {

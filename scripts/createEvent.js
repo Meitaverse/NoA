@@ -1,6 +1,6 @@
 /*
 
-$ npx hardhat run scripts/createEvent.js
+$ npx hardhat run scripts/createProject.js
 */
 
 const { ethers } = require('hardhat');
@@ -23,21 +23,21 @@ async function main() {
   );
 
   const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000';
-  const event_ = {
+  const project_ = {
     organizer: ZERO_ADDRESS,
-    eventName: "NoATest", //event名称
-    eventDescription: "Event Of NoA Test",
-    eventImage: "https://example.com/slot/test_slot.png",
-    eventMetadataURI: "",
+    name: "NoATest", //event名称
+    description: "Event Of NoA Test",
+    image: "https://example.com/slot/test_slot.png",
+    metadataURI: "",
     mintMax: 200
   };
 
-  let tx = await contractProxy.connect(organizer).createEvent(event_);
+  let tx = await contractProxy.connect(organizer).createProject(project_);
 
   let receipt = await tx.wait();
-  let transferEvent = receipt.events.filter(e => e.event === 'EventAdded')[0];
-  const eventId = transferEvent.args['eventId'];
-  console.log("eventId:", eventId.toNumber());
+  let transferEvent = receipt.events.filter(e => e.event === 'ProjectAdded')[0];
+  const projectId = transferEvent.args['projectId'];
+  console.log("projectId:", projectId.toNumber());
   console.log("");
 }
 
