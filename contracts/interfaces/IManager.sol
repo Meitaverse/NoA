@@ -39,8 +39,27 @@ interface IManager {
    *
    * @param newState The state to set, as a member of the ProtocolState enum.
    */
-  function setState(DataTypes.ProtocolState newState) external;
+   function setState(DataTypes.ProtocolState newState) external;
 
+    function mintNDPT(
+        uint256 tokenId, 
+        uint256 slot, 
+        uint256 value
+    ) external;
+
+    function mintNDPTValue(
+        uint256 tokenId, 
+        uint256 value
+    ) external;
+
+   function burnNDPT(
+        uint256 tokenId
+   )external;
+
+    function burnNDPTValue(
+        uint256 tokenId,
+        uint256 value
+    ) external;
     /**
      * @notice Creates a profile with the specified parameters, minting a profile NFT to the given recipient. This
      * function must be called by a whitelisted profile creator.
@@ -52,7 +71,7 @@ interface IManager {
      *      followModule: The follow module to use, can be the zero address.
      *      followModuleInitData: The follow module initialization data, if any.
      */
-    function createSoulBoundToken(DataTypes.CreateProfileData calldata vars, string memory nickName) external returns (uint256);
+    function createProfile(DataTypes.CreateProfileData calldata vars, string memory nickName) external returns (uint256);
 
     /**
      * @notice Returns the follow module associated with a given soulBoundTokenId, if any.
@@ -105,15 +124,34 @@ interface IManager {
     function getReceiver() external view returns (address);
 
     /**
-     * @notice Follows the given SBT Id, executing each SBT Id's follow module logic (if any).
+     * @notice Adds or removes a profile creator from the whitelist. This function can only be called by the current
+     * governance address.
      *
-     * NOTE: Both the `soulBoundTokenIds` and `datas` arrays must be of the same length, regardless if the soulBoundTokenIds do not have a follow module set.
+     * @param profileCreator The profile creator address to add or remove from the whitelist.
+     * @param whitelist Whether or not the profile creator should be whitelisted.
+     */
+    function whitelistProfileCreator(address profileCreator, bool whitelist) external;
+
+    /**
+     * @notice Follows the given project id, executing each SBT Id's follow module logic (if any).
      *
-     * @param soulBoundTokenIds The token ID array of the SoulBoundTokenId to follow.
-     * @param datas The arbitrary data array to pass to the follow module for each profile if needed.
+     * @param projectId The project Id 
+     * @param soulBoundTokenId The soulBoundTokenId  of sender
+     * @param data The arbitrary data  to pass to the follow module
      *
      */
-    function follow(uint256[] calldata soulBoundTokenIds, bytes[] calldata datas) external;
+    function follow(
+        uint256 projectId,
+        uint256 soulBoundTokenId,
+        bytes calldata data
+    ) external;
+
+     function createHub(
+        address creater, 
+        uint256 soulBoundTokenId,
+        DataTypes.Hub memory hub,
+        bytes calldata createHubModuleData
+    ) external;
 
     function createProject(
         uint256 hubId,
@@ -136,34 +174,17 @@ interface IManager {
      * @param publication publication infomation
      * @param soulBoundTokenId The SBT ID  of the organizer to publish.
      * @param amount The amount of dNFT that publish.
+     * @param publishModuleData The publishModuleData call publish.
      *
      */
     function publish(
         uint256 projectId,
         DataTypes.Publication memory publication,
         uint256 soulBoundTokenId,       
-        uint256 amount
+        uint256 amount,
+        bytes calldata publishModuleData
     ) external returns(uint256);
 
-
-    /**
-     * @notice Combo into a new token.
-     *
-     * @param slotDetail_ detail of event
-     * @param soulBoundTokenId From SBT Id  
-     * @param fromTokenIds The array of dNFT.
-     * @param datas The arbitrary data array to pass to the collect module for each profile if needed.
-     *
-     * @return new tokenId
-     */
-    /*
-    function combo(
-        DataTypes.SlotDetail memory slotDetail_,
-        uint256 soulBoundTokenId, 
-        uint256[] memory fromTokenIds,
-        bytes[] calldata datas
-    ) external returns(uint256);
-*/
     /**
      * @notice Split a dNFT to two parts in same incubator.
      *
@@ -172,7 +193,7 @@ interface IManager {
      * @param toSoulBoundTokenId to SBT Id  
      * @param tokenId The tokenId of dNFT.
      * @param amount The amount to split.
-     * @param datas The arbitrary data array to pass to the collect module for each profile if needed.
+     * @param splitModuleData The arbitrary data to pass to the split module if needed.
      *
      * @return new tokenId
      */
@@ -182,29 +203,82 @@ interface IManager {
         uint256 toSoulBoundTokenId, 
         uint256 tokenId, 
         uint256 amount, 
-        bytes[] calldata datas
-    ) external returns(uint256) ;
+        bytes calldata splitModuleData
+    ) external returns(uint256);
+
+    function collect(
+        uint256 projectId, 
+        address collector,
+        uint256 fromSoulBoundTokenId,
+        uint256 toSoulBoundTokenId,
+        uint256 tokenId,
+        uint256 value,
+        bytes calldata collectModuledata
+    ) external;
+
+    function airdrop(
+        uint256 hubId, 
+        uint256 projectId, 
+        uint256 fromSoulBoundTokenId,
+        uint256[] memory toSoulBoundTokenIds,
+        uint256 tokenId,
+        uint256[] memory values,
+        bytes[] calldata airdropModuledatas
+    ) external;
 
     /**
      * @notice Transfer a dNFT to a address from incubator.
      *
-     * @param soulBoundTokenId From SBT Id  
      * @param projectId Event Id  
-     * @param to address to
+     * @param fromSoulBoundTokenId From SBT Id  
+     * @param toSoulBoundTokenId  to
      * @param tokenId The tokenId of dNFT.
-     * @param data The arbitrary data  to pass.
+     * @param transferModuledata The arbitrary data  to pass.
      *
      */
     function transferDerivativeNFT(
-        uint256 soulBoundTokenId,
         uint256 projectId,
-        address to,
+        uint256 fromSoulBoundTokenId,
+        uint256 toSoulBoundTokenId,
         uint256 tokenId,
-        bytes calldata data
+        bytes calldata transferModuledata
+    ) external;
+
+    function transferValueDerivativeNFT(
+        uint256 projectId,
+        uint256 fromSoulBoundTokenId,
+        uint256 toSoulBoundTokenId,
+        uint256 tokenId,
+        uint256 value,
+        bytes calldata transferValueModuledata
     ) external;
 
      function publishFixedPrice(
         DataTypes.Sale memory sale
     ) external;
+
+    function removeSale(
+        uint24 saleId_
+    ) external;
+
+    function addMarket(
+        address derivativeNFT_,
+        uint64 precision_,
+        uint8 feePayType_,
+        uint8 feeType_,
+        uint128 feeAmount_,
+        uint16 feeRate_
+    ) external;
+
+    function removeMarket(
+        address derivativeNFT_
+    ) external;
+
+    function buyUnits(
+        uint256 soulBoundTokenId,
+        address buyer,
+        uint24 saleId, 
+        uint128 units
+    )  external payable returns (uint256 amount, uint128 fee);
 
 }

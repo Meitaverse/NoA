@@ -166,6 +166,19 @@ library Events {
 
 
     /**
+     * @dev Emitted when a profile creator is added to or removed from the whitelist.
+     *
+     * @param profileCreator The address of the profile creator.
+     * @param whitelisted Whether or not the profile creator is being added to the whitelist.
+     * @param timestamp The current block timestamp.
+     */
+    event ProfileCreatorWhitelisted(
+        address indexed profileCreator,
+        bool indexed whitelisted,
+        uint256 timestamp
+    );
+
+    /**
      * @dev Emitted when the emergency admin is changed. We emit the caller even though it should be the previous
      * governance address, as we cannot guarantee this will always be the case due to upgradeability.
      *
@@ -184,15 +197,17 @@ library Events {
     /**
      * @dev Emitted upon a successful follow action.
      *
+     * @param projectId projectId
      * @param follower The address following the given profiles.
-     * @param profileIds The token ID array of the profiles being followed.
-     * @param followModuleDatas The array of data parameters passed to each follow module.
+     * @param soulBoundTokenId The token ID  of the profiles being followed.
+     * @param followModuleData The  data parameters passed to each follow module.
      * @param timestamp The current block timestamp.
      */
     event Followed(
+        uint256 indexed projectId,
         address indexed follower,
-        uint256[] profileIds,
-        bytes[] followModuleDatas,
+        uint256 indexed soulBoundTokenId,
+        bytes followModuleData,
         uint256 timestamp
     );
 
@@ -245,17 +260,22 @@ library Events {
 
 
     /**
-     * @dev Emitted when Manager call to mint of NDPT Tokens.
-     * @param mintTo The address mint to
+     * @notice Emitted when Manager call to mint of NDPT Tokens.
+     *         only can mint to banktreasury contract
+     * 
      * @param tokenId The token id of NDPT
      * @param slot The slot of  NDPT
      * @param value The value of mint NDPT
      * @param timestamp The current block timestamp.
      */
-    event MintNDPTBySig(
-        address mintTo, uint256 tokenId, uint256 slot, uint256 value,
+    event MintNDPT(
+        uint256 tokenId, uint256 slot, uint256 value,
         uint256 timestamp
     );
+
+    event BurnNDPT(uint256 tokenId, uint256 timestamp);
+
+    event BurnNDPTValue(uint256 tokenId, uint256 value, uint256 timestamp);
 
     /**
      * @dev Emitted when Manager call to mintValue of NDPT Tokens.
@@ -263,17 +283,31 @@ library Events {
      * @param value The value of mint NDPT
      * @param timestamp The current block timestamp.
      */
-    event MintNDPTValueBySig(
+    event MintNDPTValue(
         uint256 tokenId,uint256 value,
         uint256 timestamp
     );
 
     event CollectDerivativeNFT(
+        uint256 projectId,
         address derivatveNFT,
         uint256 fromSoulBoundTokenId,
         address collector,
         uint256 toSoulBoundTokenId,
         uint256 tokenId,
+        uint256 value,
+        uint256 newTokenId,
+        uint256 timestamp
+    );
+
+    event AirdropDerivativeNFT(
+        uint256 projectId,
+        address derivatveNFT,
+        uint256 fromSoulBoundTokenId,
+        address operator,
+        uint256 toSoulBoundTokenId,
+        uint256 tokenId,
+        uint256 value,
         uint256 newTokenId,
         uint256 timestamp
     );
@@ -306,11 +340,20 @@ library Events {
     );
 
     event TransferDerivativeNFT(
-        uint256 soulBoundTokenId,
+        uint256 fromSoulBoundTokenId,
+        uint256 toSoulBoundTokenId,
         uint256 projectId,
-        address incubator,
-        address to,
         uint256 tokenId,
+        uint256 timestamp
+    );
+
+    event TransferValueDerivativeNFT(
+        uint256 fromSoulBoundTokenId,
+        uint256 toSoulBoundTokenId,
+        uint256 projectId,
+        uint256 tokenId,
+        uint256 value,
+        uint256 newTokenId,
         uint256 timestamp
     );
 

@@ -9,6 +9,7 @@ import {IERC20Upgradeable} from "@openzeppelin/contracts-upgradeable/token/ERC20
 import {SafeMathUpgradeable} from "@openzeppelin/contracts-upgradeable/utils/math/SafeMathUpgradeable.sol";
 import {Errors} from "./libraries/Errors.sol";
 import {Events} from "./libraries/Events.sol";
+
 import "./storage/SBTStorage.sol";
 import {INFTDerivativeProtocolTokenV1} from "./interfaces/INFTDerivativeProtocolTokenV1.sol";
 
@@ -18,7 +19,7 @@ import {INFTDerivativeProtocolTokenV1} from "./interfaces/INFTDerivativeProtocol
  * 
  * , and includes built-in governance power and delegation mechanisms.
  */
-contract NFTDerivativeProtocolTokenV1 is 
+contract NFTDerivativeProtocolTokenV1 is
     SBTStorage,
     INFTDerivativeProtocolTokenV1, 
     ERC3525SlotEnumerableUpgradeable 
@@ -85,7 +86,6 @@ contract NFTDerivativeProtocolTokenV1 is
         DataTypes.CreateProfileData calldata vars,
         string memory nickName
     ) external override onlyManager returns (uint256) {
-        // if (!(hasRole(_MINTER_ROLE, msg.sender))) revert Errors.Unauthorized();
         if (balanceOf(vars.to) > 0) revert Errors.TokenIsClaimed(); 
 
         uint256 tokenId_ = ERC3525Upgradeable._mint(vars.to, 1, 0);
@@ -100,24 +100,26 @@ contract NFTDerivativeProtocolTokenV1 is
         return tokenId_;
     }
 
-    function mint(address mintTo, uint256 tokenId, uint256 slot, uint256 value) external payable onlyManager {
-        ERC3525Upgradeable._mint(mintTo, tokenId, slot, value);
-        // if (mintTo ==_BankTreasury) {
-        //     setApprovalForAll(_BankTreasury, true);
-        // }
+    function mint(uint256 tokenId, uint256 slot, uint256 value) external payable onlyManager {
+        ERC3525Upgradeable._mint(_BankTreasury, tokenId, slot, value);
+         emit Events.MintNDPT(tokenId, slot, value, block.timestamp);
     }
 
     function mintValue(uint256 tokenId, uint256 value) external payable onlyManager {
         ERC3525Upgradeable._mintValue(tokenId, value);
+        emit Events.MintNDPTValue(tokenId, value, block.timestamp);
+
     }
 
     function burn(uint256 tokenId) external onlyManager{
         ERC3525Upgradeable._burn(tokenId);
+         emit Events.BurnNDPT(tokenId, block.timestamp);
     }
 
     function burnValue(uint256 tokenId, uint256 value) external {
         require(_isApprovedOrOwner(_msgSender(), tokenId), "ERC3525: caller is not token owner nor approved");
         ERC3525Upgradeable._burnValue(tokenId, value);
+        emit Events.BurnNDPTValue(tokenId, value, block.timestamp);
     }
 
     //-----approval functions----//

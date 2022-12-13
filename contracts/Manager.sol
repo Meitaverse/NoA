@@ -9,6 +9,7 @@ import "@openzeppelin/contracts-upgradeable/utils/cryptography/ECDSAUpgradeable.
 import "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/utils/structs/EnumerableSetUpgradeable.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
+import "@solvprotocol/erc-3525/contracts/IERC3525.sol";
 import "./interfaces/IDerivativeNFTV1.sol";
 import "./interfaces/INFTDerivativeProtocolTokenV1.sol";
 import "./interfaces/IManager.sol";
@@ -24,6 +25,7 @@ import {ManagerStorage} from  "./storage/ManagerStorage.sol";
 import "./libraries/SafeMathUpgradeable128.sol";
 
 // import {VersionedInitializable} from './upgradeability/VersionedInitializable.sol';
+
 contract Manager is
     Initializable,
     IManager,
@@ -60,7 +62,6 @@ contract Manager is
 
     using Counters for Counters.Counter;
 
-
     Counters.Counter private _nextSaleId;
     Counters.Counter private _nextTradeId;
     Counters.Counter private _nextHubId;
@@ -71,6 +72,10 @@ contract Manager is
      */
     modifier onlyGov() {
         _validateCallerIsGovernance();
+        _;
+    }
+    modifier onlySoulBoundTokenOwner(uint256 soulBoundTokenId) {
+       _validateCallerIsSoulBoundTokenOwner(soulBoundTokenId);
         _;
     }
 
@@ -97,9 +102,11 @@ contract Manager is
         _grantRole(_UPGRADER_ROLE, _msgSender());
         _grantRole(_PAUSER_ROLE, _msgSender());
 
-        _setState(DataTypes.ProtocolState.Unpaused);
+        //default Paused
+        _setState(DataTypes.ProtocolState.Paused);
 
-        _governance = governance_;
+        _setGovernance(governance_);
+
         _receiver = receiver_;
     }
 
@@ -113,111 +120,98 @@ contract Manager is
         return _receiver;
     }
 
-    function mintNDPT(
-        address mintTo, uint256 tokenId, uint256 slot, uint256 value
-    ) external whenNotPaused onlyGov {
-        INFTDerivativeProtocolTokenV1(NDPT).mint(mintTo, tokenId, slot, value);
-        emit Events.MintNDPTBySig(mintTo, tokenId, slot, value, block.timestamp);
+    function whitelistProfileCreator(address profileCreator, bool whitelist)
+        external
+        override
+        onlyGov
+    {
+        _profileCreatorWhitelisted[profileCreator] = whitelist;
+        emit Events.ProfileCreatorWhitelisted(profileCreator, whitelist, block.timestamp);
     }
 
-    function mintNDPTBySig(
-        address mintTo, uint256 tokenId, uint256 slot, uint256 value,
-        uint256 nonce,
-        DataTypes.EIP712Signature calldata sig
-    ) external whenNotPaused {
-        //TODO
-        INFTDerivativeProtocolTokenV1(NDPT).mint(mintTo, tokenId, slot, value);
-        emit Events.MintNDPTBySig(mintTo, tokenId, slot, value, block.timestamp);
+    function mintNDPT(
+        uint256 tokenId, 
+        uint256 slot, 
+        uint256 value
+    ) external whenNotPaused onlyGov {
+        INFTDerivativeProtocolTokenV1(NDPT).mint(tokenId, slot, value);
     }
 
     function mintNDPTValue(
-        uint256 tokenId, uint256 value
-    ) external onlyGov {
+        uint256 tokenId, 
+        uint256 value
+    ) external whenNotPaused onlyGov {
         INFTDerivativeProtocolTokenV1(NDPT).mintValue(tokenId, value);
-        emit Events.MintNDPTValueBySig(tokenId, value, block.timestamp);
     }
 
-    function mintNDPTValueBySig(
-        uint256 tokenId, uint256 value,
-        uint256 nonce,
-        DataTypes.EIP712Signature calldata sig
-    ) external whenNotPaused {
-        //TODO
-        INFTDerivativeProtocolTokenV1(NDPT).mintValue(tokenId, value);
-        emit Events.MintNDPTValueBySig(tokenId, value, block.timestamp);
+    function transferValueNDPT(
+        uint256 tokenId, 
+        uint256 toSoulBoundTokenId,
+        uint256 value
+    ) external whenNotPaused onlyGov returns (uint256) {
+        address toIncubator =  InteractionLogic.deployIncubatorContract(toSoulBoundTokenId);
+        return IERC3525(NDPT).transferFrom(tokenId, toIncubator, value);
     }
 
     function burnNDPT(
         uint256 tokenId
-    ) external onlyGov {
-        //TODO
+    ) external whenNotPaused onlyGov {
          INFTDerivativeProtocolTokenV1(NDPT).burn(tokenId);
-    }
-
-    function burnNDPTBySig(
-        uint256 tokenId,
-         uint256 nonce,
-        DataTypes.EIP712Signature calldata sig
-    ) external whenNotPaused {
-        //TODO
-         INFTDerivativeProtocolTokenV1(NDPT).burn(tokenId);
-         
     }
 
     function burnNDPTValue(
         uint256 tokenId,
         uint256 value
-    ) external onlyGov{
-        //TODO
+    ) external whenNotPaused onlyGov {
         INFTDerivativeProtocolTokenV1(NDPT).burnValue(tokenId, value);
     }
 
-    function burnNDPTValueBySig(
-        uint256 tokenId,
-        uint256 value,
-        uint256 nonce,
-        DataTypes.EIP712Signature calldata sig
-    ) external whenNotPaused {
-        //TODO
-        INFTDerivativeProtocolTokenV1(NDPT).burnValue(tokenId, value);
-    }
-
-    function createSoulBoundToken(
+    function createProfile(
         DataTypes.CreateProfileData calldata vars, 
         string memory nickName
-    ) external onlyGov returns (uint256) {
-        return INFTDerivativeProtocolTokenV1(NDPT).createProfile(vars, nickName);
-    }
+    ) external returns (uint256) {
+        if (!_profileCreatorWhitelisted[msg.sender]) revert Errors.ProfileCreatorNotWhitelisted();
+        
+        uint256 soulBoundTokenId = INFTDerivativeProtocolTokenV1(NDPT).createProfile(vars, nickName);
 
-    function createSoulBoundTokenBySig(
-        DataTypes.CreateProfileData calldata vars,
-        string memory nickName,
-        uint256 nonce,
-        DataTypes.EIP712Signature calldata sig
-    ) external whenNotPaused returns (uint256) {
-        //TODO
-        return INFTDerivativeProtocolTokenV1(NDPT).createProfile(vars, nickName);
-    } 
+        address toIncubator = InteractionLogic.deployIncubatorContract(soulBoundTokenId);
+        _incubatorBySoulBoundTokenId[soulBoundTokenId] = toIncubator;
+    
+        return soulBoundTokenId;
+    }
 
     function createHub(
         address creater, 
-        uint256 soulBoundTokenId
-    ) external payable {
-        //TODO After user pay ether to create hub
-        uint256 hubId =  _generateNextHubId();
+        uint256 soulBoundTokenId,
+        DataTypes.Hub memory hub,
+        bytes calldata createHubModuleData
+    ) external whenNotPaused onlyGov{
+        uint256 hubId = _generateNextHubId();
         _hubBySoulBoundTokenId[soulBoundTokenId] = hubId; 
-        emit Events.CreateHub(creater, soulBoundTokenId, hubId, uint32(block.timestamp));
-    } 
-
+        InteractionLogic.createHub(
+            creater,
+            soulBoundTokenId,
+            hubId,
+            hub,
+            createHubModuleData,
+            _hubInfos
+        );
+   }
 
     function createProject(
         uint256 hubId,
         uint256 soulBoundTokenId,
         DataTypes.Project memory project,
         address metadataDescriptor,
-        bytes calldata projectModuleData
-    ) external onlyGov returns (uint256) {
-       if  (_projectNameHashByEventId[keccak256(bytes(project.name))]  > 0) {
+        bytes calldata createProjectModuleData
+    ) 
+        external 
+        whenNotPaused 
+        onlySoulBoundTokenOwner(soulBoundTokenId)
+        returns (uint256) 
+    {
+       if (_hubBySoulBoundTokenId[soulBoundTokenId] != hubId) revert Errors.NotHubOwner();
+       if (_projectNameHashByEventId[keccak256(bytes(project.name))]  > 0) {
             revert Errors.ProjectExisted();
        }
 
@@ -229,7 +223,7 @@ contract Manager is
             soulBoundTokenId,
             project, 
             metadataDescriptor,
-            projectModuleData,
+            createProjectModuleData,
             _derivativeNFTByProjectId
         );
     
@@ -255,8 +249,14 @@ contract Manager is
         uint256 projectId,
         DataTypes.Publication memory publication,
         uint256 soulBoundTokenId, 
-        uint256 amount
-    ) external onlyGov returns(uint256){
+        uint256 amount,
+        bytes calldata publishModuleData
+    ) 
+        external 
+        whenNotPaused 
+        onlySoulBoundTokenOwner(soulBoundTokenId) 
+        returns(uint256)
+    {
         address derivatveNFT = _derivativeNFTByProjectId[projectId];
         if (derivatveNFT == address(0)) revert Errors.InvalidParameter();
 
@@ -265,9 +265,11 @@ contract Manager is
             publication,
             derivatveNFT,
             soulBoundTokenId, 
-            amount
+            amount,
+            publishModuleData
         );
     }
+
 
     function split(
         uint256 projectId, 
@@ -275,8 +277,14 @@ contract Manager is
         uint256 toSoulBoundTokenId, 
         uint256 tokenId, 
         uint256 amount, 
-        bytes[] calldata datas
-    ) external override whenNotPaused onlyGov returns(uint256) {
+        bytes calldata splitModuleData
+    ) 
+        external 
+        override 
+        whenNotPaused 
+        onlySoulBoundTokenOwner(fromSoulBoundTokenId)
+        returns(uint256) 
+    {
         address derivatveNFT = _derivativeNFTByProjectId[projectId];
         if (derivatveNFT== address(0)) revert Errors.InvalidParameter();
         return PublishLogic.split(
@@ -285,21 +293,8 @@ contract Manager is
             toSoulBoundTokenId,
             tokenId,
             amount,
-            datas
+            splitModuleData
         );
-    }
-
-    function splitBySig(
-        uint256 projectId, 
-        uint256 fromSoulBoundTokenId, 
-        uint256 toSoulBoundTokenId, 
-        uint256 tokenId, 
-        uint256 amount, 
-        bytes[] calldata datas,
-        uint256 nonce,
-        DataTypes.EIP712Signature calldata sig
-    ) external whenNotPaused{
-        //TODO
     }
 
     function collect(
@@ -309,73 +304,121 @@ contract Manager is
         uint256 toSoulBoundTokenId,
         uint256 tokenId,
         uint256 value,
-        bytes calldata data
-    ) external whenNotPaused onlyGov {
+        bytes calldata collectModuledata
+    ) 
+        external
+        whenNotPaused 
+        onlySoulBoundTokenOwner(fromSoulBoundTokenId)
+    {
         address derivatveNFT = _derivativeNFTByProjectId[projectId];
         if (derivatveNFT== address(0)) revert Errors.InvalidParameter();
 
         return  InteractionLogic.collectDerivativeNFT(
+           projectId, 
            derivatveNFT, 
            collector, 
            fromSoulBoundTokenId, 
            toSoulBoundTokenId, 
            tokenId,
            value,
-           data, 
-           _pubByIdByProfile, 
-           _incubatorBySoulBoundTokenId
+           collectModuledata, 
+           _pubByIdByProfile
         );
     }
 
-    function collectBySig(
-        address collector,
+    function airdrop(
+        uint256 hubId, 
+        uint256 projectId, 
+        uint256 fromSoulBoundTokenId,
+        uint256[] memory toSoulBoundTokenIds,
+        uint256 tokenId,
+        uint256[] memory values,
+        bytes[] calldata airdropModuledatas
+    ) 
+        external
+        whenNotPaused 
+        onlySoulBoundTokenOwner(fromSoulBoundTokenId)
+    {
+        if (_hubBySoulBoundTokenId[fromSoulBoundTokenId] != hubId) revert Errors.NotHubOwner();
+        address derivatveNFT = _derivativeNFTByProjectId[projectId];
+        if (derivatveNFT== address(0)) revert Errors.InvalidParameter();
+
+        return InteractionLogic.airdropDerivativeNFT(
+            projectId, 
+            derivatveNFT, 
+            msg.sender,
+            fromSoulBoundTokenId, 
+            toSoulBoundTokenIds, 
+            tokenId,
+            values,
+            airdropModuledatas, 
+            _pubByIdByProfile
+        );
+    }
+
+    function transferDerivativeNFT(
+        uint256 projectId,
+        uint256 fromSoulBoundTokenId,
+        uint256 toSoulBoundTokenId,
+        uint256 tokenId,
+        bytes calldata transferModuledata
+    ) 
+        external 
+        whenNotPaused 
+        onlySoulBoundTokenOwner(fromSoulBoundTokenId)
+    {
+        address derivatveNFT = _derivativeNFTByProjectId[projectId];
+        if (derivatveNFT == address(0)) revert Errors.InvalidParameter();
+        
+        address fromIncubator = _incubatorBySoulBoundTokenId[fromSoulBoundTokenId];
+        if (fromIncubator== address(0)) revert Errors.InvalidParameter();
+        
+        address toIncubator = _incubatorBySoulBoundTokenId[toSoulBoundTokenId];
+        if (toIncubator== address(0)) revert Errors.InvalidParameter();
+        
+        InteractionLogic.transferDerivativeNFT(
+            fromSoulBoundTokenId,
+            toSoulBoundTokenId,
+            projectId,
+            derivatveNFT,
+            fromIncubator,
+            toIncubator,
+            tokenId, 
+            transferModuledata
+        );
+    }
+
+    function transferValueDerivativeNFT(
+        uint256 projectId,
         uint256 fromSoulBoundTokenId,
         uint256 toSoulBoundTokenId,
         uint256 tokenId,
         uint256 value,
-        bytes calldata data,
-        uint256 nonce,
-        DataTypes.EIP712Signature calldata sig
-    ) external whenNotPaused {
-        //TODO
-    }
-
-    function transferDerivativeNFT(
-        uint256 soulBoundTokenId,
-        uint256 projectId,
-        address to,
-        uint256 tokenId,
-        bytes calldata data
-    ) external whenNotPaused onlyGov {
-        if (to == address(0)) revert Errors.InvalidParameter();
-
+        bytes calldata transferValueModuledata
+    ) 
+        external 
+        whenNotPaused 
+        onlySoulBoundTokenOwner(fromSoulBoundTokenId)
+    {
         address derivatveNFT = _derivativeNFTByProjectId[projectId];
         if (derivatveNFT == address(0)) revert Errors.InvalidParameter();
         
-        address incubator = _incubatorBySoulBoundTokenId[soulBoundTokenId];
-        if (incubator== address(0)) revert Errors.InvalidParameter();
+        address fromIncubator = _incubatorBySoulBoundTokenId[fromSoulBoundTokenId];
+        if (fromIncubator== address(0)) revert Errors.InvalidParameter();
         
-        InteractionLogic.transferDerivativeNFT(
-            derivatveNFT,
-            incubator,
-            soulBoundTokenId,
+        address toIncubator = _incubatorBySoulBoundTokenId[toSoulBoundTokenId];
+        if (toIncubator== address(0)) revert Errors.InvalidParameter();
+        
+        InteractionLogic.transferValueDerivativeNFT(
+            fromSoulBoundTokenId,
+            toSoulBoundTokenId,
             projectId,
-            to,
+            derivatveNFT,
+            toIncubator,
             tokenId, 
-            data
+            value,
+            transferValueModuledata
         );
-    }
-
-     function transferDerivativeNFTBySig(
-        uint256 soulBoundTokenId,
-        uint256 projectId,
-        address to,
-        uint256 tokenId,
-        bytes calldata data,
-        uint256 nonce,
-        DataTypes.EIP712Signature calldata sig
-    ) external whenNotPaused onlyGov{
-        //TODO
     }
 
     function publishFixedPrice(
@@ -427,59 +470,54 @@ contract Manager is
             markets
         );
     }
-
+    
     function buyUnits(
-        address buyer_,
-        uint24 saleId_, 
-        uint128 units_
-    ) external payable whenNotPaused onlyGov returns (uint256 amount_, uint128 fee_){
-        if (sales[saleId_].max > 0) {
-            require( saleRecords[sales[saleId_].saleId][buyer_].add(units_) <= sales[saleId_].max, "exceeds purchase limit");
-            saleRecords[sales[saleId_].saleId][buyer_] =  saleRecords[sales[saleId_].saleId][buyer_].add(units_);
+        uint256 soulBoundTokenId,
+        address buyer,
+        uint24 saleId, 
+        uint128 units
+    ) 
+        external 
+        payable 
+        whenNotPaused 
+        onlySoulBoundTokenOwner(soulBoundTokenId)
+        returns (uint256 amount, uint128 fee)
+    {
+        if (sales[saleId].max > 0) {
+            require( saleRecords[sales[saleId].saleId][buyer].add(units) <= sales[saleId].max, "exceeds purchase limit");
+            saleRecords[sales[saleId].saleId][buyer] =  saleRecords[sales[saleId].saleId][buyer].add(units);
         }
 
-        if (sales[saleId_].useAllowList) {
+        if (sales[saleId].useAllowList) {
             require(
-                _allowAddresses[sales[saleId_].derivativeNFT].contains(buyer_),
+                _allowAddresses[sales[saleId].derivativeNFT].contains(buyer),
                 "not in allow list"
             );
         }
         return MarketLogic.buyByUnits(
             _generateNextTradeId(),
-            buyer_,
-            saleId_,
-            PriceManager.price(DataTypes.PriceType.FIXED, saleId_),
-            units_,
+            buyer,
+            saleId,
+            PriceManager.price(DataTypes.PriceType.FIXED, saleId),
+            units,
             markets,
             sales
         );
     }
 
-    function buyUnitsBySig(
-        address buyer_,
-        uint24 saleId_, 
-        uint128 units_,
-        uint256 nonce,
-        DataTypes.EIP712Signature calldata sig
-    ) external payable whenNotPaused returns (uint256 amount_, uint128 fee_){
-        //TODO
-    }
-
     function follow(
-        uint256[] calldata soulBoundTokenIds,
-        bytes[] calldata datas
-    ) external override whenNotPaused onlyGov {
-        InteractionLogic.follow(msg.sender, soulBoundTokenIds, datas, _profileById, _profileIdByHandleHash);
+        uint256 projectId,
+        uint256 soulBoundTokenId,
+        bytes calldata data
+    ) 
+        external 
+        override 
+        whenNotPaused  
+        onlySoulBoundTokenOwner(soulBoundTokenId)
+    {
+        InteractionLogic.follow(projectId, msg.sender, soulBoundTokenId, data, _profileById, _profileIdByHandleHash);
     }
 
-    function followBySig(
-        uint256[] calldata soulBoundTokenIds,
-        bytes calldata data,
-        uint256 nonce,
-        DataTypes.EIP712Signature calldata sig
-    ) external {
-        //TODO
-    }
 
     function getFollowModule(uint256 soulBoundTokenId) external view override returns (address) {
         return _profileById[soulBoundTokenId].followModule;
@@ -521,13 +559,17 @@ contract Manager is
         _setState(newState);
     }
 
-    function setGovernance(address newGovernance) external override onlyOwner {
+    function setGovernance(address newGovernance) external override onlyGov {
         _setGovernance(newGovernance);
     }
 
     //--- internal  ---//
     function _validateCallerIsGovernance() internal view {
         if (msg.sender != _governance) revert Errors.NotGovernance();
+    }
+    
+    function _validateCallerIsSoulBoundTokenOwner(uint256 soulBoundTokenId) internal view {
+        if (msg.sender != _profileOwners[soulBoundTokenId]) revert Errors.NotSoulBoundTokenOwner();
     }
     
     function _setGovernance(address newGovernance) internal {

@@ -42,6 +42,13 @@ library DataTypes {
         uint256 reputation;
     }
     
+    struct Hub {
+        uint256 soulBoundTokenId;
+        string name;
+        string description;
+        string image;
+        string metadataURI;
+    }
 
     /**
      * @dev  Store Organizer create project 

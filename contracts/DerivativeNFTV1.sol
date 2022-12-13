@@ -14,14 +14,15 @@ import {DataTypes} from './libraries/DataTypes.sol';
 import {Events} from "./libraries/Events.sol";
 import {IManager} from "./interfaces/IManager.sol";
 import {IDerivativeNFTV1} from "./interfaces/IDerivativeNFTV1.sol";
- 
+ import "./base/NoAMultiState.sol";
+
 /**
  *  @title Derivative NFT
  * 
  * 
  * , and includes built-in governance power and delegation mechanisms.
  */
-contract DerivativeNFTV1 is IDerivativeNFTV1, ERC3525Upgradeable {
+contract DerivativeNFTV1 is IDerivativeNFTV1, NoAMultiState, ERC3525Upgradeable {
     using Counters for Counters.Counter;
     using SafeMathUpgradeable for uint256;
 
@@ -30,7 +31,7 @@ contract DerivativeNFTV1 is IDerivativeNFTV1, ERC3525Upgradeable {
     Counters.Counter private  _nextSlotId;
 
     uint256 internal _hubId;
-    uint256 internal _publishId;
+    uint256 internal _projectId;
     uint256 internal _soulBoundTokenId;
 
     address internal _emergencyAdmin;
@@ -49,12 +50,6 @@ contract DerivativeNFTV1 is IDerivativeNFTV1, ERC3525Upgradeable {
 
     // @dev owner => slot => operator => approved
     mapping(address => mapping(uint256 => mapping(address => bool))) private _slotApprovals;
-
-    // projectId => EventData
-    // mapping(uint256 => bytes32) private _eventIdTomerkleRoots;
-
-    // projectId => Event
-    // mapping(uint256 => DataTypes.Project) private _eventInfos;
 
     // slot => slotDetail
     mapping(uint256 => DataTypes.SlotDetail) private _slotDetails;
@@ -86,7 +81,7 @@ contract DerivativeNFTV1 is IDerivativeNFTV1, ERC3525Upgradeable {
         string memory name_,
         string memory symbol_,
         uint256 hubId_,
-        uint256 publishId_,
+        uint256 projectId_,
         uint256 soulBoundTokenId_,
         address metadataDescriptor_
     ) external override initializer { 
@@ -98,8 +93,11 @@ contract DerivativeNFTV1 is IDerivativeNFTV1, ERC3525Upgradeable {
         __ERC3525_init_unchained(name_, symbol_, 0);
         _setMetadataDescriptor(metadataDescriptor_);
 
+        //default Unpaused
+        _setState(DataTypes.ProtocolState.Unpaused);
+
         _hubId = hubId_;
-        _publishId = publishId_;
+         _projectId = projectId_;
         _soulBoundTokenId = soulBoundTokenId_;
         _receiver = IManager(_MANAGER).getReceiver();
     }
@@ -109,13 +107,19 @@ contract DerivativeNFTV1 is IDerivativeNFTV1, ERC3525Upgradeable {
         _setMetadataDescriptor(metadataDescriptor_);
     }
 
+    function setState(DataTypes.ProtocolState newState) external override onlyManager{
+        _setState(newState);
+    }
+
+
     // Publication only can publish once
     function publish(
         uint256 soulBoundTokenId,
         DataTypes.Publication memory publication,
         uint256 value_
-    ) external virtual onlyManager returns (uint256) {
+    ) external virtual onlyManager whenPublishingEnabled returns (uint256) {
         if (_publicationNameHashBySlot[keccak256(bytes(publication.name))] > 0) revert Errors.PublicationIsExisted();
+        if (soulBoundTokenId != _soulBoundTokenId && publication.fromTokenIds.length == 0) revert Errors.InvalidParameter();
         
         for (uint256 i = 0; i < publication.fromTokenIds.length; ++i) {
             if (!(_isApprovedOrOwner(msg.sender, publication.fromTokenIds[i])))  revert Errors.NotOwnerNorApproved();
@@ -134,7 +138,7 @@ contract DerivativeNFTV1 is IDerivativeNFTV1, ERC3525Upgradeable {
                 publication.materialURIs,
                 publication.fromTokenIds
             ),
-            projectId: _publishId,
+            projectId:  _projectId,
             timestamp: block.timestamp 
         });
 
@@ -151,7 +155,7 @@ contract DerivativeNFTV1 is IDerivativeNFTV1, ERC3525Upgradeable {
         uint256 toSoulBoundTokenId_,
         uint256 fromTokenId_, 
         uint256 value_
-    ) external onlyManager returns(uint256) {
+    ) external onlyManager whenNotPaused returns(uint256) {
         address to_ = IManager(_MANAGER).getIncubatorOfSoulBoundTokenId(toSoulBoundTokenId_);
         if (!ERC3525Upgradeable.isApprovedForAll(to_, _MANAGER)) {
             ERC3525Upgradeable.setApprovalForAll(_MANAGER, true);
@@ -159,42 +163,7 @@ contract DerivativeNFTV1 is IDerivativeNFTV1, ERC3525Upgradeable {
         return ERC3525Upgradeable.transferFrom(fromTokenId_, to_, value_);
     }
 
-/*
-    function combo(
-        DataTypes.SlotDetail memory slotDetail_,
-        uint256[] memory fromTokenIds_,
-        address to_
-    ) external payable onlyManager returns (uint256) {
-        if (fromTokenIds_.length == 0)revert Errors.ComboLengthNotEnough();
-
-        //must same project?
-        // uint256 projectId_;
-        for (uint256 i = 0; i < fromTokenIds_.length; ++i) {
-            if (!(_isApprovedOrOwner(msg.sender, fromTokenIds_[i])))  revert Errors.NotOwnerNorApproved();
-            // projectId_ = this.slotOf(fromTokenIds_[i]);
-
-            //cant not burn
-            this.transferFrom(fromTokenIds_[i], _receiver, 1);
-        }
-
-        uint256 slot = _generateNextSlotId(); //generate a new slot
-        _slotDetails[slot] = DataTypes.SlotDetail({
-            projectId: _slotDetails[slot].projectId,
-            name: slotDetail_.name,
-            description: slotDetail_.description,
-            metadataURI: slotDetail_.metadataURI
-        });
-
-        uint256 tokenId_ = ERC3525Upgradeable._mint(to_, slot, 1);
-
-        emit Events.ProjectToken(_slotDetails[slot].projectId, tokenId_, to_);
-
-        return tokenId_;
-
-    }
-*/
-
-    function burn(uint256 tokenId_) external virtual {
+    function burn(uint256 tokenId_) external virtual whenNotPaused {
         uint256 slot = slotOf(tokenId_);
         if (!_isApprovedOrOwner(msg.sender, tokenId_)) {
             revert Errors.NotAllowed();
@@ -217,12 +186,53 @@ contract DerivativeNFTV1 is IDerivativeNFTV1, ERC3525Upgradeable {
         return interfaceId == _INTERFACE_ID_ERC2981 || super.supportsInterface(interfaceId);
     }
 
-    // function setApprovalForAll(
-    //     address operator_, 
-    //     bool approved_
-    // ) public virtual override onlyManager{
-    //     super._setApprovalForAll(_msgSender(), operator_, approved_);
-    // }
+    function transferFrom(
+        uint256 fromTokenId_,
+        address to_,
+        uint256 value_
+    ) public payable virtual override onlyManager whenNotPaused returns (uint256) {
+       return super.transferFrom(fromTokenId_, to_, value_);
+    }
+
+    function transferFrom(
+        uint256 fromTokenId_,
+        uint256 toTokenId_,
+        uint256 value_
+    ) public payable virtual override onlyManager whenNotPaused {
+      super.transferFrom(fromTokenId_, toTokenId_, value_);
+    }
+
+    function transferFrom(
+        address from_,
+        address to_,
+        uint256 tokenId_
+    ) public payable virtual override onlyManager whenNotPaused {
+        super.transferFrom(from_, to_, tokenId_);
+    }
+
+    function safeTransferFrom(
+        address from_,
+        address to_,
+        uint256 tokenId_,
+        bytes memory data_
+    ) public payable virtual override onlyManager whenNotPaused {
+        super.safeTransferFrom(from_, to_, tokenId_,data_);
+    }
+
+    function safeTransferFrom(
+        address from_,
+        address to_,
+        uint256 tokenId_
+    ) public payable virtual override onlyManager whenNotPaused {
+       super.safeTransferFrom(from_, to_, tokenId_, "");
+    }
+
+    function setApprovalForAll(
+        address operator_, 
+        bool approved_
+    ) public virtual override onlyManager whenNotPaused{
+        super._setApprovalForAll(_msgSender(), operator_, approved_);
+    }
 
     //----internal functions----//
 
@@ -234,7 +244,7 @@ contract DerivativeNFTV1 is IDerivativeNFTV1, ERC3525Upgradeable {
         uint256 slot_,
         address operator_,
         bool approved_
-    ) external payable virtual {
+    ) external payable virtual onlyManager whenNotPaused{
         if (!(_msgSender() == owner_ || isApprovedForAll(owner_, _msgSender()))) {
             revert Errors.NotAllowed();
         }
@@ -260,7 +270,7 @@ contract DerivativeNFTV1 is IDerivativeNFTV1, ERC3525Upgradeable {
      * @param royaltyBasisPoints The royalty percentage meassured in basis points. Each basis point
      *                           represents 0.01%.
      */
-    function setRoyalty(uint256 royaltyBasisPoints) external {
+    function setRoyalty(uint256 royaltyBasisPoints) external onlyManager {
         if (IERC3525(_NDPT).ownerOf(_soulBoundTokenId) == msg.sender) {
             if (royaltyBasisPoints > _BASIS_POINTS) {
                 revert Errors.InvalidParameter();

@@ -61,13 +61,11 @@ interface INFTDerivativeProtocolTokenV1  {
      * @notice Mint to a address spec tokenId.
      *  Only admin can execute.
      *
-     * @param mintTo is the address that can receive a new token.
      * @param tokenId is the tokenId of ERC3525 Token
      * @param slot is the lost of tokenId
      * @param value is the value of tokenId
      */
     function mint(
-        address mintTo,
         uint256 tokenId,
         uint256 slot,
         uint256 value

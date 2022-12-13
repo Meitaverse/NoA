@@ -13,6 +13,7 @@ interface IDerivativeNFTV1 {
      * @param name_ The name to set for the derivative NFT.
      * @param symbol_ The symbol to set for the derivative NFT.
      * @param  hubId_ The id of the Hub.
+     * @param  projectId_ The projectid.
      * @param  soulBoundTokenId_ The token id of the SoulBoundToken.
      * @param metadataDescriptor_ The Descriptor address to set.
      */
@@ -20,7 +21,7 @@ interface IDerivativeNFTV1 {
         string memory name_,
         string memory symbol_,
         uint256 hubId_,
-        uint256 publishId_,
+        uint256 projectId_,
         uint256 soulBoundTokenId_,
         address metadataDescriptor_
     ) external;
@@ -75,6 +76,8 @@ interface IDerivativeNFTV1 {
   function getSlotDetail(uint256 slot_) external view returns (DataTypes.SlotDetail memory);
 
   function setMetadataDescriptor(address metadataDescriptor_) external;
+
+  function setState(DataTypes.ProtocolState newState) external;
 
   // function createProject(DataTypes.Project memory project_) external returns (uint256);
 

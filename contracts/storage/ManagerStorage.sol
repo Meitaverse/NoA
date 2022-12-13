@@ -56,11 +56,13 @@ abstract contract ManagerStorage {
     //         'CollectWithSig(uint256 profileId,uint256 pubId,bytes data,uint256 nonce,uint256 deadline)'
     //     );
 
+    mapping(uint256 => address) internal _profileOwners;
     mapping(address => bool) internal _profileCreatorWhitelisted;
     mapping(address => bool) internal _followModuleWhitelisted;
     mapping(address => bool) internal _collectModuleWhitelisted;
     mapping(address => bool) internal _referenceModuleWhitelisted;
 
+    mapping(uint256 => DataTypes.Hub) internal _hubInfos;
     mapping(uint256 => uint256) internal _hubBySoulBoundTokenId;
     mapping(bytes32 => uint256) internal _projectNameHashByEventId;
     mapping(uint256 => DataTypes.Project) internal _projectInfoByProjectId;

@@ -25,10 +25,11 @@ library Errors {
   error MaxExceeded();
   error ApproveToOwner();
   error ComboLengthNotEnough();
-  error EventIdNotSame();
+  error LengthNotSame();
   error Initialized();
   error InvalidParameter();
   error NotSoulBoundTokenOwner();
+  error NotHubOwner();
   error CannotInitImplementation();
   error NotGovernance();
   error NotManager();
@@ -41,6 +42,7 @@ library Errors {
   error ZeroIncubator();
   error SignatureExpired();
   error SignatureInvalid();
+  error ProfileCreatorNotWhitelisted();
 
   // Module Errors
   error InitParamsInvalid();

@@ -26,7 +26,8 @@ library PublishLogic {
         DataTypes.Publication memory publication,
         address derivatveNFT,
         uint256 soulBoundTokenId, 
-        uint256 amount
+        uint256 amount,
+        bytes calldata publishModuleData
     ) external returns(uint256) {
        uint256 newTokenId =  IDerivativeNFTV1(derivatveNFT).publish(
             soulBoundTokenId, 
@@ -43,6 +44,7 @@ library PublishLogic {
         ); 
 
         //TODO publishModule
+        publishModuleData;
 
        return newTokenId;
     }
@@ -53,9 +55,8 @@ library PublishLogic {
         uint256 toSoulBoundTokenId, 
         uint256 tokenId, 
         uint256 amount, 
-        bytes[] calldata datas
+        bytes calldata splitModuleData
     ) external returns(uint256){
-         //TODO
          uint256 originalValue = IERC3525(derivatveNFT).balanceOf(tokenId);
          if (originalValue <= amount) revert Errors.InsufficientFund();
 
@@ -65,7 +66,9 @@ library PublishLogic {
             amount
          );
          
-         
+         //TODO
+         splitModuleData;
+
          emit Events.SplitDerivativeNFT(
             fromSoulBoundTokenId,
             toSoulBoundTokenId,
