@@ -7,8 +7,8 @@ import {Errors} from "../../libraries/Errors.sol";
 import {FeeModuleBase} from "../FeeModuleBase.sol";
 import {ModuleBase} from "../ModuleBase.sol";
 import {FollowValidationModuleBase} from "../FollowValidationModuleBase.sol";
-import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
+import {IERC20Upgradeable} from "@openzeppelin/contracts-upgradeable/token/ERC20/IERC20Upgradeable.sol";
+import {SafeERC20Upgradeable} from "@openzeppelin/contracts-upgradeable/token/ERC20/utils/SafeERC20Upgradeable.sol";
 import {IERC3525} from "@solvprotocol/erc-3525/contracts/IERC3525.sol";
 
 /**
@@ -40,7 +40,7 @@ struct ProfilePublicationData {
  * This module works by allowing unlimited collects for a publication at a given price.
  */
 contract FeeCollectModule is FeeModuleBase, FollowValidationModuleBase, ICollectModule {
-    using SafeERC20 for IERC20;
+    using SafeERC20Upgradeable for IERC20Upgradeable;
 
     mapping(uint256 => mapping(uint256 => ProfilePublicationData)) internal _dataByPublicationByProfile;
 
@@ -132,10 +132,10 @@ contract FeeCollectModule is FeeModuleBase, FollowValidationModuleBase, ICollect
         uint256 adjustedAmount = amount - treasuryAmount;
 
         //向recipient支付剩余的currency
-        IERC20(currency).safeTransferFrom(collector, recipient, adjustedAmount);
+        IERC20Upgradeable(currency).safeTransferFrom(collector, recipient, adjustedAmount);
 
         //如果支付给金库的数量大于0
-        if (treasuryAmount > 0) IERC20(currency).safeTransferFrom(collector, treasury, treasuryAmount);
+        if (treasuryAmount > 0) IERC20Upgradeable(currency).safeTransferFrom(collector, treasury, treasuryAmount);
     }
 
     function _processCollectWithReferral(
@@ -172,11 +172,11 @@ contract FeeCollectModule is FeeModuleBase, FollowValidationModuleBase, ICollect
 
             // address referralRecipient = IERC721(HUB).ownerOf(referrerProfileId);
 
-            // IERC20(currency).safeTransferFrom(collector, referralRecipient, referralAmount);
+            // IERC20Upgradeable(currency).safeTransferFrom(collector, referralRecipient, referralAmount);
         }
         address recipient = _dataByPublicationByProfile[profileId][pubId].recipient;
 
-        IERC20(currency).safeTransferFrom(collector, recipient, adjustedAmount);
-        if (treasuryAmount > 0) IERC20(currency).safeTransferFrom(collector, treasury, treasuryAmount);
+        IERC20Upgradeable(currency).safeTransferFrom(collector, recipient, adjustedAmount);
+        if (treasuryAmount > 0) IERC20Upgradeable(currency).safeTransferFrom(collector, treasury, treasuryAmount);
     }
 }

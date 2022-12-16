@@ -21,6 +21,21 @@ contract UTokenV1 is
         require(_msgSender() == admin, "Only Admin: caller is not the admin");
         _;
     }
+    
+    /// @custom:oz-upgrades-unsafe-allow constructor
+    constructor() initializer {}
+    
+    // Initialize function for proxy
+    function initialize() public initializer {
+        __ERC20_init("UToken", "UToken");
+        __Ownable_init();
+        __UUPSUpgradeable_init();
+
+        admin = _msgSender();
+        minSupply = 1000000 * 10**decimals();
+        capSupply = 10000000 * 10**decimals();
+        _mint(_msgSender(), minSupply);
+    }
 
     // Admin Only Function
     function mint(uint256 _amount) external onlyAdmin {
@@ -54,20 +69,8 @@ contract UTokenV1 is
         return true;
     }
 
-    // Initialize function for proxy
-    function initialize() public initializer {
-        __ERC20_init("UToken", "UToken");
-        __Ownable_init();
-        __UUPSUpgradeable_init();
+   
 
-        admin = _msgSender();
-        minSupply = 1000000 * 10**decimals();
-        capSupply = 10000000 * 10**decimals();
-        _mint(_msgSender(), minSupply);
-    }
-
-    /// @custom:oz-upgrades-unsafe-allow constructor
-    constructor() initializer {}
 
     function _authorizeUpgrade(address) internal override onlyOwner {}
 }

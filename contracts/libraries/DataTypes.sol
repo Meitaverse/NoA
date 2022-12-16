@@ -4,9 +4,9 @@ pragma solidity ^0.8.13;
 
 /**
  * @title DataTypes
- * @author ShowDao Protocol
+ * @author Bitsoul Protocol
  *
- * @notice A standard library of data types used throughout the ShowDao Protocol.
+ * @notice A standard library of data types used throughout the Bitsoul Protocol.
  */
 library DataTypes {
     enum PriceType {FIXED, DECLIINING_BY_TIME}
@@ -48,6 +48,7 @@ library DataTypes {
         string description;
         string image;
         string metadataURI;
+        uint256 timestamp;
     }
 
     /**
@@ -66,6 +67,7 @@ library DataTypes {
         string description;
         string image;
         string metadataURI;
+        uint256 timestamp;
     }
     
     /**
@@ -77,7 +79,7 @@ library DataTypes {
         // uint256[] previousDerivativeNFTIds;     //from array of dNFT Ids
         // uint256[] previousSoulBoundTokenIds;  //NDPT token id
         uint256 projectId;
-        uint256 timestamp;
+        uint256 timestamp; //minted timestamp
     }
 
     /**
@@ -212,6 +214,20 @@ library DataTypes {
         address collectModule;
         address collectNFT;
     }
+
+    //BankTreasury
+    
+    struct Transaction {
+        address currency;
+        DataTypes.CurrencyType currencyType;
+        address to;
+        uint256 fromTokenId;
+        uint256 toTokenId;
+        uint256 value;
+        bytes data;
+        bool executed;
+        uint256 numConfirmations;
+    }    
 
 
 }

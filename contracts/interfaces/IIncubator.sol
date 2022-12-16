@@ -6,7 +6,7 @@ import {DataTypes} from "../libraries/DataTypes.sol";
 
 /**
  * @title IIncubator
- * @author ShowDao Protocol
+ * @author Bitsoul Protocol
  *
  * @notice This is the interface for the Incubator contract, which is cloned for any SoulBoundToken.
  */

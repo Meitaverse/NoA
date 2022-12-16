@@ -13,16 +13,20 @@ interface INFTDerivativeProtocolTokenV1  {
      * @param name The name to set for the Token.
      * @param symbol The symbol to set for the Token.
      * @param decimals The decimal to set for the Token.
-     * @param manager The manager address to set.
-     * @param bankTreasury The bankTreasury address to set.
+     * @param manager The address of Manager contract
+     * @param bankTreasury The address of BankTreasury contract
      */
     function initialize(
         string memory name,
         string memory symbol,
         uint8 decimals,
         address manager,
-         address bankTreasury
+        address bankTreasury
     ) external ;
+
+     function version() external returns(uint256);
+     function getManager() external returns(address);
+     function getBankTreasury() external returns(address);
 
     /**
      * @notice Approve or disapprove an operator to manage all of `_owner`'s tokens with the

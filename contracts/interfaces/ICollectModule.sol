@@ -6,7 +6,7 @@ pragma solidity ^0.8.13;
  * @title ICollectModule
  * @author Derivative NFT Protocol
  *
- * @notice This is the standard interface for all ShowDao-compatible CollectModules.
+ * @notice This is the standard interface for all Bitsoul-compatible CollectModules.
  */
 interface ICollectModule {
     /**

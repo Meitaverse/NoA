@@ -8,4 +8,14 @@ contract SBTStorage  {
 
     // slot => slotDetail
     mapping(uint256 => DataTypes.SoulBoundTokenDetail) internal _sbtDetails;
+
+    // solhint-disable-next-line var-name-mixedcase
+    address internal _MANAGER;
+
+    // solhint-disable-next-line var-name-mixedcase
+    address internal _BANKTREASURY;
+
+    // @dev owner => slot => operator => approved
+    mapping(address => mapping(uint256 => mapping(address => bool))) internal _slotApprovals;
+    
 }

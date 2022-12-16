@@ -19,7 +19,6 @@ import {IDerivativeNFTV1} from "./interfaces/IDerivativeNFTV1.sol";
 /**
  *  @title Derivative NFT
  * 
- * 
  * , and includes built-in governance power and delegation mechanisms.
  */
 contract DerivativeNFTV1 is IDerivativeNFTV1, NoAMultiState, ERC3525Upgradeable {
@@ -64,16 +63,16 @@ contract DerivativeNFTV1 is IDerivativeNFTV1, NoAMultiState, ERC3525Upgradeable 
         _validateCallerIsManager();
         _;
     }
-    
 
     //===== Initializer =====//
 
     /// @custom:oz-upgrades-unsafe-allow constructor
     // `initializer` marks the contract as initialized to prevent third parties to
     // call the `initialize` method on the implementation (this contract)
-    constructor(address manager, address ndpt) initializer {
+    constructor(address manager, address ndpt) {
         if (manager == address(0)) revert Errors.InitParamsInvalid();
         _MANAGER = manager;
+        if (ndpt == address(0)) revert Errors.InitParamsInvalid();
         _NDPT = ndpt;
     }
 
@@ -287,12 +286,14 @@ contract DerivativeNFTV1 is IDerivativeNFTV1, NoAMultiState, ERC3525Upgradeable 
      *         is owed and to whom.
      *
      *
-     * @param tokenId The token ID of the NoA queried for royalty information.
-     * @param salePrice The sale price of the NoA specified.
+     * @param tokenId The token ID of the derivativeNFT queried for royalty information.
+     * @param salePrice The sale price of the derivativeNFT specified.
      * @return A tuple with the address who should receive the royalties and the royalty
      * payment amount for the given sale price.
      */
     function royaltyInfo(uint256 tokenId, uint256 salePrice) external view returns (address, uint256) {
+        //TODO , get salePrice from PriceManager
+        tokenId;
         return (
             IERC3525(_NDPT).ownerOf(_soulBoundTokenId),
             (salePrice * _royaltyBasisPoints) / _BASIS_POINTS
@@ -311,8 +312,5 @@ contract DerivativeNFTV1 is IDerivativeNFTV1, NoAMultiState, ERC3525Upgradeable 
         _nextSlotId.increment();
         return uint24(_nextSlotId.current());
     }
-
-
-    uint256[50] private __gap;
 
 }

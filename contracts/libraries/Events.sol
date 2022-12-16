@@ -164,7 +164,6 @@ library Events {
         uint256 timestamp
     );
 
-
     /**
      * @dev Emitted when a profile creator is added to or removed from the whitelist.
      *
@@ -208,28 +207,6 @@ library Events {
         address indexed follower,
         uint256 indexed soulBoundTokenId,
         bytes followModuleData,
-        uint256 timestamp
-    );
-
-
-    /**
-     * @dev Emitted upon a successful collect action.
-     *
-     * @param collector The address collecting the publication.
-     * @param profileId The token ID of the profile that the collect was initiated towards, useful to differentiate mirrors.
-     * @param pubId The publication ID that the collect was initiated towards, useful to differentiate mirrors.
-     * @param rootProfileId The profile token ID of the profile whose publication is being collected.
-     * @param rootPubId The publication ID of the publication being collected.
-     * @param collectModuleData The data passed to the collect module.
-     * @param timestamp The current block timestamp.
-     */
-    event Collected(
-        address indexed collector,
-        uint256 indexed profileId,
-        uint256 indexed pubId,
-        uint256 rootProfileId,
-        uint256 rootPubId,
-        bytes collectModuleData,
         uint256 timestamp
     );
 
@@ -422,5 +399,24 @@ library Events {
         uint256 hubId,
         uint32 createdTime
     );
+
+    //BankTreasury
+
+    event Deposit(address indexed sender, uint256 amount, uint256 balance);
+
+    event SubmitTransaction(
+        address indexed owner,
+        uint256 indexed txIndex,
+        address indexed to,
+        uint256 value,
+        bytes data
+    );    
+
+    event ConfirmTransaction(address indexed owner, uint256 indexed txIndex);
+    event RevokeConfirmation(address indexed owner, uint256 indexed txIndex);
+    event ExecuteTransaction(address indexed owner, uint256 indexed txIndex);
+    event ExecuteTransactionERC3525(uint256 indexed txIndex, uint256 indexed fromTokenId, uint256 indexed toTokenId, uint256 value);
+    event WithdrawERC3525(uint256 indexed fromTokenId, uint256 indexed toTokenId, uint256 value);
+
 }
 

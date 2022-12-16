@@ -23,6 +23,7 @@ Proxy contract deployed to: 0x0165878A594ca255338adfa4d48449f69242Eb8F
 ## The Graph
 
 ### Login AWS Server: 16.163.166.55
+Start docker-compose
 ```
 $ cd /home/ubuntu/developments/solidity/NoA.main
 

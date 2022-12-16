@@ -4,7 +4,6 @@ pragma solidity ^0.8.13;
 
 import {IManager} from '../interfaces/IManager.sol';
 import {IFollowModule} from '../interfaces/IFollowModule.sol';
-import {ISoulBoundTokenV1} from '../interfaces/ISoulBoundTokenV1.sol';
 import {Errors} from '../libraries/Errors.sol';
 import {Events} from '../libraries/Events.sol';
 import {ModuleBase} from './ModuleBase.sol';

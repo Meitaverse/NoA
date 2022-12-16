@@ -2,18 +2,22 @@
 
 pragma solidity ^0.8.13;
 
-import "@openzeppelin/contracts/access/AccessControl.sol";
+import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
+import "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/access/AccessControlUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
 import "@openzeppelin/contracts/utils/introspection/IERC165.sol";
 import "@solvprotocol/erc-3525/contracts/IERC3525Receiver.sol";
 import "@solvprotocol/erc-3525/contracts/IERC3525.sol";
-import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
+import {IERC20Upgradeable} from "@openzeppelin/contracts-upgradeable/token/ERC20/IERC20Upgradeable.sol";
+import {SafeERC20Upgradeable} from "@openzeppelin/contracts-upgradeable/token/ERC20/utils/SafeERC20Upgradeable.sol";
 import {Errors} from "./libraries/Errors.sol";
 import {Events} from "./libraries/Events.sol";
 import {DataTypes} from './libraries/DataTypes.sol';
 import {IBankTreasury} from './interfaces/IBankTreasury.sol';
 import {IIncubator} from "./interfaces/IIncubator.sol";
 import "./libraries/EthAddressLib.sol";
+import "./storage/BankTreasuryStorage.sol";
 
 /**
  *  @title Bank Treasury
@@ -22,55 +26,37 @@ import "./libraries/EthAddressLib.sol";
  *  Holds the fee, and set currencies whitelist
  * 
  */
-contract BankTreasury is IBankTreasury, IERC165, IERC3525Receiver, AccessControl {
-    using SafeERC20 for IERC20;
+contract BankTreasury is 
+    Initializable, 
+    IBankTreasury, 
+    BankTreasuryStorage,
+    IERC165, 
+    IERC3525Receiver, 
+    PausableUpgradeable,
+    AccessControlUpgradeable, 
+    UUPSUpgradeable 
+{
+    using SafeERC20Upgradeable for IERC20Upgradeable;
 
-    event Deposit(address indexed sender, uint256 amount, uint256 balance);
-    event SubmitTransaction(
-        address indexed owner,
-        uint256 indexed txIndex,
-        address indexed to,
-        uint256 value,
-        bytes data
-    );
+    bytes32 public constant PAUSER_ROLE = keccak256("PAUSER_ROLE");
+    bytes32 public constant UPGRADER_ROLE = keccak256("UPGRADER_ROLE");
 
-    event ConfirmTransaction(address indexed owner, uint256 indexed txIndex);
-    event RevokeConfirmation(address indexed owner, uint256 indexed txIndex);
-    event ExecuteTransaction(address indexed owner, uint256 indexed txIndex);
-    event ExecuteTransactionERC3525(uint256 indexed txIndex, uint256 indexed fromTokenId, uint256 indexed toTokenId, uint256 value);
-    event WithdrawERC3525(uint256 indexed fromTokenId, uint256 indexed toTokenId, uint256 value);
-
-    address[] public owners;
-    mapping(address => bool) public isOwner;
-    uint256 public numConfirmationsRequired;
-
-    bool private _initialized;
-
-    // solhint-disable-next-line var-name-mixedcase
-    address private immutable _MANAGER;
-    // solhint-disable-next-line var-name-mixedcase
-    address private immutable _NDPT;
-
-    address private _goverance;
-
-    struct Transaction {
-        address currency;
-        DataTypes.CurrencyType currencyType;
-        address to;
-        uint256 fromTokenId;
-        uint256 toTokenId;
-        uint256 value;
-        bytes data;
-        bool executed;
-        uint256 numConfirmations;
+    /**
+     * @dev This modifier reverts if the caller is not the configured governance address.
+     */
+    modifier onlyGov() {
+        _validateCallerIsGovernance();
+        _;
     }
 
-
-    // mapping from tx index => owner => bool
-    mapping(uint256 => mapping(address => bool)) public isConfirmed;
-
-    Transaction[] public transactions;
-
+    /**
+     * @dev This modifier reverts if the caller is not the configured manager address.
+     */
+    modifier onlyManager() {
+        _validateCallerIsManager();
+        _;
+    }
+    
     modifier onlyOwner() {
         require(isOwner[msg.sender], "not owner");
         _;
@@ -91,17 +77,28 @@ contract BankTreasury is IBankTreasury, IERC165, IERC3525Receiver, AccessControl
         _;
     }
 
-    constructor( 
+    /// @custom:oz-upgrades-unsafe-allow constructor
+    constructor() initializer {}
+
+    function initialize(
         address manager,
-        address ndpt,
+        address governance,
         address[] memory _owners, 
         uint256 _numConfirmationsRequired
-    ) {
+    ) external override initializer {
+        __AccessControl_init();
+        __Pausable_init();
+        __UUPSUpgradeable_init();
+
+        _setupRole(DEFAULT_ADMIN_ROLE, msg.sender);
+        _setupRole(PAUSER_ROLE, msg.sender);
+        _setupRole(UPGRADER_ROLE, msg.sender);
+
         if (manager == address(0)) revert Errors.InitParamsInvalid();
-        if (ndpt == address(0)) revert Errors.InitParamsInvalid();
+        if (governance == address(0)) revert Errors.InitParamsInvalid();
        
         _MANAGER = manager;
-        _NDPT = ndpt;
+        _governance = governance;
 
         require(_owners.length > 0, "owners required");
         require(
@@ -121,26 +118,36 @@ contract BankTreasury is IBankTreasury, IERC165, IERC3525Receiver, AccessControl
         }
 
         numConfirmationsRequired = _numConfirmationsRequired;
+    }
 
-        _grantRole(DEFAULT_ADMIN_ROLE, msg.sender);
+    function getManager() external view returns(address) {
+        return _MANAGER;
     }
     
-    function initialize(address goverance) external override {
-        if (_initialized) revert Errors.Initialized();
-        _initialized = true;
+    function setGovernance(address newGovernance) external override onlyGov {
+        _setGovernance(newGovernance);
+    }
 
-        if (goverance == address(0)) revert Errors.InitParamsInvalid();
-        _goverance = goverance;
+    function getGovernance() external view returns(address) {
+        return _governance;
+    }
+
+    function pause() public onlyRole(PAUSER_ROLE) {
+        _pause();
+    }
+
+    function unpause() public onlyRole(PAUSER_ROLE) {
+        _unpause();
     }
 
     receive() external payable {
-        emit Deposit(msg.sender, msg.value, address(this).balance);
+        emit Events.Deposit(msg.sender, msg.value, address(this).balance);
     }
 
-    function supportsInterface(bytes4 interfaceId) public view virtual override(IERC165, AccessControl) returns (bool) {
+    function supportsInterface(bytes4 interfaceId) public view virtual override(IERC165, AccessControlUpgradeable) returns (bool) {
         return
             interfaceId == type(IERC165).interfaceId || 
-            interfaceId == type(AccessControl).interfaceId || 
+            interfaceId == type(AccessControlUpgradeable).interfaceId || 
             interfaceId == type(IERC3525Receiver).interfaceId;
     } 
 
@@ -163,11 +170,11 @@ contract BankTreasury is IBankTreasury, IERC165, IERC3525Receiver, AccessControl
         uint256 _toTokenId,
         uint256 _value,
         bytes memory _data
-    ) public onlyOwner {
+    ) public whenNotPaused onlyOwner {
         uint256 txIndex = transactions.length;
 
         transactions.push(
-            Transaction({
+            DataTypes.Transaction({
                 currency: _currency,
                 currencyType: _currencyType,
                 to: _to,
@@ -180,30 +187,32 @@ contract BankTreasury is IBankTreasury, IERC165, IERC3525Receiver, AccessControl
             })
         );
 
-        emit SubmitTransaction(msg.sender, txIndex, _to, _value, _data);
+        emit Events.SubmitTransaction(msg.sender, txIndex, _to, _value, _data);
     }
 
     function confirmTransaction(uint256 _txIndex)
         public
+        whenNotPaused
         onlyOwner
         txExists(_txIndex)
         notExecuted(_txIndex)
         notConfirmed(_txIndex)
     {
-        Transaction storage transaction = transactions[_txIndex];
+        DataTypes.Transaction storage transaction = transactions[_txIndex];
         transaction.numConfirmations += 1;
         isConfirmed[_txIndex][msg.sender] = true;
 
-        emit ConfirmTransaction(msg.sender, _txIndex);
+        emit Events.ConfirmTransaction(msg.sender, _txIndex);
     }
 
     function executeTransaction(uint256 _txIndex)
         public
+        whenNotPaused
         onlyOwner
         txExists(_txIndex)
         notExecuted(_txIndex)
     {
-        Transaction storage transaction = transactions[_txIndex];
+        DataTypes.Transaction storage transaction = transactions[_txIndex];
 
         require(
             transaction.numConfirmations >= numConfirmationsRequired,
@@ -218,37 +227,38 @@ contract BankTreasury is IBankTreasury, IERC165, IERC3525Receiver, AccessControl
             );
             require(success, "tx failed");
         } else if (transaction.currencyType == DataTypes.CurrencyType.ERC20) {
-            IERC20(transaction.currency).safeTransfer(transaction.to, transaction.value);
+            IERC20Upgradeable(transaction.currency).safeTransfer(transaction.to, transaction.value);
 
         } else  if (transaction.currencyType == DataTypes.CurrencyType.ERC3525) {
            IERC3525(transaction.currency).transferFrom(transaction.fromTokenId, transaction.toTokenId, transaction.value);
-           emit ExecuteTransactionERC3525(_txIndex, transaction.fromTokenId, transaction.toTokenId, transaction.value);
+           emit Events.ExecuteTransactionERC3525(_txIndex, transaction.fromTokenId, transaction.toTokenId, transaction.value);
         }
 
-        emit ExecuteTransaction(msg.sender, _txIndex);
+        emit Events.ExecuteTransaction(msg.sender, _txIndex);
     }
 
     function revokeConfirmation(uint256 _txIndex)
         public
+        whenNotPaused
         onlyOwner
         txExists(_txIndex)
         notExecuted(_txIndex)
     {
-        Transaction storage transaction = transactions[_txIndex];
+        DataTypes.Transaction storage transaction = transactions[_txIndex];
 
         require(isConfirmed[_txIndex][msg.sender], "tx not confirmed");
 
         transaction.numConfirmations -= 1;
         isConfirmed[_txIndex][msg.sender] = false;
 
-        emit RevokeConfirmation(msg.sender, _txIndex);
+        emit Events.RevokeConfirmation(msg.sender, _txIndex);
     }
 
-    function getOwners() public view returns (address[] memory) {
+    function getOwners() external view returns (address[] memory) {
         return owners;
     }
 
-    function getTransactionCount() public view returns (uint256) {
+    function getTransactionCount() external view returns (uint256) {
         return transactions.length;
     }
 
@@ -265,7 +275,7 @@ contract BankTreasury is IBankTreasury, IERC165, IERC3525Receiver, AccessControl
             uint256 numConfirmations
         )
     {
-        Transaction storage transaction = transactions[_txIndex];
+        DataTypes.Transaction storage transaction = transactions[_txIndex];
 
         return (
             transaction.currency,
@@ -285,9 +295,9 @@ contract BankTreasury is IBankTreasury, IERC165, IERC3525Receiver, AccessControl
         uint256 value
         // uint256 nonce, 
         // DataTypes.EIP712Signature calldata sig
-    ) external {
+    ) external whenNotPaused {
         IERC3525(currency).transferFrom(fromTokenId, toTokenId, value);
-        emit WithdrawERC3525(fromTokenId, toTokenId, value);
+        emit Events.WithdrawERC3525(fromTokenId, toTokenId, value);
     }
  
     function exchangeNDPT(
@@ -297,9 +307,32 @@ contract BankTreasury is IBankTreasury, IERC165, IERC3525Receiver, AccessControl
         uint256 value
         // uint256 nonce, 
         // DataTypes.EIP712Signature calldata sign
-    ) external payable {
+    ) external payable whenNotPaused {
         if (currency == EthAddressLib.ethAddress()) {
 
         }
     }
+
+    //--- internal  ---//
+
+    function _setGovernance(address newGovernance) internal {
+        address prevGovernance = _governance;
+        _governance = newGovernance;
+
+        emit Events.GovernanceSet(msg.sender, prevGovernance, newGovernance, block.timestamp);
+    }
+
+    function _validateCallerIsGovernance() internal view {
+        if (msg.sender != _governance) revert Errors.NotGovernance();
+    }
+
+    function _validateCallerIsManager() internal view {
+        if (msg.sender != _MANAGER) revert Errors.NotManager();
+    }
+
+    //-- orverride -- //
+    function _authorizeUpgrade(address /*newImplementation*/) internal virtual override {
+        if (!hasRole(UPGRADER_ROLE, _msgSender())) revert Errors.Unauthorized();
+    }
+
 }

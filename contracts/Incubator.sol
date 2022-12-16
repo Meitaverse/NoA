@@ -7,8 +7,8 @@ import "@openzeppelin/contracts/utils/introspection/IERC165.sol";
 import "@solvprotocol/erc-3525/contracts/ERC3525Upgradeable.sol";
 import "@solvprotocol/erc-3525/contracts/IERC3525Receiver.sol";
 import "@solvprotocol/erc-3525/contracts/IERC3525.sol";
-import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
+import {IERC20Upgradeable} from "@openzeppelin/contracts-upgradeable/token/ERC20/IERC20Upgradeable.sol";
+import {SafeERC20Upgradeable} from "@openzeppelin/contracts-upgradeable/token/ERC20/utils/SafeERC20Upgradeable.sol";
 import {Errors} from "./libraries/Errors.sol";
 import {Events} from "./libraries/Events.sol";
 import {IIncubator} from "./interfaces/IIncubator.sol";
@@ -24,7 +24,7 @@ import {DataTypes} from './libraries/DataTypes.sol';
  */
 contract Incubator is IIncubator, IERC165, IERC3525Receiver, AccessControl 
 {
-    using SafeERC20 for IERC20;
+    using SafeERC20Upgradeable for IERC20Upgradeable;
 
     // solhint-disable-next-line const-name-snakecase
     string internal constant _name = "Incubator";

@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.13;
+pragma solidity ^0.8.10;
 
 import {Errors} from '../libraries/Errors.sol';
 
@@ -17,36 +17,35 @@ import {Errors} from '../libraries/Errors.sol';
  *
  * This is slightly modified from [Aave's version.](https://github.com/aave/protocol-v2/blob/6a503eb0a897124d8b9d126c915ffdf3e88343a9/contracts/protocol/libraries/aave-upgradeability/VersionedInitializable.sol)
  *
- * @author ShowDao Protocol, inspired by Aave's implementation, which is in turn inspired by OpenZeppelin's
+ * @author Lens Protocol, inspired by Aave's implementation, which is in turn inspired by OpenZeppelin's
  * Initializable contract
  */
 abstract contract VersionedInitializable {
-    address private immutable _originalImpl;
+    address private immutable originalImpl;
 
     /**
      * @dev Indicates that the contract has been initialized.
      */
-    uint256 private _lastInitializedRevision = 0;
+    uint256 private lastInitializedRevision = 0;
 
     /**
      * @dev Modifier to use in the initializer function of a contract.
      */
     modifier initializer() {
-        uint256 revision = _getRevision();
-        if (address(this) == _originalImpl) revert Errors.CannotInitImplementation();
-
-        if (revision <= _lastInitializedRevision) revert Errors.Initialized();
-        _lastInitializedRevision = revision;
+        uint256 revision = getRevision();
+        if (address(this) == originalImpl) revert Errors.CannotInitImplementation();
+        if (revision <= lastInitializedRevision) revert Errors.Initialized();
+        lastInitializedRevision = revision;
         _;
     }
 
     constructor() {
-        _originalImpl = address(this);
+        originalImpl = address(this);
     }
 
     /**
      * @dev returns the revision number of the contract
      * Needs to be defined in the inherited class as a constant.
      **/
-    function _getRevision() internal pure virtual returns (uint256);
+    function getRevision() internal pure virtual returns (uint256);
 }

@@ -21,7 +21,7 @@ async function main() {
     
         const name = "Soul Bound Token";
         const symbol = "SBT";
-        const organization = "ShowDao";
+        const organization = "Bitsoul";
         const minterOfToken = deployer.address;
         const signer = deployer.address;
 

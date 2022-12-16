@@ -4,13 +4,13 @@ pragma solidity ^0.8.13;
 
 /**
  * @title IFollowModule
- * @author ShowDao Protocol
+ * @author Bitsoul Protocol
  *
- * @notice This is the standard interface for all ShowDao-compatible FollowModules.
+ * @notice This is the standard interface for all Bitsoul-compatible FollowModules.
  */
 interface IFollowModule {
     /**
-     * @notice Initializes a follow module for a given ShowDao profile. This can only be called by the manager contract.
+     * @notice Initializes a follow module for a given Bitsoul profile. This can only be called by the manager contract.
      *
      * @param soulBoundTokenId The token ID of the SoulBoundToken to initialize this follow module for.
      * @param data Arbitrary data passed by the profile creator.

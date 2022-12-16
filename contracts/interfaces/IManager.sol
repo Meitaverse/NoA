@@ -11,7 +11,17 @@ import {DataTypes} from '../libraries/DataTypes.sol';
  * @notice This is the interface for the Manager contract
  */
 interface IManager {
-  
+    /**
+     * @notice Initializes the Manager, setting the initial governance address and receiver address
+     *
+     * @param governance_ The address of Governance.
+     * @param ndptV1_ The address of NDPT contract.
+     */
+    function initialize(    
+       address governance_,
+       address ndptV1_
+    ) external;
+   
   /**
    * @notice Sets the privileged governance role. This function can only be called by the current governance
    * address.
@@ -19,6 +29,8 @@ interface IManager {
    * @param newGovernance The new governance address to set.
    */
   function setGovernance(address newGovernance) external;
+
+  function getGovernance() external returns(address);
 
 
   /**

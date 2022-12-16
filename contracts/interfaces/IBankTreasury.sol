@@ -13,9 +13,17 @@ import {DataTypes} from '../libraries/DataTypes.sol';
 interface IBankTreasury {
     /**
      * @notice Initializes the Incubator, setting the manager as the privileged minter and storing the associated SoulBoundToken ID.
-     * @param goverance Address of goverance contract
+     * @param manager The  Address of Manager contract
+     * @param goverance The  Address of Goverance contract
+     * @param _owners The array Address of owner contract
+     * @param _numConfirmationsRequired The number confirmation required
      */
-    function initialize(address goverance) external;
+    function initialize(
+        address manager,
+        address goverance,
+        address[] memory _owners, 
+        uint256 _numConfirmationsRequired
+    ) external;
 
     /**
      * @notice Implementation of an EIP-712 permit-style function for token burning. Allows anyone to burn
@@ -52,7 +60,14 @@ interface IBankTreasury {
     // function stake() external;
     // function redeem() external;
 
+    function getOwners() external view returns (address[] memory);
 
+    function getTransactionCount() external view returns (uint256);
 
+    function getManager() external returns(address);
+
+    function setGovernance(address newGovernance) external;
+
+    function getGovernance() external returns(address);
 
 }

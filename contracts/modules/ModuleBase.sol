@@ -7,7 +7,7 @@ import {Events} from '../libraries/Events.sol';
 
 /**
  * @title ModuleBase
- * @author ShowDao Protocol
+ * @author Bitsoul Protocol
  *
  * @notice This abstract contract adds a public `MANAGER` immutable to inheriting modules, as well as an
  * `onlyManager` modifier.

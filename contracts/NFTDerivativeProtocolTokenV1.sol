@@ -2,41 +2,41 @@
 
 pragma solidity ^0.8.13;
 
-import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
+import "@openzeppelin/contracts-upgradeable/access/AccessControlUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
 import "@solvprotocol/erc-3525/contracts/ERC3525SlotEnumerableUpgradeable.sol";
 import "@solvprotocol/erc-3525/contracts/ERC3525Upgradeable.sol";
+import "@solvprotocol/erc-3525/contracts/IERC3525Receiver.sol";
 import {IERC20Upgradeable} from "@openzeppelin/contracts-upgradeable/token/ERC20/IERC20Upgradeable.sol";
 import {SafeMathUpgradeable} from "@openzeppelin/contracts-upgradeable/utils/math/SafeMathUpgradeable.sol";
 import {Errors} from "./libraries/Errors.sol";
 import {Events} from "./libraries/Events.sol";
-
 import "./storage/SBTStorage.sol";
 import {INFTDerivativeProtocolTokenV1} from "./interfaces/INFTDerivativeProtocolTokenV1.sol";
 
 /**
  *  @title NFT Derivative Protocol Token
  * 
- * 
- * , and includes built-in governance power and delegation mechanisms.
  */
 contract NFTDerivativeProtocolTokenV1 is
+    Initializable,
+    AccessControlUpgradeable,
+    PausableUpgradeable,
     SBTStorage,
     INFTDerivativeProtocolTokenV1, 
-    ERC3525SlotEnumerableUpgradeable 
+    ERC3525SlotEnumerableUpgradeable,
+    UUPSUpgradeable
 {
     using SafeMathUpgradeable for uint256;
-
-    bool private _initialized;
     
-    // solhint-disable-next-line var-name-mixedcase
-    address internal _MANAGER;
-
-    // solhint-disable-next-line var-name-mixedcase
-    address internal _BankTreasury;
-
-    // @dev owner => slot => operator => approved
-    mapping(address => mapping(uint256 => mapping(address => bool))) private _slotApprovals;
+    uint256 internal constant VERSION = 1;
     
+    bytes32 public constant PAUSER_ROLE = keccak256("PAUSER_ROLE");
+    bytes32 public constant UPGRADER_ROLE = keccak256("UPGRADER_ROLE");
+
+
     //===== Modifiers =====//
 
     /**
@@ -55,8 +55,6 @@ contract NFTDerivativeProtocolTokenV1 is
     //===== Initializer =====//
 
     /// @custom:oz-upgrades-unsafe-allow constructor
-    // `initializer` marks the contract as initialized to prevent third parties to
-    // call the `initialize` method on the implementation (this contract)
     constructor() initializer {}
 
     function initialize(
@@ -66,26 +64,47 @@ contract NFTDerivativeProtocolTokenV1 is
         address manager,
         address bankTreasury
     ) external override initializer {
-        if (_initialized) revert Errors.Initialized();
-        _initialized = true;
 
         __ERC3525_init_unchained(name, symbol, decimals);
+        __AccessControl_init();
+        __Pausable_init();
+        __UUPSUpgradeable_init();
+
+        _setupRole(DEFAULT_ADMIN_ROLE, _msgSender());
+        _grantRole(UPGRADER_ROLE, _msgSender());
+        _grantRole(PAUSER_ROLE, _msgSender());
+
+        if (manager == address(0)) revert Errors.InitParamsInvalid();
         _MANAGER = manager;
-        _BankTreasury = bankTreasury;
+
+        if (bankTreasury == address(0)) revert Errors.InitParamsInvalid();
+        _BANKTREASURY = bankTreasury;
+    }
+    
+    function version() external pure returns(uint256) {
+        return VERSION;
+    }
+
+    function pause() public onlyRole(PAUSER_ROLE) {
+        _pause();
+    }
+
+    function unpause() public onlyRole(PAUSER_ROLE) {
+        _unpause();
     }
 
     function svgLogo() public view returns (string memory) {
         return _svgLogo;
     }
 
-    function setSvgLogo(string calldata svgLogo_) external onlyManager{
+    function setSvgLogo(string calldata svgLogo_) external whenNotPaused onlyManager{
         _svgLogo = svgLogo_;
     }
  
     function createProfile(
         DataTypes.CreateProfileData calldata vars,
         string memory nickName
-    ) external override onlyManager returns (uint256) {
+    ) external override whenNotPaused onlyManager returns (uint256) {
         if (balanceOf(vars.to) > 0) revert Errors.TokenIsClaimed(); 
 
         uint256 tokenId_ = ERC3525Upgradeable._mint(vars.to, 1, 0);
@@ -100,23 +119,30 @@ contract NFTDerivativeProtocolTokenV1 is
         return tokenId_;
     }
 
-    function mint(uint256 tokenId, uint256 slot, uint256 value) external payable onlyManager {
-        ERC3525Upgradeable._mint(_BankTreasury, tokenId, slot, value);
+    function mint(
+        uint256 tokenId, 
+        uint256 slot, 
+        uint256 value
+    ) external payable whenNotPaused onlyManager {
+        ERC3525Upgradeable._mint(_BANKTREASURY, tokenId, slot, value);
          emit Events.MintNDPT(tokenId, slot, value, block.timestamp);
     }
 
-    function mintValue(uint256 tokenId, uint256 value) external payable onlyManager {
+    function mintValue(
+        uint256 tokenId, 
+        uint256 value
+    ) external payable whenNotPaused onlyManager {
         ERC3525Upgradeable._mintValue(tokenId, value);
         emit Events.MintNDPTValue(tokenId, value, block.timestamp);
 
     }
 
-    function burn(uint256 tokenId) external onlyManager{
+    function burn(uint256 tokenId) external whenNotPaused onlyManager{
         ERC3525Upgradeable._burn(tokenId);
          emit Events.BurnNDPT(tokenId, block.timestamp);
     }
 
-    function burnValue(uint256 tokenId, uint256 value) external {
+    function burnValue(uint256 tokenId, uint256 value) external whenNotPaused onlyManager {
         require(_isApprovedOrOwner(_msgSender(), tokenId), "ERC3525: caller is not token owner nor approved");
         ERC3525Upgradeable._burnValue(tokenId, value);
         emit Events.BurnNDPTValue(tokenId, value, block.timestamp);
@@ -129,8 +155,6 @@ contract NFTDerivativeProtocolTokenV1 is
     // ) public virtual override(ERC3525Upgradeable,IERC721Upgradeable) onlyManager{
     //     super._setApprovalForAll(_msgSender(), operator_, approved_);
     // }
-
-
 
     //-- orverride -- //
     function transferFrom(
@@ -174,6 +198,12 @@ contract NFTDerivativeProtocolTokenV1 is
         emit Events.ApprovalForSlot(owner_, slot_, operator_, approved_);
     }
 
+    function supportsInterface(bytes4 interfaceId) public view virtual override(ERC3525SlotEnumerableUpgradeable, AccessControlUpgradeable) returns (bool) {
+        return
+            interfaceId == type(AccessControlUpgradeable).interfaceId || 
+            super.supportsInterface(interfaceId);
+    } 
+
     /// ****************************
     /// *****INTERNAL FUNCTIONS*****
     /// ****************************
@@ -182,6 +212,18 @@ contract NFTDerivativeProtocolTokenV1 is
         if (msg.sender != _MANAGER) revert Errors.NotManager();
     }
 
-    uint256[50] private __gap;
+    //-- orverride -- //
+    function _authorizeUpgrade(address /*newImplementation*/) internal virtual override {
+        if (!hasRole(UPGRADER_ROLE, _msgSender())) revert Errors.Unauthorized();
+    }
+
+    //V1
+    function getManager() external view returns(address) {
+        return _MANAGER;
+    }
+    
+    function getBankTreasury() external view returns(address) {
+        return _BANKTREASURY;
+    }
 
 }

@@ -10,10 +10,17 @@ import {Events} from './Events.sol';
 import {Constants} from './Constants.sol';
 import {IIncubator} from '../interfaces/IIncubator.sol';
 import {IDerivativeNFTV1} from "../interfaces/IDerivativeNFTV1.sol";
-import {IFollowModule} from '../interfaces/IFollowModule.sol';
+
 import {ICollectModule} from '../interfaces/ICollectModule.sol';
 import {Strings} from '@openzeppelin/contracts/utils/Strings.sol';
 import {IERC3525} from "@solvprotocol/erc-3525/contracts/IERC3525.sol";
+import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
+import {SafeMathUpgradeable} from "@openzeppelin/contracts-upgradeable/utils/math/SafeMathUpgradeable.sol";
+import "@solvprotocol/erc-3525/contracts/ERC3525Upgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/utils/structs/EnumerableSetUpgradeable.sol";
+import {IManager} from "../interfaces/IManager.sol";
+// import "./EthAddressLib.sol";
+import "./SafeMathUpgradeable128.sol";
 
 /**
  * @title InteractionLogic
@@ -26,125 +33,6 @@ import {IERC3525} from "@solvprotocol/erc-3525/contracts/IERC3525.sol";
 library InteractionLogic {
     using Strings for uint256;
 
-    /**
-     * @notice Follows the given SoulBoundTokens, executing the necessary logic and module calls before add.
-     * @param projectId The projectId to follow.
-     * @param follower The address executing the follow.
-     * @param soulBoundTokenId The profile token ID to follow.
-     * @param followModuleData The follow module data parameters to pass to each profile's follow module.
-     * @param _profileById A pointer to the storage mapping of profile structs by profile ID.
-     * @param _profileIdByHandleHash A pointer to the storage mapping of profile IDs by handle hash.
-     *
-     */
-    function follow(
-        uint256 projectId,
-        address follower,
-        uint256 soulBoundTokenId,
-        bytes calldata followModuleData,
-        mapping(uint256 => DataTypes.ProfileStruct) storage _profileById,
-        mapping(bytes32 => uint256) storage _profileIdByHandleHash
-    ) external {
-
-        string memory handle = _profileById[soulBoundTokenId].handle;
-        if (_profileIdByHandleHash[keccak256(bytes(handle))] != soulBoundTokenId)
-            revert Errors.TokenDoesNotExist();
-
-        address followModule = _profileById[soulBoundTokenId].followModule;
-        //调用followModule的processFollow函数进行后续处理
-        if (followModule != address(0)) {
-            IFollowModule(followModule).processFollow(
-                follower,
-                soulBoundTokenId,
-                followModuleData
-            );
-        }
-        emit Events.Followed(projectId, follower, soulBoundTokenId, followModuleData, block.timestamp);
-
-    }
-   
-    /**
-     * @notice Emits the `Collected` event that signals that a successful collect action has occurred.
-     *
-     * @dev This is done through this function to prevent stack too deep compilation error.
-     *
-     * @param collector The address collecting the publication.
-     * @param profileId The token ID of the profile that the collect was initiated towards, useful to differentiate mirrors.
-     * @param pubId The publication ID that the collect was initiated towards, useful to differentiate mirrors.
-     * @param rootProfileId The profile token ID of the profile whose publication is being collected.
-     * @param rootPubId The publication ID of the publication being collected.
-     * @param data The data passed to the collect module.
-     */
-    function _emitCollectedEvent(
-        address collector,
-        uint256 profileId,
-        uint256 pubId,
-        uint256 rootProfileId,
-        uint256 rootPubId,
-        bytes calldata data
-    ) private {
-        emit Events.Collected(
-            collector,
-            profileId,
-            pubId,
-            rootProfileId,
-            rootPubId,
-            data,
-            block.timestamp
-        );
-    }
-
-    /**
-     * @notice Collects the given publication, executing the necessary logic and module call before minting the
-     * collect NFT to the collector.
-     *收集给定的发布(非NFT), 在铸造collectNFT之前执行必要的逻辑及call模块
-     * @param derivatveNFT The address derivatveNFT contract 
-     * @param collector The address executing the collect.
-     * @param fromSoulBoundTokenId The SBT ID of the publication.
-     * @param toSoulBoundTokenId The SBT ID of the collector.
-     * @param tokenId The token id 
-     * @param value  value to collect
-     * @param collectModuleData The data to pass to the publication's collect module.
-     * @param _pubByIdByProfile A pointer to the storage mapping of publications by pubId by profile ID.
-     *
-     */
-    function collectDerivativeNFT(
-        uint256 projectId,
-        address derivatveNFT,
-        address collector,
-        uint256 fromSoulBoundTokenId,
-        uint256 toSoulBoundTokenId,
-        uint256 tokenId,
-        uint256 value,
-        bytes calldata collectModuleData,
-        mapping(uint256 => mapping(uint256 => DataTypes.PublicationStruct))
-            storage _pubByIdByProfile
-    ) external {
-        uint256 newTokenId = IDerivativeNFTV1(derivatveNFT).split(tokenId, toSoulBoundTokenId, value);
-
-        //后续调用processCollect进行处理，此机制能扩展出联动合约调用
-        address collectModule = _pubByIdByProfile[fromSoulBoundTokenId][tokenId].collectModule;
-
-        ICollectModule(collectModule).processCollect(
-            fromSoulBoundTokenId,
-            collector,
-            toSoulBoundTokenId,
-            tokenId,
-            value,
-            collectModuleData
-        );
-
-        emit Events.CollectDerivativeNFT(
-            projectId,
-            derivatveNFT,
-            fromSoulBoundTokenId,
-            collector,
-            toSoulBoundTokenId,
-            tokenId,
-            value,
-            newTokenId,
-            block.timestamp
-        );
-    }
 
    function airdropDerivativeNFT(
         uint256 projectId,
@@ -219,7 +107,8 @@ library InteractionLogic {
              name: hub.name,
              description: hub.description,
              image: hub.image,
-             metadataURI: hub.metadataURI
+             metadataURI: hub.metadataURI,
+             timestamp: block.timestamp
         });
 
         //TODO
@@ -332,4 +221,306 @@ library InteractionLogic {
          );
 
     }
+    
+    using SafeMathUpgradeable for uint256;
+    using EnumerableSetUpgradeable for EnumerableSetUpgradeable.UintSet;
+    using EnumerableSetUpgradeable for EnumerableSetUpgradeable.AddressSet;
+    using SafeMathUpgradeable128 for uint128;
+
+    uint16 internal constant PERCENTAGE_BASE = 10000;
+
+    function publishFixedPrice(
+        DataTypes.Sale memory sale,
+        mapping(address => DataTypes.Market) storage markets,
+        mapping(uint24 => DataTypes.Sale) storage sales
+    ) external {
+
+        // DataTypes.PriceType priceType_ = DataTypes.PriceType.FIXED;
+
+        require(markets[sale.derivativeNFT].isValid, "unsupported derivativeNFT");
+        //TODO
+        // require(currencies[currency_] || currency_ == IUnderlyingContainer(icToken_).underlying(), "unsupported currency");
+        if (sale.max > 0) {
+            require(sale.min <= sale.max, "min > max");
+        }
+
+        uint128 units = uint128(IERC3525(sale.derivativeNFT).balanceOf(sale.tokenId));
+        require(units <= type(uint128).max, "exceeds uint128 max");
+        sales[sale.saleId] = DataTypes.Sale({
+            saleId: sale.saleId,
+            soundBoundTokenId: sale.soundBoundTokenId,
+            projectId : sale.projectId,
+            seller: msg.sender,
+            price: sale.price,
+            tokenId: sale.tokenId,
+            total: uint128(units),
+            units: uint128(units),
+            startTime: sale.startTime,
+            min: sale.min,
+            max: sale.max,
+            derivativeNFT: sale.derivativeNFT,
+            currency: sale.currency,
+            priceType: sale.priceType,
+            useAllowList: sale.useAllowList,
+            isValid: true
+        });
+
+        emit Events.PublishSale(
+            sale.derivativeNFT,
+            sale.seller,
+            sale.tokenId,
+            sale.saleId,
+            uint8(sale.priceType),
+            sale.units,
+            sale.startTime,
+            sale.currency,
+            sale.min,
+            sale.max,   
+            sale.useAllowList
+        );
+        
+        emit Events.FixedPriceSet(
+            sale.derivativeNFT,
+            sale.saleId,
+            sale.projectId,
+            sale.tokenId,
+            uint128(units),
+            uint8(sale.priceType),
+            sale.price
+        );
+    }
+
+    function removeSale(
+        uint24 saleId_,
+        mapping(uint24 => DataTypes.Sale) storage sales
+    ) external {
+        DataTypes.Sale memory sale = sales[saleId_];
+        require(sale.isValid, "invalid sale");
+        require(sale.seller == msg.sender, "only seller");
+
+        delete sales[saleId_];
+
+        emit Events.RemoveSale(
+            sale.derivativeNFT,
+            sale.seller,
+            sale.saleId,
+            sale.total,
+            sale.total - sale.units
+        );
+    }
+
+    function addMarket(
+        address derivativeNFT_,
+        uint64 precision_,
+        uint8 feePayType_,
+        uint8 feeType_,
+        uint128 feeAmount_,
+        uint16 feeRate_,
+        mapping(address => DataTypes.Market) storage markets
+    ) external {
+        markets[derivativeNFT_].isValid = true;
+        markets[derivativeNFT_].precision = precision_;
+        markets[derivativeNFT_].feePayType = DataTypes.FeePayType(feePayType_);
+        markets[derivativeNFT_].feeType = DataTypes.FeeType(feeType_);
+        markets[derivativeNFT_].feeAmount = feeAmount_;
+        markets[derivativeNFT_].feeRate = feeRate_;
+
+        emit Events.AddMarket(
+            derivativeNFT_,
+            precision_,
+            feePayType_,
+            feeType_,
+            feeAmount_,
+            feeRate_
+        );
+    }
+
+    function removeMarket(
+        address derivativeNFT_,
+        mapping(address => DataTypes.Market) storage markets
+    ) external {
+        delete markets[derivativeNFT_];
+        emit Events.RemoveMarket(derivativeNFT_);
+    }
+
+    function buyByUnits(
+        uint256 nextTradeId_,
+        address buyer_,
+        uint24 saleId_, 
+        uint128 price_,
+        uint128 units_,
+        mapping(address => DataTypes.Market) storage markets,
+        mapping(uint24 => DataTypes.Sale) storage sales
+    ) external returns (uint256 amount_, uint128 fee_) {
+        DataTypes.Sale storage sale_ = sales[saleId_];
+
+        amount_ = uint256(units_).mul(uint256(price_)).div(
+            uint256(markets[sale_.derivativeNFT].precision)
+        );
+
+        // if (
+        //     sale_.currency == EthAddressLib.ethAddress() &&
+        //     sale_.priceType == DataTypes.PriceType.DECLIINING_BY_TIME &&
+        //     amount_ != msg.value
+        // ) {
+        //     amount_ = msg.value;
+        //     uint128 fee = _getFee(sale_.derivativeNFT, sale_.currency, amount_, markets);
+        //     uint256 units256;
+        //     if (markets[sale_.derivativeNFT].feePayType == DataTypes.FeePayType.BUYER_PAY) {
+        //         units256 = amount_
+        //         .sub(fee, "fee exceeds amount")
+        //         .mul(uint256(markets[sale_.derivativeNFT].precision))
+        //         .div(uint256(price_));
+        //     } else {
+        //         units256 = amount_
+        //         .mul(uint256(markets[sale_.derivativeNFT].precision))
+        //         .div(uint256(price_));
+        //     }
+        //     require(units256 <= type(uint128).max, "exceeds uint128 max");
+        //     units_ = uint128(units256);
+        // }
+
+        fee_ = _getFee(sale_.derivativeNFT, sale_.currency, amount_, markets);
+
+        sale_.units = sale_.units.sub(units_, "insufficient units for sale");
+        // DataTypes.FeePayType feePayType =  DataTypes.FeePayType.BUYER_PAY;
+        // BuyLocalVar memory vars;
+        // vars.feePayType = markets[sale_.icToken].feePayType;
+
+        // if (vars.feePayType == FeePayType.BUYER_PAY) {
+        //     vars.transferInAmount = amount_.add(fee_);
+        //     vars.transferOutAmount = amount_;
+        // } else if (vars.feePayType == FeePayType.SELLER_PAY) {
+        //     vars.transferInAmount = amount_;
+        //     vars.transferOutAmount = amount_.sub(fee_, "fee exceeds amount");
+        // } else {
+        //     revert("unsupported feePayType");
+        // }
+
+        // ERC20TransferHelper.doTransferIn(
+        //     sale_.currency,
+        //     buyer_,
+        //     vars.transferInAmount
+        // );
+        // if (units_ == IVNFT(sale_.icToken).unitsInToken(sale_.tokenId)) {
+        //     VNFTTransferHelper.doTransferOut(
+        //         sale_.icToken,
+        //         buyer_,
+        //         sale_.tokenId
+        //     );
+        // } else {
+        //     VNFTTransferHelper.doTransferOut(
+        //         sale_.icToken,
+        //         buyer_,
+        //         sale_.tokenId,
+        //         units_
+        //     );
+        // }
+
+        // ERC20TransferHelper.doTransferOut(
+        //     sale_.currency,
+        //     payable(sale_.seller),
+        //     vars.transferOutAmount
+        // );
+
+        //CompilerError: Stack too deep.
+        emit Events.Traded(
+            buyer_,
+            sale_.saleId,
+            sale_.derivativeNFT,
+            sale_.tokenId,
+            nextTradeId_,
+            uint32(block.timestamp),
+            sale_.currency,
+            uint8(sale_.priceType),
+            price_,
+            units_,
+            amount_,
+            // uint8(feePayType),
+            fee_
+        );  
+
+        if (sale_.units == 0) {
+            emit Events.RemoveSale(
+                sale_.derivativeNFT,
+                sale_.seller,
+                sale_.saleId,
+                sale_.total,
+                sale_.total - sale_.units
+            );
+            delete sales[sale_.saleId];
+        }
+        return (amount_, fee_);
+    }
+
+
+    function _getFee(
+        address derivativeNFT_, 
+        address currency_, 
+        uint256 amount,
+        mapping(address => DataTypes.Market) storage markets
+    )
+        internal
+        view
+        returns (uint128)
+    {
+        // if (currency_ == IUnderlyingContainer(derivativeNFT_).underlying()) {
+        //     uint256 fee = amount.mul(uint256(repoFeeRate)).div(PERCENTAGE_BASE);
+        //     require(fee <= type(uint128).max, "Fee: exceeds uint128 max");
+        //     return uint128(fee);
+        // }
+
+        DataTypes.Market storage market = markets[derivativeNFT_];
+        if (market.feeType == DataTypes.FeeType.FIXED) {
+            return market.feeAmount;
+        } else if (market.feeType == DataTypes.FeeType.BY_AMOUNT) {
+            uint256 fee = amount.mul(uint256(market.feeRate)).div(
+                uint256(PERCENTAGE_BASE)
+            );
+            require(fee <= type(uint128).max, "Fee: exceeds uint128 max");
+            return uint128(fee);
+        } else {
+            revert("unsupported feeType");
+        }
+    }
+
+    function purchasedUnits(
+        uint24 saleId_, 
+        address buyer_,
+        mapping(uint24 => mapping(address => uint128)) storage saleRecords
+    ) external view returns(uint128) {
+        return saleRecords[saleId_][buyer_];
+    }
+
+    // function getPrice(uint24 saleId_)
+    //     external
+    //     view
+    //     returns (uint128)
+    // {
+    //     return PriceManager.price(sales[saleId_].priceType, saleId_);
+    // }
+
+    function totalSalesOfICToken(
+        address derivativeNFT_,
+        mapping(address => EnumerableSetUpgradeable.UintSet) storage _derivativeNFTSale
+    )
+        public
+        view
+        returns (uint256)
+    {
+        return _derivativeNFTSale[derivativeNFT_].length();
+    }
+
+    function saleIdOfICTokenByIndex(
+        address derivativeNFT_, 
+        uint256 index_,
+        mapping(address => EnumerableSetUpgradeable.UintSet) storage _derivativeNFTSale
+    )
+        public
+        view
+        returns (uint256)
+    {
+        return _derivativeNFTSale[derivativeNFT_].at(index_);
+    }
+
 }
