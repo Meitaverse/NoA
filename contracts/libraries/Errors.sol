@@ -17,6 +17,8 @@ library Errors {
   error NotSameSlot();
   error NotSameOwnerOfBothTokenId();
   error TokenExisted(uint256 tokenId);
+  error NotProfileOwner();
+  error NotProfileOwnerOrDispatcher();
   error ZeroAddress();
   error EventNotExists();
   error ProjectExisted();
@@ -43,6 +45,13 @@ library Errors {
   error SignatureExpired();
   error SignatureInvalid();
   error ProfileCreatorNotWhitelisted();
+  error CallerNotWhitelistedModule();
+  error CollectModuleNotWhitelisted();
+  error FollowModuleNotWhitelisted();
+  error PublishModuleNotWhitelisted();
+  error NotSameHub();
+  error InsufficientAllowance();
+  error InsufficientDerivativeNFT();
 
   // Module Errors
   error InitParamsInvalid();

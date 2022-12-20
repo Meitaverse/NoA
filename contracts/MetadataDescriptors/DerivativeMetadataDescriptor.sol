@@ -2,7 +2,6 @@
 
 pragma solidity ^0.8.13;
 
-import "hardhat/console.sol";
 import "@solvprotocol/erc-3525/contracts/ERC3525Upgradeable.sol";
 import {IERC3525Metadata} from "@solvprotocol/erc-3525/contracts/extensions/IERC3525Metadata.sol";
 import "@solvprotocol/erc-3525/contracts/IERC3525.sol";
@@ -17,7 +16,7 @@ interface IERC20 {
   function decimals() external view returns (uint8);
 }
 
-contract NoAMetadataDescriptor is IERC3525MetadataDescriptor {
+contract DerivativeMetadataDescriptor is IERC3525MetadataDescriptor {
   using StringConvertor for uint256;
   using StringConvertor for bytes;
 
@@ -104,12 +103,14 @@ contract NoAMetadataDescriptor is IERC3525MetadataDescriptor {
 
   function _slotName(uint256 slot_) internal view returns (string memory) {
     DataTypes.SlotDetail memory slotDetail = IDerivativeNFTV1(msg.sender).getSlotDetail(slot_);
-    return slotDetail.publication.name;
+    // return slotDetail.publication.name;
+    return "TODO";
   }
 
   function _slotDescription(uint256 slot_) internal view returns (string memory) {
     DataTypes.SlotDetail memory slotDetail = IDerivativeNFTV1(msg.sender).getSlotDetail(slot_);
-    return slotDetail.publication.description;
+    // return slotDetail.publication.description;
+     return "TODO";
   }
 
   // function _slotImage(uint256 slot_) internal view returns (string memory) {
@@ -152,7 +153,8 @@ contract NoAMetadataDescriptor is IERC3525MetadataDescriptor {
   function _tokenDescription(uint256 tokenId_) internal view returns (string memory) {
     uint256 slot = IERC3525(msg.sender).slotOf(tokenId_);
     DataTypes.SlotDetail memory sd = IDerivativeNFTV1(msg.sender).getSlotDetail(slot);
-    return sd.publication.description;
+    // return sd.publication.description;
+     return "TODO";
   }
 
   // function _tokenImage(uint256 tokenId_) internal view returns (string memory) {
@@ -173,9 +175,11 @@ contract NoAMetadataDescriptor is IERC3525MetadataDescriptor {
         abi.encodePacked(
           /* solhint-disable */
           '{"name":"',
-             slotDetail.publication.name,
+            //  slotDetail.publication.name,
+            "TODO",
              '","description":"',
-             slotDetail.publication.description,
+            //  slotDetail.publication.description,
+             "TODO",
              '","image":"',
              project_.image,
              '","totalSupply":"',

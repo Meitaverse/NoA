@@ -15,14 +15,20 @@ interface IBankTreasury {
      * @notice Initializes the Incubator, setting the manager as the privileged minter and storing the associated SoulBoundToken ID.
      * @param manager The  Address of Manager contract
      * @param goverance The  Address of Goverance contract
+     * @param ndpt The  Address of NDPT contract
+     * @param soulBoundTokenId The  soulBoundToken Id of BankTreasury contract
      * @param _owners The array Address of owner contract
      * @param _numConfirmationsRequired The number confirmation required
      */
     function initialize(
         address manager,
         address goverance,
+        address ndpt,
+        uint256 soulBoundTokenId,
         address[] memory _owners, 
         uint256 _numConfirmationsRequired
+        // uint16 treasuryFee,
+        // uint256 publishFee
     ) external;
 
     /**
@@ -69,5 +75,7 @@ interface IBankTreasury {
     function setGovernance(address newGovernance) external;
 
     function getGovernance() external returns(address);
+
+    function getSoulBoundTokenId() external returns (uint256);
 
 }

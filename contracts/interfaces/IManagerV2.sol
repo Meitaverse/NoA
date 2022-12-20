@@ -6,7 +6,7 @@ import {DataTypes} from '../libraries/DataTypes.sol';
 
 /**
  * @title IManagerV2
- * @author Derivative NFT Protocol
+ * @author Bitsoul Protocol
  *
  * @notice This is the interface for the Manager contract
  */
@@ -175,19 +175,12 @@ interface IManagerV2 {
      * @notice Publish some amount of dNFTs
      *
      * @param publication publication infomation
-     * @param soulBoundTokenId The SBT ID  of the organizer to publish.
-     * @param amount The amount of dNFT that publish.
-     * @param publishModuleData The publishModuleData call publish.
-     *
+     * @return uint256 The new tokenId.
      */
     function publish(
-        uint256 projectId,
-        DataTypes.Publication memory publication,
-        uint256 soulBoundTokenId,       
-        uint256 amount,
-        bytes calldata publishModuleData
+        DataTypes.Publication memory publication
     ) external returns(uint256);
-
+    
     /**
      * @notice Split a dNFT to two parts in same incubator.
      *
@@ -220,13 +213,12 @@ interface IManagerV2 {
     ) external;
 
     function airdrop(
-        uint256 hubId, 
-        uint256 projectId, 
+        uint256 hubId,
+        uint256 projectId,
         uint256 fromSoulBoundTokenId,
         uint256[] memory toSoulBoundTokenIds,
         uint256 tokenId,
-        uint256[] memory values,
-        bytes[] calldata airdropModuledatas
+        uint256[] memory values
     ) external;
 
     /**

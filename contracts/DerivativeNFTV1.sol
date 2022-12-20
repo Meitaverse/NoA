@@ -14,14 +14,35 @@ import {DataTypes} from './libraries/DataTypes.sol';
 import {Events} from "./libraries/Events.sol";
 import {IManager} from "./interfaces/IManager.sol";
 import {IDerivativeNFTV1} from "./interfaces/IDerivativeNFTV1.sol";
- import "./base/NoAMultiState.sol";
+import "./base/DerivativeNFTMultiState.sol";
 
 /**
  *  @title Derivative NFT
  * 
  * , and includes built-in governance power and delegation mechanisms.
  */
-contract DerivativeNFTV1 is IDerivativeNFTV1, NoAMultiState, ERC3525Upgradeable {
+contract DerivativeNFTV1 is IDerivativeNFTV1, DerivativeNFTMultiState, ERC3525Upgradeable {
+    bytes32 internal constant EIP712_REVISION_HASH = keccak256('1');
+    bytes32 internal constant SET_DISPATCHER_WITH_SIG_TYPEHASH =
+        keccak256(
+            'SetDispatcherWithSig(uint256 profileId,address dispatcher,uint256 nonce,uint256 deadline)'
+        );
+    bytes32 internal constant BURN_WITH_SIG_TYPEHASH =
+        keccak256('BurnWithSig(uint256 tokenId,uint256 nonce,uint256 deadline)');
+    bytes32 internal constant EIP712_DOMAIN_TYPEHASH =
+        keccak256(
+            'EIP712Domain(string name,string version,uint256 chainId,address verifyingContract)'
+        );
+    bytes32 internal constant PERMIT_TYPEHASH =
+        keccak256('Permit(address spender,uint256 tokenId,uint256 nonce,uint256 deadline)');
+    bytes32 internal constant PERMIT_FOR_ALL_TYPEHASH =
+        keccak256(
+            'PermitForAll(address owner,address operator,bool approved,uint256 nonce,uint256 deadline)'
+        );
+    // solhint-disable-next-line private-vars-leading-underscore
+    bytes32 internal constant PERMIT_VALUE_TYPEHASH =
+        keccak256('PermitValue(address spender,uint256 tokenId,uint256 value,uint256 nonce,uint256 deadline)');
+    
     using Counters for Counters.Counter;
     using SafeMathUpgradeable for uint256;
 
@@ -30,7 +51,7 @@ contract DerivativeNFTV1 is IDerivativeNFTV1, NoAMultiState, ERC3525Upgradeable 
     Counters.Counter private  _nextSlotId;
 
     uint256 internal _hubId;
-    uint256 internal _projectId;
+    uint256 internal _projectId;  //one derivativeNFT include one projectId
     uint256 internal _soulBoundTokenId;
 
     address internal _emergencyAdmin;
@@ -40,8 +61,10 @@ contract DerivativeNFTV1 is IDerivativeNFTV1, NoAMultiState, ERC3525Upgradeable 
     address private immutable _MANAGER;
     // solhint-disable-next-line var-name-mixedcase
     address private immutable _NDPT;
+    // solhint-disable-next-line var-name-mixedcase
+    address private immutable _BANKTREASURY;
 
-    uint256 internal _royaltyBasisPoints; //版税佣金点数
+    uint256 internal _royaltyBasisPoints; //版税佣金点数, 本协议将版税的10%及金库固定税收5%设置为
 
     // bytes4(keccak256('royaltyInfo(uint256,uint256)')) == 0x2a55205a
     bytes4 internal constant _INTERFACE_ID_ERC2981 = 0x2a55205a;
@@ -56,6 +79,9 @@ contract DerivativeNFTV1 is IDerivativeNFTV1, NoAMultiState, ERC3525Upgradeable 
     //publication Name to Slot
     mapping(bytes32 => uint256) internal _publicationNameHashBySlot;
 
+
+    mapping(address => uint256) public sigNonces;
+
     /**
      * @dev This modifier reverts if the caller is not the configured governance address.
      */
@@ -69,11 +95,13 @@ contract DerivativeNFTV1 is IDerivativeNFTV1, NoAMultiState, ERC3525Upgradeable 
     /// @custom:oz-upgrades-unsafe-allow constructor
     // `initializer` marks the contract as initialized to prevent third parties to
     // call the `initialize` method on the implementation (this contract)
-    constructor(address manager, address ndpt) {
+    constructor(address manager, address ndpt, address bankTreasury) {
         if (manager == address(0)) revert Errors.InitParamsInvalid();
         _MANAGER = manager;
         if (ndpt == address(0)) revert Errors.InitParamsInvalid();
         _NDPT = ndpt;
+        if (bankTreasury == address(0)) revert Errors.InitParamsInvalid();
+        _BANKTREASURY = bankTreasury;
     }
 
     function initialize(
@@ -83,6 +111,7 @@ contract DerivativeNFTV1 is IDerivativeNFTV1, NoAMultiState, ERC3525Upgradeable 
         uint256 projectId_,
         uint256 soulBoundTokenId_,
         address metadataDescriptor_
+        
     ) external override initializer { 
         if (_initialized) revert Errors.Initialized();
         _initialized = true;
@@ -96,9 +125,11 @@ contract DerivativeNFTV1 is IDerivativeNFTV1, NoAMultiState, ERC3525Upgradeable 
         _setState(DataTypes.ProtocolState.Unpaused);
 
         _hubId = hubId_;
-         _projectId = projectId_;
+        _projectId = projectId_;
         _soulBoundTokenId = soulBoundTokenId_;
         _receiver = IManager(_MANAGER).getReceiver();
+
+
     }
 
     //only owner
@@ -110,15 +141,15 @@ contract DerivativeNFTV1 is IDerivativeNFTV1, NoAMultiState, ERC3525Upgradeable 
         _setState(newState);
     }
 
-
     // Publication only can publish once
     function publish(
-        uint256 soulBoundTokenId,
-        DataTypes.Publication memory publication,
-        uint256 value_
+        DataTypes.Publication memory publication
     ) external virtual onlyManager whenPublishingEnabled returns (uint256) {
         if (_publicationNameHashBySlot[keccak256(bytes(publication.name))] > 0) revert Errors.PublicationIsExisted();
-        if (soulBoundTokenId != _soulBoundTokenId && publication.fromTokenIds.length == 0) revert Errors.InvalidParameter();
+        //if (publication.soulBoundTokenId != _soulBoundTokenId && publication.fromTokenIds.length == 0) revert Errors.InvalidParameter();
+        if (publication.projectId != _projectId) {
+            revert Errors.InvalidParameter();
+        }
         
         for (uint256 i = 0; i < publication.fromTokenIds.length; ++i) {
             if (!(_isApprovedOrOwner(msg.sender, publication.fromTokenIds[i])))  revert Errors.NotOwnerNorApproved();
@@ -130,24 +161,28 @@ contract DerivativeNFTV1 is IDerivativeNFTV1, NoAMultiState, ERC3525Upgradeable 
         uint256 slot = _generateNextSlotId(); //auto increase
 
         _slotDetails[slot] = DataTypes.SlotDetail({
-            soulBoundTokenId: soulBoundTokenId,
-            publication: DataTypes.Publication(
-                publication.name,
-                publication.description,
-                publication.materialURIs,
-                publication.fromTokenIds
-            ),
+            soulBoundTokenId: publication.soulBoundTokenId,
+            publication: publication,
+            // publication: DataTypes.Publication(
+            //     publication.hubId,
+            //     publication.amount,
+            //     publication.name,
+            //     publication.description,
+            //     publication.materialURIs,
+            //     publication.fromTokenIds
+            // ),
             projectId:  _projectId,
             timestamp: block.timestamp 
         });
 
+
         _publicationNameHashBySlot[keccak256(bytes(publication.name))] = slot;
 
-        address to_ = IManager(_MANAGER).getIncubatorOfSoulBoundTokenId(soulBoundTokenId);
+        address to_ = IManager(_MANAGER).getIncubatorOfSoulBoundTokenId(publication.soulBoundTokenId);
         if (!ERC3525Upgradeable.isApprovedForAll(to_, _MANAGER)) {
             ERC3525Upgradeable.setApprovalForAll(_MANAGER, true);
         }
-        return ERC3525Upgradeable._mint(to_, slot, value_);
+        return ERC3525Upgradeable._mint(to_, slot, publication.amount);
     }
 
     function split(
@@ -162,6 +197,92 @@ contract DerivativeNFTV1 is IDerivativeNFTV1, NoAMultiState, ERC3525Upgradeable 
         return ERC3525Upgradeable.transferFrom(fromTokenId_, to_, value_);
     }
 
+    function permit(
+        address spender,
+        uint256 tokenId,
+        DataTypes.EIP712Signature calldata sig
+    ) external override {
+        if (spender == address(0)) revert Errors.ZeroSpender();
+        address owner = ownerOf(tokenId);
+        unchecked {
+            _validateRecoveredAddress(
+                _calculateDigest(
+                    keccak256(
+                        abi.encode(
+                            PERMIT_TYPEHASH,
+                            spender,
+                            tokenId,
+                            sigNonces[owner]++,
+                            sig.deadline
+                        )
+                    )
+                ),
+                owner,
+                sig
+            );
+        }
+        _approve(spender, tokenId);
+    }
+    
+    function permitValue(
+        address spender,
+        uint256 tokenId,
+        uint256 value,
+        DataTypes.EIP712Signature calldata sig
+    ) external override {
+        if (spender == address(0)) revert Errors.ZeroSpender();
+        
+        address owner = ownerOf(tokenId);
+
+        unchecked {
+            _validateRecoveredAddress(
+                _calculateDigest(
+                    keccak256(
+                        abi.encode(
+                            PERMIT_VALUE_TYPEHASH,
+                            spender,
+                            tokenId,
+                            value,
+                            sigNonces[owner]++,
+                            sig.deadline
+                        )
+                    )
+                ),
+                owner,
+                sig
+            );
+        }
+        approve(tokenId, spender, value);
+    }
+
+    function permitForAll(
+        address owner,
+        address operator,
+        bool approved,
+        DataTypes.EIP712Signature calldata sig
+    ) external override {
+        if (operator == address(0)) revert Errors.ZeroSpender();
+        unchecked {
+            _validateRecoveredAddress(
+                _calculateDigest(
+                    keccak256(
+                        abi.encode(
+                            PERMIT_FOR_ALL_TYPEHASH,
+                            owner,
+                            operator,
+                            approved,
+                            sigNonces[owner]++,
+                            sig.deadline
+                        )
+                    )
+                ),
+                owner,
+                sig
+            );
+        }
+        _setApprovalForAll(owner, operator, approved);
+    }
+
     function burn(uint256 tokenId_) external virtual whenNotPaused {
         uint256 slot = slotOf(tokenId_);
         if (!_isApprovedOrOwner(msg.sender, tokenId_)) {
@@ -169,6 +290,31 @@ contract DerivativeNFTV1 is IDerivativeNFTV1, NoAMultiState, ERC3525Upgradeable 
         }
         ERC3525Upgradeable._burn(tokenId_);
         emit Events.BurnToken(slot, tokenId_, msg.sender);
+    }
+    
+    function burnWithSig(uint256 tokenId, DataTypes.EIP712Signature calldata sig)
+        public
+        virtual
+        override
+    {
+        address owner = ownerOf(tokenId);
+        unchecked {
+            _validateRecoveredAddress(
+                _calculateDigest(
+                    keccak256(
+                        abi.encode(
+                            BURN_WITH_SIG_TYPEHASH,
+                            tokenId,
+                            sigNonces[owner]++,
+                            sig.deadline
+                        )
+                    )
+                ),
+                owner,
+                sig
+            );
+        }
+        _burn(tokenId);
     }
 
     function getSlotDetail(uint256 slot_) external view returns (DataTypes.SlotDetail memory) {
@@ -232,11 +378,6 @@ contract DerivativeNFTV1 is IDerivativeNFTV1, NoAMultiState, ERC3525Upgradeable 
     ) public virtual override onlyManager whenNotPaused{
         super._setApprovalForAll(_msgSender(), operator_, approved_);
     }
-
-    //----internal functions----//
-
-
-    //-----approval functions----//
 
     function setApprovalForSlot(
         address owner_,
@@ -308,9 +449,64 @@ contract DerivativeNFTV1 is IDerivativeNFTV1, NoAMultiState, ERC3525Upgradeable 
         if (msg.sender != _MANAGER) revert Errors.NotManager();
     }
 
+
+    function _validateCallerIsSoulBoundTokenOwner(uint256 soulBoundTokenId_) internal view {
+        if (IERC3525(_NDPT).ownerOf(soulBoundTokenId_) != msg.sender) revert Errors.NotProfileOwner();
+    }
+
     function _generateNextSlotId() internal returns (uint256) {
         _nextSlotId.increment();
         return uint24(_nextSlotId.current());
     }
 
+    function getDomainSeparator() external view override returns (bytes32) {
+        return _calculateDomainSeparator();
+    }
+
+    /**
+     * @dev Wrapper for ecrecover to reduce code size, used in meta-tx specific functions.
+     */
+    function _validateRecoveredAddress(
+        bytes32 digest,
+        address expectedAddress,
+        DataTypes.EIP712Signature calldata sig
+    ) internal view {
+        if (sig.deadline < block.timestamp) revert Errors.SignatureExpired();
+        address recoveredAddress = ecrecover(digest, sig.v, sig.r, sig.s);
+        if (recoveredAddress == address(0) || recoveredAddress != expectedAddress)
+            revert Errors.SignatureInvalid();
+    }
+
+    /**
+     * @dev Calculates EIP712 DOMAIN_SEPARATOR based on the current contract and chain ID.
+     */
+    function _calculateDomainSeparator() internal view returns (bytes32) {
+        return
+            keccak256(
+                abi.encode(
+                    EIP712_DOMAIN_TYPEHASH,
+                    keccak256(bytes(name())),
+                    EIP712_REVISION_HASH,
+                    block.chainid,
+                    address(this)
+                )
+            );
+    }
+
+    /**
+     * @dev Calculates EIP712 digest based on the current DOMAIN_SEPARATOR.
+     *
+     * @param hashedMessage The message hash from which the digest should be calculated.
+     *
+     * @return bytes32 A 32-byte output representing the EIP712 digest.
+     */
+    function _calculateDigest(bytes32 hashedMessage) internal view returns (bytes32) {
+        bytes32 digest;
+        unchecked {
+            digest = keccak256(
+                abi.encodePacked('\x19\x01', _calculateDomainSeparator(), hashedMessage)
+            );
+        }
+        return digest;
+    }    
 }

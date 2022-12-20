@@ -5,11 +5,12 @@ pragma solidity ^0.8.13;
 import {Errors} from '../libraries/Errors.sol';
 import {Events} from '../libraries/Events.sol';
 import {IModuleGlobals} from '../interfaces/IModuleGlobals.sol';
-
+import {INFTDerivativeProtocolTokenV1} from "../interfaces/INFTDerivativeProtocolTokenV1.sol";
+import {IManager} from "../interfaces/IManager.sol";
 
 /**
  * @title ModuleGlobals
- * @author Derivative NFT Protocol
+ * @author Bitsoul Protocol
  * 
  * @notice This contract contains data relevant to dNFT modules, such as the module governance address, treasury
  * address and treasury fee BPS.
@@ -24,11 +25,14 @@ import {IModuleGlobals} from '../interfaces/IModuleGlobals.sol';
  */
 contract ModuleGlobals is IModuleGlobals {
     uint16 internal constant BPS_MAX = 10000;
-
     mapping(address => bool) internal _currencyWhitelisted;
+    address internal _MANAGER; //管理合约地址
+    address internal _NDPT; //NDPT地址
     address internal _governance; //治理地址
     address internal _treasury; //金库地址
     uint16 internal _treasuryFee; //手续费率
+    
+    mapping(address => uint256) internal _publishCurrencyTaxes; //publish的币种及数量
 
     modifier onlyGov() {
         if (msg.sender != _governance) revert Errors.NotGovernance();
@@ -38,18 +42,30 @@ contract ModuleGlobals is IModuleGlobals {
     /**
      * @notice Initializes the governance, treasury and treasury fee amounts.
      *
+     * @param ndpt The ndpt address
+     * @param manager The manager address
      * @param governance The governance address which has additional control over setting certain parameters.
      * @param treasury The treasury address to direct fees to.
      * @param treasuryFee The treasury fee in BPS to levy on collects.
+     * @param publishRoyalty The fee when every dNFT publish or combo, count one is free
+
      */
     constructor(
+        address ndpt,
+        address manager,
         address governance,
         address treasury,
-        uint16 treasuryFee
+        uint16 treasuryFee,
+        uint256 publishRoyalty
     ) {
         _setGovernance(governance);
         _setTreasury(treasury);
         _setTreasuryFee(treasuryFee);
+        _setPublishRoyalty(publishRoyalty);
+        _publishCurrencyTaxes[ndpt] = publishRoyalty;
+        _whitelistCurrency(ndpt, true);
+        _MANAGER = manager;
+        _NDPT = ndpt;
     }
 
     /// @inheritdoc IModuleGlobals
@@ -86,6 +102,16 @@ contract ModuleGlobals is IModuleGlobals {
     function getTreasury() external view override returns (address) {
         return _treasury;
     }
+    
+    /// @inheritdoc IModuleGlobals
+    function getNDPT() external view override returns (address) {
+        return _NDPT;
+
+    }
+    
+    // function getManager() external view override returns (address) {
+    //     return INFTDerivativeProtocolTokenV1(_NDPT).getManager();
+    // }
 
     /// @inheritdoc IModuleGlobals
     function getTreasuryFee() external view override returns (uint16) {
@@ -95,6 +121,10 @@ contract ModuleGlobals is IModuleGlobals {
     //@inheritdoc IModuleGlobals
     function getTreasuryData() external view override returns (address, uint16) {
         return (_treasury, _treasuryFee);
+    }
+
+    function getIncubator(uint256 soulBoundTokenId) external view returns (address) {
+        return IManager(_MANAGER).getIncubatorOfSoulBoundTokenId(soulBoundTokenId);
     }
 
     function _setGovernance(address newGovernance) internal {
@@ -109,6 +139,12 @@ contract ModuleGlobals is IModuleGlobals {
         address prevTreasury = _treasury;
         _treasury = newTreasury;
         emit Events.ModuleGlobalsTreasurySet(prevTreasury, newTreasury, block.timestamp);
+    }
+
+    function _setPublishRoyalty(uint256 publishRoyalty) internal {
+        uint256 prevPublishRoyalty = _publishCurrencyTaxes[_NDPT];
+        _publishCurrencyTaxes[_NDPT] = publishRoyalty;
+        emit Events.ModuleGlobalsPublishRoyaltySet(prevPublishRoyalty, publishRoyalty, block.timestamp);
     }
 
     function _setTreasuryFee(uint16 newTreasuryFee) internal {
@@ -128,6 +164,14 @@ contract ModuleGlobals is IModuleGlobals {
             toWhitelist,
             block.timestamp
         );
+    }
+
+    function setPublishRoyalty(uint256 publishRoyalty) external onlyGov override {
+        _setPublishRoyalty(publishRoyalty);
+    }
+
+    function getPublishCurrencyTax(address currency) external view override returns(uint256) {
+       return _publishCurrencyTaxes[currency];
     }
     
 }

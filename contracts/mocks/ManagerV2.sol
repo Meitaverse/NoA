@@ -8,7 +8,7 @@ import "@solvprotocol/erc-3525/contracts/IERC3525.sol";
 import "../interfaces/IDerivativeNFTV1.sol";
 import "../interfaces/INFTDerivativeProtocolTokenV1.sol";
 import "../interfaces/IManagerV2.sol";
-import "../base/NoAMultiState.sol";
+import "../base/DerivativeNFTMultiState.sol";
 import {DataTypes} from '../libraries/DataTypes.sol';
 import {Events} from"../libraries/Events.sol";
 import {InteractionLogic} from '../libraries/InteractionLogic.sol';
@@ -20,7 +20,7 @@ import "../libraries/SafeMathUpgradeable128.sol";
 
 import {VersionedInitializable} from '../upgradeability/VersionedInitializable.sol';
 
-contract ManagerV2 is IManagerV2, NoAMultiState, MockManagerV2Storage, PriceManager, VersionedInitializable {
+contract ManagerV2 is IManagerV2, DerivativeNFTMultiState, MockManagerV2Storage, PriceManager, VersionedInitializable {
     // using SafeMathUpgradeable for uint256;
     using SafeMathUpgradeable128 for uint128;
     using EnumerableSetUpgradeable for EnumerableSetUpgradeable.UintSet;
@@ -185,17 +185,17 @@ contract ManagerV2 is IManagerV2, NoAMultiState, MockManagerV2Storage, PriceMana
     }
 
     function publish(
-        uint256 projectId,
-        DataTypes.Publication memory publication,
-        uint256 soulBoundTokenId,
-        uint256 amount,
-        bytes calldata publishModuleData
-    ) external whenNotPaused onlySoulBoundTokenOwner(soulBoundTokenId) returns (uint256) {
-        address derivatveNFT = _derivativeNFTByProjectId[projectId];
+        DataTypes.Publication memory publication
+    ) external whenNotPaused returns (uint256) {
+        bool isHubOwner;
+        address derivatveNFT = _derivativeNFTByProjectId[publication.projectId];
         if (derivatveNFT == address(0)) revert Errors.InvalidParameter();
-
-        return PublishLogic.publish(projectId, publication, derivatveNFT, soulBoundTokenId, amount, publishModuleData);
+        if ( _hubBySoulBoundTokenId[publication.soulBoundTokenId] == publication.hubId) {
+            isHubOwner = true;
+        }
+        // return PublishLogic.publish(projectId, publication, derivatveNFT, soulBoundTokenId, amount, publishModule, publishModuleInitData, isHubOwner);
     }
+
 
     function split(
         uint256 projectId,
@@ -205,17 +205,17 @@ contract ManagerV2 is IManagerV2, NoAMultiState, MockManagerV2Storage, PriceMana
         uint256 amount,
         bytes calldata splitModuleData
     ) external override whenNotPaused onlySoulBoundTokenOwner(fromSoulBoundTokenId) returns (uint256) {
-        address derivatveNFT = _derivativeNFTByProjectId[projectId];
-        if (derivatveNFT == address(0)) revert Errors.InvalidParameter();
-        return
-            PublishLogic.split(
-                derivatveNFT,
-                fromSoulBoundTokenId,
-                toSoulBoundTokenId,
-                tokenId,
-                amount,
-                splitModuleData
-            );
+        // address derivatveNFT = _derivativeNFTByProjectId[projectId];
+        // if (derivatveNFT == address(0)) revert Errors.InvalidParameter();
+        // return
+        //     PublishLogic.split(
+        //         derivatveNFT,
+        //         fromSoulBoundTokenId,
+        //         toSoulBoundTokenId,
+        //         tokenId,
+        //         amount,
+        //         splitModuleData
+        //     );
     }
 
     function collect(
@@ -228,20 +228,21 @@ contract ManagerV2 is IManagerV2, NoAMultiState, MockManagerV2Storage, PriceMana
         bytes calldata collectModuledata
     ) external whenNotPaused onlySoulBoundTokenOwner(fromSoulBoundTokenId) {
         address derivatveNFT = _derivativeNFTByProjectId[projectId];
-        if (derivatveNFT == address(0)) revert Errors.InvalidParameter();
+        // if (derivatveNFT == address(0)) revert Errors.InvalidParameter();
 
-        return
-            PublishLogic.collectDerivativeNFT(
-                projectId,
-                derivatveNFT,
-                collector,
-                fromSoulBoundTokenId,
-                toSoulBoundTokenId,
-                tokenId,
-                value,
-                collectModuledata,
-                _pubByIdByProfile
-            );
+        // return
+        //     PublishLogic.collectDerivativeNFT(
+        //         projectId,
+        //         derivatveNFT,
+        //         collector,
+        //         fromSoulBoundTokenId,
+        //         toSoulBoundTokenId,
+        //         projectId,
+        //         tokenId,
+        //         value,
+        //         collectModuledata,
+        //         _pubByIdByProfile
+        //     );
     }
 
     function airdrop(
@@ -250,8 +251,7 @@ contract ManagerV2 is IManagerV2, NoAMultiState, MockManagerV2Storage, PriceMana
         uint256 fromSoulBoundTokenId,
         uint256[] memory toSoulBoundTokenIds,
         uint256 tokenId,
-        uint256[] memory values,
-        bytes[] calldata airdropModuledatas
+        uint256[] memory values
     ) external whenNotPaused onlySoulBoundTokenOwner(fromSoulBoundTokenId) {
         if (_hubBySoulBoundTokenId[fromSoulBoundTokenId] != hubId) revert Errors.NotHubOwner();
         address derivatveNFT = _derivativeNFTByProjectId[projectId];
@@ -265,9 +265,7 @@ contract ManagerV2 is IManagerV2, NoAMultiState, MockManagerV2Storage, PriceMana
                 fromSoulBoundTokenId,
                 toSoulBoundTokenIds,
                 tokenId,
-                values,
-                airdropModuledatas,
-                _pubByIdByProfile
+                values
             );
     }
 

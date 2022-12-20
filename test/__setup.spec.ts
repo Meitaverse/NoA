@@ -88,6 +88,7 @@ export const NUM_CONFIRMATIONS_REQUIRED = 3;
 export const CURRENCY_MINT_AMOUNT = parseEther('100');
 export const BPS_MAX = 10000;
 export const TREASURY_FEE_BPS = 50;
+export const PublishRoyalty = 100;
 export const REFERRAL_FEE_BPS = 250;
 export const MAX_PROFILE_IMAGE_URI_LENGTH = 6000;
 export const NDPT_NAME = 'NFT Derivative Protocol Token';
@@ -104,6 +105,7 @@ export const MOCK_FOLLOW_NFT_URI =
   'https://ipfs.fleek.co/ipfs/ghostplantghostplantghostplantghostplantghostplantghostplan';
 
 export const  RECEIVER_MAGIC_VALUE = '0x009ce20b';
+export const TreasuryFee = 50; 
 
 export let accounts: Signer[];
 export let deployer: Signer;
@@ -241,6 +243,7 @@ before(async function () {
   let initializeData = bankTreasuryImpl.interface.encodeFunctionData("initialize", [
     managerProxyAddress,
     governanceAddress,
+    TreasuryFee,
    [userAddress, userTwoAddress, userThreeAddress],
    NUM_CONFIRMATIONS_REQUIRED  //All full signed 
   ]);
@@ -266,7 +269,8 @@ before(async function () {
 
   let data = managerImpl.interface.encodeFunctionData('initialize', [
     governanceAddress,
-    ndptAddress
+    ndptAddress,
+    bankTreasuryImpl.address
   ]);
 
   let proxy = await new TransparentUpgradeableProxy__factory(deployer).deploy(
@@ -283,9 +287,11 @@ before(async function () {
   currency = await new Currency__factory(deployer).deploy();
 
   moduleGlobals = await new ModuleGlobals__factory(deployer).deploy(
+    ndptAddress,
     governanceAddress,
     bankTreasuryImpl.address,
-    TREASURY_FEE_BPS
+    TREASURY_FEE_BPS,
+    PublishRoyalty
   );
   
   await expect(manager.connect(governance).setState(ProtocolState.Unpaused)).to.not.be.reverted;

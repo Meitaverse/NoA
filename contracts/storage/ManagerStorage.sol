@@ -15,11 +15,52 @@ import "@openzeppelin/contracts/utils/Counters.sol";
  * storage variables should be done solely at the bottom of this contract.
  */
 abstract contract ManagerStorage {
+    bytes32 internal constant SET_DEFAULT_PROFILE_WITH_SIG_TYPEHASH =
+        keccak256(
+            'SetDefaultProfileWithSig(address wallet,uint256 profileId,uint256 nonce,uint256 deadline)'
+        );
+    bytes32 internal constant SET_FOLLOW_MODULE_WITH_SIG_TYPEHASH =
+        keccak256(
+            'SetFollowModuleWithSig(uint256 profileId,address followModule,bytes followModuleInitData,uint256 nonce,uint256 deadline)'
+        );
+    bytes32 internal constant SET_FOLLOW_NFT_URI_WITH_SIG_TYPEHASH =
+        keccak256(
+            'SetFollowNFTURIWithSig(uint256 profileId,string followNFTURI,uint256 nonce,uint256 deadline)'
+        );
+
+    bytes32 internal constant SET_PROFILE_IMAGE_URI_WITH_SIG_TYPEHASH =
+        keccak256(
+            'SetProfileImageURIWithSig(uint256 profileId,string imageURI,uint256 nonce,uint256 deadline)'
+        );
+
+
+    bytes32 internal constant EIP712_REVISION_HASH = keccak256('1');
+    bytes32 internal constant SET_DISPATCHER_WITH_SIG_TYPEHASH =
+        keccak256(
+            'SetDispatcherWithSig(uint256 profileId,address dispatcher,uint256 nonce,uint256 deadline)'
+        );
+    bytes32 internal constant BURN_WITH_SIG_TYPEHASH =
+        keccak256('BurnWithSig(uint256 tokenId,uint256 nonce,uint256 deadline)');
+    bytes32 internal constant EIP712_DOMAIN_TYPEHASH =
+        keccak256(
+            'EIP712Domain(string name,string version,uint256 chainId,address verifyingContract)'
+        );
+    bytes32 internal constant PERMIT_TYPEHASH =
+        keccak256('Permit(address spender,uint256 tokenId,uint256 nonce,uint256 deadline)');
+    bytes32 internal constant PERMIT_FOR_ALL_TYPEHASH =
+        keccak256(
+            'PermitForAll(address owner,address operator,bool approved,uint256 nonce,uint256 deadline)'
+        );
+    // solhint-disable-next-line private-vars-leading-underscore
+    bytes32 internal constant PERMIT_VALUE_TYPEHASH =
+        keccak256('PermitValue(address spender,uint256 tokenId,uint256 value,uint256 nonce,uint256 deadline)');
+    
+
     mapping(uint256 => address) internal _profileOwners;
     mapping(address => bool) internal _profileCreatorWhitelisted;
     mapping(address => bool) internal _followModuleWhitelisted;
     mapping(address => bool) internal _collectModuleWhitelisted;
-    mapping(address => bool) internal _referenceModuleWhitelisted;
+    mapping(address => bool) internal _publishModuleWhitelisted;
 
     mapping(uint256 => DataTypes.Hub) internal _hubInfos;
     mapping(uint256 => uint256) internal _hubBySoulBoundTokenId;
@@ -29,10 +70,12 @@ abstract contract ManagerStorage {
     mapping(uint256 => address) internal _incubatorBySoulBoundTokenId;
     
     mapping(uint256 => address) internal _dispatcherByProfile;
+
     mapping(bytes32 => uint256) internal _profileIdByHandleHash;
     mapping(uint256 => DataTypes.ProfileStruct) internal _profileById;
 
     mapping(uint256 => mapping(uint256 => DataTypes.PublicationStruct)) internal _pubByIdByProfile;
+    mapping(uint256 => mapping(uint256 => DataTypes.PublicationStruct)) internal _comboByIdByProfile;
 
     mapping(address => uint256) internal _defaultProfileByAddress;
 
@@ -46,11 +89,13 @@ abstract contract ManagerStorage {
     address internal _governance;
 
     address public  NDPT;
+    address public  TREASURY;
 
     Counters.Counter internal _nextSaleId;
     Counters.Counter internal _nextTradeId;
     Counters.Counter internal _nextHubId;
     Counters.Counter internal _nextProjectId;
+    Counters.Counter internal _nextPublishId;
     
     string internal _svgLogo;
 
@@ -68,6 +113,9 @@ abstract contract ManagerStorage {
     //derivativeNFT => saleId
     mapping(address => EnumerableSetUpgradeable.UintSet) internal _derivativeNFTSales;
     mapping(address => EnumerableSetUpgradeable.AddressSet) internal _allowAddresses;
+
+    //publishId => publishData
+    mapping(uint256 => DataTypes.PublishData) internal _publishIdByProjectData;
 
     
 }

@@ -16,7 +16,7 @@ import {DataTypes} from './libraries/DataTypes.sol';
 
 /**
  * @title Incubator
- * @author Derivative NFT Protocol
+ * @author Bitsoul Protocol
  * 
  * @notice This is the contract that is minted upon collecting a given publication of dNFT. 
  *         It is cloned upon the first collect for a given publication of dNFT.
@@ -28,35 +28,6 @@ contract Incubator is IIncubator, IERC165, IERC3525Receiver, AccessControl
 
     // solhint-disable-next-line const-name-snakecase
     string internal constant _name = "Incubator";
-
-    // solhint-disable-next-line private-vars-leading-underscore
-    bytes32 internal constant EIP712_REVISION_HASH = keccak256('1');
-
-    // solhint-disable-next-line private-vars-leading-underscore
-    bytes32 internal constant PERMIT_TYPEHASH =
-        keccak256('Permit(address spender,uint256 tokenId,uint256 nonce,uint256 deadline)');
-    
-    // solhint-disable-next-line private-vars-leading-underscore
-    bytes32 internal constant PERMIT_VALUE_TYPEHASH =
-        keccak256('Permit(address spender,uint256 tokenId,uint256 value,uint256 nonce,uint256 deadline)');
-    
-    // solhint-disable-next-line private-vars-leading-underscore
-    bytes32 internal constant PERMIT_FOR_ALL_TYPEHASH =
-        keccak256(
-            'PermitForAll(address owner,address operator,bool approved,uint256 nonce,uint256 deadline)'
-        );
-
-    // solhint-disable-next-line private-vars-leading-underscore    
-    bytes32 internal constant BURN_WITH_SIG_TYPEHASH =
-        keccak256('BurnWithSig(uint256 tokenId,uint256 nonce,uint256 deadline)');
-
-    // solhint-disable-next-line private-vars-leading-underscore    
-    bytes32 internal constant EIP712_DOMAIN_TYPEHASH =
-        keccak256(
-            'EIP712Domain(string name,string version,uint256 chainId,address verifyingContract)'
-        );
-
-    mapping(address => uint256) public sigNonces;
 
     // @dev owner => slot => operator => approved
     mapping(address => mapping(uint256 => mapping(address => bool))) private _slotApprovals;
@@ -119,148 +90,6 @@ contract Incubator is IIncubator, IERC165, IERC3525Receiver, AccessControl
         return 0x009ce20b;
     }
  
-    function permit(
-        address derivativeNFT,
-        address spender,
-        uint256 tokenId,
-        DataTypes.EIP712Signature calldata sig
-    ) external {
-        if (spender == address(0)) revert Errors.ZeroSpender();
-        
-        address owner = ERC3525Upgradeable(derivativeNFT).ownerOf(tokenId);
-
-         unchecked {
-            _validateRecoveredAddress(
-                _calculateDigest(
-                    keccak256(
-                        abi.encode(
-                            PERMIT_TYPEHASH,
-                            spender,
-                            tokenId,
-                            sigNonces[owner]++,
-                            sig.deadline
-                        )
-                    )
-                ),
-                owner,
-                sig
-            );
-        }
-        ERC3525Upgradeable(derivativeNFT).approve(spender, tokenId);
-    }
- 
-    function permitValue(
-        address derivativeNFT,
-        address spender,
-        uint256 tokenId,
-        uint256 value,
-        DataTypes.EIP712Signature calldata sig
-    ) external {
-        if (spender == address(0)) revert Errors.ZeroSpender();
-        
-        address owner = ERC3525Upgradeable(derivativeNFT).ownerOf(tokenId);
-
-         unchecked {
-            _validateRecoveredAddress(
-                _calculateDigest(
-                    keccak256(
-                        abi.encode(
-                            PERMIT_VALUE_TYPEHASH,
-                            spender,
-                            tokenId,
-                            value,
-                            sigNonces[owner]++,
-                            sig.deadline
-                        )
-                    )
-                ),
-                owner,
-                sig
-            );
-        }
-        ERC3525Upgradeable(derivativeNFT).approve(tokenId, spender, value);
-    }
-
-    function permitForAll(
-        address derivativeNFT,
-        address owner,
-        address operator,
-        bool approved,
-        DataTypes.EIP712Signature calldata sig
-    ) external {
-       if (operator == address(0)) revert Errors.ZeroSpender();
-        unchecked {
-            _validateRecoveredAddress(
-                _calculateDigest(
-                    keccak256(
-                        abi.encode(
-                            PERMIT_FOR_ALL_TYPEHASH,
-                            owner,
-                            operator,
-                            approved,
-                            sigNonces[owner]++,
-                            sig.deadline
-                        )
-                    )
-                ),
-                owner,
-                sig
-            );
-        }
-        ERC3525Upgradeable(derivativeNFT).setApprovalForAll(operator, approved);
-    }
-
-    /**
-     * @dev Wrapper for ecrecover to reduce code size, used in meta-tx specific functions.
-     */
-    function _validateRecoveredAddress(
-        bytes32 digest,
-        address expectedAddress,
-        DataTypes.EIP712Signature calldata sig
-    ) internal view {
-        if (sig.deadline < block.timestamp) revert Errors.SignatureExpired();
-        address recoveredAddress = ecrecover(digest, sig.v, sig.r, sig.s);
-        if (recoveredAddress == address(0) || recoveredAddress != expectedAddress)
-            revert Errors.SignatureInvalid();
-    }
-
-    /**
-     * @dev Calculates EIP712 DOMAIN_SEPARATOR based on the current contract and chain ID.
-     */
-    function _calculateDomainSeparator() internal view returns (bytes32) {
-        return
-            keccak256(
-                abi.encode(
-                    EIP712_DOMAIN_TYPEHASH,
-                    keccak256(bytes(_name)),
-                    EIP712_REVISION_HASH,
-                    block.chainid,
-                    address(this)
-                )
-            );
-    }
-    
-    /**
-     * @dev Calculates EIP712 digest based on the current DOMAIN_SEPARATOR.
-     *
-     * @param hashedMessage The message hash from which the digest should be calculated.
-     *
-     * @return bytes32 A 32-byte output representing the EIP712 digest.
-     */
-    function _calculateDigest(bytes32 hashedMessage) internal view returns (bytes32) {
-        bytes32 digest;
-        unchecked {
-            digest = keccak256(
-                abi.encodePacked('\x19\x01', _calculateDomainSeparator(), hashedMessage)
-            );
-        }
-        return digest;
-    }
-
-    function getDomainSeparator() external view override returns (bytes32) {
-        return _calculateDomainSeparator();
-    }
-
 
      //TODO
      // split

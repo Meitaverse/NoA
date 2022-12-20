@@ -7,7 +7,7 @@ import {Errors} from './Errors.sol';
 
 /**
  * @title Helpers
- * @author Derivative NFT Protocol
+ * @author Bitsoul Protocol
  *
  * @notice This is a library that only contains a single function that is used in the manager contract as well as in
  * both the publishing logic and interaction logic libraries.

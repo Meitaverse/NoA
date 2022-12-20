@@ -28,7 +28,7 @@ abstract contract MockManagerV2Storage {
     mapping(uint256 => address) internal _derivativeNFTByProjectId;
     mapping(uint256 => address) internal _incubatorBySoulBoundTokenId;
     
-    mapping(uint256 => address) internal _dispatcherByProfile;
+   
     mapping(bytes32 => uint256) internal _profileIdByHandleHash;
     mapping(uint256 => DataTypes.ProfileStruct) internal _profileById;
 

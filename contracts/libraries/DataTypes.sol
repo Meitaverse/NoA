@@ -84,18 +84,60 @@ library DataTypes {
 
     /**
      * @notice Properties of the Publication, using with publish 
+     * @param soulBoundTokenId id of NDPT
+     * @param hubId id of hub
+     * @param projectId id of project
+     * @param derivativeNFT address of derivativeNFT
+     * @param price price of publish
+     * @param currency currency address of publish, default is NDPT
+     * @param amount amount of publish
      * @param name name of publication
      * @param description description of publication
      * @param materialURIs array of  material URI,  ipfs or arweave uri
      * @param fromTokenIds array of from tokenIds
+     * @param collectModule collect module
+     * @param collectModuleInitData  init data of collect module
+     * @param publishModule publish module
+     * @param publishModuleInitData  init data of publish module
      */
     struct Publication {
-      string name;
-      string description;
-      string[] materialURIs;
-      uint256[] fromTokenIds;
+        uint256 soulBoundTokenId;
+        uint256 hubId;
+        uint256 projectId;
+        address derivativeNFT;
+        uint256 price;
+        address currency;
+        uint256 amount;
+        string name;
+        string description;
+        string[] materialURIs;
+        uint256[] fromTokenIds;
+        address collectModule;
+        bytes collectModuleInitData;
+        address publishModule;
+        bytes publishModuleInitData;
     }
         
+    struct CollectData {
+        uint256 hubId;
+        uint256 projectId;
+        // address derivativeNFT;
+        // address collector;
+        uint256 fromSoulBoundTokenId;
+        uint256 toSoulBoundTokenId;
+        uint256 publishId;
+        // uint256 tokenId;
+        uint256 value;
+        bytes collectModuleData;
+    }    
+
+    struct PublishData {
+        Publication  publication;
+        address publishModule;
+        bool isMinted;
+        uint256 newTokenId;
+    }
+
     /**
      * @notice Properties of the Market Item
      */
@@ -110,7 +152,7 @@ library DataTypes {
 
     struct Sale {
         uint24 saleId;
-        uint256 soundBoundTokenId;
+        uint256 soulBoundTokenId;
         uint256 projectId;
         uint256 tokenId;
         uint32 startTime;
@@ -175,7 +217,6 @@ library DataTypes {
         string followNFTURI;
     }
 
-
     /**
      * @notice A struct containing profile data.
      *
@@ -199,27 +240,37 @@ library DataTypes {
     /**
      * @notice A struct containing data associated with each new publication.
      *
-     * @param profileIdPointed The profile token ID this publication points to, for mirrors and comments.
-     * @param pubIdPointed The publication ID this publication points to, for mirrors and comments.
-     * @param contentURI The URI associated with this publication.
-     * @param referenceModule The address of the current reference module in use by this publication, can be empty.
+     * @param hubId The profile token ID this publication points to, for mirrors and comments.
+     * @param projectId The profile token ID this publication points to, for mirrors and comments.
+     * @param name The publication ID this publication points to, for mirrors and comments.
+     * @param description The URI associated with this publication.
+     * @param materialURIs The address of the current reference module in use by this publication, can be empty.
+     * @param fromTokenIds The address of the current reference module in use by this publication, can be empty.
+     * @param publishModule The address of the template module associated with this publication, this exists for all publication.
+     * @param derivativeNFT The address of the derivativeNFT associated with this publication, if any.
      * @param collectModule The address of the collect module associated with this publication, this exists for all publication.
-     * @param collectNFT The address of the collectNFT associated with this publication, if any.
      */
     struct PublicationStruct {
-        uint256 profileIdPointed;
-        uint256 pubIdPointed;
-        string contentURI;
-        address referenceModule;
+        uint256 hubId;
+        uint256 projectId;
+        string name;
+        string description;
+        string[] materialURIs;
+        uint256[] fromTokenIds;
+        // uint256 profileIdPointed;
+        // uint256 pubIdPointed;
+        // string contentURI;
+        // address referenceModule;
+        address publishModule;
+        address derivativeNFT;
         address collectModule;
-        address collectNFT;
     }
 
     //BankTreasury
     
     struct Transaction {
         address currency;
-        DataTypes.CurrencyType currencyType;
+        CurrencyType currencyType;
         address to;
         uint256 fromTokenId;
         uint256 toTokenId;
@@ -228,6 +279,20 @@ library DataTypes {
         bool executed;
         uint256 numConfirmations;
     }    
+
+    /**
+     * @notice A struct containing the parameters required for the `setDispatcherWithSig()` function. Parameters are the same
+     * as the regular `setDispatcher()` function, with an added EIP712Signature.
+     *
+     * @param soulBoundTokenId The token ID of the SoulBoundToken to set the dispatcher for.
+     * @param dispatcher The dispatcher address to set for the profile.
+     * @param sig The EIP712Signature struct containing the profile owner's signature.
+     */
+    struct SetDispatcherWithSigData {
+        uint256 soulBoundTokenId;
+        address dispatcher;
+        EIP712Signature sig;
+    }
 
 
 }

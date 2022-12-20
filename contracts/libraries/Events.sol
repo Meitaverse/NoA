@@ -27,6 +27,17 @@ library Events {
       address owner
   );
 
+
+    /**
+     * @dev Emitted when a dispatcher is set for a specific soulBoundToken.
+     *
+     * @param soulBoundTokenId The token ID of the soulBoundToken for which the dispatcher is set.
+     * @param dispatcher The dispatcher set for the given profile.
+     * @param timestamp The current block timestamp.
+     */
+    event DispatcherSet(uint256 indexed soulBoundTokenId, address indexed dispatcher, uint256 timestamp);
+
+
   /**
      * @dev MUST emits when an operator is approved or disapproved to manage all of `_owner`'s
      *  tokens with the same slot.
@@ -86,6 +97,12 @@ library Events {
     event ModuleGlobalsTreasurySet(
         address indexed prevTreasury,
         address indexed newTreasury,
+        uint256 timestamp
+    );
+
+    event ModuleGlobalsPublishRoyaltySet(
+        uint256 indexed prevPublishRoyalty,
+        uint256 indexed newPublishRoyalty,
         uint256 timestamp
     );
 
@@ -212,7 +229,7 @@ library Events {
 
     /**
      * @dev Emitted when a Incubator clone is deployed using a lazy deployment pattern.
-     * @param soulBoundTokenId The collector's SoulBound token ID.
+     * @param soulBoundTokenId The user's SoulBound token ID.
      * @param incubatorContract The address of the newly deployed incubator clone.
      * @param timestamp The current block timestamp.
      */
@@ -224,7 +241,7 @@ library Events {
 
     /**
      * @dev Emitted when a DerivativeNFT clone is deployed using a lazy deployment pattern.
-     * @param soulBoundTokenId The collector's SoulBound token ID.
+     * @param soulBoundTokenId The user's SoulBound token ID.
      * @param derivativeNFT The address of the newly deployed DerivativeNFT clone.
      * @param timestamp The current block timestamp.
      */
@@ -267,9 +284,9 @@ library Events {
 
     event CollectDerivativeNFT(
         uint256 projectId,
-        address derivatveNFT,
+        address derivativeNFT,
         uint256 fromSoulBoundTokenId,
-        address collector,
+        // address collector,
         uint256 toSoulBoundTokenId,
         uint256 tokenId,
         uint256 value,
@@ -279,7 +296,7 @@ library Events {
 
     event AirdropDerivativeNFT(
         uint256 projectId,
-        address derivatveNFT,
+        address derivativeNFT,
         uint256 fromSoulBoundTokenId,
         address operator,
         uint256 toSoulBoundTokenId,
@@ -296,15 +313,15 @@ library Events {
         uint256 value,
         uint256 timestamp
     );
-    
+
     event ComboDerivativeNFT(
         uint256 soulBoundTokenId,
-        address incubator,
         uint256 projectId,
-        uint256[] fromTokenIds,
-        uint256 newTokenId,
+        uint256 orderId,
+        uint256 value,
         uint256 timestamp
     );
+
 
     event SplitDerivativeNFT(
         uint256 fromSoulBoundTokenId,
@@ -335,7 +352,7 @@ library Events {
     );
 
     event FixedPriceSet (
-       address   derivatveNFT,
+       address   derivativeNFT,
        uint128   saleId,
        uint256   projectId,
        uint256   tokenId,
@@ -417,6 +434,41 @@ library Events {
     event ExecuteTransaction(address indexed owner, uint256 indexed txIndex);
     event ExecuteTransactionERC3525(uint256 indexed txIndex, uint256 indexed fromTokenId, uint256 indexed toTokenId, uint256 value);
     event WithdrawERC3525(uint256 indexed fromTokenId, uint256 indexed toTokenId, uint256 value);
+
+
+    /**
+     * @dev Emitted when a collect module is added to or removed from the whitelist.
+     *
+     * @param collectModule The address of the collect module.
+     * @param whitelisted Whether or not the collect module is being added to the whitelist.
+     * @param timestamp The current block timestamp.
+     */
+    event CollectModuleWhitelisted(
+        address indexed collectModule,
+        bool indexed whitelisted,
+        uint256 timestamp
+    );
+
+    /**
+     * @dev Emitted when a publish module is added to or removed from the whitelist.
+     *
+     * @param publishModule The address of the publish module.
+     * @param whitelisted Whether or not the publish module is being added to the whitelist.
+     * @param timestamp The current block timestamp.
+     */
+    event PublishModuleWhitelisted(
+        address indexed publishModule,
+        bool indexed whitelisted,
+        uint256 timestamp
+    );
+
+   
+    event PublishCreated(
+        DataTypes.Publication publication,
+        bytes collectModuleReturnData,
+        uint256 timestamp
+    );
+
 
 }
 

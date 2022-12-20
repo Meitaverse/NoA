@@ -10,6 +10,7 @@ import {Constants} from './Constants.sol';
 import {IIncubator} from '../interfaces/IIncubator.sol';
 import {IDerivativeNFTV1} from "../interfaces/IDerivativeNFTV1.sol";
 import {ICollectModule} from '../interfaces/ICollectModule.sol';
+import {IPublishModule} from '../interfaces/IPublishModule.sol';
 import {IFollowModule} from '../interfaces/IFollowModule.sol';
 
 /**
@@ -21,6 +22,134 @@ import {IFollowModule} from '../interfaces/IFollowModule.sol';
  * @dev The functions are external, so they are called from the hub via `delegateCall` under the hood.
  */
 library PublishLogic {
+
+    function createPublish(
+        DataTypes.Publication memory publication,
+        uint256 publishId,
+        mapping(uint256 => mapping(uint256 => DataTypes.PublicationStruct))
+            storage _pubByIdByProfile,
+        mapping(address => bool) storage _collectModuleWhitelisted,
+        mapping(address => bool) storage _publishModuleWhitelisted,
+        mapping(uint256 => DataTypes.PublishData) storage _publishIdByProjectData
+    ) external returns(uint256) {
+        uint256 newTokenId;
+        uint256 genesisSoulBoundTokenId;
+        if (publication.fromTokenIds.length == 0)  {
+            newTokenId =  IDerivativeNFTV1(publication.derivativeNFT).publish(
+                publication
+            );
+            genesisSoulBoundTokenId = publication.soulBoundTokenId;
+            //保存 
+            _pubByIdByProfile[publication.projectId][newTokenId].projectId = publication.projectId;
+            _pubByIdByProfile[publication.projectId][newTokenId].name = publication.name;
+            _pubByIdByProfile[publication.projectId][newTokenId].description = publication.description;
+            _pubByIdByProfile[publication.projectId][newTokenId].materialURIs = publication.materialURIs;
+            _pubByIdByProfile[publication.projectId][newTokenId].fromTokenIds = publication.fromTokenIds;
+            _pubByIdByProfile[publication.projectId][newTokenId].derivativeNFT = publication.derivativeNFT;
+
+            emit Events.PublishDerivativeNFT(
+                publication.soulBoundTokenId,
+                publication.projectId,
+                newTokenId,
+                publication.amount,
+                block.timestamp
+            ); 
+
+        }  else {
+            //TODO
+            genesisSoulBoundTokenId = 1; 
+
+            //combo, mint when first collect
+            emit Events.ComboDerivativeNFT(
+                publication.soulBoundTokenId,
+                publication.projectId,
+                publishId,
+                publication.amount,
+                block.timestamp
+            ); 
+        }
+
+        // bytes memory collectModuleReturnData = _initCollectModule(
+        //         genesisSoulBoundTokenId,
+        //         publication.soulBoundTokenId,
+        //         publication.projectId,
+        //         newTokenId,
+        //         publication.amount,
+        //         publication.collectModule,
+        //         publication.collectModuleInitData,
+        //         _pubByIdByProfile,
+        //         _collectModuleWhitelisted
+        // );
+
+        // _initPublishModule(
+        //     publishId,
+        //     publication,
+        //     _publishIdByProjectData,
+        //     _publishModuleWhitelisted
+        // );
+
+        // _emitPublishCreated(
+        //     publication,
+        //     collectModuleReturnData
+        // );
+        
+        return newTokenId;
+    }
+
+    function _emitPublishCreated(
+        DataTypes.Publication memory publication,
+        bytes memory collectModuleReturnData
+    ) internal {
+        emit Events.PublishCreated(
+            publication,
+            collectModuleReturnData,
+            block.timestamp
+        );
+    }
+
+    function _initCollectModule(
+        uint256 genesisSoulBoundTokenId,
+        uint256 ownerSoulBoundTokenId,
+        uint256 projectId,
+        uint256 newTokenId,
+        uint256 amount,
+        address collectModule,
+        bytes memory collectModuleInitData,
+        mapping(uint256 => mapping(uint256 => DataTypes.PublicationStruct))
+            storage _pubByIdByProfile,
+        mapping(address => bool) storage _collectModuleWhitelisted
+    ) private returns (bytes memory) {
+        if (!_collectModuleWhitelisted[collectModule]) revert Errors.CollectModuleNotWhitelisted();
+        _pubByIdByProfile[projectId][newTokenId].collectModule = collectModule;
+        return
+            ICollectModule(collectModule).initializePublicationCollectModule(
+                genesisSoulBoundTokenId,
+                ownerSoulBoundTokenId,
+                projectId,
+                newTokenId,
+                amount,
+                collectModuleInitData
+            );
+    }
+    
+    //publish之前的初始化，扣费
+    function _initPublishModule(
+        uint256 publishId,
+        DataTypes.Publication memory publication,
+        mapping(uint256 => DataTypes.PublishData) storage _publishIdByProjectData,
+        mapping(address => bool) storage _publishModuleWhitelisted
+    ) private  {
+        if (publication.publishModule == address(0)) return;
+        if (!_publishModuleWhitelisted[publication.publishModule])
+            revert Errors.PublishModuleNotWhitelisted();
+
+        _publishIdByProjectData[publishId].publishModule = publication.publishModule;
+        
+        IPublishModule(publication.publishModule).initializePublishModule(
+            publishId,
+            publication
+        );
+    }
 
     /**
      * @notice Follows the given SoulBoundTokens, executing the necessary logic and module calls before add.
@@ -55,103 +184,73 @@ library PublishLogic {
             );
         }
         emit Events.Followed(projectId, follower, soulBoundTokenId, followModuleData, block.timestamp);
-
     }
    
 
     /**
-     * @notice Collects the given publication, executing the necessary logic and module call before minting the
-     * collect NFT to the collector.
-     *收集给定的发布(非NFT), 在铸造collectNFT之前执行必要的逻辑及call模块
-     * @param derivatveNFT The address derivatveNFT contract 
-     * @param collector The address executing the collect.
-     * @param fromSoulBoundTokenId The SBT ID of the publication.
-     * @param toSoulBoundTokenId The SBT ID of the collector.
-     * @param tokenId The token id 
-     * @param value  value to collect
-     * @param collectModuleData The data to pass to the publication's collect module.
-     * @param _pubByIdByProfile A pointer to the storage mapping of publications by pubId by profile ID.
-     *
+     * @notice Collects the given dNFT, executing the necessary logic and module call before minting the
+     * collect NFT to the toSoulBoundTokenId.
+     * 
+     * @param collectData The collect Data struct
+     * @param tokenId The collect tokenId
+     * @param derivativeNFT The dNFT contract
+     * @param _pubByIdByProfile The collect Data struct
+     * @return The new tokenId
      */
     function collectDerivativeNFT(
-        uint256 projectId,
-        address derivatveNFT,
-        address collector,
-        uint256 fromSoulBoundTokenId,
-        uint256 toSoulBoundTokenId,
+        DataTypes.CollectData calldata collectData,
         uint256 tokenId,
-        uint256 value,
-        bytes calldata collectModuleData,
+        address derivativeNFT,
         mapping(uint256 => mapping(uint256 => DataTypes.PublicationStruct))
             storage _pubByIdByProfile
-    ) external {
-        uint256 newTokenId = IDerivativeNFTV1(derivatveNFT).split(tokenId, toSoulBoundTokenId, value);
+    ) external returns(uint256) {
+
+        address collectModule = _pubByIdByProfile[collectData.projectId][tokenId].collectModule;
+        uint256 newTokenId = IDerivativeNFTV1(derivativeNFT).split(tokenId, collectData.toSoulBoundTokenId, collectData.value);
+
+        //新生成的tokenId也需要用collectModule来处理
+        _pubByIdByProfile[collectData.projectId][newTokenId].collectModule = collectModule;
 
         //后续调用processCollect进行处理，此机制能扩展出联动合约调用
-        address collectModule = _pubByIdByProfile[fromSoulBoundTokenId][tokenId].collectModule;
-
         ICollectModule(collectModule).processCollect(
-            fromSoulBoundTokenId,
-            collector,
-            toSoulBoundTokenId,
-            tokenId,
-            value,
-            collectModuleData
+            collectData.fromSoulBoundTokenId,
+            collectData.toSoulBoundTokenId,
+            collectData.projectId,
+            tokenId, //dNFTc tokenId
+            collectData.value,
+            collectData.collectModuleData
         );
+
+
 
         emit Events.CollectDerivativeNFT(
-            projectId,
-            derivatveNFT,
-            fromSoulBoundTokenId,
-            collector,
-            toSoulBoundTokenId,
+            collectData.projectId,
+            derivativeNFT,
+            collectData.fromSoulBoundTokenId,
+            // collectData.collector,
+            collectData.toSoulBoundTokenId,
             tokenId,
-            value,
+            collectData.value,
             newTokenId,
             block.timestamp
         );
+
+        return newTokenId;
     }
-
-    function publish(
-        uint256 projectId,
-        DataTypes.Publication memory publication,
-        address derivatveNFT,
-        uint256 soulBoundTokenId, 
-        uint256 amount,
-        bytes calldata publishModuleData
-    ) external returns(uint256) {
-       uint256 newTokenId =  IDerivativeNFTV1(derivatveNFT).publish(
-            soulBoundTokenId, 
-            publication, 
-            amount
-        );
-       
-        emit Events.PublishDerivativeNFT(
-            soulBoundTokenId,
-            projectId,
-            newTokenId,
-            amount,
-            block.timestamp
-        ); 
-
-        //TODO publishModule
-        publishModuleData;
-
-       return newTokenId;
-    }
-
+    
+/*
     function split(
-        address derivatveNFT,
+        address derivativeNFT,
         uint256 fromSoulBoundTokenId, 
         uint256 toSoulBoundTokenId, 
         uint256 tokenId, 
         uint256 amount, 
         bytes calldata splitModuleData
     ) external returns(uint256){
-         uint256 originalValue = IERC3525(derivatveNFT).balanceOf(tokenId);
+         uint256 originalValue = IERC3525(derivativeNFT).balanceOf(tokenId);
          if (originalValue <= amount) revert Errors.InsufficientFund();
 
-         uint256 newTokenId = IDerivativeNFTV1(derivatveNFT).split(
+         uint256 newTokenId = IDerivativeNFTV1(derivativeNFT).split(
             toSoulBoundTokenId,
             tokenId,
             amount
@@ -173,4 +272,5 @@ library PublishLogic {
          return newTokenId;
 
     }
+    */
 }    

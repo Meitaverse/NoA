@@ -6,7 +6,7 @@ import {DataTypes} from '../libraries/DataTypes.sol';
 
 /**
  * @title IManager
- * @author Derivative NFT Protocol
+ * @author Bitsoul Protocol
  *
  * @notice This is the interface for the Manager contract
  */
@@ -16,10 +16,12 @@ interface IManager {
      *
      * @param governance_ The address of Governance.
      * @param ndptV1_ The address of NDPT contract.
+     * @param treasury_ The address of Treasury contract.
      */
     function initialize(    
        address governance_,
-       address ndptV1_
+       address ndptV1_,
+       address treasury_
     ) external;
    
   /**
@@ -31,6 +33,33 @@ interface IManager {
   function setGovernance(address newGovernance) external;
 
   function getGovernance() external returns(address);
+
+    /**
+     * @notice Sets a soulBoundTokenId's dispatcher, giving that dispatcher rights to publish to that profile.
+     *
+     * @param soulBoundTokenId The token ID of the profile of the profile to set the dispatcher for.
+     * @param dispatcher The dispatcher address to set for the given profile ID.
+     */
+    function setDispatcher(uint256 soulBoundTokenId, address dispatcher) external;
+
+    /**
+     * @notice Sets a soulBoundTokenId's dispatcher via signature with the specified parameters.
+     *
+     * @param vars A SetDispatcherWithSigData struct, including the regular parameters and an EIP712Signature struct.
+     */
+    function setDispatcherWithSig(DataTypes.SetDispatcherWithSigData calldata vars) external;
+
+
+    /**
+     * @notice Returns the dispatcher associated with a soulBoundToken.
+     *         usually get  approve
+     *
+     * @param soulBoundToken The token ID of the profile to query the dispatcher for.
+     *
+     * @return address The dispatcher address associated with the profile.
+     */
+    function getDispatcher(uint256 soulBoundToken) external view returns (address);
+
 
 
   /**
@@ -136,6 +165,7 @@ interface IManager {
 
     function getReceiver() external view returns (address);
 
+
     /**
      * @notice Adds or removes a profile creator from the whitelist. This function can only be called by the current
      * governance address.
@@ -181,53 +211,37 @@ interface IManager {
      */
     function getProjectInfo(uint256 projectId_) external view returns (DataTypes.Project memory);
 
+
     /**
      * @notice Publish some amount of dNFTs
      *
      * @param publication publication infomation
-     * @param soulBoundTokenId The SBT ID  of the organizer to publish.
-     * @param amount The amount of dNFT that publish.
-     * @param publishModuleData The publishModuleData call publish.
      *
      */
     function publish(
-        uint256 projectId,
-        DataTypes.Publication memory publication,
-        uint256 soulBoundTokenId,       
-        uint256 amount,
-        bytes calldata publishModuleData
+        DataTypes.Publication memory publication
     ) external returns(uint256);
+
+
+    // function split(
+    //     uint256 projectId, 
+    //     uint256 fromSoulBoundTokenId, 
+    //     uint256 toSoulBoundTokenId, 
+    //     uint256 tokenId, 
+    //     uint256 amount, 
+    //     bytes calldata splitModuleData
+    // ) external returns(uint256);
 
     /**
-     * @notice Split a dNFT to two parts in same incubator.
+     * @notice collect a dNFT to a address from incubator.
      *
-     * @param projectId Event Id  
-     * @param fromSoulBoundTokenId From SBT Id  
-     * @param toSoulBoundTokenId to SBT Id  
-     * @param tokenId The tokenId of dNFT.
-     * @param amount The amount to split.
-     * @param splitModuleData The arbitrary data to pass to the split module if needed.
+     * @param collectData collect Data
      *
-     * @return new tokenId
+     * @return The new token id of dNFT
      */
-    function split(
-        uint256 projectId, 
-        uint256 fromSoulBoundTokenId, 
-        uint256 toSoulBoundTokenId, 
-        uint256 tokenId, 
-        uint256 amount, 
-        bytes calldata splitModuleData
-    ) external returns(uint256);
-
     function collect(
-        uint256 projectId, 
-        address collector,
-        uint256 fromSoulBoundTokenId,
-        uint256 toSoulBoundTokenId,
-        uint256 tokenId,
-        uint256 value,
-        bytes calldata collectModuledata
-    ) external;
+        DataTypes.CollectData memory collectData
+    ) external returns(uint256);
 
     function airdrop(
         uint256 hubId, 
@@ -235,8 +249,7 @@ interface IManager {
         uint256 fromSoulBoundTokenId,
         uint256[] memory toSoulBoundTokenIds,
         uint256 tokenId,
-        uint256[] memory values,
-        bytes[] calldata airdropModuledatas
+        uint256[] memory values
     ) external;
 
     /**
@@ -293,5 +306,24 @@ interface IManager {
         uint24 saleId, 
         uint128 units
     )  external payable returns (uint256 amount, uint128 fee);
+
+    /**
+     * @notice Adds or removes a collect module from the whitelist. This function can only be called by the current
+     * governance address.
+     *
+     * @param collectModule The collect module contract address to add or remove from the whitelist.
+     * @param whitelist Whether or not the collect module should be whitelisted.
+     */
+    function whitelistCollectModule(address collectModule, bool whitelist) external;
+
+    /**
+     * @notice Adds or removes a publish module from the whitelist. This function can only be called by the current
+     * governance address.
+     *
+     * @param publishModule The publish module contract address to add or remove from the whitelist.
+     * @param whitelist Whether or not the publish module should be whitelisted.
+     */
+    function whitelistPublishModule(address publishModule, bool whitelist) external;
+
 
 }

@@ -8,14 +8,14 @@ import {Errors} from "../libraries/Errors.sol";
 
 
 /**
- * @title NoAMultiState
+ * @title DerivativeNFTMultiState
  *
  * @notice This is an abstract contract that implements internal Manager state setting and validation.
  *
  * whenNotPaused: Either publishingPaused or Unpaused.
  * whenPublishingEnabled: When Unpaused only.
  */
-abstract contract NoAMultiState {
+abstract contract DerivativeNFTMultiState {
     DataTypes.ProtocolState private _state;
 
     modifier whenNotPaused() {

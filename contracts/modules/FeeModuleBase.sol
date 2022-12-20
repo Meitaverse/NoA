@@ -32,6 +32,22 @@ abstract contract FeeModuleBase {
         return IModuleGlobals(MODULE_GLOBALS).getTreasuryData();
     }
 
+    function _incubator(uint256 soulBoundTokenId) internal view returns (address) {
+        return IModuleGlobals(MODULE_GLOBALS).getIncubator(soulBoundTokenId);
+    }
+
+    function _treasury() internal view returns (address) {
+        return IModuleGlobals(MODULE_GLOBALS).getTreasury();
+    }
+
+    function _ndpt() internal view returns (address) {
+        return IModuleGlobals(MODULE_GLOBALS).getNDPT();
+    }
+    
+    function  _PublishCurrencyTax(address currency) internal returns (uint256) {
+        return IModuleGlobals(MODULE_GLOBALS).getPublishCurrencyTax(currency);
+    }
+
     function _validateDataIsExpected(
         bytes calldata data,
         address currency,

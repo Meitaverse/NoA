@@ -34,12 +34,13 @@ contract BankTreasury is
     IERC3525Receiver, 
     PausableUpgradeable,
     AccessControlUpgradeable, 
-    UUPSUpgradeable 
+    UUPSUpgradeable
 {
     using SafeERC20Upgradeable for IERC20Upgradeable;
 
     bytes32 public constant PAUSER_ROLE = keccak256("PAUSER_ROLE");
     bytes32 public constant UPGRADER_ROLE = keccak256("UPGRADER_ROLE");
+    uint16 internal constant BPS_MAX = 10000;
 
     /**
      * @dev This modifier reverts if the caller is not the configured governance address.
@@ -83,6 +84,8 @@ contract BankTreasury is
     function initialize(
         address manager,
         address governance,
+        address ndpt,
+        uint256 soulBoundTokenId,
         address[] memory _owners, 
         uint256 _numConfirmationsRequired
     ) external override initializer {
@@ -96,9 +99,12 @@ contract BankTreasury is
 
         if (manager == address(0)) revert Errors.InitParamsInvalid();
         if (governance == address(0)) revert Errors.InitParamsInvalid();
+        if (ndpt == address(0)) revert Errors.InitParamsInvalid();
        
         _MANAGER = manager;
         _governance = governance;
+        _NDPT = ndpt;
+        _soulBoundTokenId = soulBoundTokenId;
 
         require(_owners.length > 0, "owners required");
         require(
@@ -118,6 +124,7 @@ contract BankTreasury is
         }
 
         numConfirmationsRequired = _numConfirmationsRequired;
+
     }
 
     function getManager() external view returns(address) {
@@ -313,6 +320,13 @@ contract BankTreasury is
         }
     }
 
+    function setPublishFee(uint256 publishFee) external onlyGov{
+
+    }
+
+    function getPublishFee() external returns (uint256){
+
+    }
     //--- internal  ---//
 
     function _setGovernance(address newGovernance) internal {
@@ -334,5 +348,11 @@ contract BankTreasury is
     function _authorizeUpgrade(address /*newImplementation*/) internal virtual override {
         if (!hasRole(UPGRADER_ROLE, _msgSender())) revert Errors.Unauthorized();
     }
+
+    function getSoulBoundTokenId() external view returns(uint256) {
+        return _soulBoundTokenId;
+    }
+
+
 
 }

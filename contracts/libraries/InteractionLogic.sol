@@ -36,37 +36,20 @@ library InteractionLogic {
 
    function airdropDerivativeNFT(
         uint256 projectId,
-        address derivatveNFT,
+        address derivativeNFT,
         address operator,
         uint256 fromSoulBoundTokenId,
         uint256[] memory toSoulBoundTokenIds,
         uint256 tokenId,
-        uint256[] memory values,
-        bytes[] calldata airdropModuledatas,
-        mapping(uint256 => mapping(uint256 => DataTypes.PublicationStruct))
-            storage _pubByIdByProfile
+        uint256[] memory values
     ) external {
         if (toSoulBoundTokenIds.length != values.length) revert Errors.LengthNotSame();
         for (uint256 i = 0; i < toSoulBoundTokenIds.length; ) {
-           uint256 newTokenId = IDerivativeNFTV1(derivatveNFT).split(tokenId, toSoulBoundTokenIds[i], values[i]);
-
-            //后续处理，此机制能扩展出联动合约调用
-            // airdropModuleDatas;
-
-            // address collectModule = _pubByIdByProfile[fromSoulBoundTokenId][tokenId].collectModule;
-
-            // ICollectModule(collectModule).processCollect(
-            //     fromSoulBoundTokenId,
-            //     operator,
-            //     toSoulBoundTokenIds[i],
-            //     tokenId,
-            //     values[i],
-            //     airdropModuleData
-            // );
+            uint256 newTokenId = IDerivativeNFTV1(derivativeNFT).split(tokenId, toSoulBoundTokenIds[i], values[i]);
 
             emit Events.AirdropDerivativeNFT(
                 projectId,
-                derivatveNFT,
+                derivativeNFT,
                 fromSoulBoundTokenId,
                 operator,
                 toSoulBoundTokenIds[i],
@@ -129,7 +112,7 @@ library InteractionLogic {
     ) external returns(uint256) {
          
         if(_derivativeNFTByProjectId[projectId] == address(0)) {
-               address derivatveNFT = _deployDerivativeNFT(
+               address derivativeNFT = _deployDerivativeNFT(
                     hubId,
                     projectId,
                     soulBoundTokenId,
@@ -137,7 +120,7 @@ library InteractionLogic {
                     project.description,
                     metadataDescriptor
                 );
-                _derivativeNFTByProjectId[projectId] = derivatveNFT;
+                _derivativeNFTByProjectId[projectId] = derivativeNFT;
         }
         //TODO, pre and toggle
         projectModuleData;
@@ -172,14 +155,14 @@ library InteractionLogic {
         uint256 fromSoulBoundTokenId,
         uint256 toSoulBoundTokenId,
         uint256 projectId,
-        address derivatveNFT,
+        address derivativeNFT,
         address fromIncubator,
         address toIncubator,
         uint256 tokenId,
         bytes calldata transferModuledata
     ) external {
     
-         IERC3525(derivatveNFT).transferFrom(fromIncubator, toIncubator, tokenId);
+         IERC3525(derivativeNFT).transferFrom(fromIncubator, toIncubator, tokenId);
 
          //TODO process data
          transferModuledata;
@@ -198,14 +181,14 @@ library InteractionLogic {
         uint256 fromSoulBoundTokenId,
         uint256 toSoulBoundTokenId,
         uint256 projectId,
-        address derivatveNFT,
+        address derivativeNFT,
         address toIncubator,
         uint256 tokenId,
         uint256 value,
         bytes calldata transferValueModuledata
     ) external {
     
-        uint256 newTokenId = IERC3525(derivatveNFT).transferFrom(tokenId, toIncubator, value);
+        uint256 newTokenId = IERC3525(derivativeNFT).transferFrom(tokenId, toIncubator, value);
 
          //TODO process data
          transferValueModuledata;
@@ -248,7 +231,7 @@ library InteractionLogic {
         require(units <= type(uint128).max, "exceeds uint128 max");
         sales[sale.saleId] = DataTypes.Sale({
             saleId: sale.saleId,
-            soundBoundTokenId: sale.soundBoundTokenId,
+            soulBoundTokenId: sale.soulBoundTokenId,
             projectId : sale.projectId,
             seller: msg.sender,
             price: sale.price,
