@@ -258,7 +258,7 @@ contract ManagerV2 is IManagerV2, DerivativeNFTMultiState, MockManagerV2Storage,
         if (derivatveNFT == address(0)) revert Errors.InvalidParameter();
 
         return
-            InteractionLogic.airdropDerivativeNFT(
+            PublishLogic.airdropDerivativeNFT(
                 projectId,
                 derivatveNFT,
                 msg.sender,

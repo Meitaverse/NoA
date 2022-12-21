@@ -33,38 +33,6 @@ import "./SafeMathUpgradeable128.sol";
 library InteractionLogic {
     using Strings for uint256;
 
-
-   function airdropDerivativeNFT(
-        uint256 projectId,
-        address derivativeNFT,
-        address operator,
-        uint256 fromSoulBoundTokenId,
-        uint256[] memory toSoulBoundTokenIds,
-        uint256 tokenId,
-        uint256[] memory values
-    ) external {
-        if (toSoulBoundTokenIds.length != values.length) revert Errors.LengthNotSame();
-        for (uint256 i = 0; i < toSoulBoundTokenIds.length; ) {
-            uint256 newTokenId = IDerivativeNFTV1(derivativeNFT).split(tokenId, toSoulBoundTokenIds[i], values[i]);
-
-            emit Events.AirdropDerivativeNFT(
-                projectId,
-                derivativeNFT,
-                fromSoulBoundTokenId,
-                operator,
-                toSoulBoundTokenIds[i],
-                tokenId,
-                values[i],
-                newTokenId,
-                block.timestamp
-            );
-
-            unchecked {
-                ++i;
-            }
-        }
-    }
-
     function deployIncubatorContract(
        uint256  soulBoundTokenId
     ) external returns (address) {

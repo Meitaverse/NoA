@@ -21,15 +21,10 @@ interface IPublishModule {
         uint256 publishId,
         DataTypes.Publication calldata publication
     ) external;
-
-    /**
-     * @notice Processes a publish action for a given publication, this can only be called by the manager.
-     *
-     * @param publishId The order ID.
-     */
-    function processPublish(
+    
+    function getPublicationTemplate(
         uint256 publishId
-    ) external;
+    ) external view returns (uint256, string memory);
 }
 
 

@@ -71,23 +71,10 @@ library DataTypes {
     }
     
     /**
-     * @notice Properties of the slot, which determine the value of slot.
-     */
-    struct SlotDetail {
-        uint256 soulBoundTokenId;
-        Publication publication;
-        // uint256[] previousDerivativeNFTIds;     //from array of dNFT Ids
-        // uint256[] previousSoulBoundTokenIds;  //NDPT token id
-        uint256 projectId;
-        uint256 timestamp; //minted timestamp
-    }
-
-    /**
      * @notice Properties of the Publication, using with publish 
      * @param soulBoundTokenId id of NDPT
      * @param hubId id of hub
      * @param projectId id of project
-     * @param derivativeNFT address of derivativeNFT
      * @param price price of publish
      * @param currency currency address of publish, default is NDPT
      * @param amount amount of publish
@@ -104,7 +91,6 @@ library DataTypes {
         uint256 soulBoundTokenId;
         uint256 hubId;
         uint256 projectId;
-        address derivativeNFT;
         uint256 price;
         address currency;
         uint256 amount;
@@ -118,24 +104,29 @@ library DataTypes {
         bytes publishModuleInitData;
     }
         
-    struct CollectData {
-        uint256 hubId;
+    /**
+     * @notice Properties of the slot, which determine the value of slot.
+     */
+    struct SlotDetail {
+        uint256 soulBoundTokenId;
+        Publication publication;
         uint256 projectId;
-        // address derivativeNFT;
-        // address collector;
-        uint256 fromSoulBoundTokenId;
-        uint256 toSoulBoundTokenId;
+        uint256 timestamp; //minted timestamp
+    }
+
+    struct CollectData {
         uint256 publishId;
-        // uint256 tokenId;
-        uint256 value;
+        uint256 collectorSoulBoundTokenId;
+        uint256 collectValue;
         bytes collectModuleData;
     }    
 
+    //genesis publish
     struct PublishData {
-        Publication  publication;
-        address publishModule;
+        Publication publication;
+        uint256 previousPublishId;
         bool isMinted;
-        uint256 newTokenId;
+        uint256 tokenId;
     }
 
     /**
@@ -240,27 +231,25 @@ library DataTypes {
     /**
      * @notice A struct containing data associated with each new publication.
      *
-     * @param hubId The profile token ID this publication points to, for mirrors and comments.
-     * @param projectId The profile token ID this publication points to, for mirrors and comments.
-     * @param name The publication ID this publication points to, for mirrors and comments.
-     * @param description The URI associated with this publication.
-     * @param materialURIs The address of the current reference module in use by this publication, can be empty.
-     * @param fromTokenIds The address of the current reference module in use by this publication, can be empty.
+     * @param publishId The publish id
+     * @param hubId The hub ID 
+     * @param projectId The project Id
+     * @param name The name
+     * @param description The description
+     * @param materialURIs The array of the materialURI
+     * @param fromTokenIds The array of the fromTokenId
      * @param publishModule The address of the template module associated with this publication, this exists for all publication.
      * @param derivativeNFT The address of the derivativeNFT associated with this publication, if any.
      * @param collectModule The address of the collect module associated with this publication, this exists for all publication.
      */
     struct PublicationStruct {
+        uint256 publishId;
         uint256 hubId;
         uint256 projectId;
         string name;
         string description;
         string[] materialURIs;
         uint256[] fromTokenIds;
-        // uint256 profileIdPointed;
-        // uint256 pubIdPointed;
-        // string contentURI;
-        // address referenceModule;
         address publishModule;
         address derivativeNFT;
         address collectModule;

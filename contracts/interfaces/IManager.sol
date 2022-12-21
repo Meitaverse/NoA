@@ -210,27 +210,31 @@ interface IManager {
      * @return Project struct data.
      */
     function getProjectInfo(uint256 projectId_) external view returns (DataTypes.Project memory);
+    
+    function prePublish(
+        DataTypes.Publication memory publication
+    ) external  returns (uint256);
 
+    function updatePublish(
+        uint256 publishId,
+        uint256 price,
+        address currency,
+        uint256 amount,
+        string memory name,
+        string memory description,
+        string[] memory materialURIs,
+        uint256[] memory fromTokenIds
+    ) external;
 
     /**
      * @notice Publish some amount of dNFTs
      *
-     * @param publication publication infomation
+     * @param publishId publication id
      *
      */
     function publish(
-        DataTypes.Publication memory publication
+        uint256 publishId
     ) external returns(uint256);
-
-
-    // function split(
-    //     uint256 projectId, 
-    //     uint256 fromSoulBoundTokenId, 
-    //     uint256 toSoulBoundTokenId, 
-    //     uint256 tokenId, 
-    //     uint256 amount, 
-    //     bytes calldata splitModuleData
-    // ) external returns(uint256);
 
     /**
      * @notice collect a dNFT to a address from incubator.

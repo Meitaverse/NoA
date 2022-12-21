@@ -23,7 +23,6 @@ import {IERC3525} from "@solvprotocol/erc-3525/contracts/IERC3525.sol";
 struct ProfilePublicationData {
     uint256 amount;
     address currency;
-    uint256 genesisSoulBoundTokenId;
     uint256 ownerSoulBoundTokenId;
     uint256 collectorSoulBoundTokenId;
     uint16 referralFee; //介绍费
@@ -52,7 +51,6 @@ contract FeeCollectModule is FeeModuleBase, FollowValidationModuleBase, ICollect
     // constructor(address moduleGlobals) override(FeeModuleBase, ModuleBase) {}
 
     function initializePublicationCollectModule(
-        uint256 genesisSoulBoundTokenId,
         uint256 ownerSoulBoundTokenId,
         uint256 projectId,
         uint256 tokenId,
@@ -71,7 +69,6 @@ contract FeeCollectModule is FeeModuleBase, FollowValidationModuleBase, ICollect
         //TODO
         // _dataByPublicationByProfile[projectId][tokenId].amount = amount;
         // _dataByPublicationByProfile[projectId][tokenId].currency = currency;
-        _dataByPublicationByProfile[projectId][tokenId].genesisSoulBoundTokenId = genesisSoulBoundTokenId;
         _dataByPublicationByProfile[projectId][tokenId].ownerSoulBoundTokenId = ownerSoulBoundTokenId;
         // _dataByPublicationByProfile[projectId][tokenId].referralFee = referralFee;
         // // _dataByPublicationByProfile[projectId][tokenId].followerOnly = followerOnly;
@@ -81,18 +78,19 @@ contract FeeCollectModule is FeeModuleBase, FollowValidationModuleBase, ICollect
 
     /**
      * @dev Processes a collect by:
-     *  1. genesisSoulBoundTokenId is the genesis SBT id, will pay royalty to
+     *  1.  will pay royalty to ownerSoulBoundTokenId
      *  2. Charging a fee
+     *  3. TODO: pay to genesis publisher
      */
     function processCollect(
         uint256 ownerSoulBoundTokenId,
         uint256 collectorSoulBoundTokenId,
         uint256 projectId,
         uint256 tokenId,
-        uint256 value,
-        bytes calldata data 
+        uint256 collectValue
+        // bytes calldata data 
     ) external virtual override onlyManager {
-        _processCollect(collectorSoulBoundTokenId, projectId, tokenId, data);
+        _processCollect(ownerSoulBoundTokenId, collectorSoulBoundTokenId, projectId, tokenId, collectValue);
     }
 
     /**
@@ -112,31 +110,26 @@ contract FeeCollectModule is FeeModuleBase, FollowValidationModuleBase, ICollect
     }
 
     function _processCollect(
+        uint256 ownerSoulBoundTokenId,
         uint256 collectorSoulBoundTokenId,
         uint256 projectId, 
         uint256 tokenId, 
-        bytes calldata data
+        uint256 collectValue
+        // bytes calldata data
     ) internal {
-        uint256 amount = _dataByPublicationByProfile[projectId][tokenId].amount;
+        uint256 amountOfAll = collectValue *_dataByPublicationByProfile[projectId][tokenId].amount;
         address currency = _dataByPublicationByProfile[projectId][tokenId].currency;
-        _validateDataIsExpected(data, currency, amount);
+        // _validateDataIsExpected(data, currency, amount);
 
         //获取交易税点
         (address treasury, uint16 treasuryFee) = _treasuryData();
-        // uint256 toSoulBoundTokenId = _dataByPublicationByProfile[projectId][tokenId].toSoulBoundTokenId;
-        uint256 ownerSoulBoundTokenId = _dataByPublicationByProfile[projectId][tokenId].ownerSoulBoundTokenId;
-        uint256 treasuryAmount = (amount * treasuryFee) / BPS_MAX;
-        uint256 adjustedAmount = amount - treasuryAmount;
-        
-        address incubatorofCollector = _incubator(collectorSoulBoundTokenId);
-        
-        address incubatorofOwner = _incubator(ownerSoulBoundTokenId);
-
-
+        uint256 treasuryAmount = (amountOfAll * treasuryFee) / BPS_MAX;
+        uint256 adjustedAmount = amountOfAll - treasuryAmount;
+    
         //向recipient支付剩余的currency
-        IERC20Upgradeable(currency).safeTransferFrom(incubatorofCollector, incubatorofOwner, adjustedAmount);
+        IERC20Upgradeable(currency).safeTransferFrom(_incubator(collectorSoulBoundTokenId), _incubator(ownerSoulBoundTokenId), adjustedAmount);
 
         //支付给金库
-        if (treasuryAmount > 0) IERC20Upgradeable(currency).safeTransferFrom(incubatorofCollector, treasury, treasuryAmount);
+        if (treasuryAmount > 0) IERC20Upgradeable(currency).safeTransferFrom(_incubator(collectorSoulBoundTokenId), treasury, treasuryAmount);
     }
 }

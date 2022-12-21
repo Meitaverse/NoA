@@ -238,7 +238,7 @@ contract ManagerV2_BadRevision is
         if (derivatveNFT == address(0)) revert Errors.InvalidParameter();
 
         return
-            InteractionLogic.airdropDerivativeNFT(
+            PublishLogic.airdropDerivativeNFT(
                 projectId,
                 derivatveNFT,
                 msg.sender,

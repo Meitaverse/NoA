@@ -52,6 +52,7 @@ library Errors {
   error NotSameHub();
   error InsufficientAllowance();
   error InsufficientDerivativeNFT();
+  error CannotUpdateAfterMinted();
 
   // Module Errors
   error InitParamsInvalid();

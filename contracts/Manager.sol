@@ -11,9 +11,7 @@ import {IERC3525Metadata} from "@solvprotocol/erc-3525/contracts/extensions/IERC
 import "./interfaces/IDerivativeNFTV1.sol";
 import "./interfaces/INFTDerivativeProtocolTokenV1.sol";
 import "./interfaces/IManager.sol";
-
 import "./base/DerivativeNFTMultiState.sol";
-
 import {DataTypes} from './libraries/DataTypes.sol';
 import {Events} from"./libraries/Events.sol";
 import {InteractionLogic} from './libraries/InteractionLogic.sol';
@@ -180,6 +178,7 @@ contract Manager is
             metadataURI: project.metadataURI,
             timestamp: block.timestamp
         });
+
         return projectId;
     }
 
@@ -190,8 +189,8 @@ contract Manager is
         return _projectInfoByProjectId[projectId_];
     }
 
-    //level 0 isHubOwner
-    function publish(
+    //prepare publish
+    function prePublish(
         DataTypes.Publication memory publication
     ) external override whenNotPaused returns (uint256) { 
         _validateCallerIsSoulBoundTokenOwnerOrDispathcher(publication.soulBoundTokenId);
@@ -199,88 +198,104 @@ contract Manager is
         _validateSameHub(publication.hubId, publication.projectId);
 
         //user combo 
-        if (_hubBySoulBoundTokenId[publication.soulBoundTokenId] != publication.hubId && publication.fromTokenIds.length == 0)  {
+        if (_hubBySoulBoundTokenId[publication.soulBoundTokenId] != publication.hubId && 
+                publication.fromTokenIds.length == 0)  {
             revert Errors.InsufficientDerivativeNFT();
         }
 
         if (_derivativeNFTByProjectId[publication.projectId] == address(0)) revert Errors.InvalidParameter();
 
-        return _publish(publication);
-    }
-
-    function _publish(
-        DataTypes.Publication memory publication
-    ) internal returns (uint256) {
-
-        return PublishLogic.createPublish(
+        uint256 previousPublishId ;
+        uint256 publishId =  _generateNextPublishId();
+        if (publication.fromTokenIds.length == 0){
+            previousPublishId =0;
+        } else{
+            previousPublishId = _tokenIdByPublishId[publication.fromTokenIds[0]];
+        }
+        
+        PublishLogic.prePublish(
             publication,
-            _generateNextPublishId(),
-            _pubByIdByProfile,
-            _collectModuleWhitelisted,
+            publishId,
+            previousPublishId,
             _publishModuleWhitelisted,
             _publishIdByProjectData
         );
-        
+
+        return publishId;
+
     }
 
-/*
-    function split(
-        uint256 projectId,
-        uint256 fromSoulBoundTokenId,
-        uint256 toSoulBoundTokenId,
-        uint256 tokenId,
+    function updatePublish(
+        uint256 publishId,
+        uint256 price,
+        address currency,
         uint256 amount,
-        bytes calldata splitModuleData
-    ) external override whenNotPaused returns (uint256) {
-        _validateCallerIsSoulBoundTokenOwnerOrDispathcher(fromSoulBoundTokenId);
-        address derivativeNFT = _derivativeNFTByProjectId[projectId];
-        if (derivativeNFT == address(0)) revert Errors.InvalidParameter();
-        return
-            PublishLogic.split(
-                derivativeNFT,
-                fromSoulBoundTokenId,
-                toSoulBoundTokenId,
-                tokenId,
-                amount,
-                splitModuleData
-            );
+        string memory name,
+        string memory description,
+        string[] memory materialURIs,
+        uint256[] memory fromTokenIds
+    )external override whenNotPaused {
+        if (publishId == 0) revert Errors.InvalidParameter();
+        if (currency == address(0)) currency = NDPT;
+
+        _validateCallerIsSoulBoundTokenOwnerOrDispathcher(_publishIdByProjectData[publishId].publication.soulBoundTokenId);
+
+        if (_publishIdByProjectData[publishId].isMinted) revert Errors.CannotUpdateAfterMinted();
+
+        _publishIdByProjectData[publishId].publication.price = price;
+        _publishIdByProjectData[publishId].publication.currency = currency;
+        _publishIdByProjectData[publishId].publication.amount = amount;
+        _publishIdByProjectData[publishId].publication.name = name;
+        _publishIdByProjectData[publishId].publication.description = description;
+        _publishIdByProjectData[publishId].publication.materialURIs = materialURIs;
+        _publishIdByProjectData[publishId].publication.fromTokenIds = fromTokenIds;
+
     }
-*/
+
+    // 
+    function publish(
+        uint256 publishId
+    ) external override whenNotPaused returns (uint256) { 
+
+        address derivativeNFT = _derivativeNFTByProjectId[ _publishIdByProjectData[publishId].publication.projectId];
+
+        uint256 tokenId = PublishLogic.createPublish(
+            _publishIdByProjectData[publishId].publication,
+            publishId,
+            derivativeNFT,
+            _pubByIdByProfile,
+            _collectModuleWhitelisted
+        );
+        _publishIdByProjectData[publishId].isMinted = true;
+        _publishIdByProjectData[publishId].tokenId = tokenId;
+
+        _tokenIdByPublishId[tokenId] = publishId;
+
+        return tokenId;
+        // return 1;
+
+    }
 
     function collect(
         DataTypes.CollectData memory collectData
     ) external whenNotPaused returns(uint256){
-         _validateCallerIsSoulBoundTokenOwnerOrDispathcher(collectData.fromSoulBoundTokenId);
+         _validateCallerIsSoulBoundTokenOwnerOrDispathcher(collectData.collectorSoulBoundTokenId);
         
-        if ( _derivativeNFTByProjectId[collectData.projectId] == address(0)) revert Errors.InvalidParameter();
-        address derivativeNFT = _derivativeNFTByProjectId[collectData.projectId];
-        
-        if (collectData.publishId == 0) {
+        if ( _derivativeNFTByProjectId[_publishIdByProjectData[collectData.publishId].publication.projectId] == address(0)) 
             revert Errors.InvalidParameter();
-        }
-
-        uint256 tokenId;
-
-        if (_publishIdByProjectData[collectData.publishId].isMinted) {
-            tokenId = _publishIdByProjectData[collectData.publishId].newTokenId;
-        } else {
-
-            tokenId =  IDerivativeNFTV1(_publishIdByProjectData[collectData.publishId].publication.derivativeNFT).publish(
-                    _publishIdByProjectData[collectData.publishId].publication 
-            );
-             _publishIdByProjectData[collectData.publishId].newTokenId = tokenId;
-        }
-
-       
-        _publishIdByProjectData[collectData.publishId].isMinted = true;
+        
+        if (collectData.publishId == 0) 
+            revert Errors.InvalidParameter();
 
         return
             PublishLogic.collectDerivativeNFT(
                collectData,
-               tokenId,
-               derivativeNFT,
-              _pubByIdByProfile
+               _publishIdByProjectData[collectData.publishId].tokenId,
+               _derivativeNFTByProjectId[_publishIdByProjectData[collectData.publishId].publication.projectId],
+              _pubByIdByProfile,
+              _publishIdByProjectData
             );
+        // return 1;
     }
 
     function airdrop(
@@ -293,11 +308,12 @@ contract Manager is
     ) external whenNotPaused{
          _validateCallerIsSoulBoundTokenOwnerOrDispathcher(fromSoulBoundTokenId);
         if (_hubBySoulBoundTokenId[fromSoulBoundTokenId] != hubId) revert Errors.NotHubOwner();
+        
         address derivativeNFT = _derivativeNFTByProjectId[projectId];
         if (derivativeNFT == address(0)) revert Errors.InvalidParameter();
 
         return
-            InteractionLogic.airdropDerivativeNFT(
+            PublishLogic.airdropDerivativeNFT(
                 projectId,
                 derivativeNFT,
                 msg.sender,
@@ -647,11 +663,11 @@ contract Manager is
     }
 
 
-    function _validateSameHub(uint256 hubId, uint256 projectId) internal{
-            if ( _projectInfoByProjectId[projectId].hubId == hubId) {
-                return;
-            }
-            revert Errors.NotSameHub(); 
+    function _validateSameHub(uint256 hubId, uint256 projectId) internal view {
+        if ( _projectInfoByProjectId[projectId].hubId == hubId) {
+            return;
+        }
+        revert Errors.NotSameHub(); 
     }
 
 }

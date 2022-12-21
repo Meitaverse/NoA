@@ -314,14 +314,6 @@ library Events {
         uint256 timestamp
     );
 
-    event ComboDerivativeNFT(
-        uint256 soulBoundTokenId,
-        uint256 projectId,
-        uint256 orderId,
-        uint256 value,
-        uint256 timestamp
-    );
-
 
     event SplitDerivativeNFT(
         uint256 fromSoulBoundTokenId,
@@ -463,8 +455,14 @@ library Events {
     );
 
    
-    event PublishCreated(
+    event PublishPrepared(
         DataTypes.Publication publication,
+        uint256 publishId,
+        uint256 timestamp
+    );
+   
+    event PublishCreated(
+        uint256 publishId,
         bytes collectModuleReturnData,
         uint256 timestamp
     );

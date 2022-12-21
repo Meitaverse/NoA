@@ -116,6 +116,8 @@ abstract contract ManagerStorage {
 
     //publishId => publishData
     mapping(uint256 => DataTypes.PublishData) internal _publishIdByProjectData;
+    //tokenId => publishId
+    mapping(uint256 => uint256) internal _tokenIdByPublishId;
 
     
 }
