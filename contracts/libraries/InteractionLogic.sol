@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 
-pragma solidity ^0.8.13;
+pragma solidity ^0.8.10;
 
 import {IncubatorProxy} from '../upgradeability/IncubatorProxy.sol';
 import {DerivativeNFTProxy} from '../upgradeability/DerivativeNFTProxy.sol';
@@ -10,7 +10,6 @@ import {Events} from './Events.sol';
 import {Constants} from './Constants.sol';
 import {IIncubator} from '../interfaces/IIncubator.sol';
 import {IDerivativeNFTV1} from "../interfaces/IDerivativeNFTV1.sol";
-
 import {ICollectModule} from '../interfaces/ICollectModule.sol';
 import {Strings} from '@openzeppelin/contracts/utils/Strings.sol';
 import {IERC3525} from "@solvprotocol/erc-3525/contracts/IERC3525.sol";
@@ -19,7 +18,6 @@ import {SafeMathUpgradeable} from "@openzeppelin/contracts-upgradeable/utils/mat
 import "@solvprotocol/erc-3525/contracts/ERC3525Upgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/utils/structs/EnumerableSetUpgradeable.sol";
 import {IManager} from "../interfaces/IManager.sol";
-// import "./EthAddressLib.sol";
 import "./SafeMathUpgradeable128.sol";
 
 /**
@@ -30,6 +28,7 @@ import "./SafeMathUpgradeable128.sol";
  
  * @dev The functions are external, so they are called from the hub via `delegateCall` under the hood.
  */
+
 library InteractionLogic {
     using Strings for uint256;
 
@@ -53,6 +52,8 @@ library InteractionLogic {
         bytes calldata createHubModuleData,
         mapping(uint256 => DataTypes.Hub) storage _hubInfos
     ) external {
+        if (creater == address(0)) revert Errors.InvalidParameter();
+        
          _hubInfos[hubId] = DataTypes.Hub({
              soulBoundTokenId : soulBoundTokenId,
              name: hub.name,
@@ -309,72 +310,6 @@ library InteractionLogic {
             uint256(markets[sale_.derivativeNFT].precision)
         );
 
-        // if (
-        //     sale_.currency == EthAddressLib.ethAddress() &&
-        //     sale_.priceType == DataTypes.PriceType.DECLIINING_BY_TIME &&
-        //     amount_ != msg.value
-        // ) {
-        //     amount_ = msg.value;
-        //     uint128 fee = _getFee(sale_.derivativeNFT, sale_.currency, amount_, markets);
-        //     uint256 units256;
-        //     if (markets[sale_.derivativeNFT].feePayType == DataTypes.FeePayType.BUYER_PAY) {
-        //         units256 = amount_
-        //         .sub(fee, "fee exceeds amount")
-        //         .mul(uint256(markets[sale_.derivativeNFT].precision))
-        //         .div(uint256(price_));
-        //     } else {
-        //         units256 = amount_
-        //         .mul(uint256(markets[sale_.derivativeNFT].precision))
-        //         .div(uint256(price_));
-        //     }
-        //     require(units256 <= type(uint128).max, "exceeds uint128 max");
-        //     units_ = uint128(units256);
-        // }
-
-        fee_ = _getFee(sale_.derivativeNFT, sale_.currency, amount_, markets);
-
-        sale_.units = sale_.units.sub(units_, "insufficient units for sale");
-        // DataTypes.FeePayType feePayType =  DataTypes.FeePayType.BUYER_PAY;
-        // BuyLocalVar memory vars;
-        // vars.feePayType = markets[sale_.icToken].feePayType;
-
-        // if (vars.feePayType == FeePayType.BUYER_PAY) {
-        //     vars.transferInAmount = amount_.add(fee_);
-        //     vars.transferOutAmount = amount_;
-        // } else if (vars.feePayType == FeePayType.SELLER_PAY) {
-        //     vars.transferInAmount = amount_;
-        //     vars.transferOutAmount = amount_.sub(fee_, "fee exceeds amount");
-        // } else {
-        //     revert("unsupported feePayType");
-        // }
-
-        // ERC20TransferHelper.doTransferIn(
-        //     sale_.currency,
-        //     buyer_,
-        //     vars.transferInAmount
-        // );
-        // if (units_ == IVNFT(sale_.icToken).unitsInToken(sale_.tokenId)) {
-        //     VNFTTransferHelper.doTransferOut(
-        //         sale_.icToken,
-        //         buyer_,
-        //         sale_.tokenId
-        //     );
-        // } else {
-        //     VNFTTransferHelper.doTransferOut(
-        //         sale_.icToken,
-        //         buyer_,
-        //         sale_.tokenId,
-        //         units_
-        //     );
-        // }
-
-        // ERC20TransferHelper.doTransferOut(
-        //     sale_.currency,
-        //     payable(sale_.seller),
-        //     vars.transferOutAmount
-        // );
-
-        //CompilerError: Stack too deep.
         emit Events.Traded(
             buyer_,
             sale_.saleId,
@@ -415,12 +350,7 @@ library InteractionLogic {
         view
         returns (uint128)
     {
-        // if (currency_ == IUnderlyingContainer(derivativeNFT_).underlying()) {
-        //     uint256 fee = amount.mul(uint256(repoFeeRate)).div(PERCENTAGE_BASE);
-        //     require(fee <= type(uint128).max, "Fee: exceeds uint128 max");
-        //     return uint128(fee);
-        // }
-
+        currency_;
         DataTypes.Market storage market = markets[derivativeNFT_];
         if (market.feeType == DataTypes.FeeType.FIXED) {
             return market.feeAmount;
@@ -455,7 +385,7 @@ library InteractionLogic {
         address derivativeNFT_,
         mapping(address => EnumerableSetUpgradeable.UintSet) storage _derivativeNFTSale
     )
-        public
+        external
         view
         returns (uint256)
     {
@@ -467,7 +397,7 @@ library InteractionLogic {
         uint256 index_,
         mapping(address => EnumerableSetUpgradeable.UintSet) storage _derivativeNFTSale
     )
-        public
+        external
         view
         returns (uint256)
     {

@@ -64,8 +64,16 @@ contract ModuleGlobals is IModuleGlobals {
         _setPublishRoyalty(publishRoyalty);
         _publishCurrencyTaxes[ndpt] = publishRoyalty;
         _whitelistCurrency(ndpt, true);
-        _MANAGER = manager;
-        _NDPT = ndpt;
+        _setManager(manager);
+        _setNDPT(ndpt);
+    } 
+
+    function setManager(address newManager) external override onlyGov {
+        _setManager(newManager);
+    }
+
+    function setNDPT(address newNDPT) external override onlyGov {
+        _setNDPT(newNDPT);
     }
 
     /// @inheritdoc IModuleGlobals
@@ -127,6 +135,10 @@ contract ModuleGlobals is IModuleGlobals {
         return IManager(_MANAGER).getIncubatorOfSoulBoundTokenId(soulBoundTokenId);
     }
 
+    function getTokenIdOfIncubator(uint256 soulBoundTokenId) external view returns (uint256) {
+        return IManager(_MANAGER).getTokenIdIncubatorOfSoulBoundTokenId(soulBoundTokenId);
+    }
+
     function _setGovernance(address newGovernance) internal {
         if (newGovernance == address(0)) revert Errors.InitParamsInvalid();
         address prevGovernance = _governance;
@@ -139,6 +151,20 @@ contract ModuleGlobals is IModuleGlobals {
         address prevTreasury = _treasury;
         _treasury = newTreasury;
         emit Events.ModuleGlobalsTreasurySet(prevTreasury, newTreasury, block.timestamp);
+    }
+
+    function _setManager(address newManager) internal {
+        if (newManager == address(0)) revert Errors.InitParamsInvalid();
+        address prevManager = _MANAGER;
+        _MANAGER = newManager;
+        emit Events.ModuleGlobalsManagerSet(prevManager, newManager, block.timestamp);
+    }
+
+    function _setNDPT(address newNDPT) internal {
+        if (newNDPT == address(0)) revert Errors.InitParamsInvalid();
+        address prevNDPT = _NDPT;
+        _NDPT = newNDPT;
+        emit Events.ModuleGlobalsNDPTSet(prevNDPT, newNDPT, block.timestamp);
     }
 
     function _setPublishRoyalty(uint256 publishRoyalty) internal {

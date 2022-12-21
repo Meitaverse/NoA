@@ -8,53 +8,19 @@ import { ethers } from "hardhat";
 
 import {
   ERC1967Proxy__factory,
-  // ApprovalFollowModule,
-  // ApprovalFollowModule__factory,
-  // CollectNFT__factory,
   Currency,
   Currency__factory,
-  // FreeCollectModule,
-  // FreeCollectModule__factory,
   Events,
   Events__factory,
   FeeCollectModule,
   FeeCollectModule__factory,
-  // FeeFollowModule,
-  // FeeFollowModule__factory,
-  // FollowerOnlyReferenceModule,
-  // FollowerOnlyReferenceModule__factory,
-  // FollowNFT__factory,
-  Helper,
-  Helper__factory,
+  // Helper,
+  // Helper__factory,
   InteractionLogic__factory,
   PublishLogic__factory,
-  // LensHub,
-  // LensHub__factory,
-  // LimitedFeeCollectModule,
-  // LimitedFeeCollectModule__factory,
-  // LimitedTimedFeeCollectModule,
-  // LimitedTimedFeeCollectModule__factory,
-  // MockFollowModule,
-  // MockFollowModule__factory,
-  // MockReferenceModule,
-  // MockReferenceModule__factory,
   ModuleGlobals,
   ModuleGlobals__factory,
-  // ProfileTokenURILogic__factory,
-  // PublishingLogic__factory,
-  // RevertCollectModule,
-  // RevertCollectModule__factory,
-  // TimedFeeCollectModule,
-  // TimedFeeCollectModule__factory,
   TransparentUpgradeableProxy__factory,
-  // LensPeriphery,
-  // LensPeriphery__factory,
-  // ProfileFollowModule,
-  // ProfileFollowModule__factory,
-  // FollowNFT,
-  // CollectNFT,
-  // RevertFollowModule,
-  // RevertFollowModule__factory,
   ERC3525ReceiverMock,
   ERC3525ReceiverMock__factory,
   GovernorContract,
@@ -72,7 +38,8 @@ import {
   Manager,
   Manager__factory,
 } from '../typechain';
-import { ManagerLibraryAddresses } from '../typechain/factories/contracts/Manager__factory';
+
+import { ManagerLibraryAddresses } from '../typechain/factories/Manager__factory';
 import { FAKE_PRIVATEKEY, ZERO_ADDRESS } from './helpers/constants';
 import {
   computeContractAddress,
@@ -119,21 +86,15 @@ export let userTwoAddress: string;
 export let userThreeAddress: string;
 export let governanceAddress: string;
 export let testWallet: Wallet;
-// export let lensHubImpl: LensHub;
-// export let lensHub: LensHub;
 export let managerImpl: Manager;
 export let manager: Manager;
 export let currency: Currency;
 export let abiCoder: AbiCoder;
 export let mockModuleData: BytesLike;
-// export let hubLibs: LensHubLibraryAddresses;
 export let managerLibs: ManagerLibraryAddresses;
 export let eventsLib: Events;
 export let moduleGlobals: ModuleGlobals;
-export let helper: Helper;
-// export let lensPeriphery: LensPeriphery;
-// export let followNFTImpl: FollowNFT;
-// export let collectNFTImpl: CollectNFT;
+// export let helper: Helper;
 export let receiverMock: ERC3525ReceiverMock
 export let bankTreasuryImpl: BankTreasury
 export let bankTreasuryContract: BankTreasury
@@ -154,22 +115,6 @@ export let managerAddress: string;
 
 // Collect
 export let feeCollectModule: FeeCollectModule;
-// export let timedFeeCollectModule: TimedFeeCollectModule;
-// export let freeCollectModule: FreeCollectModule;
-// export let revertCollectModule: RevertCollectModule;
-// export let limitedFeeCollectModule: LimitedFeeCollectModule;
-// export let limitedTimedFeeCollectModule: LimitedTimedFeeCollectModule;
-
-// Follow
-// export let approvalFollowModule: ApprovalFollowModule;
-// export let profileFollowModule: ProfileFollowModule;
-// export let feeFollowModule: FeeFollowModule;
-// export let revertFollowModule: RevertFollowModule;
-// export let mockFollowModule: MockFollowModule;
-
-// Reference
-// export let followerOnlyReferenceModule: FollowerOnlyReferenceModule;
-// export let mockReferenceModule: MockReferenceModule;
 
 export function makeSuiteCleanRoom(name: string, tests: () => void) {
   describe(name, () => {
@@ -200,7 +145,7 @@ before(async function () {
   governanceAddress = await governance.getAddress();
   mockModuleData = abiCoder.encode(['uint256'], [1]);
   // Deployment
-  helper = await new Helper__factory(deployer).deploy();
+  // helper = await new Helper__factory(deployer).deploy();
 
 
   const interactionLogic = await new InteractionLogic__factory(deployer).deploy();
@@ -239,14 +184,16 @@ before(async function () {
   );
   ndptContract = new NFTDerivativeProtocolTokenV1__factory(deployer).attach(ndptProxy.address);
   ndptAddress = ndptContract.address;
-  
+  const soulBoundTokenIdOfBankTreaury =1;
   let initializeData = bankTreasuryImpl.interface.encodeFunctionData("initialize", [
     managerProxyAddress,
     governanceAddress,
-    TreasuryFee,
-   [userAddress, userTwoAddress, userThreeAddress],
-   NUM_CONFIRMATIONS_REQUIRED  //All full signed 
+    ndptImpl.address,
+    soulBoundTokenIdOfBankTreaury,
+    [userAddress, userTwoAddress, userThreeAddress],
+    NUM_CONFIRMATIONS_REQUIRED  //All full signed 
   ]);
+
 
   const bankTreasuryProxy = await new ERC1967Proxy__factory(deployer).deploy(
     bankTreasuryImpl.address,
@@ -255,7 +202,11 @@ before(async function () {
   bankTreasuryContract = new BankTreasury__factory(deployer).attach(bankTreasuryProxy.address);
   bankTreasuryAddress = bankTreasuryContract.address;
 
-  derivativeNFTV1Impl = await new DerivativeNFTV1__factory(deployer).deploy(managerProxyAddress, ndptContract.address);
+  derivativeNFTV1Impl = await new DerivativeNFTV1__factory(deployer).deploy(
+    managerProxyAddress, 
+    ndptContract.address,
+    bankTreasuryAddress
+  );
   derivativeNFTV1ImplAddress = derivativeNFTV1Impl.address;
 
   incubatorImpl = await new Incubator__factory(deployer).deploy(managerProxyAddress, ndptContract.address);
@@ -287,9 +238,10 @@ before(async function () {
   currency = await new Currency__factory(deployer).deploy();
 
   moduleGlobals = await new ModuleGlobals__factory(deployer).deploy(
+    managerAddress,
     ndptAddress,
     governanceAddress,
-    bankTreasuryImpl.address,
+    bankTreasuryAddress,
     TREASURY_FEE_BPS,
     PublishRoyalty
   );

@@ -3,6 +3,7 @@
 pragma solidity ^0.8.13;
 
 import {ICollectModule} from "../../interfaces/ICollectModule.sol";
+import {IBankTreasury} from "../../interfaces/IBankTreasury.sol";
 import {Errors} from "../../libraries/Errors.sol";
 import {FeeModuleBase} from "../FeeModuleBase.sol";
 import {ModuleBase} from "../ModuleBase.sol";
@@ -10,25 +11,25 @@ import {FollowValidationModuleBase} from "../FollowValidationModuleBase.sol";
 import {IERC20Upgradeable} from "@openzeppelin/contracts-upgradeable/token/ERC20/IERC20Upgradeable.sol";
 import {SafeERC20Upgradeable} from "@openzeppelin/contracts-upgradeable/token/ERC20/utils/SafeERC20Upgradeable.sol";
 import {IERC3525} from "@solvprotocol/erc-3525/contracts/IERC3525.sol";
+import {SafeMathUpgradeable} from "@openzeppelin/contracts-upgradeable/utils/math/SafeMathUpgradeable.sol";
 
 /**
  * @notice A struct containing the necessary data to execute collect actions on a publication.
  *
- * @param amount The collecting cost associated with this publication.
+ * @param amount The total supply with this publication.
+ * @param price The collecting cost associated with this publication.
  * @param currency The currency associated with this publication.
  * @param toSoulBoundTokenId The toSoulBoundTokenId associated with this publication.
- * @param referralFee The referral fee associated with this publication.
- * @param followerOnly Whether only followers should be able to collect.
+ * @param genesisBPS The genesis BPS associated with this publication.
  */
 struct ProfilePublicationData {
-    uint256 amount;
-    address currency;
-    uint256 ownerSoulBoundTokenId;
-    uint256 collectorSoulBoundTokenId;
-    uint16 referralFee; //介绍费
-    // bool followerOnly;
-    //TODO value 
-    //TODO SoulBoundToken reputation 
+    uint256 tokenId;      //发行对应的tokenId
+    uint256 amount;      //发行总量
+    uint256 price;       //发行单价
+    address currency;    //计价的ERC20，0地址为NDPT
+    uint256 ownerSoulBoundTokenId; //发行人的灵魂币ID
+    uint16 genesisBPS; //创世NFT版税点数，最多90%，以后每个衍生NFT都需要支付
+    bool followerOnly;
 }
 
 /**
@@ -42,36 +43,42 @@ struct ProfilePublicationData {
  */
 contract FeeCollectModule is FeeModuleBase, FollowValidationModuleBase, ICollectModule {
     using SafeERC20Upgradeable for IERC20Upgradeable;
+    using SafeMathUpgradeable for uint256;
 
-    // projectId => tokenId => ProfilePublicationData
-    mapping(uint256 => mapping(uint256 => ProfilePublicationData)) internal _dataByPublicationByProfile;
+    // publishId => ProfilePublicationData
+    mapping(uint256 =>  ProfilePublicationData) internal _dataByPublicationByProfile;
 
     constructor(address manager, address moduleGlobals) FeeModuleBase(moduleGlobals) ModuleBase(manager) {}
 
-    // constructor(address moduleGlobals) override(FeeModuleBase, ModuleBase) {}
 
     function initializePublicationCollectModule(
+        uint256 publishId,
         uint256 ownerSoulBoundTokenId,
-        uint256 projectId,
         uint256 tokenId,
-        uint256 value,
+        uint256 amount,
         bytes calldata data 
     ) external override onlyManager returns (bytes memory) {
         //解码出费率的相关传参
-        // (uint256 amount, address currency, address recipient, uint16 referralFee, bool followerOnly) = abi.decode(
-        //     data,
-        //     (uint256, address, address, uint16, bool)
-        // );
-        // if (!_currencyWhitelisted(currency) || recipient == address(0) || referralFee > BPS_MAX || amount == 0)
-        //     revert Errors.InitParamsInvalid();
+        (uint16 genesisBPS, address currency, uint256 price, bool followerOnly) = abi.decode(
+            data,
+            (uint16, address, uint256, bool)
+        );
+        if (currency == address(0)) {
+            currency= _ndpt();
+        } 
 
-  
-        //TODO
-        // _dataByPublicationByProfile[projectId][tokenId].amount = amount;
-        // _dataByPublicationByProfile[projectId][tokenId].currency = currency;
-        _dataByPublicationByProfile[projectId][tokenId].ownerSoulBoundTokenId = ownerSoulBoundTokenId;
-        // _dataByPublicationByProfile[projectId][tokenId].referralFee = referralFee;
-        // // _dataByPublicationByProfile[projectId][tokenId].followerOnly = followerOnly;
+        if (!_currencyWhitelisted(currency) || ownerSoulBoundTokenId == 0 || genesisBPS > BPS_MAX - 1000 || amount == 0)
+            revert Errors.InitParamsInvalid();
+
+        //Save 
+        _dataByPublicationByProfile[publishId].tokenId = tokenId;
+        _dataByPublicationByProfile[publishId].amount = amount;
+        _dataByPublicationByProfile[publishId].price = price;
+        _dataByPublicationByProfile[publishId].currency = currency;
+        _dataByPublicationByProfile[publishId].ownerSoulBoundTokenId = ownerSoulBoundTokenId;
+        _dataByPublicationByProfile[publishId].genesisBPS = genesisBPS;
+        _dataByPublicationByProfile[publishId].followerOnly = followerOnly;
+
 
         return data;
     }
@@ -85,51 +92,54 @@ contract FeeCollectModule is FeeModuleBase, FollowValidationModuleBase, ICollect
     function processCollect(
         uint256 ownerSoulBoundTokenId,
         uint256 collectorSoulBoundTokenId,
-        uint256 projectId,
-        uint256 tokenId,
+        uint256 publishId,
         uint256 collectValue
-        // bytes calldata data 
     ) external virtual override onlyManager {
-        _processCollect(ownerSoulBoundTokenId, collectorSoulBoundTokenId, projectId, tokenId, collectValue);
+        _processCollect(ownerSoulBoundTokenId, collectorSoulBoundTokenId, publishId, collectValue);
     }
+
 
     /**
      * @notice Returns the publication data for a given publication, or an empty struct if that publication was not
      * initialized with this module.
      *
-     * @param projectId The token ID of the profile mapped to the publication to query.
-     * @param tokenId The token id to query.
+     * @param publishId The publish ID of the profile mapped to the publication to query.
      *
      * @return ProfilePublicationData The ProfilePublicationData struct mapped to that publication.
      */
     function getPublicationData(
-        uint256 projectId,
-        uint256 tokenId
+        uint256 publishId
     ) external view returns (ProfilePublicationData memory) {
-        return _dataByPublicationByProfile[projectId][tokenId];
+        return _dataByPublicationByProfile[publishId];
     }
 
     function _processCollect(
         uint256 ownerSoulBoundTokenId,
         uint256 collectorSoulBoundTokenId,
         uint256 projectId, 
-        uint256 tokenId, 
         uint256 collectValue
-        // bytes calldata data
     ) internal {
-        uint256 amountOfAll = collectValue *_dataByPublicationByProfile[projectId][tokenId].amount;
-        address currency = _dataByPublicationByProfile[projectId][tokenId].currency;
-        // _validateDataIsExpected(data, currency, amount);
+        uint256 amountOfAll = collectValue.mul(_dataByPublicationByProfile[projectId].amount);
+        address currency = _dataByPublicationByProfile[projectId].currency;
 
         //获取交易税点
         (address treasury, uint16 treasuryFee) = _treasuryData();
-        uint256 treasuryAmount = (amountOfAll * treasuryFee) / BPS_MAX;
-        uint256 adjustedAmount = amountOfAll - treasuryAmount;
-    
-        //向recipient支付剩余的currency
-        IERC20Upgradeable(currency).safeTransferFrom(_incubator(collectorSoulBoundTokenId), _incubator(ownerSoulBoundTokenId), adjustedAmount);
+        uint256 treasuryAmount = amountOfAll.mul(treasuryFee).div(BPS_MAX);
+        uint256 adjustedAmount = amountOfAll.sub(treasuryAmount);
 
-        //支付给金库
-        if (treasuryAmount > 0) IERC20Upgradeable(currency).safeTransferFrom(_incubator(collectorSoulBoundTokenId), treasury, treasuryAmount);
+        if (currency == _ndpt()) {
+            IERC3525(_ndpt()).transferFrom(_tokenIdOfIncubator(collectorSoulBoundTokenId), _tokenIdOfIncubator(ownerSoulBoundTokenId), adjustedAmount);
+            
+            uint256 treasuryOfSoulBoundTokenId = IBankTreasury(treasury).getSoulBoundTokenId();
+            IERC3525(_ndpt()).transferFrom(_tokenIdOfIncubator(collectorSoulBoundTokenId), treasuryOfSoulBoundTokenId, treasuryAmount);
+
+        } else {
+            //向owner支付剩余的currency
+            IERC20Upgradeable(currency).safeTransferFrom(_incubator(collectorSoulBoundTokenId), _incubator(ownerSoulBoundTokenId), adjustedAmount);
+
+            //支付给金库
+            if (treasuryAmount > 0) IERC20Upgradeable(currency).safeTransferFrom(_incubator(collectorSoulBoundTokenId), treasury, treasuryAmount);
+
+        }
     }
 }

@@ -68,6 +68,7 @@ abstract contract ManagerStorage {
     mapping(uint256 => DataTypes.Project) internal _projectInfoByProjectId;
     mapping(uint256 => address) internal _derivativeNFTByProjectId;
     mapping(uint256 => address) internal _incubatorBySoulBoundTokenId;
+    mapping(uint256 => uint256) internal _tokenIdIncubatorBySoulBoundTokenId;
     
     mapping(uint256 => address) internal _dispatcherByProfile;
 

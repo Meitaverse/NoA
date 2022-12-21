@@ -99,6 +99,18 @@ library Events {
         address indexed newTreasury,
         uint256 timestamp
     );
+    event ModuleGlobalsManagerSet(
+        address indexed prevManager,
+        address indexed newManager,
+        uint256 timestamp
+    );
+    
+    event ModuleGlobalsNDPTSet(
+        address indexed prevNDPT,
+        address indexed newNDPT,
+        uint256 timestamp
+    );
+
 
     event ModuleGlobalsPublishRoyaltySet(
         uint256 indexed prevPublishRoyalty,
@@ -257,13 +269,13 @@ library Events {
      * @notice Emitted when Manager call to mint of NDPT Tokens.
      *         only can mint to banktreasury contract
      * 
-     * @param tokenId The token id of NDPT
+     * @param mintTo The address of MintTo
      * @param slot The slot of  NDPT
      * @param value The value of mint NDPT
      * @param timestamp The current block timestamp.
      */
     event MintNDPT(
-        uint256 tokenId, uint256 slot, uint256 value,
+        address mintTo, uint256 slot, uint256 value,
         uint256 timestamp
     );
 

@@ -37,6 +37,7 @@ import {
   managerAddress,
   ndptContract,
   bankTreasuryContract,
+  PublishRoyalty
   
 } from '../__setup.spec';
 
@@ -75,14 +76,22 @@ makeSuiteCleanRoom('deployment validation', () => {
 
   it('Deployer should not be able to initialize implementation due to address(this) check', async function () {
     await expect(
-      managerImpl.initialize(governanceAddress, ndptAddress)
+      managerImpl.initialize(
+        governanceAddress,
+        ndptAddress,
+        bankTreasuryAddress
+        )
     ).to.be.revertedWith(ERRORS.CANNOT_INIT_IMPL);
   });
 
   it("User should fail to initialize manager proxy after it's already been initialized via the proxy constructor", async function () {
     // Initialization happens in __setup.spec.ts
     await expect(
-      manager.connect(user).initialize(userAddress, userAddress)
+      manager.connect(user).initialize(
+        userAddress, 
+        userAddress, 
+        userAddress
+        )
       ).to.be.revertedWith(ERRORS.INITIALIZED);
     });
     
@@ -97,7 +106,8 @@ makeSuiteCleanRoom('deployment validation', () => {
 
     let data = newImpl.interface.encodeFunctionData('initialize', [
       governanceAddress,
-      ndptAddress
+      ndptAddress,
+      bankTreasuryAddress
     ]);
 
     const proxy = await new TransparentUpgradeableProxy__factory(deployer).deploy(
@@ -107,7 +117,11 @@ makeSuiteCleanRoom('deployment validation', () => {
     );
 
     await expect(
-      Manager__factory.connect(proxy.address, user).initialize(userAddress, userAddress)
+      Manager__factory.connect(proxy.address, user).initialize(
+        userAddress, 
+        userAddress, 
+        userAddress
+        )
     ).to.be.revertedWith(ERRORS.INITIALIZED);
   });
 
@@ -162,32 +176,93 @@ makeSuiteCleanRoom('deployment validation', () => {
   });
   */
 
+  it('Should fail to deploy module globals with zero address manager', async function () {
+    await expect(
+      new ModuleGlobals__factory(deployer).deploy(
+        ZERO_ADDRESS, 
+        ndptAddress,
+        governanceAddress,
+        bankTreasuryAddress, 
+        TREASURY_FEE_BPS,
+        PublishRoyalty
+      )
+    ).to.be.revertedWith(ERRORS.INIT_PARAMS_INVALID);
+  });
+
+  it('Should fail to deploy module globals with zero address NDPT', async function () {
+    await expect(
+      new ModuleGlobals__factory(deployer).deploy(
+        managerAddress, 
+        ZERO_ADDRESS,
+        governanceAddress,
+        bankTreasuryAddress, 
+        TREASURY_FEE_BPS,
+        PublishRoyalty
+      )
+    ).to.be.revertedWith(ERRORS.INIT_PARAMS_INVALID);
+  });
+
   it('Should fail to deploy module globals with zero address governance', async function () {
     await expect(
-      new ModuleGlobals__factory(deployer).deploy(ZERO_ADDRESS, bankTreasuryAddress, TREASURY_FEE_BPS)
+      new ModuleGlobals__factory(deployer).deploy(
+        managerAddress,
+        ndptAddress,
+        ZERO_ADDRESS, 
+        bankTreasuryAddress, 
+        TREASURY_FEE_BPS,
+        PublishRoyalty
+      )
     ).to.be.revertedWith(ERRORS.INIT_PARAMS_INVALID);
   });
 
   it('Should fail to deploy module globals with zero address treasury', async function () {
     await expect(
-      new ModuleGlobals__factory(deployer).deploy(governanceAddress, ZERO_ADDRESS, TREASURY_FEE_BPS)
+      new ModuleGlobals__factory(deployer).deploy(
+        managerAddress,
+        ndptAddress,
+        governanceAddress, 
+        ZERO_ADDRESS, 
+        TREASURY_FEE_BPS,
+        PublishRoyalty
+        )
       ).to.be.revertedWith(ERRORS.INIT_PARAMS_INVALID);
   });
     
   it('Should fail to deploy module globals with treausury fee > BPS_MAX / 2', async function () {
       await expect(
-        new ModuleGlobals__factory(deployer).deploy(governanceAddress, bankTreasuryAddress, 5001)
+        new ModuleGlobals__factory(deployer).deploy(
+          managerAddress,
+          ndptAddress,
+          governanceAddress, 
+          bankTreasuryAddress, 
+          5001,
+          PublishRoyalty
+          )
         ).to.be.revertedWith(ERRORS.INIT_PARAMS_INVALID);
   });
       
 
   it('Should fail to deploy a fee module with treasury fee equal to or higher than maximum BPS', async function () {
     await expect(
-      new ModuleGlobals__factory(deployer).deploy(ZERO_ADDRESS, bankTreasuryAddress, BPS_MAX)
+      new ModuleGlobals__factory(deployer).deploy(
+        managerAddress,
+        ndptAddress,
+        governanceAddress, 
+        bankTreasuryAddress, 
+        BPS_MAX,
+        PublishRoyalty
+        )
     ).to.be.revertedWith(ERRORS.INIT_PARAMS_INVALID);
 
     await expect(
-      new ModuleGlobals__factory(deployer).deploy(ZERO_ADDRESS, bankTreasuryAddress, BPS_MAX + 1)
+      new ModuleGlobals__factory(deployer).deploy(
+        managerAddress,
+        ndptAddress,
+        governanceAddress, 
+        bankTreasuryAddress, 
+        BPS_MAX + 1,
+        PublishRoyalty
+        )
     ).to.be.revertedWith(ERRORS.INIT_PARAMS_INVALID);
   });
 

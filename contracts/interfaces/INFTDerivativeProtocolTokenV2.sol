@@ -72,19 +72,21 @@ interface INFTDerivativeProtocolTokenV2  {
 
     function svgLogo() external view returns (string memory);
 
+
     /**
      * @notice Mint to a address spec tokenId.
      *  Only admin can execute.
      *
-     * @param tokenId is the tokenId of ERC3525 Token
+     * @param mintTo to address 
      * @param slot is the lost of tokenId
      * @param value is the value of tokenId
      */
     function mint(
-        uint256 tokenId,
+        address mintTo,
         uint256 slot,
         uint256 value
-    ) external payable;
+    ) external payable returns(uint256 tokenId);
+  
   
     /**
      * @notice Mint value to a tokenId.

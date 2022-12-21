@@ -84,10 +84,9 @@ interface IManager {
    function setStateDerivative(address derivativeNFT, DataTypes.ProtocolState newState) external;
 
     function mintNDPT(
-        uint256 tokenId, 
-        uint256 slot, 
+        address mintTo, 
         uint256 value
-    ) external;
+    ) external returns(uint256);
 
     function mintNDPTValue(
         uint256 tokenId, 
@@ -140,6 +139,15 @@ interface IManager {
      */
     function getIncubatorOfSoulBoundTokenId(uint256 soulBoundTokenId) external view returns (address);
     
+    /**
+     * @notice Returns the tokenId of the Incubator contract by soulBoundTokenId
+     *
+     * @param soulBoundTokenId The token ID of the SoulBoundToken to query the incubator for.
+     * 
+     * @return uin256 The tokenId for the SoulBundToken contract.
+     */
+    function getTokenIdIncubatorOfSoulBoundTokenId(uint256 soulBoundTokenId) external view returns (uint256);
+   
     /**
      * @notice Returns the address of the Incubator contract implementation
      *

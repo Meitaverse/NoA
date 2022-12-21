@@ -5,8 +5,8 @@ import { ethers } from 'hardhat';
 import {
   ManagerV2,
   ManagerV2__factory,
-  ManagerV2_BadRevision,
-  ManagerV2_BadRevision__factory,
+  // ManagerV2_BadRevision,
+  // ManagerV2_BadRevision__factory,
   TransparentUpgradeableProxy__factory,
   NFTDerivativeProtocolTokenV2__factory,
   ERC1967Proxy,

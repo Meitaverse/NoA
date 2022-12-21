@@ -91,8 +91,9 @@ contract Manager is
         IDerivativeNFTV1(derivativeNFT).setState(newState);
     }
 
-    function mintNDPT(uint256 tokenId, uint256 slot, uint256 value) external whenNotPaused onlyGov {
-        INFTDerivativeProtocolTokenV1(NDPT).mint(tokenId, slot, value);
+    function mintNDPT(address mintTo, uint256 value) external whenNotPaused onlyGov returns(uint256){
+        uint256 slot = 1;
+        return INFTDerivativeProtocolTokenV1(NDPT).mint(mintTo, slot, value);
     }
 
     function mintNDPTValue(uint256 tokenId, uint256 value) external whenNotPaused onlyGov {
@@ -127,7 +128,11 @@ contract Manager is
 
         address toIncubator = InteractionLogic.deployIncubatorContract(soulBoundTokenId);
         _incubatorBySoulBoundTokenId[soulBoundTokenId] = toIncubator;
-
+        
+        uint256 slot =1;
+        uint256 tokenId = INFTDerivativeProtocolTokenV1(NDPT).mint(toIncubator, slot, 0);
+        _tokenIdIncubatorBySoulBoundTokenId[soulBoundTokenId] = tokenId;
+        
         return soulBoundTokenId;
     }
 
@@ -458,6 +463,10 @@ contract Manager is
         return _incubatorBySoulBoundTokenId[soulBoundTokenId];
     }
 
+    function getTokenIdIncubatorOfSoulBoundTokenId(uint256 soulBoundTokenId) external view override returns (uint256) {
+        return  _tokenIdIncubatorBySoulBoundTokenId[soulBoundTokenId] ;
+    } 
+
     function getIncubatorImpl() external view override returns (address) {
         return _INCUBATOR_IMPL;
     }
@@ -549,7 +558,6 @@ contract Manager is
     }
 
     //--- internal  ---//
-    
     function  _validateCallerIsSoulBoundTokenOwnerOrDispathcher(uint256 soulBoundTokenId_) internal view {
          if (IERC3525(NDPT).ownerOf(soulBoundTokenId_) == msg.sender || _dispatcherByProfile[soulBoundTokenId_] == msg.sender) {
             return;
@@ -613,7 +621,6 @@ contract Manager is
         return REVISION;
     }
 
-
     /**
      * @dev Wrapper for ecrecover to reduce code size, used in meta-tx specific functions.
      */
@@ -661,7 +668,6 @@ contract Manager is
                 )
             );
     }
-
 
     function _validateSameHub(uint256 hubId, uint256 projectId) internal view {
         if ( _projectInfoByProjectId[projectId].hubId == hubId) {

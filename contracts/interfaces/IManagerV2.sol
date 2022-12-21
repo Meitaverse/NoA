@@ -44,11 +44,11 @@ interface IManagerV2 {
    function setState(DataTypes.ProtocolState newState) external;
    function setStateDerivative(address derivativeNFT, DataTypes.ProtocolState newState) external;
 
+
     function mintNDPT(
-        uint256 tokenId, 
-        uint256 slot, 
+        address mintTo, 
         uint256 value
-    ) external;
+    ) external returns(uint256);
 
     function mintNDPTValue(
         uint256 tokenId, 
@@ -63,6 +63,8 @@ interface IManagerV2 {
         uint256 tokenId,
         uint256 value
     ) external;
+
+
     /**
      * @notice Creates a profile with the specified parameters, minting a profile NFT to the given recipient. This
      * function must be called by a whitelisted profile creator.

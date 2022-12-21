@@ -16,6 +16,9 @@ interface IModuleGlobals {
      * @param newGovernance The new governance address to set.
      */
     function setGovernance(address newGovernance) external;
+    
+    function setManager(address newManager) external;
+    function setNDPT(address newNDPT) external;
 
     /**
      * @notice Sets the treasury address. This function can only be called by governance.
@@ -90,6 +93,8 @@ interface IModuleGlobals {
     function getTreasuryData() external view returns (address, uint16);
     
     function getIncubator(uint256 soulBoundTokenId) external view returns (address);
+    
+    function getTokenIdOfIncubator(uint256 soulBoundTokenId) external view returns (uint256);
 
     function getPublishCurrencyTax(address currency) external returns(uint256) ;
 

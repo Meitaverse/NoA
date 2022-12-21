@@ -77,6 +77,7 @@ library PublishLogic {
         ); 
 
         bytes memory collectModuleReturnData = _initCollectModule(
+                publishId,
                 publication.soulBoundTokenId,
                 publication.projectId,
                 newTokenId,
@@ -107,6 +108,7 @@ library PublishLogic {
     }
 
     function _initCollectModule(
+        uint256 publishId,
         uint256 ownerSoulBoundTokenId,
         uint256 projectId,
         uint256 newTokenId,
@@ -121,14 +123,15 @@ library PublishLogic {
         _pubByIdByProfile[projectId][newTokenId].collectModule = collectModule;
         return
             ICollectModule(collectModule).initializePublicationCollectModule(
+                publishId,
                 ownerSoulBoundTokenId,
-                projectId,
                 newTokenId,
                 amount,
                 collectModuleInitData
             );
     }
     
+
     //publish之前的初始化，扣费
     function _initPublishModule(
         uint256 publishId,
@@ -220,8 +223,7 @@ library PublishLogic {
         ICollectModule(collectModule).processCollect(
             ownerSoulBoundTokenId,
             collectData.collectorSoulBoundTokenId,
-            projectId,
-            tokenId, //dNFTc tokenId
+            collectData.publishId,
             collectData.collectValue
             // collectData.collectModuleData
         );

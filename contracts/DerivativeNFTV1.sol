@@ -111,7 +111,6 @@ contract DerivativeNFTV1 is IDerivativeNFTV1, DerivativeNFTMultiState, ERC3525Up
         uint256 projectId_,
         uint256 soulBoundTokenId_,
         address metadataDescriptor_
-        
     ) external override initializer { 
         if (_initialized) revert Errors.Initialized();
         _initialized = true;
@@ -163,18 +162,9 @@ contract DerivativeNFTV1 is IDerivativeNFTV1, DerivativeNFTMultiState, ERC3525Up
         _slotDetails[slot] = DataTypes.SlotDetail({
             soulBoundTokenId: publication.soulBoundTokenId,
             publication: publication,
-            // publication: DataTypes.Publication(
-            //     publication.hubId,
-            //     publication.amount,
-            //     publication.name,
-            //     publication.description,
-            //     publication.materialURIs,
-            //     publication.fromTokenIds
-            // ),
             projectId:  _projectId,
             timestamp: block.timestamp 
         });
-
 
         _publicationNameHashBySlot[keccak256(bytes(publication.name))] = slot;
 

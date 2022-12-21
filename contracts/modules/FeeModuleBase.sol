@@ -32,8 +32,13 @@ abstract contract FeeModuleBase {
         return IModuleGlobals(MODULE_GLOBALS).getTreasuryData();
     }
 
+
     function _incubator(uint256 soulBoundTokenId) internal view returns (address) {
         return IModuleGlobals(MODULE_GLOBALS).getIncubator(soulBoundTokenId);
+    }
+
+    function _tokenIdOfIncubator(uint256 soulBoundTokenId) internal view returns (uint256) {
+        return IModuleGlobals(MODULE_GLOBALS).getTokenIdOfIncubator(soulBoundTokenId);
     }
 
     function _treasury() internal view returns (address) {
