@@ -62,7 +62,20 @@ interface IBankTreasury {
         // uint256 nonce, 
         // DataTypes.EIP712Signature calldata sig
     )  external payable;
+    
+    function createVoucher(
+        address account, 
+        uint256 id, 
+        uint256 amount, 
+        bytes memory data 
+    ) external payable;
 
+    function createBatchVoucher(
+        address account, 
+        uint256[] memory ids, 
+        uint256[] memory amounts, 
+        bytes memory data 
+    ) external payable;
 
     //TODO
     // function stake() external;

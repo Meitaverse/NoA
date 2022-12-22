@@ -362,6 +362,24 @@ contract BankTreasury is
         }
     }
 
+    function createVoucher(
+        address account, 
+        uint256 id, 
+        uint256 amount, 
+        bytes memory data 
+    ) external payable whenNotPaused onlyGov {
+        IVoucher(_Voucher).mint(account, id, amount, data);
+    }
+
+    function createBatchVoucher(
+        address account, 
+        uint256[] memory ids, 
+        uint256[] memory amounts, 
+        bytes memory data 
+    ) external payable whenNotPaused onlyGov {
+        IVoucher(_Voucher).mintBatch(account, ids, amounts, data);
+    }
+
     function setPublishFee(uint256 publishFee) external onlyGov{
 
     }
