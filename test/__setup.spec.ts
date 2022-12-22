@@ -37,6 +37,8 @@ import {
   NFTDerivativeProtocolTokenV2__factory,
   Manager,
   Manager__factory,
+  Voucher,
+  Voucher__factory,
 } from '../typechain';
 
 import { ManagerLibraryAddresses } from '../typechain/factories/Manager__factory';
@@ -109,6 +111,9 @@ export let bankTreasuryAddress: string;
 export let derivativeNFTV1ImplAddress: string;
 export let incubatorImplAddress: string;
 export let managerAddress: string;
+export let voucherImpl: Voucher;
+export let voucherContract: Voucher
+export let voucherAddress: string;
 // export let version: Number;
 
 /* Modules */
@@ -168,6 +173,17 @@ before(async function () {
   receiverMock = await new ERC3525ReceiverMock__factory(deployer).deploy(RECEIVER_MAGIC_VALUE, Error.None);
   receiverMockAddress = receiverMock.address;
 
+  voucherImpl = await new Voucher__factory(deployer).deploy();
+  let initializeVoucherData = voucherImpl.interface.encodeFunctionData("initialize", [
+      "https://api.bitsoul.xyz/v1/metadata/",
+  ]);
+  const voucherProxy = await new ERC1967Proxy__factory(deployer).deploy(
+    voucherImpl.address,
+    initializeVoucherData
+  );
+  voucherContract = new Voucher__factory(deployer).attach(voucherProxy.address);
+  voucherAddress = voucherContract.address;
+
   bankTreasuryImpl = await new BankTreasury__factory(deployer).deploy();
 
   ndptImpl = await new NFTDerivativeProtocolTokenV1__factory(deployer).deploy();
@@ -189,6 +205,7 @@ before(async function () {
     managerProxyAddress,
     governanceAddress,
     ndptImpl.address,
+    voucherAddress,
     soulBoundTokenIdOfBankTreaury,
     [userAddress, userTwoAddress, userThreeAddress],
     NUM_CONFIRMATIONS_REQUIRED  //All full signed 

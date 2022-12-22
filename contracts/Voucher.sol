@@ -40,7 +40,7 @@ contract Voucher is
     string public name;
     string public symbol;
 
-    string private _uriBase; //"https://api.treasureland.market/v2/lazy_mint/"
+    string private _uriBase; //"https://api.bitsoul.xyz/v1/metadata/"
 
     function initialize(
         string memory uriBase
