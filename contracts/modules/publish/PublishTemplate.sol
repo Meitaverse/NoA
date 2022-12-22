@@ -2,7 +2,6 @@
 
 pragma solidity ^0.8.13;
 
-// import {PublishTemplateBase} from "../PublishTemplateBase.sol";
 import {ITemplate} from "../../interfaces/ITemplate.sol";
 import {StringsUpgradeable} from "@openzeppelin/contracts-upgradeable/utils/StringsUpgradeable.sol";
 import {Base64Upgradeable} from "@openzeppelin/contracts-upgradeable/utils/Base64Upgradeable.sol";

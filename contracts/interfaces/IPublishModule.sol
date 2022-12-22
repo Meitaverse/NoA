@@ -13,12 +13,14 @@ interface IPublishModule {
     /**
      * @notice Initializes data for a given publication being published. This can only be called by the manager.
      *
-     * @param publishId The token ID.
+     * @param publishId The publish ID.
+     * @param previousPublishId The previous Publish Id
      * @param publication The publication
      *
      */
     function initializePublishModule(
         uint256 publishId,
+        uint256 previousPublishId,
         DataTypes.Publication calldata publication
     ) external;
     

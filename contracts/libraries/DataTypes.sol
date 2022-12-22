@@ -121,7 +121,14 @@ library DataTypes {
         bytes collectModuleData;
     }    
 
-    //genesis publish
+    struct AirdropData {
+        uint256 publishId;
+        uint256 ownershipSoulBoundTokenId;
+        uint256[] toSoulBoundTokenIds;
+        uint256 tokenId;
+        uint256[] values;
+    }    
+
     struct PublishData {
         Publication publication;
         uint256 previousPublishId;

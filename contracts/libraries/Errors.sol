@@ -68,4 +68,6 @@ library Errors {
   error RevertWithMessage();
   error RevertWithoutMessage();
   // error Panic();
+
+  error UpdateURITwice();
 }

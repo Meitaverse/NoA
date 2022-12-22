@@ -149,6 +149,25 @@ interface IManager {
     function getTokenIdIncubatorOfSoulBoundTokenId(uint256 soulBoundTokenId) external view returns (uint256);
    
     /**
+     * @notice Returns the soulBoundTokenId by registered wallet
+     *
+     * @param wallet The user wallet address.
+     * 
+     * @return uint256 The SoulBundToken id.
+     */
+    function getWalletBySoulBoundTokenId(address wallet) external view returns (uint256);
+   
+     
+    /**
+     * @notice Returns the genesis soulBoundTokenId by publishId
+     *
+     * @param publishId The publish Id
+     * 
+     * @return uin256 The tokenId of the SoulBundToken.
+     */
+    function getGenesisSoulBoundTokenIdByPublishId(uint256 publishId) external view returns(uint256);
+
+    /**
      * @notice Returns the address of the Incubator contract implementation
      *
      * 
@@ -256,13 +275,8 @@ interface IManager {
     ) external returns(uint256);
 
     function airdrop(
-        uint256 hubId, 
-        uint256 projectId, 
-        uint256 fromSoulBoundTokenId,
-        uint256[] memory toSoulBoundTokenIds,
-        uint256 tokenId,
-        uint256[] memory values
-    ) external;
+        DataTypes.AirdropData memory airdropData
+    ) external ;
 
     /**
      * @notice Transfer a dNFT to a address from incubator.

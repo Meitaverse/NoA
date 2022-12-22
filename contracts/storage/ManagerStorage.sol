@@ -68,6 +68,7 @@ abstract contract ManagerStorage {
     mapping(uint256 => DataTypes.Project) internal _projectInfoByProjectId;
     mapping(uint256 => address) internal _derivativeNFTByProjectId;
     mapping(uint256 => address) internal _incubatorBySoulBoundTokenId;
+    mapping(address => uint256) internal _walletBySoulBoundTokenId;
     mapping(uint256 => uint256) internal _tokenIdIncubatorBySoulBoundTokenId;
     
     mapping(uint256 => address) internal _dispatcherByProfile;
@@ -78,19 +79,19 @@ abstract contract ManagerStorage {
     mapping(uint256 => mapping(uint256 => DataTypes.PublicationStruct)) internal _pubByIdByProfile;
     mapping(uint256 => mapping(uint256 => DataTypes.PublicationStruct)) internal _comboByIdByProfile;
 
-    mapping(address => uint256) internal _defaultProfileByAddress;
+    mapping(uint256 => uint256) internal _genesisSoulBoundTokenIdByPublishId;
 
     address internal  _INCUBATOR_IMPL;
     address internal  _DNFT_IMPL;
     address internal  _RECEIVER;
+    address public  NDPT;
+    address public  TREASURY;
 
     uint256 internal _profileCounter;
     address internal _soulBoundToken;
     address internal _emergencyAdmin;
     address internal _governance;
 
-    address public  NDPT;
-    address public  TREASURY;
 
     Counters.Counter internal _nextSaleId;
     Counters.Counter internal _nextTradeId;

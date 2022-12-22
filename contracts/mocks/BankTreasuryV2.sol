@@ -115,7 +115,7 @@ contract BankTreasuryV2 is
         uint256 value, 
         bytes calldata data
     ) public override returns (bytes4) {
-        emit Events.Received(operator, fromTokenId, toTokenId, value, data, gasleft());
+        emit Events.ERC3525Received(operator, fromTokenId, toTokenId, value, data, gasleft());
         return 0x009ce20b;
     }
 

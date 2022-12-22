@@ -74,7 +74,10 @@ library Events {
     );
 
     //Receiver
-    event Received(address operator, uint256 fromTokenId, uint256 toTokenId, uint256 value, bytes data, uint256 gas);
+    event ERC3525Received(address operator, uint256 fromTokenId, uint256 toTokenId, uint256 value, bytes data, uint256 gas);
+    event IncubatorReceived(address operator, uint256 fromTokenId, uint256 toTokenId, uint256 value, bytes data, uint256 gas);
+    event ERC1155Received(address operator, address from, uint256 id, uint256 value, bytes data, uint256 gas);
+    event ERC1155BatchReceived(address operator, address from, uint256[] ids, uint256[] values, bytes data, uint256 gas);
     event ERC721Received(address operator, address from, uint256 tokenId, bytes data, uint256 gas);
 
     /**
@@ -187,6 +190,12 @@ library Events {
      * @param timestamp The current block timestamp.
      */
     event GovernanceSet(
+        address indexed caller,
+        address indexed prevGovernance,
+        address indexed newGovernance,
+        uint256 timestamp
+    );
+    event VoucherGovernanceSet(
         address indexed caller,
         address indexed prevGovernance,
         address indexed newGovernance,
@@ -466,10 +475,10 @@ library Events {
         uint256 timestamp
     );
 
-   
     event PublishPrepared(
         DataTypes.Publication publication,
         uint256 publishId,
+        uint256 previousPublishId,
         uint256 timestamp
     );
    
@@ -478,6 +487,9 @@ library Events {
         bytes collectModuleReturnData,
         uint256 timestamp
     );
+    
+    // Signals frozen metadata to OpenSea; emitted in minting functions
+    event PermanentURI(string _value, uint256 indexed _id);
 
 
 }

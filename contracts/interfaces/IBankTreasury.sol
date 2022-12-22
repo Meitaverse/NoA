@@ -16,6 +16,7 @@ interface IBankTreasury {
      * @param manager The  Address of Manager contract
      * @param goverance The  Address of Goverance contract
      * @param ndpt The  Address of NDPT contract
+     * @param voucher The  Address of voucher contract
      * @param soulBoundTokenId The  soulBoundToken Id of BankTreasury contract
      * @param _owners The array Address of owner contract
      * @param _numConfirmationsRequired The number confirmation required
@@ -24,6 +25,7 @@ interface IBankTreasury {
         address manager,
         address goverance,
         address ndpt,
+        address voucher,
         uint256 soulBoundTokenId,
         address[] memory _owners, 
         uint256 _numConfirmationsRequired
@@ -70,12 +72,18 @@ interface IBankTreasury {
 
     function getTransactionCount() external view returns (uint256);
 
+    function setManager(address newManager) external;
     function getManager() external returns(address);
 
     function setGovernance(address newGovernance) external;
-
     function getGovernance() external returns(address);
 
     function getSoulBoundTokenId() external returns (uint256);
+
+    function setNDPT(address newNDPT) external;
+    function getNDPT() external returns(address);
+
+    function setVoucher(address newVoucher) external;
+    function getVoucher() external view returns(address);
 
 }

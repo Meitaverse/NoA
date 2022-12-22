@@ -37,10 +37,11 @@ library PublishLogic {
             _publishIdByProjectData,
             _publishModuleWhitelisted
         );
-
+ 
         emit Events.PublishPrepared(
             publication,
             publishId,
+            previousPublishId,
             block.timestamp
         );
     }
@@ -109,7 +110,7 @@ library PublishLogic {
 
     function _initCollectModule(
         uint256 publishId,
-        uint256 ownerSoulBoundTokenId,
+        uint256 ownershipSoulBoundTokenId,
         uint256 projectId,
         uint256 newTokenId,
         uint256 amount,
@@ -124,13 +125,13 @@ library PublishLogic {
         return
             ICollectModule(collectModule).initializePublicationCollectModule(
                 publishId,
-                ownerSoulBoundTokenId,
+                ownershipSoulBoundTokenId,
                 newTokenId,
                 amount,
                 collectModuleInitData
             );
     }
-    
+
 
     //publish之前的初始化，扣费
     function _initPublishModule(
@@ -151,9 +152,9 @@ library PublishLogic {
         
         IPublishModule(publication.publishModule).initializePublishModule(
             publishId,
+            previousPublishId,
             publication
         );
-        
     }
 
     /**
@@ -217,11 +218,11 @@ library PublishLogic {
         //新生成的tokenId也需要用collectModule来处理
         _pubByIdByProfile[projectId][newTokenId].collectModule = collectModule;
 
-        uint256 ownerSoulBoundTokenId = _publishIdByProjectData[collectData.publishId].publication.soulBoundTokenId;
+        uint256 ownershipSoulBoundTokenId = _publishIdByProjectData[collectData.publishId].publication.soulBoundTokenId;
 
         //后续调用processCollect进行处理，此机制能扩展出联动合约调用
         ICollectModule(collectModule).processCollect(
-            ownerSoulBoundTokenId,
+            ownershipSoulBoundTokenId,
             collectData.collectorSoulBoundTokenId,
             collectData.publishId,
             collectData.collectValue
@@ -231,7 +232,7 @@ library PublishLogic {
         emit Events.CollectDerivativeNFT(
             projectId,
             derivativeNFT,
-            ownerSoulBoundTokenId,
+            ownershipSoulBoundTokenId,
             collectData.collectorSoulBoundTokenId,
             tokenId,
             collectData.collectValue,

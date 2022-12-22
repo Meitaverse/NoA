@@ -12,6 +12,7 @@ contract BankTreasuryStorage  {
     address internal _MANAGER;
     address internal  _governance;
     address internal  _NDPT;
+    address internal  _Voucher;
 
     address[] internal owners;
     mapping(address => bool) internal isOwner;

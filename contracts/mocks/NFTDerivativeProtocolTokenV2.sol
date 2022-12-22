@@ -95,6 +95,7 @@ contract NFTDerivativeProtocolTokenV2 is
     function unpause() public onlyRole(PAUSER_ROLE) {
         _unpause();
     }
+    
 
     function svgLogo() public view returns (string memory) {
         return _svgLogo;

@@ -110,7 +110,7 @@ const config: HardhatUserConfig = {
     disambiguatePaths: false,
     runOnCompile: true,
     strict: true,
-    only: [':NoAV1$',':Manager$',':Incubator$',':BankTreasury$',':DerivativeNFTV1$', ':NFTDerivativeProtocolTokenV1$'],
+    only: [':Voucher$', ':NoAV1$',':Manager$',':Incubator$',':BankTreasury$',':DerivativeNFTV1$', ':NFTDerivativeProtocolTokenV1$'],
   },
   gasReporter: {
     enabled: false, // TRACK_GAS,

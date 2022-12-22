@@ -128,6 +128,7 @@ contract Manager is
 
         address toIncubator = InteractionLogic.deployIncubatorContract(soulBoundTokenId);
         _incubatorBySoulBoundTokenId[soulBoundTokenId] = toIncubator;
+        _walletBySoulBoundTokenId[msg.sender] = soulBoundTokenId;
         
         uint256 slot =1;
         uint256 tokenId = INFTDerivativeProtocolTokenV1(NDPT).mint(toIncubator, slot, 0);
@@ -213,7 +214,8 @@ contract Manager is
         uint256 previousPublishId ;
         uint256 publishId =  _generateNextPublishId();
         if (publication.fromTokenIds.length == 0){
-            previousPublishId =0;
+            previousPublishId = 0;
+            _genesisSoulBoundTokenIdByPublishId[publishId] = publication.soulBoundTokenId;
         } else{
             previousPublishId = _tokenIdByPublishId[publication.fromTokenIds[0]];
         }
@@ -227,7 +229,6 @@ contract Manager is
         );
 
         return publishId;
-
     }
 
     function updatePublish(
@@ -257,7 +258,6 @@ contract Manager is
 
     }
 
-    // 
     function publish(
         uint256 publishId
     ) external override whenNotPaused returns (uint256) { 
@@ -271,14 +271,13 @@ contract Manager is
             _pubByIdByProfile,
             _collectModuleWhitelisted
         );
+
         _publishIdByProjectData[publishId].isMinted = true;
         _publishIdByProjectData[publishId].tokenId = tokenId;
 
         _tokenIdByPublishId[tokenId] = publishId;
 
         return tokenId;
-        // return 1;
-
     }
 
     function collect(
@@ -300,32 +299,27 @@ contract Manager is
               _pubByIdByProfile,
               _publishIdByProjectData
             );
-        // return 1;
     }
 
     function airdrop(
-        uint256 hubId,
-        uint256 projectId,
-        uint256 fromSoulBoundTokenId,
-        uint256[] memory toSoulBoundTokenIds,
-        uint256 tokenId,
-        uint256[] memory values
-    ) external whenNotPaused{
-         _validateCallerIsSoulBoundTokenOwnerOrDispathcher(fromSoulBoundTokenId);
-        if (_hubBySoulBoundTokenId[fromSoulBoundTokenId] != hubId) revert Errors.NotHubOwner();
+        DataTypes.AirdropData memory airdropData
+    ) external override whenNotPaused{
+         _validateCallerIsSoulBoundTokenOwnerOrDispathcher(airdropData.ownershipSoulBoundTokenId);
+        if (_hubBySoulBoundTokenId[airdropData.ownershipSoulBoundTokenId] != _publishIdByProjectData[airdropData.publishId].publication.hubId) 
+           revert Errors.NotHubOwner();
         
-        address derivativeNFT = _derivativeNFTByProjectId[projectId];
+        address derivativeNFT = _derivativeNFTByProjectId[_publishIdByProjectData[airdropData.publishId].publication.projectId];
         if (derivativeNFT == address(0)) revert Errors.InvalidParameter();
 
         return
             PublishLogic.airdropDerivativeNFT(
-                projectId,
+                _publishIdByProjectData[airdropData.publishId].publication.projectId,
                 derivativeNFT,
                 msg.sender,
-                fromSoulBoundTokenId,
-                toSoulBoundTokenIds,
-                tokenId,
-                values
+                airdropData.ownershipSoulBoundTokenId,
+                airdropData.toSoulBoundTokenIds,
+                airdropData.tokenId,
+                airdropData.values
             );
     }
 
@@ -467,12 +461,20 @@ contract Manager is
         return  _tokenIdIncubatorBySoulBoundTokenId[soulBoundTokenId] ;
     } 
 
+    function getWalletBySoulBoundTokenId(address wallet) external view override returns (uint256) {
+        return  _walletBySoulBoundTokenId[wallet] ;
+    } 
+
     function getIncubatorImpl() external view override returns (address) {
         return _INCUBATOR_IMPL;
     }
 
     function getDNFTImpl() external view override returns (address) {
         return _DNFT_IMPL;
+    }
+
+    function getGenesisSoulBoundTokenIdByPublishId(uint256 publishId) external view returns(uint256) {
+       return _genesisSoulBoundTokenIdByPublishId[publishId];   
     }
 
     /// ***********************
@@ -517,7 +519,6 @@ contract Manager is
         override
         whenNotPaused
     {
-
         address owner = IERC3525(NDPT).ownerOf(vars.soulBoundTokenId);
         unchecked {
             _validateRecoveredAddress(

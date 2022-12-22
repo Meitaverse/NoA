@@ -9,6 +9,10 @@ import "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
 import "@openzeppelin/contracts/utils/introspection/IERC165.sol";
 import "@solvprotocol/erc-3525/contracts/IERC3525Receiver.sol";
 import "@solvprotocol/erc-3525/contracts/IERC3525.sol";
+
+import "@openzeppelin/contracts-upgradeable/token/ERC1155/IERC1155ReceiverUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/token/ERC1155/IERC1155Upgradeable.sol";
+
 import {IERC20Upgradeable} from "@openzeppelin/contracts-upgradeable/token/ERC20/IERC20Upgradeable.sol";
 import {SafeERC20Upgradeable} from "@openzeppelin/contracts-upgradeable/token/ERC20/utils/SafeERC20Upgradeable.sol";
 import {Errors} from "./libraries/Errors.sol";
@@ -16,6 +20,8 @@ import {Events} from "./libraries/Events.sol";
 import {DataTypes} from './libraries/DataTypes.sol';
 import {IBankTreasury} from './interfaces/IBankTreasury.sol';
 import {IIncubator} from "./interfaces/IIncubator.sol";
+import {IManager} from "./interfaces/IManager.sol";
+import {IVoucher} from "./interfaces/IVoucher.sol";
 import "./libraries/EthAddressLib.sol";
 import "./storage/BankTreasuryStorage.sol";
 
@@ -34,6 +40,7 @@ contract BankTreasury is
     IERC3525Receiver, 
     PausableUpgradeable,
     AccessControlUpgradeable, 
+    IERC1155ReceiverUpgradeable,
     UUPSUpgradeable
 {
     using SafeERC20Upgradeable for IERC20Upgradeable;
@@ -85,10 +92,11 @@ contract BankTreasury is
         address manager,
         address governance,
         address ndpt,
+        address voucher,
         uint256 soulBoundTokenId,
         address[] memory _owners, 
         uint256 _numConfirmationsRequired
-    ) external override initializer {
+    ) external override initializer { 
         __AccessControl_init();
         __Pausable_init();
         __UUPSUpgradeable_init();
@@ -101,9 +109,10 @@ contract BankTreasury is
         if (governance == address(0)) revert Errors.InitParamsInvalid();
         if (ndpt == address(0)) revert Errors.InitParamsInvalid();
        
-        _MANAGER = manager;
-        _governance = governance;
-        _NDPT = ndpt;
+        _setManager(manager);
+        _setGovernance(governance);
+        _setNDPT(ndpt);
+        _setVoucher(voucher);
         _soulBoundTokenId = soulBoundTokenId;
 
         require(_owners.length > 0, "owners required");
@@ -127,6 +136,14 @@ contract BankTreasury is
 
     }
 
+    function setManager(address newManager) external onlyGov {
+        _setManager(newManager);
+    }
+
+    function _setManager(address newManager) internal {
+        _MANAGER = newManager;
+    }
+
     function getManager() external view returns(address) {
         return _MANAGER;
     }
@@ -137,6 +154,30 @@ contract BankTreasury is
 
     function getGovernance() external view returns(address) {
         return _governance;
+    }
+
+    function setNDPT(address newNDPT) external override onlyGov {
+        _setNDPT(newNDPT);
+    }
+    
+    function _setNDPT(address newNDPT) internal {
+       _NDPT = newNDPT;
+    }
+    
+    function setVoucher(address newVoucher) external override onlyGov {
+       _setVoucher(newVoucher);
+    }
+
+    function _setVoucher(address newVoucher) internal {
+       _Voucher = newVoucher;
+    }
+
+     function getVoucher() external view returns(address) {
+        return _Voucher;
+     }
+
+    function getNDPT() external view returns(address) {
+        return _NDPT;
     }
 
     function pause() public onlyRole(PAUSER_ROLE) {
@@ -151,11 +192,12 @@ contract BankTreasury is
         emit Events.Deposit(msg.sender, msg.value, address(this).balance);
     }
 
-    function supportsInterface(bytes4 interfaceId) public view virtual override(IERC165, AccessControlUpgradeable) returns (bool) {
+    function supportsInterface(bytes4 interfaceId) public view virtual override(AccessControlUpgradeable, IERC165, IERC165Upgradeable) returns (bool) {
         return
             interfaceId == type(IERC165).interfaceId || 
             interfaceId == type(AccessControlUpgradeable).interfaceId || 
-            interfaceId == type(IERC3525Receiver).interfaceId;
+            interfaceId == type(IERC3525Receiver).interfaceId ||
+            super.supportsInterface(interfaceId);
     } 
 
     function onERC3525Received(
@@ -165,7 +207,7 @@ contract BankTreasury is
         uint256 value, 
         bytes calldata data
     ) public override returns (bytes4) {
-        emit Events.Received(operator, fromTokenId, toTokenId, value, data, gasleft());
+        emit Events.ERC3525Received(operator, fromTokenId, toTokenId, value, data, gasleft());
         return 0x009ce20b;
     }
 
@@ -332,7 +374,6 @@ contract BankTreasury is
     function _setGovernance(address newGovernance) internal {
         address prevGovernance = _governance;
         _governance = newGovernance;
-
         emit Events.GovernanceSet(msg.sender, prevGovernance, newGovernance, block.timestamp);
     }
 
@@ -353,6 +394,43 @@ contract BankTreasury is
         return _soulBoundTokenId;
     }
 
+    function onERC1155Received(
+        address operator, //操作者
+        address from,     //上一个owner
+        uint256 id,
+        uint256 value,
+        bytes calldata data
+    ) external returns (bytes4) {
+        //TODO mint NDPT to {from} and burn {id}
+        emit Events.ERC1155Received(operator, from, id, value, data, gasleft());
+        // uint256 balance = IERC1155Upgradeable(msg.sender).balanceOf(address(this), id);
+        uint256 fromTokenId = IManager(_MANAGER).getTokenIdIncubatorOfSoulBoundTokenId(_soulBoundTokenId);
+        uint256 toSoulBoundTokenId =  IManager(_MANAGER).getWalletBySoulBoundTokenId(from);
+        uint256 toTokenId = IManager(_MANAGER).getTokenIdIncubatorOfSoulBoundTokenId(toSoulBoundTokenId);
+        IERC3525(_NDPT).transferFrom(fromTokenId, toTokenId, value);
 
+        IVoucher(_Voucher).burn(address(this), id, value);
+    
+        return this.onERC1155Received.selector;
+    }
+
+
+    function onERC1155BatchReceived(
+        address operator,
+        address from,
+        uint256[] calldata ids,
+        uint256[] calldata values,
+        bytes calldata data
+    ) external returns (bytes4) {
+        //TODO mint NDPT to {from} and burn {id}
+        emit Events.ERC1155BatchReceived(operator, from, ids, values, data, gasleft());
+        uint256 fromTokenId = IManager(_MANAGER).getTokenIdIncubatorOfSoulBoundTokenId(_soulBoundTokenId);
+        for (uint256 i = 0; i < ids.length; i++) {
+            uint256 toSoulBoundTokenId =  IManager(_MANAGER).getWalletBySoulBoundTokenId(from);
+            uint256 toTokenId = IManager(_MANAGER).getTokenIdIncubatorOfSoulBoundTokenId(toSoulBoundTokenId);
+            IERC3525(_NDPT).transferFrom(fromTokenId, toTokenId, values[i]);
+        }
+        return this.onERC1155BatchReceived.selector;
+    }
 
 }

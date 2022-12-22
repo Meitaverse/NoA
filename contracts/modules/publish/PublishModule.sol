@@ -19,6 +19,7 @@ import {ITemplate} from "../../interfaces/ITemplate.sol";
 
 struct PublishData {
     DataTypes.Publication publication;
+    uint256 previousPublishId;
 }
 
 /**
@@ -44,11 +45,13 @@ contract PublishModule is FeeModuleBase, IPublishModule, ModuleBase {
      * @notice Initializes data for a given publication being published. This can only be called by the manager.
      *
      * @param publishId The order ID of the the publication.
+     * @param previousPublishId The previousPublishId .
      * @param publication The Publication .
      *
      */
     function initializePublishModule(
         uint256 publishId,
+        uint256 previousPublishId,
         DataTypes.Publication calldata publication
     ) external override onlyManager {
 
@@ -62,6 +65,7 @@ contract PublishModule is FeeModuleBase, IPublishModule, ModuleBase {
             IERC3525(_ndpt()).transferFrom(publication.soulBoundTokenId, treasuryOfSoulBoundTokenId, publishTaxes);
         }
         _dataPublishdNFTByProject[publishId].publication = publication;
+        _dataPublishdNFTByProject[publishId].previousPublishId = previousPublishId;
 
     }
 
@@ -77,7 +81,7 @@ contract PublishModule is FeeModuleBase, IPublishModule, ModuleBase {
         uint256 publishId
     ) external view returns (uint256, string memory) {
     
-        (address publishTemplate, uint256 publishNum) = abi.decode(_dataPublishdNFTByProject[publishId].publication.publishModuleInitData , (address, uint256));
+        (address publishTemplate, uint256 publishNum) = abi.decode(_dataPublishdNFTByProject[publishId].publication.publishModuleInitData, (address, uint256));
         
         bytes memory jsonTemplate = ITemplate(publishTemplate).template();
 

@@ -13,7 +13,7 @@ interface ICollectModule {
      * @notice Initializes data for a given publication being published. This can only be called by the manager.
      *
      * @param publishId The owner of token ID of the SoulBoundToken publishing the publication.
-     * @param ownerSoulBoundTokenId The owner of token ID of the SoulBoundToken publishing the publication.
+     * @param ownershipSoulBoundTokenId The owner of token ID of the SoulBoundToken publishing the publication.
      * @param tokenId The associated publication's dNFT publication token ID.
      * @param amount amount of the associated publication's dNFT publication .
      * @param data Arbitrary data __passed from the user!__ to be decoded.
@@ -23,7 +23,7 @@ interface ICollectModule {
      */
     function initializePublicationCollectModule(
         uint256 publishId,
-        uint256 ownerSoulBoundTokenId,
+        uint256 ownershipSoulBoundTokenId,
         uint256 tokenId,
         uint256 amount,
         bytes calldata data
@@ -32,14 +32,14 @@ interface ICollectModule {
     /**
      * @notice Processes a collect action for a given publication, this can only be called by the manager.
      *
-     * @param ownerSoulBoundTokenId The collector token ID of the profile associated with the publication being collected.
+     * @param ownershipSoulBoundTokenId The owner of  the profile associated with the publication being collected.
      * @param collectorSoulBoundTokenId The collector token ID of the profile associated with the publication being collected.
      * @param publishId The publish Id.
      * @param collectValue The value
      *  data Arbitrary data __passed from the collector!__ to be decoded.
      */
     function processCollect(
-        uint256 ownerSoulBoundTokenId,
+        uint256 ownershipSoulBoundTokenId,
         uint256 collectorSoulBoundTokenId,
         uint256 publishId,
         uint256 collectValue
