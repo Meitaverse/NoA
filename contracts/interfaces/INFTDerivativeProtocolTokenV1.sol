@@ -76,8 +76,7 @@ interface INFTDerivativeProtocolTokenV1  {
     ) external payable returns(uint256 tokenId);
   
     function createProfile(
-       DataTypes.CreateProfileData calldata vars,
-       string memory nickName
+       DataTypes.CreateProfileData calldata vars
     ) external returns(uint256);
 
     // function version() external view returns (uint256);

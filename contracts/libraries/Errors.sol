@@ -32,9 +32,27 @@ library Errors {
   error InvalidParameter();
   error NotSoulBoundTokenOwner();
   error NotHubOwner();
+  error SoulBoundTokenIdNotExists();
+  error TokenIdNotExists();
+  error HandleLengthInvalid();
+  error HandleContainsInvalidCharacters();
   error CannotInitImplementation();
   error NotGovernance();
   error NotManager();
+  error NotSinger();
+  error TxNotExists();
+  error TxAlreadyExecuted();
+  error CannotExecuteTx();
+  error ExchangePriceIsZero();
+  error AmountIsZero();
+  error PaymentError();
+  error TxFailed();
+  error TxNotConfirmed();
+  error TxAlreadyConfirmed();
+  error SignersRequired();
+  error SignerNotUnique();
+  error InvalidSignersNumbers();
+  error InvalidSigner();
   error EmergencyAdminCannotUnpause();
   error NotGovernanceOrEmergencyAdmin();
   error PublicationDoesNotExist();
@@ -53,6 +71,7 @@ library Errors {
   error InsufficientAllowance();
   error InsufficientDerivativeNFT();
   error CannotUpdateAfterMinted();
+  error NDPTNotSet();
 
   // Module Errors
   error InitParamsInvalid();

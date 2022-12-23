@@ -64,14 +64,8 @@ contract Manager is
     }
 
     function initialize(
-        address governance_,
-        address ndptV1_,
-        address treasury_
+        address governance_
     ) external override initializer {
-        if (ndptV1_ == address(0)) revert Errors.InitParamsInvalid();
-        NDPT = ndptV1_;
-        TREASURY = treasury_;
-        
         //default Paused
         _setState(DataTypes.ProtocolState.Paused);
         _setGovernance(governance_);
@@ -87,27 +81,22 @@ contract Manager is
         emit Events.ProfileCreatorWhitelisted(profileCreator, whitelist, block.timestamp);
     }
 
+    function isWhitelistProfileCreator(address profileCreator) external view returns(bool) {
+       return  _profileCreatorWhitelisted[profileCreator];
+    }
+
     function setStateDerivative(address derivativeNFT, DataTypes.ProtocolState newState) external override onlyGov {
         IDerivativeNFTV1(derivativeNFT).setState(newState);
     }
 
     function mintNDPT(address mintTo, uint256 value) external whenNotPaused onlyGov returns(uint256){
         uint256 slot = 1;
+        if (value == 0) revert Errors.AmountIsZero();
         return INFTDerivativeProtocolTokenV1(NDPT).mint(mintTo, slot, value);
     }
 
     function mintNDPTValue(uint256 tokenId, uint256 value) external whenNotPaused onlyGov {
         INFTDerivativeProtocolTokenV1(NDPT).mintValue(tokenId, value);
-    }
-
-    function transferValueNDPT(
-        uint256 tokenId,
-        uint256 toSoulBoundTokenId,
-        uint256 value
-    ) external whenNotPaused onlyGov returns (uint256) {
-        address toIncubator = InteractionLogic.deployIncubatorContract(toSoulBoundTokenId);
-        
-        return IERC3525(NDPT).transferFrom(tokenId, toIncubator, value);
     }
 
     function burnNDPT(uint256 tokenId) external whenNotPaused onlyGov {
@@ -119,18 +108,21 @@ contract Manager is
     }
 
     function createProfile(
-        DataTypes.CreateProfileData calldata vars,
-        string memory nickName
+        DataTypes.CreateProfileData calldata vars
     ) external returns (uint256) {
         if (!_profileCreatorWhitelisted[msg.sender]) revert Errors.ProfileCreatorNotWhitelisted();
+        if (NDPT == address(0)) revert Errors.NDPTNotSet();
 
-        uint256 soulBoundTokenId = INFTDerivativeProtocolTokenV1(NDPT).createProfile(vars, nickName);
-
-        address toIncubator = InteractionLogic.deployIncubatorContract(soulBoundTokenId);
+        uint256 soulBoundTokenId = INFTDerivativeProtocolTokenV1(NDPT).createProfile(vars);
+        address toIncubator = InteractionLogic.deployIncubatorContract(
+            NDPT,
+            soulBoundTokenId,
+            _INCUBATOR_IMPL
+        );
         _incubatorBySoulBoundTokenId[soulBoundTokenId] = toIncubator;
         _walletBySoulBoundTokenId[msg.sender] = soulBoundTokenId;
         
-        uint256 slot =1;
+        uint256 slot = 1;
         uint256 tokenId = INFTDerivativeProtocolTokenV1(NDPT).mint(toIncubator, slot, 0);
         _tokenIdIncubatorBySoulBoundTokenId[soulBoundTokenId] = tokenId;
         
@@ -138,60 +130,59 @@ contract Manager is
     }
 
     function createHub(
-        address creater,
-        uint256 soulBoundTokenId,
-        DataTypes.Hub memory hub,
-        bytes calldata createHubModuleData
-    ) external whenNotPaused {
-         _validateCallerIsSoulBoundTokenOwnerOrDispathcher(soulBoundTokenId);
+        DataTypes.HubData memory hub
+    ) external whenNotPaused returns(uint256){
+        _validateCallerIsSoulBoundTokenOwnerOrDispathcher(hub.soulBoundTokenId);
+       
         uint256 hubId = _generateNextHubId();
-        _hubBySoulBoundTokenId[soulBoundTokenId] = hubId;
-        InteractionLogic.createHub(creater, soulBoundTokenId, hubId, hub, createHubModuleData, _hubInfos);
-    }
+        _hubBySoulBoundTokenId[hub.soulBoundTokenId] = hubId;
 
+        InteractionLogic.createHub(
+            hubId,
+            hub, 
+            _hubInfos
+        );
+
+        return hubId; 
+    }
+ 
     function createProject(
-        uint256 hubId,
-        uint256 soulBoundTokenId,
-        DataTypes.Project memory project,
-        address metadataDescriptor,
-        bytes calldata createProjectModuleData
+        DataTypes.ProjectData memory project,
+        address metadataDescriptor
     ) external whenNotPaused returns (uint256) {
-        _validateCallerIsSoulBoundTokenOwnerOrDispathcher(soulBoundTokenId);
-        if (_hubBySoulBoundTokenId[soulBoundTokenId] != hubId) revert Errors.NotHubOwner();
+        _validateCallerIsSoulBoundTokenOwnerOrDispathcher(project.soulBoundTokenId);
+        
+        if (_hubBySoulBoundTokenId[project.soulBoundTokenId] != project.hubId) revert Errors.NotHubOwner();
         if (_projectNameHashByEventId[keccak256(bytes(project.name))] > 0) {
             revert Errors.ProjectExisted();
         }
 
         uint256 projectId = _generateNextProjectId();
         _projectNameHashByEventId[keccak256(bytes(project.name))] = projectId;
-        InteractionLogic.createProject(
-            hubId,
+        address derivativeNFT = InteractionLogic.createProject(
+            _DNFT_IMPL,
+            NDPT,
+            TREASURY,
             projectId,
-            soulBoundTokenId,
             project,
             metadataDescriptor,
-            createProjectModuleData,
             _derivativeNFTByProjectId
         );
 
         //TODO fee
-        _projectInfoByProjectId[projectId] = DataTypes.Project({
-            hubId: hubId,
-            organizer: project.organizer,
+        _projectInfoByProjectId[projectId] = DataTypes.ProjectData({
+            soulBoundTokenId: project.soulBoundTokenId,
+            hubId: project.hubId,
             name: project.name,
             description: project.description,
             image: project.image,
-            metadataURI: project.metadataURI,
-            timestamp: block.timestamp
+            metadataURI: project.metadataURI
         });
 
         return projectId;
     }
 
-    function getProjectInfo(uint256 projectId_) external view returns (DataTypes.Project memory) {
-        if (_projectInfoByProjectId[projectId_].organizer == address(0x0)) {
-            revert Errors.EventIdNotExists();
-        }
+    function getProjectInfo(uint256 projectId_) external view returns (DataTypes.ProjectData memory) {
         return _projectInfoByProjectId[projectId_];
     }
 
@@ -477,6 +468,10 @@ contract Manager is
        return _genesisSoulBoundTokenIdByPublishId[publishId];   
     }
 
+    function getHubInfo(uint256 hubId) external view returns(DataTypes.HubData memory) {
+        return _hubInfos[hubId];
+    }
+
     /// ***********************
     /// *****GOV FUNCTIONS*****
     /// ***********************
@@ -495,6 +490,16 @@ contract Manager is
             revert Errors.NotGovernanceOrEmergencyAdmin();
         }
         _setState(newState);
+    }
+
+    function setNDPT(address ndpt) external override onlyGov {
+        if (ndpt == address(0)) revert Errors.InitParamsInvalid();
+         NDPT = ndpt;
+    }
+     
+    function setTreasury(address treasury) external override onlyGov {
+        if (treasury == address(0)) revert Errors.InitParamsInvalid();
+        TREASURY = treasury;
     }
 
     function setGovernance(address newGovernance) external override onlyGov {

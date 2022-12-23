@@ -28,33 +28,66 @@ interface IBankTreasuryV2 {
         uint256 fromTokenId, 
         uint256 toTokenId, 
         uint256 value
-        // uint256 nonce, 
-        // DataTypes.EIP712Signature calldata sig
     ) external;
 
 
-    function exchangeNDPT(       
-        address currency, 
-        uint256 fromTokenId, 
-        uint256 toTokenId, 
-        uint256 value
-        // uint256 nonce, 
-        // DataTypes.EIP712Signature calldata sig
-    )  external payable;
+      function exchangeNDPTByEth(
+        uint256 soulBoundTokenId, 
+        uint256 amount,
+        DataTypes.EIP712Signature calldata sign
+    ) external payable ;
 
+     function exchangeEthByNDPT(
+        uint256 soulBoundTokenId,
+        uint256 ndptAmount,
+        DataTypes.EIP712Signature calldata sign        
+    ) external payable;
+
+    function createVoucher(
+        address account, 
+        uint256 id, 
+        uint256 amount, 
+        bytes memory data 
+    ) external;
+
+    function createBatchVoucher(
+        address account, 
+        uint256[] memory ids, 
+        uint256[] memory amounts, 
+        bytes memory data 
+    ) external;
 
     //TODO
     // function stake() external;
     // function redeem() external;
 
-    function getOwners() external view returns (address[] memory);
+    function getSigners() external view returns (address[] memory);
 
     function getTransactionCount() external view returns (uint256);
 
+    function setManager(address newManager) external;
     function getManager() external returns(address);
 
     function setGovernance(address newGovernance) external;
-
     function getGovernance() external returns(address);
 
+    function getSoulBoundTokenId() external returns (uint256);
+
+    function setNDPT(address newNDPT) external;
+    function getNDPT() external returns(address);
+
+    function setVoucher(address newVoucher) external;
+    function getVoucher() external view returns(address);
+
+     function calculateAmountEther(uint256 ethAmount) external view returns(uint256);
+
+    function calculateAmountNDPT(uint256 ndptAmount) external view returns(uint256);
+
+
+    /**
+     * @notice Returns the domain separator for this NFT contract.
+     *
+     * @return bytes32 The domain separator.
+     */
+    function getDomainSeparator() external view returns (bytes32);
 }

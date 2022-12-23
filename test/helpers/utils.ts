@@ -4,9 +4,10 @@ import {
   eventsLib,
   helper,
   manager,
+  metadataDescriptor,
   NDPT_NAME,
   // lensPeriphery,
-  LENS_PERIPHERY_NAME,
+  // LENS_PERIPHERY_NAME,
   testWallet,
   user,
 } from '../__setup.spec';
@@ -19,17 +20,24 @@ import hre, { ethers } from 'hardhat';
 import { readFileSync } from 'fs';
 import { join } from 'path';
 import {
-  DataTypes,
+  AirdropDataStruct,
+  CollectDataStruct,
+  HubDataStruct,
+  CreateProfileDataStruct,
+  ProjectDataStruct,
+  PublicationStruct,
+  SaleStruct,
+  EIP712SignatureStruct,
+
   // CollectWithSigDataStruct
   // CommentDataStruct,
   // CommentWithSigDataStruct,
-  // CreateProfileDataStruct,
   // FollowWithSigDataStruct,
   // MirrorDataStruct,
   // MirrorWithSigDataStruct,
   // PostDataStruct,
   // PostWithSigDataStruct,
-} from '../../typechain/contracts/Manager';
+} from '../../typechain/Manager';
 
 export enum ProtocolState {
   Unpaused,
@@ -553,7 +561,7 @@ export function expectEqualArrays(actual: BigNumberish[], expected: BigNumberish
     logger.throwError(`${actual} does not match ${expected}`);
   }
 }
-
+*/
 export interface CreateProfileReturningTokenIdStruct {
   sender?: Signer;
   vars: CreateProfileDataStruct;
@@ -568,6 +576,36 @@ export async function createProfileReturningTokenId({
   return tokenId;
 }
 
+export interface CreateHubReturningHubIdStruct {
+  sender?: Signer;
+  hub: HubDataStruct;
+}
+
+export async function createHubReturningHubId({
+  sender = user,
+  hub,
+}: CreateHubReturningHubIdStruct): Promise<BigNumber> {
+  const hubId = await manager.connect(sender).callStatic.createHub(hub);
+  await expect(manager.connect(sender).createHub(hub)).to.not.be.reverted;
+  return hubId;
+}
+
+export interface CreateProjectReturningProjectId {
+  sender?: Signer;
+  project: ProjectDataStruct;
+}
+
+export async function createProjectReturningProjectId({
+  sender = user,
+  project,
+}: CreateProjectReturningProjectId): Promise<BigNumber> {
+  const projectId = await manager.connect(sender).callStatic.createProject(project, metadataDescriptor.address);
+  await expect(manager.connect(sender).createProject(project, metadataDescriptor.address)).to.not.be.reverted;
+  return projectId;
+}
+
+
+/*
 export interface FollowDataStruct {
   profileIds: BigNumberish[];
   datas: BytesLike[];

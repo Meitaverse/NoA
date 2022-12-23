@@ -88,6 +88,8 @@ library Events {
      */
     event IncubatorInitialized(uint256 indexed soulBoundTokenId, uint256 timestamp);
     
+    event BankTreasuryCreated(uint256 indexed soulBoundTokenId, uint256 timestamp);
+    
     // Module-Specific
 
     /**
@@ -262,14 +264,17 @@ library Events {
 
     /**
      * @dev Emitted when a DerivativeNFT clone is deployed using a lazy deployment pattern.
+     * @param hubId The hub ID.
+     * @param projectId The project ID.
      * @param soulBoundTokenId The user's SoulBound token ID.
      * @param derivativeNFT The address of the newly deployed DerivativeNFT clone.
      * @param timestamp The current block timestamp.
      */
     event DerivativeNFTDeployed(
         uint256 indexed hubId,
+        uint256 indexed projectId,
         uint256 indexed soulBoundTokenId,
-        address indexed derivativeNFT,
+        address derivativeNFT,
         uint256 timestamp
     );
 
@@ -424,9 +429,12 @@ library Events {
     );
 
     event CreateHub(
-        address indexed creater,
-        uint256 soulBoundTokenId,
-        uint256 hubId,
+        uint256 indexed hubId,
+        address indexed creator,
+        uint256 indexed soulBoundTokenId,
+        string name,
+        string description,
+        string image,
         uint32 createdTime
     );
 

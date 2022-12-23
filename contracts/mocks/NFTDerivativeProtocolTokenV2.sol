@@ -106,15 +106,14 @@ contract NFTDerivativeProtocolTokenV2 is
     }
  
     function createProfile(
-        DataTypes.CreateProfileData calldata vars,
-        string memory nickName
+        DataTypes.CreateProfileData calldata vars
     ) external override whenNotPaused onlyManager returns (uint256) {
         if (balanceOf(vars.to) > 0) revert Errors.TokenIsClaimed(); 
 
         uint256 tokenId_ = ERC3525Upgradeable._mint(vars.to, 1, 0);
 
         _sbtDetails[tokenId_] = DataTypes.SoulBoundTokenDetail({
-            nickName: nickName,
+            nickName: vars.nickName,
             handle: vars.handle,
             locked: true,
             reputation: 0
@@ -137,6 +136,7 @@ contract NFTDerivativeProtocolTokenV2 is
         uint256 tokenId, 
         uint256 value
     ) external payable whenNotPaused onlyManager {
+        if (value == 0) revert Errors.AmountIsZero();
         ERC3525Upgradeable._mintValue(tokenId, value);
         emit Events.MintNDPTValue(tokenId, value, block.timestamp);
 

@@ -2,8 +2,7 @@
 
 pragma solidity ^0.8.10;
 
-import {IncubatorProxy} from '../upgradeability/IncubatorProxy.sol';
-import {DerivativeNFTProxy} from '../upgradeability/DerivativeNFTProxy.sol';
+// import {DerivativeNFTProxy} from '../upgradeability/DerivativeNFTProxy.sol';
 import {DataTypes} from './DataTypes.sol';
 import {Errors} from './Errors.sol';
 import {Events} from './Events.sol';
@@ -16,6 +15,7 @@ import {IERC3525} from "@solvprotocol/erc-3525/contracts/IERC3525.sol";
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import {SafeMathUpgradeable} from "@openzeppelin/contracts-upgradeable/utils/math/SafeMathUpgradeable.sol";
 import "@solvprotocol/erc-3525/contracts/ERC3525Upgradeable.sol";
+import {Clones} from '@openzeppelin/contracts/proxy/Clones.sol';
 import "@openzeppelin/contracts-upgradeable/utils/structs/EnumerableSetUpgradeable.sol";
 import {IManager} from "../interfaces/IManager.sol";
 import "./SafeMathUpgradeable128.sol";
@@ -33,72 +33,77 @@ library InteractionLogic {
     using Strings for uint256;
 
     function deployIncubatorContract(
-       uint256  soulBoundTokenId
+       address ndpt,
+       uint256  soulBoundTokenId,
+       address incubatorImpl
     ) external returns (address) {
-        bytes memory functionData = abi.encodeWithSelector(
-            IIncubator.initialize.selector,
-            soulBoundTokenId
-        );
-        address incubatorContract = address(new IncubatorProxy(functionData));
+        address incubatorContract = Clones.clone(incubatorImpl);
+        IIncubator(incubatorContract).initialize(ndpt, soulBoundTokenId);
         emit Events.IncubatorContractDeployed(soulBoundTokenId, incubatorContract, block.timestamp);
         return incubatorContract;
     }
 
     function createHub(
-        address creater, 
-        uint256 soulBoundTokenId,
         uint256 hubId,
-        DataTypes.Hub memory hub,
-        bytes calldata createHubModuleData,
-        mapping(uint256 => DataTypes.Hub) storage _hubInfos
+        DataTypes.HubData memory hub,
+        mapping(uint256 => DataTypes.HubData) storage _hubInfos
     ) external {
-        if (creater == address(0)) revert Errors.InvalidParameter();
+        if (hub.creator == address(0)) revert Errors.InvalidParameter();
         
-         _hubInfos[hubId] = DataTypes.Hub({
-             soulBoundTokenId : soulBoundTokenId,
+         _hubInfos[hubId] = DataTypes.HubData({
+             creator: hub.creator,
+             soulBoundTokenId : hub.soulBoundTokenId,
              name: hub.name,
              description: hub.description,
-             image: hub.image,
-             metadataURI: hub.metadataURI,
-             timestamp: block.timestamp
+             image: hub.image
         });
 
         //TODO
-        createHubModuleData;
 
-        emit Events.CreateHub(creater, soulBoundTokenId, hubId, uint32(block.timestamp));
+        emit Events.CreateHub(
+            hubId, 
+            hub.creator, 
+            hub.soulBoundTokenId, 
+            hub.name,
+            hub.description,
+            hub.image,
+            uint32(block.timestamp));
 
     }
 
     function createProject(
-        uint256 hubId,
+        address derivativeImpl,
+        address ndpt,
+        address treasury,
         uint256 projectId,
-        uint256 soulBoundTokenId,
-        DataTypes.Project memory project,
+        DataTypes.ProjectData memory project,
         address metadataDescriptor,
-        bytes calldata projectModuleData,
         mapping(uint256 => address) storage _derivativeNFTByProjectId
-    ) external returns(uint256) {
-         
+    ) external returns(address) {
+         address derivativeNFT;
         if(_derivativeNFTByProjectId[projectId] == address(0)) {
-               address derivativeNFT = _deployDerivativeNFT(
-                    hubId,
+                derivativeNFT = _deployDerivativeNFT(
+                    derivativeImpl,
+                    ndpt,
+                    treasury,
+                    project.hubId,
                     projectId,
-                    soulBoundTokenId,
+                    project.soulBoundTokenId,
                     project.name, 
                     project.description,
                     metadataDescriptor
                 );
                 _derivativeNFTByProjectId[projectId] = derivativeNFT;
         }
-        //TODO, pre and toggle
-        projectModuleData;
 
-        return projectId;
+        return derivativeNFT;
         
     }
 
     function _deployDerivativeNFT(
+        address derivativeImpl,
+        address ndpt,
+        address treasury,        
         uint256 hubId,
         uint256 projectId,
         uint256  soulBoundTokenId,
@@ -106,8 +111,10 @@ library InteractionLogic {
         string memory symbol_,
         address metadataDescriptor_
     ) private returns (address) {
-        bytes memory functionData = abi.encodeWithSelector(
-            IDerivativeNFTV1.initialize.selector,
+        address derivativeNFT = Clones.clone(derivativeImpl);
+        IDerivativeNFTV1(derivativeNFT).initialize(
+            ndpt,
+            treasury,    
             name_,
             symbol_,
             hubId,
@@ -115,8 +122,8 @@ library InteractionLogic {
             soulBoundTokenId,
             metadataDescriptor_
         );
-        address derivativeNFT = address(new DerivativeNFTProxy(functionData));
-        emit Events.DerivativeNFTDeployed(hubId, soulBoundTokenId, derivativeNFT, block.timestamp);
+
+        emit Events.DerivativeNFTDeployed(hubId, projectId, soulBoundTokenId, derivativeNFT, block.timestamp);
         return derivativeNFT;
     } 
     
@@ -143,7 +150,6 @@ library InteractionLogic {
             tokenId,
             block.timestamp
          );
-
     }
 
     function transferValueDerivativeNFT(

@@ -4,8 +4,8 @@ import { ethers } from 'hardhat';
 import {
   ManagerV2,
   ManagerV2__factory,
-  ManagerV2_BadRevision,
-  ManagerV2_BadRevision__factory,
+  // ManagerV2_BadRevision,
+  // ManagerV2_BadRevision__factory,
   TransparentUpgradeableProxy__factory,
   ERC1967Proxy,
   ERC1967Proxy__factory,
@@ -16,7 +16,7 @@ import {
   abiCoder,
   deployer,
   deployerAddress,
-  FIRST_PROFILE_ID,
+  SECOND_PROFILE_ID,
   manager,
   makeSuiteCleanRoom,
   MOCK_FOLLOW_NFT_URI,
@@ -32,6 +32,7 @@ import {
   governanceAddress,
   ndptAddress,
   managerAddress,
+  ndptContract,
 } from '../__setup.spec';
 
 export let mockManagerV2Impl: ManagerV2;
@@ -41,10 +42,10 @@ makeSuiteCleanRoom('Upgradeability', function () {
 
   it('Should fail to initialize an implementation with the same revision', async function () {
 
-    const newImpl =  await new ManagerV2_BadRevision__factory(managerLibs, deployer).deploy();
-    const proxyManager = TransparentUpgradeableProxy__factory.connect(manager.address, deployer);
-    const newMockManagerV2 = ManagerV2_BadRevision__factory.connect(proxyManager.address, user);
-    await expect(proxyManager.upgradeTo(newImpl.address)).to.not.be.reverted;
+    // const newImpl =  await new ManagerV2_BadRevision__factory(managerLibs, deployer).deploy();
+    // const proxyManager = TransparentUpgradeableProxy__factory.connect(manager.address, deployer);
+    // const newMockManagerV2 = ManagerV2_BadRevision__factory.connect(proxyManager.address, user);
+    // await expect(proxyManager.upgradeTo(newImpl.address)).to.not.be.reverted;
     // await expect(newMockManagerV2.initialize()).to.be.revertedWith(ERRORS.INITIALIZED);
   });
 

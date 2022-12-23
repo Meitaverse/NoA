@@ -15,13 +15,9 @@ interface IManager {
      * @notice Initializes the Manager, setting the initial governance address and receiver address
      *
      * @param governance_ The address of Governance.
-     * @param ndptV1_ The address of NDPT contract.
-     * @param treasury_ The address of Treasury contract.
      */
     function initialize(    
-       address governance_,
-       address ndptV1_,
-       address treasury_
+       address governance_
     ) external;
    
   /**
@@ -31,6 +27,10 @@ interface IManager {
    * @param newGovernance The new governance address to set.
    */
   function setGovernance(address newGovernance) external;
+    
+  function setNDPT(address ndpt) external;
+
+  function setTreasury(address treasury) external;
 
   function getGovernance() external returns(address);
 
@@ -112,7 +112,9 @@ interface IManager {
      *      followModule: The follow module to use, can be the zero address.
      *      followModuleInitData: The follow module initialization data, if any.
      */
-    function createProfile(DataTypes.CreateProfileData calldata vars, string memory nickName) external returns (uint256);
+    function createProfile(
+        DataTypes.CreateProfileData calldata vars
+    ) external returns (uint256);
 
     /**
      * @notice Returns the follow module associated with a given soulBoundTokenId, if any.
@@ -157,7 +159,15 @@ interface IManager {
      */
     function getWalletBySoulBoundTokenId(address wallet) external view returns (uint256);
    
-     
+    /**
+     * @notice Returns True if in whitelist, otherwise false
+     *
+     * @param profileCreator The user wallet address.
+     * 
+     * @return bool where is in whitelist
+     */
+    function isWhitelistProfileCreator(address profileCreator) external view returns(bool);
+
     /**
      * @notice Returns the genesis soulBoundTokenId by publishId
      *
@@ -217,18 +227,12 @@ interface IManager {
     ) external;
 
      function createHub(
-        address creater, 
-        uint256 soulBoundTokenId,
-        DataTypes.Hub memory hub,
-        bytes calldata createHubModuleData
-    ) external;
+        DataTypes.HubData memory hub
+    ) external returns(uint256);
 
     function createProject(
-        uint256 hubId,
-        uint256 soulBoundTokenId,
-        DataTypes.Project memory project,
-        address metadataDescriptor,
-        bytes calldata projectModuleData
+        DataTypes.ProjectData memory project,
+        address metadataDescriptor
     ) external returns (uint256);
 
     /**
@@ -236,7 +240,7 @@ interface IManager {
      * @param projectId_ The project Id
      * @return Project struct data.
      */
-    function getProjectInfo(uint256 projectId_) external view returns (DataTypes.Project memory);
+    function getProjectInfo(uint256 projectId_) external view returns (DataTypes.ProjectData memory);
     
     function prePublish(
         DataTypes.Publication memory publication

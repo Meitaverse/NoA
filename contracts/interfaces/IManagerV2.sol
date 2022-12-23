@@ -76,7 +76,7 @@ interface IManagerV2 {
      *      followModule: The follow module to use, can be the zero address.
      *      followModuleInitData: The follow module initialization data, if any.
      */
-    function createProfile(DataTypes.CreateProfileData calldata vars, string memory nickName) external returns (uint256);
+    function createProfile(DataTypes.CreateProfileData calldata vars) external returns (uint256);
 
     /**
      * @notice Returns the follow module associated with a given soulBoundTokenId, if any.
@@ -152,18 +152,12 @@ interface IManagerV2 {
     ) external;
 
      function createHub(
-        address creater, 
-        uint256 soulBoundTokenId,
-        DataTypes.Hub memory hub,
-        bytes calldata createHubModuleData
+        DataTypes.HubData memory hub
     ) external;
 
     function createProject(
-        uint256 hubId,
-        uint256 soulBoundTokenId,
-        DataTypes.Project memory project,
-        address metadataDescriptor,
-        bytes calldata projectModuleData
+        DataTypes.ProjectData memory project,
+        address metadataDescriptor
     ) external returns (uint256);
 
     /**
@@ -171,7 +165,7 @@ interface IManagerV2 {
      * @param projectId_ The project Id
      * @return Project struct data.
      */
-    function getProjectInfo(uint256 projectId_) external view returns (DataTypes.Project memory);
+    function getProjectInfo(uint256 projectId_) external view returns (DataTypes.ProjectData memory);
 
     /**
      * @notice Publish some amount of dNFTs

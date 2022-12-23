@@ -10,6 +10,8 @@ interface IDerivativeNFTV1 {
      * @notice Initializes the DerivativeNFT, setting the initial governance address as well as the name and symbol in
      * the NoABase contract.
      *
+     * @param ndpt The NDPT contract.
+     * @param bankTreasury The BankTreasury contract.
      * @param name_ The name to set for the derivative NFT.
      * @param symbol_ The symbol to set for the derivative NFT.
      * @param  hubId_ The id of the Hub.
@@ -17,7 +19,9 @@ interface IDerivativeNFTV1 {
      * @param  soulBoundTokenId_ The token id of the SoulBoundToken.
      * @param metadataDescriptor_ The Descriptor address to set.
      */
-    function initialize(
+    function initialize( 
+        address ndpt, 
+        address bankTreasury,        
         string memory name_,
         string memory symbol_,
         uint256 hubId_,
@@ -66,7 +70,7 @@ interface IDerivativeNFTV1 {
    * @param projectId_ The project Id
    * @return Project struct data.
    */
-  function getProjectInfo(uint256 projectId_) external view returns (DataTypes.Project memory);
+  function getProjectInfo(uint256 projectId_) external view returns (DataTypes.ProjectData memory);
 
   /**
    * @notice get slot detail.

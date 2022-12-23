@@ -22,7 +22,7 @@ import {
   abiCoder,
   deployer,
   deployerAddress,
-  FIRST_PROFILE_ID,
+  SECOND_PROFILE_ID,
   manager,
   NDPT_NAME,
   NDPT_SYMBOL,

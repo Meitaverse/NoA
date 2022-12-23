@@ -167,7 +167,7 @@ contract DerivativeMetadataDescriptor is IERC3525MetadataDescriptor {
     
     uint256 slot = IERC3525(msg.sender).slotOf(tokenId_);
     DataTypes.SlotDetail memory slotDetail = IDerivativeNFTV1(msg.sender).getSlotDetail(slot);
-    DataTypes.Project memory project_ = IDerivativeNFTV1(msg.sender).getProjectInfo(slotDetail.projectId);
+    DataTypes.ProjectData memory project_ = IDerivativeNFTV1(msg.sender).getProjectInfo(slotDetail.projectId);
     uint256 totalSupply = ERC3525Upgradeable(msg.sender).totalSupply();
     
     return 

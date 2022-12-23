@@ -11,6 +11,9 @@ pragma solidity ^0.8.13;
 library DataTypes {
     enum PriceType {FIXED, DECLIINING_BY_TIME}
 
+    //0.1eth, 0.2eth, 0.3eth, 0.4eth, 0.5 eth
+    enum VoucherParValueType {ZEROPOINTONE, ZEROPOINTTWO, ZEROPOINTTHREE, ZEROPOINTFOUR, ZEROPOINTFIVE}
+
     enum FeeType {
         BY_AMOUNT,
         FIXED
@@ -42,32 +45,30 @@ library DataTypes {
         uint256 reputation;
     }
     
-    struct Hub {
+    struct HubData {
+        address creator;
         uint256 soulBoundTokenId;
         string name;
         string description;
         string image;
-        string metadataURI;
-        uint256 timestamp;
     }
 
     /**
      * @dev  Store Organizer create project 
+     * @param soulBoundTokenId soulBoundTokenId of this project
      * @param hubId hub id
-     * @param organizer Organizer of project
      * @param name project name 
      * @param description Description of project
      * @param image Image of project, ipfs or arweave url
      * @param metadataURI metadata 
      */
-    struct Project {
+    struct ProjectData {
+        uint256 soulBoundTokenId;
         uint256 hubId;
-        address organizer;
         string name;
         string description;
         string image;
         string metadataURI;
-        uint256 timestamp;
     }
     
     /**
@@ -201,6 +202,7 @@ library DataTypes {
      *
      * @param to The address receiving the profile.
      * @param handle The handle to set for the profile, must be unique and non-empty.
+     * @param nickName The nick name to set for the profile, must be unique and non-empty.
      * @param imageURI The URI to set for the profile image.
      * @param followModule The follow module to use, can be the zero address.
      * @param followModuleInitData The follow module initialization data, if any.
@@ -209,6 +211,7 @@ library DataTypes {
     struct CreateProfileData {
         address to;
         string handle;
+        string nickName;
         string imageURI;
         address followModule;
         bytes followModuleInitData;

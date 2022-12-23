@@ -58,11 +58,11 @@ contract DerivativeNFTV1 is IDerivativeNFTV1, DerivativeNFTMultiState, ERC3525Up
     address internal _receiver;
 
     // solhint-disable-next-line var-name-mixedcase
-    address private immutable _MANAGER;
+    address internal _MANAGER;
     // solhint-disable-next-line var-name-mixedcase
-    address private immutable _NDPT;
+    address internal _NDPT;
     // solhint-disable-next-line var-name-mixedcase
-    address private immutable _BANKTREASURY;
+    address internal _BANKTREASURY;
 
     uint256 internal _royaltyBasisPoints; //版税佣金点数, 本协议将版税的10%及金库固定税收5%设置为
 
@@ -95,25 +95,28 @@ contract DerivativeNFTV1 is IDerivativeNFTV1, DerivativeNFTMultiState, ERC3525Up
     /// @custom:oz-upgrades-unsafe-allow constructor
     // `initializer` marks the contract as initialized to prevent third parties to
     // call the `initialize` method on the implementation (this contract)
-    constructor(address manager, address ndpt, address bankTreasury) {
+    constructor(address manager) {
         if (manager == address(0)) revert Errors.InitParamsInvalid();
         _MANAGER = manager;
-        if (ndpt == address(0)) revert Errors.InitParamsInvalid();
-        _NDPT = ndpt;
-        if (bankTreasury == address(0)) revert Errors.InitParamsInvalid();
-        _BANKTREASURY = bankTreasury;
     }
 
     function initialize(
+        address ndpt, 
+        address bankTreasury,
         string memory name_,
         string memory symbol_,
         uint256 hubId_,
         uint256 projectId_,
         uint256 soulBoundTokenId_,
         address metadataDescriptor_
-    ) external override initializer { 
+    ) external override initializer {
         if (_initialized) revert Errors.Initialized();
         _initialized = true;
+        
+        if (ndpt == address(0)) revert Errors.InitParamsInvalid();
+        _NDPT = ndpt;
+        if (bankTreasury == address(0)) revert Errors.InitParamsInvalid();
+        _BANKTREASURY = bankTreasury;
 
         if (metadataDescriptor_ == address(0x0)) revert Errors.ZeroAddress();
 
@@ -127,8 +130,6 @@ contract DerivativeNFTV1 is IDerivativeNFTV1, DerivativeNFTMultiState, ERC3525Up
         _projectId = projectId_;
         _soulBoundTokenId = soulBoundTokenId_;
         _receiver = IManager(_MANAGER).getReceiver();
-
-
     }
 
     //only owner
@@ -311,7 +312,7 @@ contract DerivativeNFTV1 is IDerivativeNFTV1, DerivativeNFTMultiState, ERC3525Up
         return _slotDetails[slot_];
     }
 
-    function getProjectInfo(uint256 projectId_) external view returns (DataTypes.Project memory) {
+    function getProjectInfo(uint256 projectId_) external view returns (DataTypes.ProjectData memory) {
        
         return IManager(_MANAGER).getProjectInfo(projectId_);
     }

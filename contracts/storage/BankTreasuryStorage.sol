@@ -1,7 +1,7 @@
 //SPDX-License-Identifier: MIT
 pragma solidity ^0.8.13;
 
-import "../libraries/DataTypes.sol";
+import {DataTypes} from '../libraries/DataTypes.sol';
 
 contract BankTreasuryStorage  {
 
@@ -14,14 +14,19 @@ contract BankTreasuryStorage  {
     address internal  _NDPT;
     address internal  _Voucher;
 
-    address[] internal owners;
-    mapping(address => bool) internal isOwner;
-    uint256 internal numConfirmationsRequired;
-
-
+    address[] internal _signers;
+    mapping(address => bool) internal _isSigner;
+    uint256 internal _numConfirmationsRequired;
  
-    // mapping from tx index => owner => bool
-    mapping(uint256 => mapping(address => bool)) internal isConfirmed;
+    // mapping from tx index => signer => bool
+    mapping(uint256 => mapping(address => bool)) internal _isConfirmed;
 
-    DataTypes.Transaction[] internal transactions;
+    DataTypes.Transaction[] internal _transactions;
+
+    uint256 internal _exchangePrice;
+
+    uint256 internal _discountRecharge = 950;  //base point 10000
+
+    mapping(DataTypes.VoucherParValueType => uint256) internal _voucherParValues;
+    
 }

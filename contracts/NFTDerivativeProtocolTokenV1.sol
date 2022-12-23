@@ -13,6 +13,7 @@ import {IERC20Upgradeable} from "@openzeppelin/contracts-upgradeable/token/ERC20
 import {SafeMathUpgradeable} from "@openzeppelin/contracts-upgradeable/utils/math/SafeMathUpgradeable.sol";
 import {Errors} from "./libraries/Errors.sol";
 import {Events} from "./libraries/Events.sol";
+import {Constants} from './libraries/Constants.sol';
 import "./storage/SBTStorage.sol";
 import {INFTDerivativeProtocolTokenV1} from "./interfaces/INFTDerivativeProtocolTokenV1.sol";
 
@@ -79,6 +80,17 @@ contract NFTDerivativeProtocolTokenV1 is
 
         if (bankTreasury == address(0)) revert Errors.InitParamsInvalid();
         _BANKTREASURY = bankTreasury;
+
+        //create profile for bankTreasury
+        uint256 tokenId_ = ERC3525Upgradeable._mint(_BANKTREASURY, 1, 1000);
+
+        _sbtDetails[tokenId_] = DataTypes.SoulBoundTokenDetail({
+            nickName: "Bank Treasury",
+            handle: "bankTreasury",
+            locked: true,
+            reputation: 0
+        });
+        emit Events.BankTreasuryCreated(tokenId_, block.timestamp);
     }
     
     function version() external pure returns(uint256) {
@@ -102,15 +114,17 @@ contract NFTDerivativeProtocolTokenV1 is
     }
  
     function createProfile(
-        DataTypes.CreateProfileData calldata vars,
-        string memory nickName
+        DataTypes.CreateProfileData calldata vars
     ) external override whenNotPaused onlyManager returns (uint256) {
-        if (balanceOf(vars.to) > 0) revert Errors.TokenIsClaimed(); 
+        _validateHandle(vars.handle);
 
+        if (balanceOf(vars.to) > 0) revert Errors.TokenIsClaimed(); 
+        
+        //value must at least 1, can't equal 0 
         uint256 tokenId_ = ERC3525Upgradeable._mint(vars.to, 1, 0);
 
         _sbtDetails[tokenId_] = DataTypes.SoulBoundTokenDetail({
-            nickName: nickName,
+            nickName: vars.nickName,
             handle: vars.handle,
             locked: true,
             reputation: 0
@@ -228,4 +242,24 @@ contract NFTDerivativeProtocolTokenV1 is
         return _BANKTREASURY;
     }
 
+    function _validateHandle(string calldata handle) private pure {
+        bytes memory byteHandle = bytes(handle);
+        if (byteHandle.length == 0 || byteHandle.length > Constants.MAX_HANDLE_LENGTH)
+            revert Errors.HandleLengthInvalid();
+
+        uint256 byteHandleLength = byteHandle.length;
+        for (uint256 i = 0; i < byteHandleLength; ) {
+            if (
+                (byteHandle[i] < '0' ||
+                    byteHandle[i] > 'z' ||
+                    (byteHandle[i] > '9' && byteHandle[i] < 'a')) &&
+                byteHandle[i] != '.' &&
+                byteHandle[i] != '-' &&
+                byteHandle[i] != '_'
+            ) revert Errors.HandleContainsInvalidCharacters();
+            unchecked {
+                ++i;
+            }
+        }
+    }
 }

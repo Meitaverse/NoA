@@ -44,25 +44,26 @@ contract Incubator is IIncubator, IERC165, IERC3525Receiver, AccessControl
     uint256 internal _soulBoundTokenId;
 
     // solhint-disable-next-line var-name-mixedcase
-    address private immutable _MANAGER;
+    address internal _MANAGER;
     // solhint-disable-next-line var-name-mixedcase
-    address private immutable _NDPT;
+    address internal _NDPT;
 
-    constructor(
-        address manager,
-        address ndpt
-    ) {
+    constructor( address manager) {
         if (manager == address(0)) revert Errors.InitParamsInvalid();
-        if (ndpt == address(0)) revert Errors.InitParamsInvalid();
-
         _MANAGER = manager;
-        _NDPT = ndpt;
-        _grantRole(DEFAULT_ADMIN_ROLE, msg.sender);
+        // _grantRole(DEFAULT_ADMIN_ROLE, msg.sender);
     }
 
-    function initialize(uint256 soulBoundTokenId) external override {
+    function initialize(
+        address ndpt,
+        uint256 soulBoundTokenId 
+    ) external override {
         if (_initialized) revert Errors.Initialized();
         _initialized = true;
+
+        if (ndpt == address(0)) revert Errors.InitParamsInvalid();
+        _NDPT = ndpt;
+
         _soulBoundTokenId = soulBoundTokenId;
          
         emit Events.IncubatorInitialized(_soulBoundTokenId, block.timestamp);

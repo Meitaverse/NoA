@@ -14,8 +14,8 @@ import {
   Events__factory,
   FeeCollectModule,
   FeeCollectModule__factory,
-  // Helper,
-  // Helper__factory,
+  Helper,
+  Helper__factory,
   InteractionLogic__factory,
   PublishLogic__factory,
   ModuleGlobals,
@@ -39,6 +39,9 @@ import {
   Manager__factory,
   Voucher,
   Voucher__factory,
+  DerivativeMetadataDescriptor,
+  DerivativeMetadataDescriptor__factory,
+
 } from '../typechain';
 
 import { ManagerLibraryAddresses } from '../typechain/factories/Manager__factory';
@@ -65,7 +68,9 @@ export const NDPT_SYMBOL = 'NDPT';
 export const NDPT_DECIMALS = 18;
 export const MOCK_PROFILE_HANDLE = 'plant1ghost.eth';
 export const LENS_PERIPHERY_NAME = 'LensPeriphery';
-export const FIRST_PROFILE_ID = 1;
+export const SECOND_PROFILE_ID = 2;
+export const FIRST_HUB_ID = 1;
+export const FIRST_PROJECT_ID = 1;
 export const MOCK_URI = 'https://ipfs.io/ipfs/QmbWqxBEKC3P8tqsKc98xmWNzrzDtRLMiMPL8wBuTGsMnR';
 export const OTHER_MOCK_URI = 'https://ipfs.io/ipfs/QmSfyMcnh1wnJHrAWCBjZHapTS859oNSsuDFiAPPdAHgHP';
 export const MOCK_PROFILE_URI =
@@ -96,7 +101,7 @@ export let mockModuleData: BytesLike;
 export let managerLibs: ManagerLibraryAddresses;
 export let eventsLib: Events;
 export let moduleGlobals: ModuleGlobals;
-// export let helper: Helper;
+export let helper: Helper;
 export let receiverMock: ERC3525ReceiverMock
 export let bankTreasuryImpl: BankTreasury
 export let bankTreasuryContract: BankTreasury
@@ -104,6 +109,7 @@ export let ndptImpl: NFTDerivativeProtocolTokenV1;
 export let ndptContract: NFTDerivativeProtocolTokenV1;
 export let derivativeNFTV1Impl: DerivativeNFTV1;
 export let incubatorImpl: Incubator;
+export let metadataDescriptor: DerivativeMetadataDescriptor;
 
 export let receiverMockAddress: string;
 export let ndptAddress: string;
@@ -153,6 +159,11 @@ before(async function () {
   // helper = await new Helper__factory(deployer).deploy();
 
 
+  metadataDescriptor = await new DerivativeMetadataDescriptor__factory(deployer).deploy();
+
+  receiverMock = await new ERC3525ReceiverMock__factory(deployer).deploy(RECEIVER_MAGIC_VALUE, Error.None);
+  receiverMockAddress = receiverMock.address;
+
   const interactionLogic = await new InteractionLogic__factory(deployer).deploy();
   const publishLogic = await new PublishLogic__factory(deployer).deploy();
   managerLibs = {
@@ -169,9 +180,35 @@ before(async function () {
   // nonce + 3 is manager proxy
 
   const managerProxyAddress = computeContractAddress(deployerAddress, nonce + 3); //'0x' + keccak256(RLP.encode([deployerAddress, hubProxyNonce])).substr(26);
+  
+  derivativeNFTV1Impl = await new DerivativeNFTV1__factory(deployer).deploy(
+    managerProxyAddress
+  );
+  derivativeNFTV1ImplAddress = derivativeNFTV1Impl.address;
 
-  receiverMock = await new ERC3525ReceiverMock__factory(deployer).deploy(RECEIVER_MAGIC_VALUE, Error.None);
-  receiverMockAddress = receiverMock.address;
+  incubatorImpl = await new Incubator__factory(deployer).deploy(
+    managerProxyAddress
+  );
+  incubatorImplAddress = incubatorImpl.address;
+
+  managerImpl = await new Manager__factory(managerLibs, deployer).deploy(
+    derivativeNFTV1ImplAddress,
+    incubatorImplAddress,
+    receiverMockAddress,
+  );
+
+  let data = managerImpl.interface.encodeFunctionData('initialize', [
+    governanceAddress
+  ]);
+  let proxy = await new TransparentUpgradeableProxy__factory(deployer).deploy(
+    managerImpl.address,
+    deployerAddress,
+    data
+  );
+  // Connect the manager proxy to the Manager factory and the user for ease of use.
+  manager = Manager__factory.connect(proxy.address, user);
+  managerAddress = manager.address;
+
 
   voucherImpl = await new Voucher__factory(deployer).deploy();
   let initializeVoucherData = voucherImpl.interface.encodeFunctionData("initialize", [
@@ -191,7 +228,7 @@ before(async function () {
       NDPT_NAME, 
       NDPT_SYMBOL, 
       NDPT_DECIMALS,
-      managerProxyAddress,
+      managerAddress,
       bankTreasuryImpl.address,
   ]);
   const ndptProxy = await new ERC1967Proxy__factory(deployer).deploy(
@@ -200,9 +237,10 @@ before(async function () {
   );
   ndptContract = new NFTDerivativeProtocolTokenV1__factory(deployer).attach(ndptProxy.address);
   ndptAddress = ndptContract.address;
-  const soulBoundTokenIdOfBankTreaury =1;
+
+  const soulBoundTokenIdOfBankTreaury = 1;
   let initializeData = bankTreasuryImpl.interface.encodeFunctionData("initialize", [
-    managerProxyAddress,
+    managerAddress,
     governanceAddress,
     ndptImpl.address,
     voucherAddress,
@@ -211,7 +249,6 @@ before(async function () {
     NUM_CONFIRMATIONS_REQUIRED  //All full signed 
   ]);
 
-
   const bankTreasuryProxy = await new ERC1967Proxy__factory(deployer).deploy(
     bankTreasuryImpl.address,
     initializeData
@@ -219,37 +256,10 @@ before(async function () {
   bankTreasuryContract = new BankTreasury__factory(deployer).attach(bankTreasuryProxy.address);
   bankTreasuryAddress = bankTreasuryContract.address;
 
-  derivativeNFTV1Impl = await new DerivativeNFTV1__factory(deployer).deploy(
-    managerProxyAddress, 
-    ndptContract.address,
-    bankTreasuryAddress
-  );
-  derivativeNFTV1ImplAddress = derivativeNFTV1Impl.address;
+  //make sure bankTreasury's souldBoundTokenId is 1
+  expect((await bankTreasuryContract.getSoulBoundTokenId()).toNumber()).to.eq(1);
 
-  incubatorImpl = await new Incubator__factory(deployer).deploy(managerProxyAddress, ndptContract.address);
-  incubatorImplAddress = incubatorImpl.address;
 
-  managerImpl = await new Manager__factory(managerLibs, deployer).deploy(
-    derivativeNFTV1ImplAddress,
-    incubatorImplAddress,
-    receiverMockAddress,
-  );
-
-  let data = managerImpl.interface.encodeFunctionData('initialize', [
-    governanceAddress,
-    ndptAddress,
-    bankTreasuryImpl.address
-  ]);
-
-  let proxy = await new TransparentUpgradeableProxy__factory(deployer).deploy(
-    managerImpl.address,
-    deployerAddress,
-    data
-  );
-
-  // Connect the manager proxy to the Manager factory and the user for ease of use.
-  manager = Manager__factory.connect(proxy.address, user);
-  managerAddress = manager.address;
 
   // Currency
   currency = await new Currency__factory(deployer).deploy();
@@ -263,6 +273,10 @@ before(async function () {
     PublishRoyalty
   );
   
+  //manager  set ndptAddress
+  await expect(manager.connect(governance).setNDPT(ndptAddress)).to.not.be.reverted;
+  await expect(manager.connect(governance).setTreasury(bankTreasuryAddress)).to.not.be.reverted;
+
   await expect(manager.connect(governance).setState(ProtocolState.Unpaused)).to.not.be.reverted;
   await expect(
     manager.connect(governance).whitelistProfileCreator(userAddress, true)
