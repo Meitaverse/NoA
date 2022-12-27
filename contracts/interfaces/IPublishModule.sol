@@ -15,18 +15,23 @@ interface IPublishModule {
      *
      * @param publishId The publish ID.
      * @param previousPublishId The previous Publish Id
+     * @param treasuryOfSoulBoundTokenId The SoulBoundTokenId of treasury
      * @param publication The publication
      *
      */
     function initializePublishModule(
         uint256 publishId,
         uint256 previousPublishId,
+        uint256 treasuryOfSoulBoundTokenId,
         DataTypes.Publication calldata publication
     ) external;
     
     function getPublicationTemplate(
         uint256 publishId
     ) external view returns (uint256, string memory);
+
+    // function getTreasuryOfSoulBoundTokenId() external view returns(uint256);
+
 }
 
 

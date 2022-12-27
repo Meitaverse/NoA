@@ -2,12 +2,10 @@
 
 pragma solidity ^0.8.10;
 
-// import {DerivativeNFTProxy} from '../upgradeability/DerivativeNFTProxy.sol';
 import {DataTypes} from './DataTypes.sol';
 import {Errors} from './Errors.sol';
 import {Events} from './Events.sol';
 import {Constants} from './Constants.sol';
-import {IIncubator} from '../interfaces/IIncubator.sol';
 import {IDerivativeNFTV1} from "../interfaces/IDerivativeNFTV1.sol";
 import {ICollectModule} from '../interfaces/ICollectModule.sol';
 import {Strings} from '@openzeppelin/contracts/utils/Strings.sol';
@@ -32,16 +30,6 @@ import "./SafeMathUpgradeable128.sol";
 library InteractionLogic {
     using Strings for uint256;
 
-    function deployIncubatorContract(
-       address ndpt,
-       uint256  soulBoundTokenId,
-       address incubatorImpl
-    ) external returns (address) {
-        address incubatorContract = Clones.clone(incubatorImpl);
-        IIncubator(incubatorContract).initialize(ndpt, soulBoundTokenId);
-        emit Events.IncubatorContractDeployed(soulBoundTokenId, incubatorContract, block.timestamp);
-        return incubatorContract;
-    }
 
     function createHub(
         uint256 hubId,
@@ -77,109 +65,56 @@ library InteractionLogic {
         address treasury,
         uint256 projectId,
         DataTypes.ProjectData memory project,
-        address metadataDescriptor,
+        address receiver,
         mapping(uint256 => address) storage _derivativeNFTByProjectId
     ) external returns(address) {
-         address derivativeNFT;
+        address derivativeNFT;
         if(_derivativeNFTByProjectId[projectId] == address(0)) {
                 derivativeNFT = _deployDerivativeNFT(
                     derivativeImpl,
                     ndpt,
                     treasury,
-                    project.hubId,
                     projectId,
                     project.soulBoundTokenId,
                     project.name, 
                     project.description,
-                    metadataDescriptor
+                    project.descriptor,
+                    receiver
                 );
                 _derivativeNFTByProjectId[projectId] = derivativeNFT;
         }
-
         return derivativeNFT;
-        
     }
-
+    
     function _deployDerivativeNFT(
         address derivativeImpl,
         address ndpt,
         address treasury,        
-        uint256 hubId,
         uint256 projectId,
-        uint256  soulBoundTokenId,
+        uint256 soulBoundTokenId,
         string memory name_,
         string memory symbol_,
-        address metadataDescriptor_
+        address descriptor_,
+        address receiver_
     ) private returns (address) {
+
         address derivativeNFT = Clones.clone(derivativeImpl);
         IDerivativeNFTV1(derivativeNFT).initialize(
             ndpt,
             treasury,    
             name_,
             symbol_,
-            hubId,
             projectId,
             soulBoundTokenId,
-            metadataDescriptor_
+            descriptor_,
+            receiver_ 
         );
 
-        emit Events.DerivativeNFTDeployed(hubId, projectId, soulBoundTokenId, derivativeNFT, block.timestamp);
+        emit Events.DerivativeNFTDeployed(projectId, soulBoundTokenId, derivativeNFT, block.timestamp);
         return derivativeNFT;
     } 
     
-     function transferDerivativeNFT(
-        uint256 fromSoulBoundTokenId,
-        uint256 toSoulBoundTokenId,
-        uint256 projectId,
-        address derivativeNFT,
-        address fromIncubator,
-        address toIncubator,
-        uint256 tokenId,
-        bytes calldata transferModuledata
-    ) external {
-    
-         IERC3525(derivativeNFT).transferFrom(fromIncubator, toIncubator, tokenId);
-
-         //TODO process data
-         transferModuledata;
-
-         emit Events.TransferDerivativeNFT(
-            fromSoulBoundTokenId,
-            toSoulBoundTokenId,
-            projectId,
-            tokenId,
-            block.timestamp
-         );
-    }
-
-    function transferValueDerivativeNFT(
-        uint256 fromSoulBoundTokenId,
-        uint256 toSoulBoundTokenId,
-        uint256 projectId,
-        address derivativeNFT,
-        address toIncubator,
-        uint256 tokenId,
-        uint256 value,
-        bytes calldata transferValueModuledata
-    ) external {
-    
-        uint256 newTokenId = IERC3525(derivativeNFT).transferFrom(tokenId, toIncubator, value);
-
-         //TODO process data
-         transferValueModuledata;
-
-         emit Events.TransferValueDerivativeNFT(
-            fromSoulBoundTokenId,
-            toSoulBoundTokenId,
-            projectId,
-            tokenId,
-            value,
-            newTokenId,
-            block.timestamp
-         );
-
-    }
-    
+  
     using SafeMathUpgradeable for uint256;
     using EnumerableSetUpgradeable for EnumerableSetUpgradeable.UintSet;
     using EnumerableSetUpgradeable for EnumerableSetUpgradeable.AddressSet;

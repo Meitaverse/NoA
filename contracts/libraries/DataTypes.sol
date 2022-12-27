@@ -55,20 +55,22 @@ library DataTypes {
 
     /**
      * @dev  Store Organizer create project 
-     * @param soulBoundTokenId soulBoundTokenId of this project
      * @param hubId hub id
+     * @param soulBoundTokenId soulBoundTokenId of this project
      * @param name project name 
      * @param description Description of project
      * @param image Image of project, ipfs or arweave url
      * @param metadataURI metadata 
+     * @param descriptor descriptor for SVG 
      */
     struct ProjectData {
-        uint256 soulBoundTokenId;
         uint256 hubId;
+        uint256 soulBoundTokenId;
         string name;
         string description;
         string image;
         string metadataURI;
+        address descriptor;
     }
     
     /**
@@ -76,8 +78,6 @@ library DataTypes {
      * @param soulBoundTokenId id of NDPT
      * @param hubId id of hub
      * @param projectId id of project
-     * @param price price of publish
-     * @param currency currency address of publish, default is NDPT
      * @param amount amount of publish
      * @param name name of publication
      * @param description description of publication
@@ -92,8 +92,6 @@ library DataTypes {
         uint256 soulBoundTokenId;
         uint256 hubId;
         uint256 projectId;
-        uint256 price;
-        address currency;
         uint256 amount;
         string name;
         string description;
@@ -119,7 +117,6 @@ library DataTypes {
         uint256 publishId;
         uint256 collectorSoulBoundTokenId;
         uint256 collectValue;
-        bytes collectModuleData;
     }    
 
     struct AirdropData {
@@ -293,5 +290,27 @@ library DataTypes {
         EIP712Signature sig;
     }
 
+    struct CanvasData {
+        uint256 width;
+        uint256 height;
+    }
 
+    struct Position {
+        uint256 x;
+        uint256 y;
+    }
+
+
+    //voucher struct
+    struct VoucherData {
+        VoucherParValueType vouchType;
+        uint256 tokenId;
+        uint256 etherValue;
+        uint256 ndptValue;
+        uint256 generateTimestamp;
+        uint256 deadTimestamp;
+        bool isUsed;
+        uint256 soulBoundTokenId;
+        uint256 usedTimestamp;
+    }
 }

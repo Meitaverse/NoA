@@ -39,6 +39,7 @@ library Errors {
   error CannotInitImplementation();
   error NotGovernance();
   error NotManager();
+  error NotBankTreasury();
   error NotSinger();
   error TxNotExists();
   error TxAlreadyExecuted();
@@ -59,7 +60,6 @@ library Errors {
   error ArrayMismatch();
   error FollowInvalid();
   error ZeroSpender();
-  error ZeroIncubator();
   error SignatureExpired();
   error SignatureInvalid();
   error ProfileCreatorNotWhitelisted();
@@ -67,9 +67,14 @@ library Errors {
   error CollectModuleNotWhitelisted();
   error FollowModuleNotWhitelisted();
   error PublishModuleNotWhitelisted();
+  error PublishWithZeroNDPT();
   error NotSameHub();
   error InsufficientAllowance();
   error InsufficientDerivativeNFT();
+  error DerivativeNFTIsZero();
+  error PublisherIsZero();
+  error ManagerIsZero();
+  error InsufficientNDPT();
   error CannotUpdateAfterMinted();
   error NDPTNotSet();
 
@@ -89,4 +94,7 @@ library Errors {
   // error Panic();
 
   error UpdateURITwice();
+  error InvidVoucherParValueType();
+  error VoucherNotExists();
+  error VoucherIsUsed();
 }

@@ -9,6 +9,7 @@ import "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/access/AccessControlUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
+import "@openzeppelin/contracts/utils/Counters.sol";
 import {IERC20Upgradeable} from "@openzeppelin/contracts-upgradeable/token/ERC20/IERC20Upgradeable.sol";
 import {SafeERC20Upgradeable} from "@openzeppelin/contracts-upgradeable/token/ERC20/utils/SafeERC20Upgradeable.sol";
 import {StringsUpgradeable} from "@openzeppelin/contracts-upgradeable/utils/StringsUpgradeable.sol";
@@ -18,6 +19,7 @@ import {IVoucher} from './interfaces/IVoucher.sol';
 import {Events} from "./libraries/Events.sol";
 import {DataTypes} from './libraries/DataTypes.sol';
 import "./libraries/EthAddressLib.sol";
+
 import "./storage/VoucherStorage.sol";
  
 /**
@@ -34,6 +36,8 @@ contract Voucher is
     AccessControlUpgradeable,
     UUPSUpgradeable
 {
+    using Counters for Counters.Counter;
+
     bytes32 public constant PAUSER_ROLE = keccak256("PAUSER_ROLE");
     bytes32 public constant UPGRADER_ROLE = keccak256("UPGRADER_ROLE");
 
@@ -41,6 +45,15 @@ contract Voucher is
     string public symbol;
 
     string private _uriBase; //"https://api.bitsoul.xyz/v1/metadata/"
+
+    // solhint-disable-next-line var-name-mixedcase
+    address internal _BANKTREASURY;
+    
+    modifier onlyBankTreasury() {
+        _validateCallerIsBankTreasury();
+        _;
+    }
+
 
     function initialize(
         string memory uriBase
@@ -74,27 +87,133 @@ contract Voucher is
         return super.supportsInterface(interfaceId);
     }
 
-    function mint(address account, uint256 id, uint256 amount, bytes memory data)
+    function generateVoucher(
+        DataTypes.VoucherParValueType vouchType,
+        address account
+    ) 
         external
         onlyOwner
     {
-        _mint(account, id, amount, data);
+        uint256 _tokenId = _generateNextVoucherId();
+        uint256 etherValue;
+        uint256 amount;
+
+        if (vouchType == DataTypes.VoucherParValueType.ZEROPOINTONE){ //0
+            etherValue = 0.1 ether;
+            amount = 100;
+        } 
+        else if (vouchType == DataTypes.VoucherParValueType.ZEROPOINTTWO){ //1
+            etherValue = 0.2 ether;
+            amount = 200;
+        } 
+        else if (vouchType == DataTypes.VoucherParValueType.ZEROPOINTTHREE){//2
+            etherValue = 0.3 ether;
+            amount = 300;
+        } 
+        else if (vouchType == DataTypes.VoucherParValueType.ZEROPOINTFOUR){//3
+            etherValue = 0.4 ether;
+            amount = 400;
+        } 
+        else if (vouchType == DataTypes.VoucherParValueType.ZEROPOINTFIVE) {//4
+            etherValue = 0.5 ether;
+            amount = 500;
+        } 
+
+        if (amount == 0) revert Errors.InvidVoucherParValueType();
+
+        _mint(account, _tokenId, amount, "");
+        _vouchers[_tokenId] = DataTypes.VoucherData({
+            vouchType: vouchType,
+            tokenId: _tokenId,
+            etherValue: etherValue,
+            ndptValue: amount,
+            generateTimestamp: block.timestamp,
+            deadTimestamp: block.timestamp + 5184000,
+            isUsed: false,
+            soulBoundTokenId: 0,
+            usedTimestamp: 0
+        });
+         
+        emit Events.GenerateVoucher(
+             vouchType,
+             _tokenId,
+             etherValue,
+             amount,
+             block.timestamp,
+             block.timestamp + 5184000
+        );
 
         // Signals frozen metadata to OpenSea; emitted in minting functions
-        emit Events.PermanentURI(string(abi.encodePacked(_uriBase, StringsUpgradeable.toString(id), ".json")), id);
+        emit Events.PermanentURI(string(abi.encodePacked(_uriBase, StringsUpgradeable.toString(_tokenId), ".json")), _tokenId);
+
     }
 
-    function mintBatch(address to, uint256[] memory ids, uint256[] memory amounts, bytes memory data)
+    function generateVoucherBatch(
+        DataTypes.VoucherParValueType[] memory vouchTypes,
+        address account
+    ) 
         external
         onlyOwner
     {
-        _mintBatch(to, ids, amounts, data);
-        
-        for (uint256 i = 0; i < ids.length; i++) {
-            // Signals frozen metadata to OpenSea; emitted in minting functions
+        uint256[] memory ids = new uint256[](vouchTypes.length);
+        uint256[] memory amounts = new uint256[](vouchTypes.length);
+        for (uint256 i = 0; i < vouchTypes.length; ) {
+            ids[i] =  _generateNextVoucherId();
+            unchecked {
+                ++i;
+            }
             emit Events.PermanentURI(string(abi.encodePacked(_uriBase, StringsUpgradeable.toString(ids[i]), ".json")), ids[i]);
         }
+
+        for (uint256 i = 0; i < vouchTypes.length; ) {
+            uint256 etherValue;
+            uint256 amount;
+            if (vouchTypes[i] == DataTypes.VoucherParValueType.ZEROPOINTONE){
+                etherValue = 0.1 ether;
+                amount = 100;
+            } 
+            else if (vouchTypes[i] == DataTypes.VoucherParValueType.ZEROPOINTTWO){
+                etherValue = 0.2 ether;
+                amount = 200;
+            } 
+            else if (vouchTypes[i] == DataTypes.VoucherParValueType.ZEROPOINTTHREE){
+                etherValue = 0.3 ether;
+                amount = 300;
+            } 
+            else if (vouchTypes[i] == DataTypes.VoucherParValueType.ZEROPOINTFOUR){
+                etherValue = 0.4 ether;
+                amount = 400;
+            } 
+            else if (vouchTypes[i] == DataTypes.VoucherParValueType.ZEROPOINTFIVE) {
+                etherValue = 0.5 ether;
+                amount = 500;
+            } 
+
+            if (amount == 0) revert Errors.InvidVoucherParValueType();
+
+            unchecked {
+                ++i;
+            }
+        }
+
+        _mintBatch(account, ids, amounts, "");
+        
     }
+
+    function getVoucher(uint256 voucherId) external view returns(DataTypes.VoucherData memory) {
+        return _vouchers[voucherId];
+    }
+
+    function useVoucher(uint256 voucherId, uint256 soulBoundTokenId) 
+        external onlyBankTreasury 
+    {
+         DataTypes.VoucherData storage voucherData = _vouchers[voucherId];
+         if (voucherData.isUsed) revert Errors.VoucherIsUsed();
+         voucherData.isUsed = true;
+         voucherData.soulBoundTokenId = soulBoundTokenId;
+         voucherData.usedTimestamp = block.timestamp;
+    }
+    
     
     function burn(
         address owner,
@@ -102,6 +221,7 @@ contract Voucher is
         uint256 value
     ) external onlyOwner {
         _burn(owner, id, value);
+        _vouchers[id].isUsed = true;
     }
 
     function burnBatch(
@@ -110,6 +230,9 @@ contract Voucher is
         uint256[] memory values
     ) external onlyOwner {
         _burnBatch(owner, ids, values);
+        for (uint256 i = 0; i < ids.length; i++) {
+            _vouchers[ids[i]].isUsed = true;
+        }
     }
 
     //-- orverride -- //
@@ -171,13 +294,27 @@ contract Voucher is
     function setURIPrefix(string memory _newBaseMetadataURI) public onlyOwner{
         _setURIPrefix(_newBaseMetadataURI);
     }
+
+    function setBankTreasury(address bankTreasury) external  onlyOwner{
+        _BANKTREASURY = bankTreasury;
+    }
+
     function _setURIPrefix(string memory _newBaseMetadataURI) internal {
         _uriBase = _newBaseMetadataURI;
     }
 
-    function setTokenUri(uint tokenId_, string memory uri_) external onlyOwner {
+    function setTokenUri(uint256 tokenId_, string memory uri_) external onlyOwner {
         if(bytes(_uris[tokenId_]).length > 0)  revert Errors.UpdateURITwice();
         _uris[tokenId_] = uri_;
      }
 
+    function _generateNextVoucherId() internal returns (uint256) {
+        _nextVoucherId.increment();
+        return uint256(_nextVoucherId.current());
+    }
+
+
+    function _validateCallerIsBankTreasury() internal view {
+        if (msg.sender != _BANKTREASURY) revert Errors.NotBankTreasury();
+    }
 }

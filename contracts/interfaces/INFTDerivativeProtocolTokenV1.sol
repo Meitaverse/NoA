@@ -14,14 +14,12 @@ interface INFTDerivativeProtocolTokenV1  {
      * @param symbol The symbol to set for the Token.
      * @param decimals The decimal to set for the Token.
      * @param manager The address of Manager contract
-     * @param bankTreasury The address of BankTreasury contract
      */
     function initialize(
         string memory name,
         string memory symbol,
         uint8 decimals,
-        address manager,
-        address bankTreasury
+        address manager
     ) external ;
 
      function version() external returns(uint256);
@@ -45,6 +43,8 @@ interface INFTDerivativeProtocolTokenV1  {
         address _operator,
         bool _approved
     ) external payable;
+
+    function balanceOfNDPT(uint256 tokenId) external view returns (uint256);
 
     /**
      * @notice Query if `_operator` is authorized to manage all of `_owner`'s tokens with the
@@ -111,6 +111,13 @@ interface INFTDerivativeProtocolTokenV1  {
      * @param value is the valueof the tokenId 
      */
     function burnValue(uint256 tokenId, uint256 value) external;
+
+
+    function transferValue(
+        uint256 fromTokenId_,
+        uint256 toTokenId_,
+        uint256 value_
+    ) external;
 
 
 }

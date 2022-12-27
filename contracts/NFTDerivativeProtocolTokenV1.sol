@@ -9,6 +9,7 @@ import "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
 import "@solvprotocol/erc-3525/contracts/ERC3525SlotEnumerableUpgradeable.sol";
 import "@solvprotocol/erc-3525/contracts/ERC3525Upgradeable.sol";
 import "@solvprotocol/erc-3525/contracts/IERC3525Receiver.sol";
+import "@solvprotocol/erc-3525/contracts/extensions/IERC3525Metadata.sol";
 import {IERC20Upgradeable} from "@openzeppelin/contracts-upgradeable/token/ERC20/IERC20Upgradeable.sol";
 import {SafeMathUpgradeable} from "@openzeppelin/contracts-upgradeable/utils/math/SafeMathUpgradeable.sol";
 import {Errors} from "./libraries/Errors.sol";
@@ -37,7 +38,6 @@ contract NFTDerivativeProtocolTokenV1 is
     bytes32 public constant PAUSER_ROLE = keccak256("PAUSER_ROLE");
     bytes32 public constant UPGRADER_ROLE = keccak256("UPGRADER_ROLE");
 
-
     //===== Modifiers =====//
 
     /**
@@ -45,6 +45,11 @@ contract NFTDerivativeProtocolTokenV1 is
      */
     modifier onlyManager() {
         _validateCallerIsManager();
+        _;
+    }
+    
+    modifier onlyBankTreasury() {
+        _validateCallerIsBankTreasury();
         _;
     }
 
@@ -62,8 +67,7 @@ contract NFTDerivativeProtocolTokenV1 is
         string memory name,
         string memory symbol,
         uint8 decimals,
-        address manager,
-        address bankTreasury
+        address manager
     ) external override initializer {
 
         __ERC3525_init_unchained(name, symbol, decimals);
@@ -78,19 +82,7 @@ contract NFTDerivativeProtocolTokenV1 is
         if (manager == address(0)) revert Errors.InitParamsInvalid();
         _MANAGER = manager;
 
-        if (bankTreasury == address(0)) revert Errors.InitParamsInvalid();
-        _BANKTREASURY = bankTreasury;
-
-        //create profile for bankTreasury
-        uint256 tokenId_ = ERC3525Upgradeable._mint(_BANKTREASURY, 1, 1000);
-
-        _sbtDetails[tokenId_] = DataTypes.SoulBoundTokenDetail({
-            nickName: "Bank Treasury",
-            handle: "bankTreasury",
-            locked: true,
-            reputation: 0
-        });
-        emit Events.BankTreasuryCreated(tokenId_, block.timestamp);
+ 
     }
     
     function version() external pure returns(uint256) {
@@ -120,7 +112,6 @@ contract NFTDerivativeProtocolTokenV1 is
 
         if (balanceOf(vars.to) > 0) revert Errors.TokenIsClaimed(); 
         
-        //value must at least 1, can't equal 0 
         uint256 tokenId_ = ERC3525Upgradeable._mint(vars.to, 1, 0);
 
         _sbtDetails[tokenId_] = DataTypes.SoulBoundTokenDetail({
@@ -143,16 +134,18 @@ contract NFTDerivativeProtocolTokenV1 is
         return tokenId;
     }
     
-
     function mintValue(
         uint256 tokenId, 
         uint256 value
     ) external payable whenNotPaused onlyManager {
         ERC3525Upgradeable._mintValue(tokenId, value);
         emit Events.MintNDPTValue(tokenId, value, block.timestamp);
-
     }
 
+    function balanceOfNDPT(uint256 tokenId) external view override returns (uint256) {
+        return super.balanceOf(tokenId);
+    }
+     
     function burn(uint256 tokenId) external whenNotPaused onlyManager{
         ERC3525Upgradeable._burn(tokenId);
          emit Events.BurnNDPT(tokenId, block.timestamp);
@@ -169,10 +162,24 @@ contract NFTDerivativeProtocolTokenV1 is
     //     address operator_, 
     //     bool approved_
     // ) public virtual override(ERC3525Upgradeable,IERC721Upgradeable) onlyManager{
-    //     super._setApprovalForAll(_msgSender(), operator_, approved_);
+    //     super.setApprovalForAll(operator_, approved_);
     // }
 
     //-- orverride -- //
+    function transferValue(
+        uint256 fromTokenId_,
+        uint256 toTokenId_,
+        uint256 value_
+    ) external {
+         //call only by BankTreasury or FeeCollectModule or _PublishModule 
+        if (msg.sender == _BANKTREASURY || msg.sender == _FeeCollectModule || _PublishModule == msg.sender){
+            ERC3525Upgradeable._transferValue(fromTokenId_, toTokenId_, value_);
+            return;
+        }
+        revert Errors.NotBankTreasury();
+     
+    }
+
     function transferFrom(
         address from_,
         address to_,
@@ -228,6 +235,10 @@ contract NFTDerivativeProtocolTokenV1 is
         if (msg.sender != _MANAGER) revert Errors.NotManager();
     }
 
+    function _validateCallerIsBankTreasury() internal view {
+        if (msg.sender != _BANKTREASURY) revert Errors.NotBankTreasury();
+    }
+
     //-- orverride -- //
     function _authorizeUpgrade(address /*newImplementation*/) internal virtual override {
         if (!hasRole(UPGRADER_ROLE, _msgSender())) revert Errors.Unauthorized();
@@ -238,8 +249,37 @@ contract NFTDerivativeProtocolTokenV1 is
         return _MANAGER;
     }
     
+    function setBankTreasury(address bankTreasury, uint256 initialSupply) external  {
+        if (!hasRole(DEFAULT_ADMIN_ROLE, _msgSender())) revert Errors.Unauthorized();
+        
+        if (bankTreasury == address(0)) revert Errors.InitParamsInvalid();
+        _BANKTREASURY = bankTreasury;
+
+        //create profile for bankTreasury
+        uint256 tokenId_ = ERC3525Upgradeable._mint(_BANKTREASURY, 1, initialSupply);
+        ERC3525Upgradeable.setApprovalForAll(_BANKTREASURY, true);
+
+        _sbtDetails[tokenId_] = DataTypes.SoulBoundTokenDetail({
+            nickName: "Bank Treasury",
+            handle: "bankTreasury",
+            locked: true,
+            reputation: 0
+        });
+        emit Events.BankTreasuryCreated(tokenId_, block.timestamp);
+    }
+    
     function getBankTreasury() external view returns(address) {
         return _BANKTREASURY;
+    }
+ 
+    function setFeeCollectModule(address feeCollectModule) external  {
+        if (!hasRole(DEFAULT_ADMIN_ROLE, _msgSender())) revert Errors.Unauthorized();
+        _FeeCollectModule = feeCollectModule;
+    }
+
+    function setPublishModule(address publishModule) external  {
+        if (!hasRole(DEFAULT_ADMIN_ROLE, _msgSender())) revert Errors.Unauthorized();
+        _PublishModule = publishModule;
     }
 
     function _validateHandle(string calldata handle) private pure {

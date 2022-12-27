@@ -37,9 +37,6 @@ import {
   userTwoAddress,
   governance,
   derivativeNFTV1Impl,
-  derivativeNFTV1ImplAddress,
-  incubatorImplAddress,
-  receiverMockAddress,
   governanceAddress,
   ndptImpl,
   ndptContract,
@@ -77,7 +74,6 @@ makeSuiteCleanRoom('UUPS ability', function () {
           NDPT_NAME, 
           NDPT_SYMBOL, 
           8,
-          manager.address,
           governanceAddress)
         ).to.be.revertedWith(ERRORS.UUPSINITIALIZED);
     });
@@ -102,7 +98,7 @@ makeSuiteCleanRoom('UUPS ability', function () {
 
         const v2 = new BankTreasuryV2__factory(deployer).attach(bankTreasuryContract.address);
 
-        // console.log("v2.MANAGER: ", (await v2.getManager()).toUpperCase());
+        console.log("v2.MANAGER: ", (await v2.getManager()).toUpperCase());
          expect((await v2.getManager()).toUpperCase()).to.eq(managerV1Address.toUpperCase());
          expect((await v2.getGovernance()).toUpperCase()).to.eq(governanceAddress.toUpperCase());
       });
@@ -125,7 +121,7 @@ makeSuiteCleanRoom('UUPS ability', function () {
          expect(await v2.getSigner()).to.eq(userAddress);
         //  console.log("v2.MANAGER: ", (await v2.getManager()).toUpperCase());
          expect((await v2.getManager()).toUpperCase()).to.eq(managerV1Address.toUpperCase());
-         expect((await ndptContract.getBankTreasury()).toUpperCase()).to.eq(bankTreasuryImpl.address.toUpperCase());
+         expect((await ndptContract.getBankTreasury()).toUpperCase()).to.eq(bankTreasuryContract.address.toUpperCase());
       });
       
     });

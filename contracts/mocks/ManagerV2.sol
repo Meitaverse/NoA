@@ -42,32 +42,6 @@ contract ManagerV2 is IManagerV2, DerivativeNFTMultiState, MockManagerV2Storage,
         _;
     }
 
-    // constructor(
-    //     address dNftV1_,
-    //     address incubator_,
-    //     address receiver_
-    // )  {
-
-    //     if (dNftV1_ == address(0)) revert Errors.InitParamsInvalid();
-    //     if (incubator_ == address(0)) revert Errors.InitParamsInvalid();
-    //     if (receiver_ == address(0)) revert Errors.InitParamsInvalid();
-
-    //     _DNFT_IMPL = dNftV1_;
-    //     _INCUBATOR_IMPL = incubator_;
-    //     _RECEIVER = receiver_;
-    // }
-
-    // function initialize(
-    //     address governance_,
-    //     address ndptV1_
-    // ) external override initializer {
-    //     if (ndptV1_ == address(0)) revert Errors.InitParamsInvalid();
-    //     NDPT = ndptV1_;
-
-    //     //default Paused
-    //     _setState(DataTypes.ProtocolState.Paused);
-    //     _setGovernance(governance_);
-    // }
 
     //-- external -- //
 
@@ -92,12 +66,6 @@ contract ManagerV2 is IManagerV2, DerivativeNFTMultiState, MockManagerV2Storage,
         IDerivativeNFTV1(derivativeNFT).setState(newState);
     }
 
-    function mintNDPT(address mintTo, uint256 value) external whenNotPaused onlyGov returns(uint256){
-        uint256 slot = 1;
-        if (value == 0) revert Errors.AmountIsZero();
-        return INFTDerivativeProtocolTokenV1(NDPT).mint(mintTo, slot, value);
-    }
-
     function mintNDPTValue(uint256 tokenId, uint256 value) external whenNotPaused onlyGov {
         INFTDerivativeProtocolTokenV1(NDPT).mintValue(tokenId, value);
     }
@@ -118,13 +86,6 @@ contract ManagerV2 is IManagerV2, DerivativeNFTMultiState, MockManagerV2Storage,
 
         uint256 soulBoundTokenId = INFTDerivativeProtocolTokenV1(NDPT).createProfile(vars);
 
-        address toIncubator = InteractionLogic.deployIncubatorContract(
-            NDPT,
-            soulBoundTokenId,
-            _INCUBATOR_IMPL
-        );
-        _incubatorBySoulBoundTokenId[soulBoundTokenId] = toIncubator;
-
         return soulBoundTokenId;
     }
 
@@ -141,8 +102,7 @@ contract ManagerV2 is IManagerV2, DerivativeNFTMultiState, MockManagerV2Storage,
     }
 
     function createProject( 
-        DataTypes.ProjectData memory project,
-        address metadataDescriptor
+        DataTypes.ProjectData memory project
     ) external whenNotPaused returns (uint256) {
         if (_hubBySoulBoundTokenId[project.soulBoundTokenId] != project.hubId) revert Errors.NotHubOwner();
         if (_projectNameHashByEventId[keccak256(bytes(project.name))] > 0) {
@@ -157,17 +117,18 @@ contract ManagerV2 is IManagerV2, DerivativeNFTMultiState, MockManagerV2Storage,
             TREASURY,
             projectId,
             project,
-            metadataDescriptor,
+            _RECEIVER,
             _derivativeNFTByProjectId
         );
 
         _projectInfoByProjectId[projectId] = DataTypes.ProjectData({
-            soulBoundTokenId: project.soulBoundTokenId,
             hubId: project.hubId,
+            soulBoundTokenId: project.soulBoundTokenId,
             name: project.name,
             description: project.description,
             image: project.image,
-            metadataURI: project.metadataURI
+            metadataURI: project.metadataURI,
+            descriptor: project.descriptor
         });
         return projectId; 
     }
@@ -245,20 +206,7 @@ contract ManagerV2 is IManagerV2, DerivativeNFTMultiState, MockManagerV2Storage,
         uint256 tokenId,
         uint256[] memory values
     ) external whenNotPaused onlySoulBoundTokenOwner(fromSoulBoundTokenId) {
-        if (_hubBySoulBoundTokenId[fromSoulBoundTokenId] != hubId) revert Errors.NotHubOwner();
-        address derivatveNFT = _derivativeNFTByProjectId[projectId];
-        if (derivatveNFT == address(0)) revert Errors.InvalidParameter();
-
-        return
-            PublishLogic.airdropDerivativeNFT(
-                projectId,
-                derivatveNFT,
-                msg.sender,
-                fromSoulBoundTokenId,
-                toSoulBoundTokenIds,
-                tokenId,
-                values
-            );
+        
     }
 
     function transferDerivativeNFT(
@@ -268,25 +216,7 @@ contract ManagerV2 is IManagerV2, DerivativeNFTMultiState, MockManagerV2Storage,
         uint256 tokenId,
         bytes calldata transferModuledata
     ) external whenNotPaused onlySoulBoundTokenOwner(fromSoulBoundTokenId) {
-        address derivatveNFT = _derivativeNFTByProjectId[projectId];
-        if (derivatveNFT == address(0)) revert Errors.InvalidParameter();
 
-        address fromIncubator = _incubatorBySoulBoundTokenId[fromSoulBoundTokenId];
-        if (fromIncubator == address(0)) revert Errors.InvalidParameter();
-
-        address toIncubator = _incubatorBySoulBoundTokenId[toSoulBoundTokenId];
-        if (toIncubator == address(0)) revert Errors.InvalidParameter();
-
-        InteractionLogic.transferDerivativeNFT(
-            fromSoulBoundTokenId,
-            toSoulBoundTokenId,
-            projectId,
-            derivatveNFT,
-            fromIncubator,
-            toIncubator,
-            tokenId,
-            transferModuledata
-        );
     }
 
     function transferValueDerivativeNFT(
@@ -297,25 +227,8 @@ contract ManagerV2 is IManagerV2, DerivativeNFTMultiState, MockManagerV2Storage,
         uint256 value,
         bytes calldata transferValueModuledata
     ) external whenNotPaused onlySoulBoundTokenOwner(fromSoulBoundTokenId) {
-        address derivatveNFT = _derivativeNFTByProjectId[projectId];
-        if (derivatveNFT == address(0)) revert Errors.InvalidParameter();
 
-        address fromIncubator = _incubatorBySoulBoundTokenId[fromSoulBoundTokenId];
-        if (fromIncubator == address(0)) revert Errors.InvalidParameter();
-
-        address toIncubator = _incubatorBySoulBoundTokenId[toSoulBoundTokenId];
-        if (toIncubator == address(0)) revert Errors.InvalidParameter();
-
-        InteractionLogic.transferValueDerivativeNFT(
-            fromSoulBoundTokenId,
-            toSoulBoundTokenId,
-            projectId,
-            derivatveNFT,
-            toIncubator,
-            tokenId,
-            value,
-            transferValueModuledata
-        );
+     
     }
 
     function publishFixedPrice(DataTypes.Sale memory sale) external whenNotPaused onlyGov {
@@ -384,14 +297,6 @@ contract ManagerV2 is IManagerV2, DerivativeNFTMultiState, MockManagerV2Storage,
 
     function getSoulBoundToken() external view returns (address) {
         return NDPT;
-    }
-
-    function getIncubatorOfSoulBoundTokenId(uint256 soulBoundTokenId) external view override returns (address) {
-        return _incubatorBySoulBoundTokenId[soulBoundTokenId];
-    }
-
-    function getIncubatorImpl() external view override returns (address) {
-        return _INCUBATOR_IMPL;
     }
 
     function getDNFTImpl() external view override returns (address) {

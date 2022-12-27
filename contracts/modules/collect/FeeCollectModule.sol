@@ -10,8 +10,8 @@ import {ModuleBase} from "../ModuleBase.sol";
 import {FollowValidationModuleBase} from "../FollowValidationModuleBase.sol";
 import {IERC20Upgradeable} from "@openzeppelin/contracts-upgradeable/token/ERC20/IERC20Upgradeable.sol";
 import {SafeERC20Upgradeable} from "@openzeppelin/contracts-upgradeable/token/ERC20/utils/SafeERC20Upgradeable.sol";
-import {IERC3525} from "@solvprotocol/erc-3525/contracts/IERC3525.sol";
 import {SafeMathUpgradeable} from "@openzeppelin/contracts-upgradeable/utils/math/SafeMathUpgradeable.sol";
+import {INFTDerivativeProtocolTokenV1} from "../../interfaces/INFTDerivativeProtocolTokenV1.sol";
 
 /**
  * @notice A struct containing the necessary data to execute collect actions on a publication.
@@ -69,8 +69,9 @@ contract FeeCollectModule is FeeModuleBase, FollowValidationModuleBase, ICollect
         if (currency == address(0)) {
             currency= _ndpt();
         } 
-
+       
         if (!_currencyWhitelisted(currency) || 
+            publishId == 0 || 
             ownershipSoulBoundTokenId == 0 || 
             genesisFee > BPS_MAX - 1000 || 
             amount == 0)
@@ -140,20 +141,21 @@ contract FeeCollectModule is FeeModuleBase, FollowValidationModuleBase, ICollect
         uint256 adjustedAmount = amountOfAll.sub(treasuryAmount).sub(genesisAmount);
 
         if (currency == _ndpt()) {
-            if (adjustedAmount>0) IERC3525(_ndpt()).transferFrom(_tokenIdOfIncubator(collectorSoulBoundTokenId), _tokenIdOfIncubator(ownershipSoulBoundTokenId), adjustedAmount);
+            if (adjustedAmount>0) 
+                INFTDerivativeProtocolTokenV1(_ndpt()).transferValue(collectorSoulBoundTokenId, ownershipSoulBoundTokenId, adjustedAmount);
             
             uint256 treasuryOfSoulBoundTokenId = IBankTreasury(treasury).getSoulBoundTokenId();
             
-            if (treasuryAmount > 0) IERC3525(_ndpt()).transferFrom(_tokenIdOfIncubator(collectorSoulBoundTokenId), treasuryOfSoulBoundTokenId, treasuryAmount);
-            if (genesisSoulBoundTokenId >0 && genesisAmount > 0) IERC3525(_ndpt()).transferFrom(_tokenIdOfIncubator(collectorSoulBoundTokenId), _tokenIdOfIncubator(genesisSoulBoundTokenId), genesisAmount);
+            if (treasuryAmount > 0) INFTDerivativeProtocolTokenV1(_ndpt()).transferValue(collectorSoulBoundTokenId, treasuryOfSoulBoundTokenId, treasuryAmount);
+            if (genesisSoulBoundTokenId >0 && genesisAmount > 0) INFTDerivativeProtocolTokenV1(_ndpt()).transferValue(collectorSoulBoundTokenId, genesisSoulBoundTokenId, genesisAmount);
 
         } else {
             //向owner支付剩余的currency
-            if (adjustedAmount>0) IERC20Upgradeable(currency).safeTransferFrom(_incubator(collectorSoulBoundTokenId), _incubator(ownershipSoulBoundTokenId), adjustedAmount);
+            if (adjustedAmount>0) IERC20Upgradeable(currency).safeTransferFrom(_wallet(collectorSoulBoundTokenId), _wallet(ownershipSoulBoundTokenId), adjustedAmount);
 
             //pay to treasury and genesis publisher
-            if (treasuryAmount > 0) IERC20Upgradeable(currency).safeTransferFrom(_incubator(collectorSoulBoundTokenId), treasury, treasuryAmount);
-            if (genesisSoulBoundTokenId >0 && genesisAmount > 0) IERC20Upgradeable(currency).safeTransferFrom(_incubator(collectorSoulBoundTokenId), _incubator(genesisSoulBoundTokenId), genesisAmount);
+            if (treasuryAmount > 0) IERC20Upgradeable(currency).safeTransferFrom(_wallet(collectorSoulBoundTokenId), treasury, treasuryAmount);
+            if (genesisSoulBoundTokenId >0 && genesisAmount > 0) IERC20Upgradeable(currency).safeTransferFrom(_wallet(collectorSoulBoundTokenId), _wallet(genesisSoulBoundTokenId), genesisAmount);
         }
     }
 }

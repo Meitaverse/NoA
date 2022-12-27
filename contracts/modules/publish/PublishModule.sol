@@ -2,7 +2,7 @@
 
 pragma solidity ^0.8.13;
 
-import {IBankTreasury} from "../../interfaces/IBankTreasury.sol";
+
 import {IPublishModule} from "../../interfaces/IPublishModule.sol";
 import {Errors} from "../../libraries/Errors.sol";
 import {FeeModuleBase} from "../FeeModuleBase.sol";
@@ -16,6 +16,7 @@ import {StringsUpgradeable} from "@openzeppelin/contracts-upgradeable/utils/Stri
 import {Base64Upgradeable} from "@openzeppelin/contracts-upgradeable/utils/Base64Upgradeable.sol";
 import {StringConvertor} from "../../utils/StringConvertor.sol";
 import {ITemplate} from "../../interfaces/ITemplate.sol";
+import {INFTDerivativeProtocolTokenV1} from "../../interfaces/INFTDerivativeProtocolTokenV1.sol";
 
 struct PublishData {
     DataTypes.Publication publication;
@@ -36,10 +37,14 @@ contract PublishModule is FeeModuleBase, IPublishModule, ModuleBase {
     using StringConvertor for uint256;
     using StringConvertor for bytes;
 
+    address internal _NDPT;
+
     //publishId => PublishData
     mapping(uint256 => PublishData) internal _dataPublishdNFTByProject;
 
-    constructor(address manager, address moduleGlobals) FeeModuleBase(moduleGlobals) ModuleBase(manager) {}
+    constructor(address manager, address moduleGlobals, address ndpt) FeeModuleBase(moduleGlobals) ModuleBase(manager) {
+        _NDPT = ndpt;
+    }
 
     /**
      * @notice Initializes data for a given publication being published. This can only be called by the manager.
@@ -52,18 +57,20 @@ contract PublishModule is FeeModuleBase, IPublishModule, ModuleBase {
     function initializePublishModule(
         uint256 publishId,
         uint256 previousPublishId,
+        uint256 treasuryOfSoulBoundTokenId,
         DataTypes.Publication calldata publication
-    ) external override onlyManager {
+    ) external override onlyManager { 
 
-        address treasury = _treasury();
+        uint256 publishTaxes = (publication.amount - 1) * _PublishCurrencyTax(_NDPT);
+        
+        //TODO
+        if (publishId == 0 || 
+            treasuryOfSoulBoundTokenId == 0)
+            revert Errors.InitParamsInvalid();
 
-        uint256 treasuryOfSoulBoundTokenId = IBankTreasury(treasury).getSoulBoundTokenId();
-
-        uint256 publishTaxes = (publication.amount - 1) * _PublishCurrencyTax(_ndpt());
-       
         if ( publishTaxes > 0){
-            IERC3525(_ndpt()).transferFrom(publication.soulBoundTokenId, treasuryOfSoulBoundTokenId, publishTaxes);
-        }
+            INFTDerivativeProtocolTokenV1(_NDPT).transferValue(publication.soulBoundTokenId, treasuryOfSoulBoundTokenId, publishTaxes);
+        } 
         _dataPublishdNFTByProject[publishId].publication = publication;
         _dataPublishdNFTByProject[publishId].previousPublishId = previousPublishId;
 
@@ -95,6 +102,11 @@ contract PublishModule is FeeModuleBase, IPublishModule, ModuleBase {
             )
         );
     }
+
+    // function getTreasuryOfSoulBoundTokenId() external view returns(uint256) {
+    //     address treasury = _treasury();
+    //     return IBankTreasury(treasury).getSoulBoundTokenId();
+    // }
 
 
 }

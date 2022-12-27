@@ -45,11 +45,6 @@ interface IManagerV2 {
    function setStateDerivative(address derivativeNFT, DataTypes.ProtocolState newState) external;
 
 
-    function mintNDPT(
-        address mintTo, 
-        uint256 value
-    ) external returns(uint256);
-
     function mintNDPTValue(
         uint256 tokenId, 
         uint256 value
@@ -94,30 +89,7 @@ interface IManagerV2 {
      */
     function getSoulBoundToken() external view returns (address);
 
-    /**
-     * @notice Returns the address of the Incubator contract
-     *
-     * @param soulBoundTokenId The token ID of the SoulBoundToken to query the incubator for.
-     * 
-     * @return address The address of the SoulBundToken contract.
-     */
-    function getIncubatorOfSoulBoundTokenId(uint256 soulBoundTokenId) external view returns (address);
-    
-    /**
-     * @notice Returns the address of the Incubator contract implementation
-     *
-     * 
-     * @return address The address of the implementation.
-     */
-    
-    /**
-     * @notice Returns the address of the Incubator NFT contract implementation
-     *
-     * 
-     * @return address The address of the implementation.
-     */
-    function getIncubatorImpl() external view returns (address);
-    
+
     /**
      * @notice Returns the address of the Derivative NFT contract implementation
      *
@@ -156,8 +128,7 @@ interface IManagerV2 {
     ) external;
 
     function createProject(
-        DataTypes.ProjectData memory project,
-        address metadataDescriptor
+        DataTypes.ProjectData memory project
     ) external returns (uint256);
 
     /**
@@ -178,7 +149,7 @@ interface IManagerV2 {
     ) external returns(uint256);
     
     /**
-     * @notice Split a dNFT to two parts in same incubator.
+     * @notice Split a dNFT to two parts 
      *
      * @param projectId Event Id  
      * @param fromSoulBoundTokenId From SBT Id  
@@ -218,7 +189,7 @@ interface IManagerV2 {
     ) external;
 
     /**
-     * @notice Transfer a dNFT to a address from incubator.
+     * @notice Transfer a dNFT to a address from the fromSoulBoundTokenId to toSoulBoundTokenId
      *
      * @param projectId Event Id  
      * @param fromSoulBoundTokenId From SBT Id  

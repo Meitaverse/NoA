@@ -6,6 +6,8 @@ pragma solidity ^0.8.0;
 import "@openzeppelin/contracts/proxy/ERC1967/ERC1967Proxy.sol";
 
 /**
+ * NOTE: This is a direct copy of OpenZeppelin's TransparentUpgradeableProxy and is only present for
+ * ease of explorer verification.
  *
  * @dev This contract implements a proxy that is upgradeable by an admin.
  *

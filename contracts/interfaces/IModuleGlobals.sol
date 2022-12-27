@@ -76,8 +76,6 @@ interface IModuleGlobals {
      */
     function getNDPT() external view returns (address);
     
-    // function getManager() external  returns (address);
-
     /**
      * @notice Returns the treasury fee.
      *
@@ -92,10 +90,8 @@ interface IModuleGlobals {
      */
     function getTreasuryData() external view returns (address, uint16);
     
-    function getIncubator(uint256 soulBoundTokenId) external view returns (address);
+    function getWallet(uint256 soulBoundTokenId) external view returns (address);
     
-    function getTokenIdOfIncubator(uint256 soulBoundTokenId) external view returns (uint256);
-
     function getPublishCurrencyTax(address currency) external returns(uint256) ;
 
     function setPublishRoyalty(uint256 publishRoyalty) external;

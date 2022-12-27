@@ -7,6 +7,7 @@ export const ERRORS = {
   SIGNATURE_INVALID: 'SignatureInvalid()',
   NOT_OWNER_OR_APPROVED: 'NotOwnerOrApproved()',
   NOT_HUB: 'NotHub()',
+  NOT_MANAGER: 'NotManager()',
   TOKEN_DOES_NOT_EXIST: 'TokenDoesNotExist()',
   CALLER_NOT_WHITELSITED_MODULE: 'CallerNotWhitelistedModule()',
   NOT_GOVERNANCE: 'NotGovernance()',
@@ -51,4 +52,6 @@ export const ERRORS = {
   UUPSINITIALIZED:
     "Initializable: contract is already initialized",
   INVALID_PARAMETER: 'InvalidParameter()',
+  VOUCHER_NOT_EXISTS: 'VoucherNotExists()',
+  VOUCHER_IS_USED: 'VoucherIsUsed()',
 };

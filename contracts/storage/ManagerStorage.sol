@@ -67,9 +67,7 @@ abstract contract ManagerStorage {
     mapping(bytes32 => uint256) internal _projectNameHashByEventId;
     mapping(uint256 => DataTypes.ProjectData) internal _projectInfoByProjectId;
     mapping(uint256 => address) internal _derivativeNFTByProjectId;
-    mapping(uint256 => address) internal _incubatorBySoulBoundTokenId;
-    mapping(address => uint256) internal _walletBySoulBoundTokenId;
-    mapping(uint256 => uint256) internal _tokenIdIncubatorBySoulBoundTokenId;
+    mapping(uint256 => address) internal _walletBySoulBoundTokenId;
     
     mapping(uint256 => address) internal _dispatcherByProfile;
 
@@ -81,9 +79,6 @@ abstract contract ManagerStorage {
 
     mapping(uint256 => uint256) internal _genesisSoulBoundTokenIdByPublishId;
 
-    address internal  _INCUBATOR_IMPL;
-    address internal  _DNFT_IMPL;
-    address internal  _RECEIVER;
     address public  NDPT;
     address public  TREASURY;
 
@@ -118,6 +113,7 @@ abstract contract ManagerStorage {
 
     //publishId => publishData
     mapping(uint256 => DataTypes.PublishData) internal _publishIdByProjectData;
+    
     //tokenId => publishId
     mapping(uint256 => uint256) internal _tokenIdByPublishId;
 

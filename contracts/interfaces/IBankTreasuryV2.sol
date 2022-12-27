@@ -16,18 +16,14 @@ interface IBankTreasuryV2 {
      * @notice Implementation of an EIP-712 permit-style function for token burning. Allows anyone to burn
      * a token on behalf of the owner with a signature.
      *
-     * @param currency The ERC3525 contract token address.
-     * @param fromTokenId  the token ID from.
-     * @param toTokenId token ID to.
-     * @param value The value of the token ID.
+     * @param toSoulBoundTokenId token ID to.
+     * @param amount The value of the token ID.
      */
     //  * @param nonce nonce of sig.
     //  * @param sig The EIP712 signature struct.
     function withdrawERC3525(
-        address currency, 
-        uint256 fromTokenId, 
-        uint256 toTokenId, 
-        uint256 value
+        uint256 toSoulBoundTokenId,
+        uint256 amount
     ) external;
 
 
@@ -43,19 +39,6 @@ interface IBankTreasuryV2 {
         DataTypes.EIP712Signature calldata sign        
     ) external payable;
 
-    function createVoucher(
-        address account, 
-        uint256 id, 
-        uint256 amount, 
-        bytes memory data 
-    ) external;
-
-    function createBatchVoucher(
-        address account, 
-        uint256[] memory ids, 
-        uint256[] memory amounts, 
-        bytes memory data 
-    ) external;
 
     //TODO
     // function stake() external;
@@ -65,9 +48,7 @@ interface IBankTreasuryV2 {
 
     function getTransactionCount() external view returns (uint256);
 
-    function setManager(address newManager) external;
-    function getManager() external returns(address);
-
+    function getManager() external view returns(address);
     function setGovernance(address newGovernance) external;
     function getGovernance() external returns(address);
 

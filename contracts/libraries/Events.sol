@@ -75,19 +75,11 @@ library Events {
 
     //Receiver
     event ERC3525Received(address operator, uint256 fromTokenId, uint256 toTokenId, uint256 value, bytes data, uint256 gas);
-    event IncubatorReceived(address operator, uint256 fromTokenId, uint256 toTokenId, uint256 value, bytes data, uint256 gas);
     event ERC1155Received(address operator, address from, uint256 id, uint256 value, bytes data, uint256 gas);
     event ERC1155BatchReceived(address operator, address from, uint256[] ids, uint256[] values, bytes data, uint256 gas);
     event ERC721Received(address operator, address from, uint256 tokenId, bytes data, uint256 gas);
 
-    /**
-     * @dev Emitted when a newly deployed Incubator contract is initialized.
-     *
-     * @param soulBoundTokenId The token ID of the soulBoundToken connected to this incubator contract.
-     * @param timestamp The current block timestamp.
-     */
-    event IncubatorInitialized(uint256 indexed soulBoundTokenId, uint256 timestamp);
-    
+
     event BankTreasuryCreated(uint256 indexed soulBoundTokenId, uint256 timestamp);
     
     // Module-Specific
@@ -251,27 +243,13 @@ library Events {
     );
 
     /**
-     * @dev Emitted when a Incubator clone is deployed using a lazy deployment pattern.
-     * @param soulBoundTokenId The user's SoulBound token ID.
-     * @param incubatorContract The address of the newly deployed incubator clone.
-     * @param timestamp The current block timestamp.
-     */
-    event IncubatorContractDeployed(
-        uint256 indexed soulBoundTokenId,
-        address indexed incubatorContract,
-        uint256 timestamp
-    );
-
-    /**
      * @dev Emitted when a DerivativeNFT clone is deployed using a lazy deployment pattern.
-     * @param hubId The hub ID.
      * @param projectId The project ID.
      * @param soulBoundTokenId The user's SoulBound token ID.
      * @param derivativeNFT The address of the newly deployed DerivativeNFT clone.
      * @param timestamp The current block timestamp.
      */
     event DerivativeNFTDeployed(
-        uint256 indexed hubId,
         uint256 indexed projectId,
         uint256 indexed soulBoundTokenId,
         address derivativeNFT,
@@ -325,10 +303,10 @@ library Events {
         address derivativeNFT,
         uint256 fromSoulBoundTokenId,
         address operator,
-        uint256 toSoulBoundTokenId,
+        address[] toWallets,
         uint256 tokenId,
-        uint256 value,
-        uint256 newTokenId,
+        uint256[] values,
+        uint256[] newTokenIds,
         uint256 timestamp
     );
 
@@ -499,6 +477,13 @@ library Events {
     // Signals frozen metadata to OpenSea; emitted in minting functions
     event PermanentURI(string _value, uint256 indexed _id);
 
-
+    event GenerateVoucher(
+        DataTypes.VoucherParValueType vouchType,
+        uint256 tokenId,
+        uint256 etherValue,
+        uint256 ndptValue,
+        uint256 generateTimestamp,
+        uint256 deadTimestamp
+    );
 }
 

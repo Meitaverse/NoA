@@ -191,11 +191,11 @@ contract DerivativeMetadataDescriptor is IERC3525MetadataDescriptor {
   }
 
   function _contractDescription() internal pure returns (string memory) {
-    return "http://showdao.io";
+    return "http://bitsoul.me";
   }
 
   function _contractImage() internal pure returns (bytes memory) {
-    return "http://showdao.io/logo.png";
+    return "http://bitsoul.me/logo.png";
   }
 
 }

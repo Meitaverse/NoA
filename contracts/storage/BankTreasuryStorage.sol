@@ -8,6 +8,9 @@ contract BankTreasuryStorage  {
     //SBT id of BankTreasury
     uint256 _soulBoundTokenId;
 
+    string public name;
+    mapping(address => uint256) public sigNonces;
+
     // solhint-disable-next-line var-name-mixedcase
     address internal _MANAGER;
     address internal  _governance;

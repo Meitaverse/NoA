@@ -12,6 +12,8 @@ import {
   Currency__factory,
   Events,
   Events__factory,
+  PublishModule,
+  PublishModule__factory,
   FeeCollectModule,
   FeeCollectModule__factory,
   Helper,
@@ -29,8 +31,6 @@ import {
   BankTreasury__factory,
   DerivativeNFTV1,
   DerivativeNFTV1__factory,
-  Incubator,
-  Incubator__factory,
   NFTDerivativeProtocolTokenV1,
   NFTDerivativeProtocolTokenV2,
   NFTDerivativeProtocolTokenV1__factory,
@@ -41,7 +41,9 @@ import {
   Voucher__factory,
   DerivativeMetadataDescriptor,
   DerivativeMetadataDescriptor__factory,
-
+  Template,
+  Template__factory,
+  
 } from '../typechain';
 
 import { ManagerLibraryAddresses } from '../typechain/factories/Manager__factory';
@@ -54,23 +56,33 @@ import {
   takeSnapshot,
 } from './helpers/utils';
 
+import {
+  CanvasDataStruct, PositionStruct
+} from '../typechain/Template';
+
 use(solidity);
 
 export const NUM_CONFIRMATIONS_REQUIRED = 3;
 export const CURRENCY_MINT_AMOUNT = parseEther('100');
 export const BPS_MAX = 10000;
 export const TREASURY_FEE_BPS = 50;
-export const PublishRoyalty = 100;
-export const REFERRAL_FEE_BPS = 250;
+export const PublishRoyaltyNDPT = 100;
+export const GENESIS_FEE_BPS = 0; //genesis Fee
 export const MAX_PROFILE_IMAGE_URI_LENGTH = 6000;
 export const NDPT_NAME = 'NFT Derivative Protocol Token';
 export const NDPT_SYMBOL = 'NDPT';
 export const NDPT_DECIMALS = 18;
 export const MOCK_PROFILE_HANDLE = 'plant1ghost.eth';
 export const LENS_PERIPHERY_NAME = 'LensPeriphery';
+export const FIRST_PROFILE_ID = 1;
 export const SECOND_PROFILE_ID = 2;
+export const THIRD_PROFILE_ID = 3;
+export const FOUR_PROFILE_ID = 4;
 export const FIRST_HUB_ID = 1;
 export const FIRST_PROJECT_ID = 1;
+export const FIRST_PUBLISH_ID = 1;
+export const FIRST_DNFT_TOKEN_ID = 1;
+export const SECOND_DNFT_TOKEN_ID = 2;
 export const MOCK_URI = 'https://ipfs.io/ipfs/QmbWqxBEKC3P8tqsKc98xmWNzrzDtRLMiMPL8wBuTGsMnR';
 export const OTHER_MOCK_URI = 'https://ipfs.io/ipfs/QmSfyMcnh1wnJHrAWCBjZHapTS859oNSsuDFiAPPdAHgHP';
 export const MOCK_PROFILE_URI =
@@ -80,6 +92,13 @@ export const MOCK_FOLLOW_NFT_URI =
 
 export const  RECEIVER_MAGIC_VALUE = '0x009ce20b';
 export const TreasuryFee = 50; 
+
+export const INITIAL_SUPPLY = 1000000;  //NDPT初始发行总量
+
+export const DEFAULT_COLLECT_PRICE = parseEther('10');
+export const DEFAULT_TEMPLATE_NUMBER = 1;
+export const NickName = 'BitsoulUser';
+export const NickName3 = 'BitsoulUser3';
 
 export let accounts: Signer[];
 export let deployer: Signer;
@@ -108,24 +127,20 @@ export let bankTreasuryContract: BankTreasury
 export let ndptImpl: NFTDerivativeProtocolTokenV1;
 export let ndptContract: NFTDerivativeProtocolTokenV1;
 export let derivativeNFTV1Impl: DerivativeNFTV1;
-export let incubatorImpl: Incubator;
 export let metadataDescriptor: DerivativeMetadataDescriptor;
 
-export let receiverMockAddress: string;
 export let ndptAddress: string;
-export let bankTreasuryAddress: string;
-export let derivativeNFTV1ImplAddress: string;
-export let incubatorImplAddress: string;
-export let managerAddress: string;
 export let voucherImpl: Voucher;
 export let voucherContract: Voucher
-export let voucherAddress: string;
-// export let version: Number;
 
 /* Modules */
-
+//Publish
+export let publishModule: PublishModule;
 // Collect
 export let feeCollectModule: FeeCollectModule;
+
+//Template
+export let template: Template;
 
 export function makeSuiteCleanRoom(name: string, tests: () => void) {
   describe(name, () => {
@@ -155,60 +170,72 @@ before(async function () {
   userThreeAddress = await userThree.getAddress();
   governanceAddress = await governance.getAddress();
   mockModuleData = abiCoder.encode(['uint256'], [1]);
-  // Deployment
-  // helper = await new Helper__factory(deployer).deploy();
 
+  // Deployment
+  helper = await new Helper__factory(deployer).deploy();
+
+  //Template
+
+ let canvas: CanvasDataStruct = {width:800, height:600};
+ let watermark: CanvasDataStruct = {width:200, height:300};
+ let position: PositionStruct = {x:400, y: 0};
+
+  template = await new Template__factory(deployer).deploy(
+    1,
+    "WaterMark",
+    "descript for this template",
+    "image",
+    canvas,
+    watermark,
+    position,
+  );
+
+  // Currency
+  currency = await new Currency__factory(deployer).deploy();
 
   metadataDescriptor = await new DerivativeMetadataDescriptor__factory(deployer).deploy();
 
   receiverMock = await new ERC3525ReceiverMock__factory(deployer).deploy(RECEIVER_MAGIC_VALUE, Error.None);
-  receiverMockAddress = receiverMock.address;
 
   const interactionLogic = await new InteractionLogic__factory(deployer).deploy();
   const publishLogic = await new PublishLogic__factory(deployer).deploy();
   managerLibs = {
     'contracts/libraries/InteractionLogic.sol:InteractionLogic': interactionLogic.address,
     'contracts/libraries/PublishLogic.sol:PublishLogic': publishLogic.address,
-
   };
 
   // Here, we pre-compute the nonces and addresses used to deploy the contracts.
   const nonce = await deployer.getTransactionCount();
   // nonce + 0 is impl
   // nonce + 1 is impl
-  // nonce + 2 is impl
-  // nonce + 3 is manager proxy
+  // nonce + 2 is manager proxy
 
-  const managerProxyAddress = computeContractAddress(deployerAddress, nonce + 3); //'0x' + keccak256(RLP.encode([deployerAddress, hubProxyNonce])).substr(26);
-  
+  const managerProxyAddress = computeContractAddress(deployerAddress, nonce + 2); //'0x' + keccak256(RLP.encode([deployerAddress, hubProxyNonce])).substr(26);
+  console.log("managerProxyAddress: ", managerProxyAddress);
+
   derivativeNFTV1Impl = await new DerivativeNFTV1__factory(deployer).deploy(
     managerProxyAddress
   );
-  derivativeNFTV1ImplAddress = derivativeNFTV1Impl.address;
-
-  incubatorImpl = await new Incubator__factory(deployer).deploy(
-    managerProxyAddress
-  );
-  incubatorImplAddress = incubatorImpl.address;
 
   managerImpl = await new Manager__factory(managerLibs, deployer).deploy(
-    derivativeNFTV1ImplAddress,
-    incubatorImplAddress,
-    receiverMockAddress,
+    derivativeNFTV1Impl.address,
+    receiverMock.address,
   );
 
   let data = managerImpl.interface.encodeFunctionData('initialize', [
     governanceAddress
   ]);
+  
   let proxy = await new TransparentUpgradeableProxy__factory(deployer).deploy(
     managerImpl.address,
     deployerAddress,
     data
   );
+
   // Connect the manager proxy to the Manager factory and the user for ease of use.
   manager = Manager__factory.connect(proxy.address, user);
-  managerAddress = manager.address;
-
+  
+  console.log("manager.address: ", manager.address);
 
   voucherImpl = await new Voucher__factory(deployer).deploy();
   let initializeVoucherData = voucherImpl.interface.encodeFunctionData("initialize", [
@@ -219,17 +246,14 @@ before(async function () {
     initializeVoucherData
   );
   voucherContract = new Voucher__factory(deployer).attach(voucherProxy.address);
-  voucherAddress = voucherContract.address;
-
-  bankTreasuryImpl = await new BankTreasury__factory(deployer).deploy();
 
   ndptImpl = await new NFTDerivativeProtocolTokenV1__factory(deployer).deploy();
   let initializeNDPTData = ndptImpl.interface.encodeFunctionData("initialize", [
       NDPT_NAME, 
       NDPT_SYMBOL, 
       NDPT_DECIMALS,
-      managerAddress,
-      bankTreasuryImpl.address,
+      manager.address,
+      // bankTreasuryImpl.address,
   ]);
   const ndptProxy = await new ERC1967Proxy__factory(deployer).deploy(
     ndptImpl.address,
@@ -238,12 +262,13 @@ before(async function () {
   ndptContract = new NFTDerivativeProtocolTokenV1__factory(deployer).attach(ndptProxy.address);
   ndptAddress = ndptContract.address;
 
-  const soulBoundTokenIdOfBankTreaury = 1;
+  const soulBoundTokenIdOfBankTreaury = FIRST_PROFILE_ID;
+  bankTreasuryImpl = await new BankTreasury__factory(deployer).deploy( );
   let initializeData = bankTreasuryImpl.interface.encodeFunctionData("initialize", [
-    managerAddress,
+    manager.address,
     governanceAddress,
-    ndptImpl.address,
-    voucherAddress,
+    ndptContract.address,
+    voucherContract.address,
     soulBoundTokenIdOfBankTreaury,
     [userAddress, userTwoAddress, userThreeAddress],
     NUM_CONFIRMATIONS_REQUIRED  //All full signed 
@@ -254,28 +279,47 @@ before(async function () {
     initializeData
   );
   bankTreasuryContract = new BankTreasury__factory(deployer).attach(bankTreasuryProxy.address);
-  bankTreasuryAddress = bankTreasuryContract.address;
+
+  moduleGlobals = await new ModuleGlobals__factory(deployer).deploy(
+    manager.address,
+    ndptAddress,
+    governanceAddress,
+    bankTreasuryContract.address,
+    TREASURY_FEE_BPS,
+    PublishRoyaltyNDPT
+  );
+  
+  // Modules
+  feeCollectModule = await new FeeCollectModule__factory(deployer).deploy(
+    manager.address, 
+    moduleGlobals.address
+  );
+
+  publishModule = await new PublishModule__factory(deployer).deploy(
+    manager.address, 
+    moduleGlobals.address,
+    ndptAddress,
+  );
+
+  // Add to module whitelist
+  await expect(
+    manager.connect(governance).whitelistPublishModule(publishModule.address, true)
+  ).to.not.be.reverted;
+
+  await expect(
+    manager.connect(governance).whitelistCollectModule(feeCollectModule.address, true)
+  ).to.not.be.reverted;    
 
   //make sure bankTreasury's souldBoundTokenId is 1
   expect((await bankTreasuryContract.getSoulBoundTokenId()).toNumber()).to.eq(1);
 
-
-
-  // Currency
-  currency = await new Currency__factory(deployer).deploy();
-
-  moduleGlobals = await new ModuleGlobals__factory(deployer).deploy(
-    managerAddress,
-    ndptAddress,
-    governanceAddress,
-    bankTreasuryAddress,
-    TREASURY_FEE_BPS,
-    PublishRoyalty
-  );
-  
-  //manager  set ndptAddress
+  //manager set ndptAddress
   await expect(manager.connect(governance).setNDPT(ndptAddress)).to.not.be.reverted;
-  await expect(manager.connect(governance).setTreasury(bankTreasuryAddress)).to.not.be.reverted;
+  await expect(manager.connect(governance).setTreasury(bankTreasuryContract.address)).to.not.be.reverted;
+  await expect(ndptContract.connect(deployer).setBankTreasury(bankTreasuryContract.address, INITIAL_SUPPLY)).to.not.be.reverted;
+  await expect(ndptContract.connect(deployer).setFeeCollectModule(feeCollectModule.address)).to.not.be.reverted;
+  await expect(ndptContract.connect(deployer).setPublishModule(publishModule.address)).to.not.be.reverted;
+  await expect(voucherContract.connect(deployer).setBankTreasury(bankTreasuryContract.address)).to.not.be.reverted;
 
   await expect(manager.connect(governance).setState(ProtocolState.Unpaused)).to.not.be.reverted;
   await expect(
@@ -295,15 +339,24 @@ before(async function () {
   expect(ndptContract).to.not.be.undefined;
   expect(receiverMock).to.not.be.undefined;
   expect(derivativeNFTV1Impl).to.not.be.undefined;
-  expect(incubatorImpl).to.not.be.undefined;
   expect(manager).to.not.be.undefined;
   expect(currency).to.not.be.undefined;
+  expect(metadataDescriptor).to.not.be.undefined;
 
   expect((await manager.version()).toNumber()).to.eq(1);
   expect(await manager.NDPT()).to.eq(ndptContract.address);
+  expect((await derivativeNFTV1Impl.MANAGER()).toUpperCase()).to.eq(manager.address.toUpperCase());
+
   expect((await ndptContract.version()).toNumber()).to.eq(1);
-  expect((await ndptContract.getManager()).toUpperCase()).to.eq(managerProxyAddress.toUpperCase());
-  expect((await ndptContract.getBankTreasury()).toUpperCase()).to.eq(bankTreasuryImpl.address.toUpperCase());
+  expect((await ndptContract.getManager()).toUpperCase()).to.eq(manager.address.toUpperCase());
+  expect((await ndptContract.getBankTreasury()).toUpperCase()).to.eq(bankTreasuryContract.address.toUpperCase());
+  
+  expect((await bankTreasuryContract.getManager()).toUpperCase()).to.eq(manager.address.toUpperCase());
+  expect((await bankTreasuryContract.getNDPT()).toUpperCase()).to.eq(ndptContract.address.toUpperCase());
+  
+  expect((await manager.version()).toNumber()).to.eq(1);
+  expect((await moduleGlobals.getPublishCurrencyTax(ndptContract.address))).to.eq(PublishRoyaltyNDPT);
+  expect((await manager.getDNFTImpl()).toUpperCase()).to.eq(derivativeNFTV1Impl.address.toUpperCase());
 
   // Event library deployment is only needed for testing and is not reproduced in the live environment
   eventsLib = await new Events__factory(deployer).deploy();

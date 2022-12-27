@@ -21,7 +21,11 @@ import "./base/DerivativeNFTMultiState.sol";
  * 
  * , and includes built-in governance power and delegation mechanisms.
  */
-contract DerivativeNFTV1 is IDerivativeNFTV1, DerivativeNFTMultiState, ERC3525Upgradeable {
+contract DerivativeNFTV1 is 
+    IDerivativeNFTV1, 
+    DerivativeNFTMultiState, 
+    ERC3525Upgradeable
+{
     bytes32 internal constant EIP712_REVISION_HASH = keccak256('1');
     bytes32 internal constant SET_DISPATCHER_WITH_SIG_TYPEHASH =
         keccak256(
@@ -50,7 +54,6 @@ contract DerivativeNFTV1 is IDerivativeNFTV1, DerivativeNFTMultiState, ERC3525Up
 
     Counters.Counter private  _nextSlotId;
 
-    uint256 internal _hubId;
     uint256 internal _projectId;  //one derivativeNFT include one projectId
     uint256 internal _soulBoundTokenId;
 
@@ -58,7 +61,7 @@ contract DerivativeNFTV1 is IDerivativeNFTV1, DerivativeNFTMultiState, ERC3525Up
     address internal _receiver;
 
     // solhint-disable-next-line var-name-mixedcase
-    address internal _MANAGER;
+    address public immutable MANAGER;
     // solhint-disable-next-line var-name-mixedcase
     address internal _NDPT;
     // solhint-disable-next-line var-name-mixedcase
@@ -97,7 +100,8 @@ contract DerivativeNFTV1 is IDerivativeNFTV1, DerivativeNFTMultiState, ERC3525Up
     // call the `initialize` method on the implementation (this contract)
     constructor(address manager) {
         if (manager == address(0)) revert Errors.InitParamsInvalid();
-        _MANAGER = manager;
+        MANAGER = manager;
+        _initialized = true;
     }
 
     function initialize(
@@ -105,11 +109,11 @@ contract DerivativeNFTV1 is IDerivativeNFTV1, DerivativeNFTMultiState, ERC3525Up
         address bankTreasury,
         string memory name_,
         string memory symbol_,
-        uint256 hubId_,
         uint256 projectId_,
         uint256 soulBoundTokenId_,
-        address metadataDescriptor_
-    ) external override initializer {
+        address metadataDescriptor_,
+        address receiver_ 
+    ) public virtual initializer {
         if (_initialized) revert Errors.Initialized();
         _initialized = true;
         
@@ -120,16 +124,16 @@ contract DerivativeNFTV1 is IDerivativeNFTV1, DerivativeNFTMultiState, ERC3525Up
 
         if (metadataDescriptor_ == address(0x0)) revert Errors.ZeroAddress();
 
-        __ERC3525_init_unchained(name_, symbol_, 0);
+         __ERC3525_init_unchained(name_, symbol_, 0);
+
         _setMetadataDescriptor(metadataDescriptor_);
 
         //default Unpaused
         _setState(DataTypes.ProtocolState.Unpaused);
 
-        _hubId = hubId_;
         _projectId = projectId_;
         _soulBoundTokenId = soulBoundTokenId_;
-        _receiver = IManager(_MANAGER).getReceiver();
+        _receiver = receiver_;
     }
 
     //only owner
@@ -141,12 +145,24 @@ contract DerivativeNFTV1 is IDerivativeNFTV1, DerivativeNFTMultiState, ERC3525Up
         _setState(newState);
     }
 
+    function mint(
+        address mintTo, 
+        uint256 slot, 
+        uint256 value
+    ) external whenNotPaused returns(uint256 tokenId){
+        tokenId =  ERC3525Upgradeable._mint(mintTo, slot, value);
+        emit Events.MintNDPT(mintTo, slot, value, block.timestamp);
+        return tokenId;
+    }
+
     // Publication only can publish once
     function publish(
-        DataTypes.Publication memory publication
-    ) external virtual onlyManager whenPublishingEnabled returns (uint256) {
+        DataTypes.Publication memory publication,
+        address publisher
+    ) external  whenPublishingEnabled onlyManager  returns (uint256) { //
+        
         if (_publicationNameHashBySlot[keccak256(bytes(publication.name))] > 0) revert Errors.PublicationIsExisted();
-        //if (publication.soulBoundTokenId != _soulBoundTokenId && publication.fromTokenIds.length == 0) revert Errors.InvalidParameter();
+        if (publication.soulBoundTokenId != _soulBoundTokenId && publication.fromTokenIds.length == 0) revert Errors.InvalidParameter();
         if (publication.projectId != _projectId) {
             revert Errors.InvalidParameter();
         }
@@ -168,25 +184,22 @@ contract DerivativeNFTV1 is IDerivativeNFTV1, DerivativeNFTMultiState, ERC3525Up
         });
 
         _publicationNameHashBySlot[keccak256(bytes(publication.name))] = slot;
-
-        address to_ = IManager(_MANAGER).getIncubatorOfSoulBoundTokenId(publication.soulBoundTokenId);
-        if (!ERC3525Upgradeable.isApprovedForAll(to_, _MANAGER)) {
-            ERC3525Upgradeable.setApprovalForAll(_MANAGER, true);
-        }
-        return ERC3525Upgradeable._mint(to_, slot, publication.amount);
+        // address _goveranace = IManager(MANAGER).getGovernance();
+        // ERC3525Upgradeable.setApprovalForAll(_goveranace, true);
+        return ERC3525Upgradeable._mint(publisher, slot, publication.amount);
+        
+        // return ERC3525Upgradeable._mint(publisher, 1, 1);
+        // return 1;
     }
 
     function split(
-        uint256 toSoulBoundTokenId_,
         uint256 fromTokenId_, 
+        address to_,
         uint256 value_
-    ) external onlyManager whenNotPaused returns(uint256) {
-        address to_ = IManager(_MANAGER).getIncubatorOfSoulBoundTokenId(toSoulBoundTokenId_);
-        if (!ERC3525Upgradeable.isApprovedForAll(to_, _MANAGER)) {
-            ERC3525Upgradeable.setApprovalForAll(_MANAGER, true);
-        }
-        return ERC3525Upgradeable.transferFrom(fromTokenId_, to_, value_);
+    ) external returns(uint256) {
+        return transferFrom(fromTokenId_, to_, value_); 
     }
+
 
     function permit(
         address spender,
@@ -314,7 +327,7 @@ contract DerivativeNFTV1 is IDerivativeNFTV1, DerivativeNFTMultiState, ERC3525Up
 
     function getProjectInfo(uint256 projectId_) external view returns (DataTypes.ProjectData memory) {
        
-        return IManager(_MANAGER).getProjectInfo(projectId_);
+        return IManager(MANAGER).getProjectInfo(projectId_);
     }
 
     //------override------------//
@@ -326,7 +339,7 @@ contract DerivativeNFTV1 is IDerivativeNFTV1, DerivativeNFTMultiState, ERC3525Up
         uint256 fromTokenId_,
         address to_,
         uint256 value_
-    ) public payable virtual override onlyManager whenNotPaused returns (uint256) {
+    ) public payable virtual override  whenNotPaused onlyManager returns (uint256) { //
        return super.transferFrom(fromTokenId_, to_, value_);
     }
 
@@ -334,7 +347,7 @@ contract DerivativeNFTV1 is IDerivativeNFTV1, DerivativeNFTMultiState, ERC3525Up
         uint256 fromTokenId_,
         uint256 toTokenId_,
         uint256 value_
-    ) public payable virtual override onlyManager whenNotPaused {
+    ) public payable virtual override  whenNotPaused onlyManager { //
       super.transferFrom(fromTokenId_, toTokenId_, value_);
     }
 
@@ -342,7 +355,7 @@ contract DerivativeNFTV1 is IDerivativeNFTV1, DerivativeNFTMultiState, ERC3525Up
         address from_,
         address to_,
         uint256 tokenId_
-    ) public payable virtual override onlyManager whenNotPaused {
+    ) public payable virtual override  whenNotPaused onlyManager { //
         super.transferFrom(from_, to_, tokenId_);
     }
 
@@ -351,7 +364,7 @@ contract DerivativeNFTV1 is IDerivativeNFTV1, DerivativeNFTMultiState, ERC3525Up
         address to_,
         uint256 tokenId_,
         bytes memory data_
-    ) public payable virtual override onlyManager whenNotPaused {
+    ) public payable virtual override  whenNotPaused onlyManager { //
         super.safeTransferFrom(from_, to_, tokenId_,data_);
     }
 
@@ -359,16 +372,16 @@ contract DerivativeNFTV1 is IDerivativeNFTV1, DerivativeNFTMultiState, ERC3525Up
         address from_,
         address to_,
         uint256 tokenId_
-    ) public payable virtual override onlyManager whenNotPaused {
+    ) public payable virtual override  whenNotPaused onlyManager{ //
        super.safeTransferFrom(from_, to_, tokenId_, "");
     }
 
-    function setApprovalForAll(
-        address operator_, 
-        bool approved_
-    ) public virtual override onlyManager whenNotPaused{
-        super._setApprovalForAll(_msgSender(), operator_, approved_);
-    }
+    // function setApprovalForAll(
+    //     address operator_, 
+    //     bool approved_
+    // ) public virtual override onlyManager whenNotPaused{
+    //     super._setApprovalForAll(_msgSender(), operator_, approved_);
+    // }
 
     function setApprovalForSlot(
         address owner_,
@@ -437,9 +450,8 @@ contract DerivativeNFTV1 is IDerivativeNFTV1, DerivativeNFTMultiState, ERC3525Up
     /// ****************************
 
     function _validateCallerIsManager() internal view {
-        if (msg.sender != _MANAGER) revert Errors.NotManager();
+        if (msg.sender != MANAGER) revert Errors.NotManager();
     }
-
 
     function _validateCallerIsSoulBoundTokenOwner(uint256 soulBoundTokenId_) internal view {
         if (IERC3525(_NDPT).ownerOf(soulBoundTokenId_) != msg.sender) revert Errors.NotProfileOwner();

@@ -32,6 +32,7 @@ contract ModuleGlobals is IModuleGlobals {
     address internal _treasury; //金库地址
     uint16 internal _treasuryFee; //手续费率
     
+    
     mapping(address => uint256) internal _publishCurrencyTaxes; //publish的币种及数量
 
     modifier onlyGov() {
@@ -42,8 +43,8 @@ contract ModuleGlobals is IModuleGlobals {
     /**
      * @notice Initializes the governance, treasury and treasury fee amounts.
      *
-     * @param ndpt The ndpt address
      * @param manager The manager address
+     * @param ndpt The ndpt address
      * @param governance The governance address which has additional control over setting certain parameters.
      * @param treasury The treasury address to direct fees to.
      * @param treasuryFee The treasury fee in BPS to levy on collects.
@@ -51,8 +52,8 @@ contract ModuleGlobals is IModuleGlobals {
 
      */
     constructor(
-        address ndpt,
         address manager,
+        address ndpt,
         address governance,
         address treasury,
         uint16 treasuryFee,
@@ -117,10 +118,6 @@ contract ModuleGlobals is IModuleGlobals {
 
     }
     
-    // function getManager() external view override returns (address) {
-    //     return INFTDerivativeProtocolTokenV1(_NDPT).getManager();
-    // }
-
     /// @inheritdoc IModuleGlobals
     function getTreasuryFee() external view override returns (uint16) {
         return _treasuryFee;
@@ -131,12 +128,8 @@ contract ModuleGlobals is IModuleGlobals {
         return (_treasury, _treasuryFee);
     }
 
-    function getIncubator(uint256 soulBoundTokenId) external view returns (address) {
-        return IManager(_MANAGER).getIncubatorOfSoulBoundTokenId(soulBoundTokenId);
-    }
-
-    function getTokenIdOfIncubator(uint256 soulBoundTokenId) external view returns (uint256) {
-        return IManager(_MANAGER).getTokenIdIncubatorOfSoulBoundTokenId(soulBoundTokenId);
+    function getWallet(uint256 soulBoundTokenId) external view returns (address) {
+        return IManager(_MANAGER).getWalletBySoulBoundTokenId(soulBoundTokenId);
     }
 
     function _setGovernance(address newGovernance) internal {

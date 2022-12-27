@@ -83,11 +83,6 @@ interface IManager {
    function setState(DataTypes.ProtocolState newState) external;
    function setStateDerivative(address derivativeNFT, DataTypes.ProtocolState newState) external;
 
-    function mintNDPT(
-        address mintTo, 
-        uint256 value
-    ) external returns(uint256);
-
     function mintNDPTValue(
         uint256 tokenId, 
         uint256 value
@@ -132,33 +127,7 @@ interface IManager {
      */
     function getSoulBoundToken() external view returns (address);
 
-    /**
-     * @notice Returns the address of the Incubator contract
-     *
-     * @param soulBoundTokenId The token ID of the SoulBoundToken to query the incubator for.
-     * 
-     * @return address The address of the SoulBundToken contract.
-     */
-    function getIncubatorOfSoulBoundTokenId(uint256 soulBoundTokenId) external view returns (address);
-    
-    /**
-     * @notice Returns the tokenId of the Incubator contract by soulBoundTokenId
-     *
-     * @param soulBoundTokenId The token ID of the SoulBoundToken to query the incubator for.
-     * 
-     * @return uin256 The tokenId for the SoulBundToken contract.
-     */
-    function getTokenIdIncubatorOfSoulBoundTokenId(uint256 soulBoundTokenId) external view returns (uint256);
-   
-    /**
-     * @notice Returns the soulBoundTokenId by registered wallet
-     *
-     * @param wallet The user wallet address.
-     * 
-     * @return uint256 The SoulBundToken id.
-     */
-    function getWalletBySoulBoundTokenId(address wallet) external view returns (uint256);
-   
+
     /**
      * @notice Returns True if in whitelist, otherwise false
      *
@@ -177,21 +146,6 @@ interface IManager {
      */
     function getGenesisSoulBoundTokenIdByPublishId(uint256 publishId) external view returns(uint256);
 
-    /**
-     * @notice Returns the address of the Incubator contract implementation
-     *
-     * 
-     * @return address The address of the implementation.
-     */
-    
-    /**
-     * @notice Returns the address of the Incubator NFT contract implementation
-     *
-     * 
-     * @return address The address of the implementation.
-     */
-    function getIncubatorImpl() external view returns (address);
-    
     /**
      * @notice Returns the address of the Derivative NFT contract implementation
      *
@@ -231,8 +185,7 @@ interface IManager {
     ) external returns(uint256);
 
     function createProject(
-        DataTypes.ProjectData memory project,
-        address metadataDescriptor
+        DataTypes.ProjectData memory project
     ) external returns (uint256);
 
     /**
@@ -242,14 +195,31 @@ interface IManager {
      */
     function getProjectInfo(uint256 projectId_) external view returns (DataTypes.ProjectData memory);
     
+    /**
+     * @notice get publication infomation.
+     * @param publishId_ The publish Id
+     * @return Publish Data 
+     */
+    function getPublishInfo(uint256 publishId_) external view returns (DataTypes.PublishData memory);
+
+    function getDerivativeNFT(uint256 publishId_) external view returns (address);
+
+    // function deployDerivativeNFT(
+    //     address descriptor_
+    // ) external;
+
+    // function getProjectInfo_name(uint256 projectId_) external view returns (string memory) ;
+    
+    function getWalletBySoulBoundTokenId(uint256 soulBoundTokenId) external view returns(address);
+
     function prePublish(
         DataTypes.Publication memory publication
     ) external  returns (uint256);
 
     function updatePublish(
         uint256 publishId,
-        uint256 price,
-        address currency,
+        // uint256 price,
+        // address currency,
         uint256 amount,
         string memory name,
         string memory description,
@@ -268,7 +238,7 @@ interface IManager {
     ) external returns(uint256);
 
     /**
-     * @notice collect a dNFT to a address from incubator.
+     * @notice collect a dNFT to a address.
      *
      * @param collectData collect Data
      *
@@ -283,21 +253,19 @@ interface IManager {
     ) external ;
 
     /**
-     * @notice Transfer a dNFT to a address from incubator.
+     * @notice Transfer a dNFT to a address.
      *
      * @param projectId Event Id  
      * @param fromSoulBoundTokenId From SBT Id  
      * @param toSoulBoundTokenId  to
      * @param tokenId The tokenId of dNFT.
-     * @param transferModuledata The arbitrary data  to pass.
      *
      */
     function transferDerivativeNFT(
         uint256 projectId,
         uint256 fromSoulBoundTokenId,
         uint256 toSoulBoundTokenId,
-        uint256 tokenId,
-        bytes calldata transferModuledata
+        uint256 tokenId
     ) external;
 
     function transferValueDerivativeNFT(
@@ -305,8 +273,7 @@ interface IManager {
         uint256 fromSoulBoundTokenId,
         uint256 toSoulBoundTokenId,
         uint256 tokenId,
-        uint256 value,
-        bytes calldata transferValueModuledata
+        uint256 value
     ) external;
 
      function publishFixedPrice(

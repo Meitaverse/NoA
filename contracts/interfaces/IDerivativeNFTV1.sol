@@ -14,20 +14,20 @@ interface IDerivativeNFTV1 {
      * @param bankTreasury The BankTreasury contract.
      * @param name_ The name to set for the derivative NFT.
      * @param symbol_ The symbol to set for the derivative NFT.
-     * @param  hubId_ The id of the Hub.
      * @param  projectId_ The projectid.
      * @param  soulBoundTokenId_ The token id of the SoulBoundToken.
      * @param metadataDescriptor_ The Descriptor address to set.
+     * @param receiver_ The receiver address to set.
      */
     function initialize( 
         address ndpt, 
         address bankTreasury,        
         string memory name_,
         string memory symbol_,
-        uint256 hubId_,
         uint256 projectId_,
         uint256 soulBoundTokenId_,
-        address metadataDescriptor_
+        address metadataDescriptor_,
+        address receiver_
     ) external;
 
 
@@ -83,29 +83,41 @@ interface IDerivativeNFTV1 {
 
   function setState(DataTypes.ProtocolState newState) external;
 
+  function mint(
+        address mintTo, 
+        uint256 slot, 
+        uint256 value
+    ) external  returns(uint256 tokenId);
   /**
-   * @notice Publish some value to organizer's incubator, only call by manager and owner of token is incubator
+   * @notice Publish some dNFT to a publisher wallet
    *        
-   * @param publication The publication infomation
+   * @param publication The publication
+   * @param publisher The publisher 
    * @return uint256 The new tokenId.
    */
   function publish(
-      DataTypes.Publication memory publication
+      DataTypes.Publication memory publication,
+    address publisher
   ) external returns(uint256);
 
    /**
-     * @notice Split some value to a incubator, only call by manager
+     * @notice Split some value to a to_, only call by manager
      *
-     * @param toSoulBoundTokenId_ soulBoundTokenId send to
      * @param fromTokenId_ The tokenId to be split
-     * @param value_ amount to split
+     * @param to_ amount to split
      * @return uint256 The new tokenId.
      */
     function split(
-        uint256 toSoulBoundTokenId_,
         uint256 fromTokenId_, 
+        address to_,
         uint256 value_
-    ) external returns(uint256);
+    ) external returns(uint256) ;
+
+    // function split(
+    //     uint256 toSoulBoundTokenId_,
+    //     uint256 fromTokenId_, 
+    //     uint256 value_
+    // ) external returns(uint256);
 
      /**
      * @notice Implementation of an EIP-712 permit function for an ERC-721 NFT. We don't need to check

@@ -2,22 +2,14 @@
 
 pragma solidity ^0.8.13;
 
+import {DataTypes} from "../../libraries/DataTypes.sol";
 import {ITemplate} from "../../interfaces/ITemplate.sol";
 import {StringsUpgradeable} from "@openzeppelin/contracts-upgradeable/utils/StringsUpgradeable.sol";
 import {Base64Upgradeable} from "@openzeppelin/contracts-upgradeable/utils/Base64Upgradeable.sol";
 import {StringConvertor} from "../../utils/StringConvertor.sol";
 
-struct CanvasStruct {
-   uint256 width;
-   uint256 height;
-}
 
-struct Position {
-   uint256 x;
-   uint256 y;
-}
-
-contract PublishTemplate is ITemplate {
+contract Template is ITemplate {
     using StringConvertor for uint256;
     using StringConvertor for bytes;    
 
@@ -25,18 +17,18 @@ contract PublishTemplate is ITemplate {
     string private _name;
     string private _descript;
     string private _image;
-    CanvasStruct private _canvas; 
-    CanvasStruct private _watermark; 
-    Position private _position;
+    DataTypes.CanvasData private _canvas; 
+    DataTypes.CanvasData private _watermark; 
+    DataTypes.Position private _position;
 
     constructor(
         uint256 templateNum,
         string memory name,
         string memory descript,
         string memory image,
-        CanvasStruct memory canvas,
-        CanvasStruct memory watermark,
-        Position memory position
+        DataTypes.CanvasData memory canvas,
+        DataTypes.CanvasData memory watermark,
+        DataTypes.Position memory position
     ) {
         _templateNum = templateNum;
         _name = name;

@@ -12,8 +12,8 @@ import {DataTypes} from '../libraries/DataTypes.sol';
  */
 interface IBankTreasury {
     /**
-     * @notice Initializes the Incubator, setting the manager as the privileged minter and storing the associated SoulBoundToken ID.
-     * @param manager The  Address of Manager contract
+     * @notice Initializes the bank treasury, setting the manager as the privileged minter and storing the associated SoulBoundToken ID.
+     * @param manager The Address of manager contract
      * @param goverance The  Address of Goverance contract
      * @param ndpt The  Address of NDPT contract
      * @param voucher The  Address of voucher contract
@@ -29,30 +29,28 @@ interface IBankTreasury {
         uint256 soulBoundTokenId,
         address[] memory _owners, 
         uint256 _numConfirmationsRequired
-        // uint16 treasuryFee,
-        // uint256 publishFee
     ) external;
 
     /**
      * @notice Implementation of an EIP-712 permit-style function for token burning. Allows anyone to burn
      * a token on behalf of the owner with a signature.
      *
-     * @param currency The ERC3525 contract token address.
-     * @param fromTokenId  the token ID from.
-     * @param toTokenId token ID to.
-     * @param value The value of the token ID.
+     * @param toSoulBoundTokenId token ID to.
+     * @param amount The value of the token ID.
      */
     //  * @param nonce nonce of sig.
     //  * @param sig The EIP712 signature struct.
     function withdrawERC3525(
-        address currency, 
-        uint256 fromTokenId, 
-        uint256 toTokenId, 
-        uint256 value
+        uint256 toSoulBoundTokenId,
+        uint256 amount
     ) external;
 
+    function exchangeVoucher(
+        uint256 voucherId,
+        uint256 soulBoundTokenId      
+    ) external;
 
-      function exchangeNDPTByEth(
+    function exchangeNDPTByEth(
         uint256 soulBoundTokenId, 
         uint256 amount,
         DataTypes.EIP712Signature calldata sign
@@ -64,20 +62,6 @@ interface IBankTreasury {
         DataTypes.EIP712Signature calldata sign        
     ) external payable;
 
-    function createVoucher(
-        address account, 
-        uint256 id, 
-        uint256 amount, 
-        bytes memory data 
-    ) external;
-
-    function createBatchVoucher(
-        address account, 
-        uint256[] memory ids, 
-        uint256[] memory amounts, 
-        bytes memory data 
-    ) external;
-
     //TODO
     // function stake() external;
     // function redeem() external;
@@ -86,8 +70,7 @@ interface IBankTreasury {
 
     function getTransactionCount() external view returns (uint256);
 
-    function setManager(address newManager) external;
-    function getManager() external returns(address);
+    function getManager() external view returns(address);
 
     function setGovernance(address newGovernance) external;
     function getGovernance() external returns(address);

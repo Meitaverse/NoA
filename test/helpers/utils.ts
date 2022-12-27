@@ -10,6 +10,7 @@ import {
   // LENS_PERIPHERY_NAME,
   testWallet,
   user,
+  userTwo,
 } from '../__setup.spec';
 import { expect } from 'chai';
 import { HARDHAT_CHAINID, MAX_UINT256 } from './constants';
@@ -599,11 +600,30 @@ export async function createProjectReturningProjectId({
   sender = user,
   project,
 }: CreateProjectReturningProjectId): Promise<BigNumber> {
-  const projectId = await manager.connect(sender).callStatic.createProject(project, metadataDescriptor.address);
-  await expect(manager.connect(sender).createProject(project, metadataDescriptor.address)).to.not.be.reverted;
+  const projectId = await manager.connect(sender).callStatic.createProject(project);
+  await expect(manager.connect(sender).createProject(project)).to.not.be.reverted;
   return projectId;
 }
 
+
+export interface CollectReturningTokenIdStruct {
+  sender?: Signer;
+  vars: CollectDataStruct;
+}
+
+export async function collectReturningTokenId({
+  sender = userTwo,
+  vars,
+}: CollectReturningTokenIdStruct): Promise<BigNumber> {
+  let tokenId = await manager
+      .connect(sender)
+      .callStatic.collect(vars);
+
+    await expect(manager.connect(sender).collect(vars)).to.not.be
+      .reverted;
+  
+  return tokenId;
+}
 
 /*
 export interface FollowDataStruct {
@@ -637,28 +657,6 @@ export interface CollectDataStruct {
   data: BytesLike;
 }
 
-export interface CollectReturningTokenIdsStruct {
-  sender?: Signer;
-  vars: CollectDataStruct | CollectWithSigDataStruct;
-}
-
-export async function collectReturningTokenIds({
-  sender = user,
-  vars,
-}: CollectReturningTokenIdsStruct): Promise<BigNumber> {
-  let tokenId;
-  if ('sig' in vars) {
-    tokenId = await manager.connect(sender).callStatic.collectWithSig(vars);
-    await expect(manager.connect(sender).collectWithSig(vars)).to.not.be.reverted;
-  } else {
-    tokenId = await manager
-      .connect(sender)
-      .callStatic.collect(vars.profileId, vars.pubId, vars.data);
-    await expect(manager.connect(sender).collect(vars.profileId, vars.pubId, vars.data)).to.not.be
-      .reverted;
-  }
-  return tokenId;
-}
 
 export interface CommentReturningTokenIdStruct {
   sender?: Signer;

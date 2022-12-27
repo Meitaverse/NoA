@@ -6,7 +6,6 @@ import {
   // FollowNFT__factory,
   DerivativeNFTV1__factory,
   NFTDerivativeProtocolTokenV1__factory,
-  Incubator__factory,
   Manager__factory,
   ModuleGlobals__factory,
   // TimedFeeCollectModule__factory,
@@ -26,18 +25,15 @@ import {
   NDPT_SYMBOL,
   makeSuiteCleanRoom,
   moduleGlobals,
-  bankTreasuryAddress,
   TREASURY_FEE_BPS,
   user,
   userAddress,
-  receiverMockAddress,
+  receiverMock,
   ndptAddress,
-  derivativeNFTV1ImplAddress,
-  incubatorImplAddress,
-  managerAddress,
+  derivativeNFTV1Impl,
   ndptContract,
   bankTreasuryContract,
-  PublishRoyalty
+  PublishRoyaltyNDPT
   
 } from '../__setup.spec';
 
@@ -45,41 +41,22 @@ makeSuiteCleanRoom('deployment validation', () => {
 
   it('Should fail to deploy a Manager implementation with zero address DerivativeNFTV1 impl', async function () {
     await expect(
-      new Manager__factory(managerLibs, deployer).deploy(ZERO_ADDRESS, incubatorImplAddress, receiverMockAddress)
-    ).to.be.revertedWith(ERRORS.INIT_PARAMS_INVALID);
-  });
-
-  it('Should fail to deploy a Manager implementation with zero address Incubator impl', async function () {
-    await expect(
-      new Manager__factory(managerLibs, deployer).deploy( derivativeNFTV1ImplAddress, ZERO_ADDRESS, receiverMockAddress)
+      new Manager__factory(managerLibs, deployer).deploy(ZERO_ADDRESS, receiverMock.address)
     ).to.be.revertedWith(ERRORS.INIT_PARAMS_INVALID);
   });
 
   it('Should fail to deploy a Manager implementation with zero address receiver impl', async function () {
     await expect(
-      new Manager__factory(managerLibs, deployer).deploy( derivativeNFTV1ImplAddress, incubatorImplAddress, ZERO_ADDRESS)
+      new Manager__factory(managerLibs, deployer).deploy( derivativeNFTV1Impl.address, ZERO_ADDRESS)
     ).to.be.revertedWith(ERRORS.INIT_PARAMS_INVALID);
   });
 
 
-  it('Should fail to deploy a Incubator implementation with zero address Manager impl', async function () {
-    await expect(new Incubator__factory(deployer).deploy(ZERO_ADDRESS, ndptAddress)).to.be.revertedWith(
-      ERRORS.INIT_PARAMS_INVALID
-    );
-  });
-
-  it('Should fail to deploy a Incubator implementation with zero address NDPT impl', async function () {
-    await expect(new Incubator__factory(deployer).deploy(managerAddress, ZERO_ADDRESS)).to.be.revertedWith(
-      ERRORS.INIT_PARAMS_INVALID
-    );
-  });
 
   it('Deployer should not be able to initialize implementation due to address(this) check', async function () {
     await expect(
       managerImpl.initialize(
-        governanceAddress,
-        ndptAddress,
-        bankTreasuryAddress
+        governanceAddress
         )
     ).to.be.revertedWith(ERRORS.CANNOT_INIT_IMPL);
   });
@@ -89,8 +66,6 @@ makeSuiteCleanRoom('deployment validation', () => {
     await expect(
       manager.connect(user).initialize(
         userAddress, 
-        userAddress, 
-        userAddress
         )
       ).to.be.revertedWith(ERRORS.INITIALIZED);
     });
@@ -98,16 +73,12 @@ makeSuiteCleanRoom('deployment validation', () => {
 
   it('Deployer should deploy a Manager implementation, a proxy, initialize it, and fail to initialize it again', async function () {
     const newImpl = await new Manager__factory(managerLibs, deployer).deploy(
-      
-      derivativeNFTV1ImplAddress,
-      incubatorImplAddress,
-      receiverMockAddress,
+      derivativeNFTV1Impl.address,
+      receiverMock.address,
     );
 
     let data = newImpl.interface.encodeFunctionData('initialize', [
       governanceAddress,
-      ndptAddress,
-      bankTreasuryAddress
     ]);
 
     const proxy = await new TransparentUpgradeableProxy__factory(deployer).deploy(
@@ -119,8 +90,6 @@ makeSuiteCleanRoom('deployment validation', () => {
     await expect(
       Manager__factory.connect(proxy.address, user).initialize(
         userAddress, 
-        userAddress, 
-        userAddress
         )
     ).to.be.revertedWith(ERRORS.INITIALIZED);
   });
@@ -133,7 +102,7 @@ makeSuiteCleanRoom('deployment validation', () => {
   
   it('Deployer should be able to call admin-only functions on proxy', async function () {
     const proxy = TransparentUpgradeableProxy__factory.connect(manager.address, deployer);
-    const newImpl = await new Manager__factory(managerLibs, deployer).deploy(userAddress, userAddress, userAddress);
+    const newImpl = await new Manager__factory(managerLibs, deployer).deploy(userAddress, userAddress);
     await expect(proxy.upgradeTo(newImpl.address)).to.not.be.reverted;
   });
   
@@ -145,7 +114,7 @@ makeSuiteCleanRoom('deployment validation', () => {
     await expect(proxy.upgradeTo(userAddress)).to.be.revertedWith(ERRORS.NO_SELECTOR);
     await expect(proxy.upgradeToAndCall(userAddress, [])).to.be.revertedWith(ERRORS.NO_SELECTOR);
     
-    const newImpl = await new Manager__factory(managerLibs, deployer).deploy(userAddress, userAddress, userAddress);
+    const newImpl = await new Manager__factory(managerLibs, deployer).deploy(userAddress, userAddress);
     
     await expect(proxy.connect(user).upgradeTo(newImpl.address)).to.not.be.reverted;
   });
@@ -182,9 +151,9 @@ makeSuiteCleanRoom('deployment validation', () => {
         ZERO_ADDRESS, 
         ndptAddress,
         governanceAddress,
-        bankTreasuryAddress, 
+        bankTreasuryContract.address, 
         TREASURY_FEE_BPS,
-        PublishRoyalty
+        PublishRoyaltyNDPT
       )
     ).to.be.revertedWith(ERRORS.INIT_PARAMS_INVALID);
   });
@@ -192,12 +161,12 @@ makeSuiteCleanRoom('deployment validation', () => {
   it('Should fail to deploy module globals with zero address NDPT', async function () {
     await expect(
       new ModuleGlobals__factory(deployer).deploy(
-        managerAddress, 
+        manager.address, 
         ZERO_ADDRESS,
         governanceAddress,
-        bankTreasuryAddress, 
+        bankTreasuryContract.address, 
         TREASURY_FEE_BPS,
-        PublishRoyalty
+        PublishRoyaltyNDPT
       )
     ).to.be.revertedWith(ERRORS.INIT_PARAMS_INVALID);
   });
@@ -205,12 +174,12 @@ makeSuiteCleanRoom('deployment validation', () => {
   it('Should fail to deploy module globals with zero address governance', async function () {
     await expect(
       new ModuleGlobals__factory(deployer).deploy(
-        managerAddress,
+        manager.address,
         ndptAddress,
         ZERO_ADDRESS, 
-        bankTreasuryAddress, 
+        bankTreasuryContract.address, 
         TREASURY_FEE_BPS,
-        PublishRoyalty
+        PublishRoyaltyNDPT
       )
     ).to.be.revertedWith(ERRORS.INIT_PARAMS_INVALID);
   });
@@ -218,12 +187,12 @@ makeSuiteCleanRoom('deployment validation', () => {
   it('Should fail to deploy module globals with zero address treasury', async function () {
     await expect(
       new ModuleGlobals__factory(deployer).deploy(
-        managerAddress,
+        manager.address,
         ndptAddress,
         governanceAddress, 
         ZERO_ADDRESS, 
         TREASURY_FEE_BPS,
-        PublishRoyalty
+        PublishRoyaltyNDPT
         )
       ).to.be.revertedWith(ERRORS.INIT_PARAMS_INVALID);
   });
@@ -231,12 +200,12 @@ makeSuiteCleanRoom('deployment validation', () => {
   it('Should fail to deploy module globals with treausury fee > BPS_MAX / 2', async function () {
       await expect(
         new ModuleGlobals__factory(deployer).deploy(
-          managerAddress,
+          manager.address,
           ndptAddress,
           governanceAddress, 
-          bankTreasuryAddress, 
+          bankTreasuryContract.address, 
           5001,
-          PublishRoyalty
+          PublishRoyaltyNDPT
           )
         ).to.be.revertedWith(ERRORS.INIT_PARAMS_INVALID);
   });
@@ -245,23 +214,23 @@ makeSuiteCleanRoom('deployment validation', () => {
   it('Should fail to deploy a fee module with treasury fee equal to or higher than maximum BPS', async function () {
     await expect(
       new ModuleGlobals__factory(deployer).deploy(
-        managerAddress,
+        manager.address,
         ndptAddress,
         governanceAddress, 
-        bankTreasuryAddress, 
+        bankTreasuryContract.address,  
         BPS_MAX,
-        PublishRoyalty
+        PublishRoyaltyNDPT
         )
     ).to.be.revertedWith(ERRORS.INIT_PARAMS_INVALID);
 
     await expect(
       new ModuleGlobals__factory(deployer).deploy(
-        managerAddress,
+        manager.address,
         ndptAddress,
         governanceAddress, 
-        bankTreasuryAddress, 
+        bankTreasuryContract.address, 
         BPS_MAX + 1,
-        PublishRoyalty
+        PublishRoyaltyNDPT
         )
     ).to.be.revertedWith(ERRORS.INIT_PARAMS_INVALID);
   });
