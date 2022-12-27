@@ -485,5 +485,12 @@ library Events {
         uint256 generateTimestamp,
         uint256 deadTimestamp
     );
+
+    event SetContractWhitelisted(
+        address indexed contractAddress,
+        bool indexed prevWhitelisted,
+        bool indexed whitelisted,
+        uint256 timestamp
+    );
 }
 

@@ -301,6 +301,16 @@ before(async function () {
     ndptAddress,
   );
 
+  expect(bankTreasuryContract).to.not.be.undefined;
+  expect(ndptContract).to.not.be.undefined;
+  expect(receiverMock).to.not.be.undefined;
+  expect(derivativeNFTV1Impl).to.not.be.undefined;
+  expect(manager).to.not.be.undefined;
+  expect(currency).to.not.be.undefined;
+  expect(metadataDescriptor).to.not.be.undefined;
+  expect(feeCollectModule).to.not.be.undefined;
+  expect(publishModule).to.not.be.undefined;
+
   // Add to module whitelist
   await expect(
     manager.connect(governance).whitelistPublishModule(publishModule.address, true)
@@ -316,9 +326,16 @@ before(async function () {
   //manager set ndptAddress
   await expect(manager.connect(governance).setNDPT(ndptAddress)).to.not.be.reverted;
   await expect(manager.connect(governance).setTreasury(bankTreasuryContract.address)).to.not.be.reverted;
-  await expect(ndptContract.connect(deployer).setBankTreasury(bankTreasuryContract.address, INITIAL_SUPPLY)).to.not.be.reverted;
-  await expect(ndptContract.connect(deployer).setFeeCollectModule(feeCollectModule.address)).to.not.be.reverted;
-  await expect(ndptContract.connect(deployer).setPublishModule(publishModule.address)).to.not.be.reverted;
+  
+  await expect(ndptContract.connect(deployer).setBankTreasury(
+    bankTreasuryContract.address, 
+    INITIAL_SUPPLY
+  )).to.not.be.reverted;
+  
+  await expect(ndptContract.connect(deployer).whitelistContract(publishModule.address, true)).to.not.be.reverted;
+  await expect(ndptContract.connect(deployer).whitelistContract(feeCollectModule.address, true)).to.not.be.reverted;
+  await expect(ndptContract.connect(deployer).whitelistContract(bankTreasuryContract.address, true)).to.not.be.reverted;
+
   await expect(voucherContract.connect(deployer).setBankTreasury(bankTreasuryContract.address)).to.not.be.reverted;
 
   await expect(manager.connect(governance).setState(ProtocolState.Unpaused)).to.not.be.reverted;
@@ -335,13 +352,9 @@ before(async function () {
     manager.connect(governance).whitelistProfileCreator(testWallet.address, true)
   ).to.not.be.reverted;
 
-  expect(bankTreasuryContract).to.not.be.undefined;
-  expect(ndptContract).to.not.be.undefined;
-  expect(receiverMock).to.not.be.undefined;
-  expect(derivativeNFTV1Impl).to.not.be.undefined;
-  expect(manager).to.not.be.undefined;
-  expect(currency).to.not.be.undefined;
-  expect(metadataDescriptor).to.not.be.undefined;
+
+
+  
 
   expect((await manager.version()).toNumber()).to.eq(1);
   expect(await manager.NDPT()).to.eq(ndptContract.address);

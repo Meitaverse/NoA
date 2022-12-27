@@ -105,6 +105,27 @@ contract NFTDerivativeProtocolTokenV1 is
         _svgLogo = svgLogo_;
     }
  
+    function isContractWhitelisted(address contract_) external view override returns (bool) {
+        return _contractWhitelisted[contract_];
+    }
+
+    function whitelistContract(address contract_, bool toWhitelist_) external override {
+        if (!hasRole(DEFAULT_ADMIN_ROLE, _msgSender())) revert Errors.Unauthorized();
+        _whitelistContract(contract_, toWhitelist_);
+    }
+
+     function _whitelistContract(address contract_, bool toWhitelist_) internal {
+        if (contract_ == address(0)) revert Errors.InitParamsInvalid();
+        bool prevWhitelisted = _contractWhitelisted[contract_];
+        _contractWhitelisted[contract_] = toWhitelist_;
+        emit Events.SetContractWhitelisted(
+            contract_,
+            prevWhitelisted,
+            toWhitelist_,
+            block.timestamp
+        ); 
+    }
+
     function createProfile(
         DataTypes.CreateProfileData calldata vars
     ) external override whenNotPaused onlyManager returns (uint256) {
@@ -172,11 +193,12 @@ contract NFTDerivativeProtocolTokenV1 is
         uint256 value_
     ) external {
          //call only by BankTreasury or FeeCollectModule or _PublishModule 
-        if (msg.sender == _BANKTREASURY || msg.sender == _FeeCollectModule || _PublishModule == msg.sender){
+        if (_contractWhitelisted[msg.sender]) {
+
             ERC3525Upgradeable._transferValue(fromTokenId_, toTokenId_, value_);
             return;
         }
-        revert Errors.NotBankTreasury();
+        revert Errors.NotAuthorised();
      
     }
 
@@ -253,6 +275,7 @@ contract NFTDerivativeProtocolTokenV1 is
         if (!hasRole(DEFAULT_ADMIN_ROLE, _msgSender())) revert Errors.Unauthorized();
         
         if (bankTreasury == address(0)) revert Errors.InitParamsInvalid();
+        if (_BANKTREASURY != address(0)) revert Errors.InitialIsAlreadyDone();
         _BANKTREASURY = bankTreasury;
 
         //create profile for bankTreasury
@@ -271,16 +294,7 @@ contract NFTDerivativeProtocolTokenV1 is
     function getBankTreasury() external view returns(address) {
         return _BANKTREASURY;
     }
- 
-    function setFeeCollectModule(address feeCollectModule) external  {
-        if (!hasRole(DEFAULT_ADMIN_ROLE, _msgSender())) revert Errors.Unauthorized();
-        _FeeCollectModule = feeCollectModule;
-    }
 
-    function setPublishModule(address publishModule) external  {
-        if (!hasRole(DEFAULT_ADMIN_ROLE, _msgSender())) revert Errors.Unauthorized();
-        _PublishModule = publishModule;
-    }
 
     function _validateHandle(string calldata handle) private pure {
         bytes memory byteHandle = bytes(handle);
@@ -302,4 +316,5 @@ contract NFTDerivativeProtocolTokenV1 is
             }
         }
     }
+
 }

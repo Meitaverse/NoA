@@ -15,10 +15,11 @@ contract SBTStorage  {
     // solhint-disable-next-line var-name-mixedcase
     address internal _BANKTREASURY;
 
-    address internal _FeeCollectModule;
-    address internal _PublishModule;
+    // address internal _FeeCollectModule;
+    // address internal _PublishModule;
 
     // @dev owner => slot => operator => approved
     mapping(address => mapping(uint256 => mapping(address => bool))) internal _slotApprovals;
     
+    mapping(address => bool) internal _contractWhitelisted;
 }

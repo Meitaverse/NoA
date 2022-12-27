@@ -26,6 +26,11 @@ interface INFTDerivativeProtocolTokenV1  {
      function getManager() external returns(address);
      function getBankTreasury() external returns(address);
 
+     function isContractWhitelisted(address contract_) external view returns (bool);
+
+     function whitelistContract(address contract_, bool toWhitelist_) external;
+
+
     /**
      * @notice Approve or disapprove an operator to manage all of `_owner`'s tokens with the
      *  specified slot.

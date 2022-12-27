@@ -82,6 +82,7 @@ library Errors {
   error InitParamsInvalid();
   error ModuleDataMismatch();
   error TokenDoesNotExist();
+  error InitialIsAlreadyDone();
 
   // MultiState Errors
   error Paused();
