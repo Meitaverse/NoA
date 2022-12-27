@@ -11,3 +11,5 @@ artifacts
 .idea/
 typechain-types
 build/
+docker/data
+
