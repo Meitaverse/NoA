@@ -56,9 +56,7 @@ abstract contract MockManagerV2Storage {
         keccak256('PermitValue(address spender,uint256 tokenId,uint256 value,uint256 nonce,uint256 deadline)');
     
 
-    mapping(uint256 => address) internal _profileOwners;
     mapping(address => bool) internal _profileCreatorWhitelisted;
-    mapping(address => bool) internal _followModuleWhitelisted;
     mapping(address => bool) internal _collectModuleWhitelisted;
     mapping(address => bool) internal _publishModuleWhitelisted;
 
@@ -71,13 +69,9 @@ abstract contract MockManagerV2Storage {
     
     mapping(uint256 => address) internal _dispatcherByProfile;
 
-    mapping(bytes32 => uint256) internal _profileIdByHandleHash;
-    mapping(uint256 => DataTypes.ProfileStruct) internal _profileById;
-
     mapping(uint256 => mapping(uint256 => DataTypes.PublicationStruct)) internal _pubByIdByProfile;
-    mapping(uint256 => mapping(uint256 => DataTypes.PublicationStruct)) internal _comboByIdByProfile;
 
-    mapping(uint256 => uint256) internal _genesisSoulBoundTokenIdByPublishId;
+    mapping(uint256 => uint256) internal _genesisPublishIdByProjectId;
 
     address internal  _DNFT_IMPL;
     address internal  _RECEIVER;

@@ -30,19 +30,10 @@ library DataTypes {
         ERC3525
     }
     
-    struct TokenInfoData {
-        uint256 id;
-        address owner;
-        string nickName;
-        string handle;
-        string tokenName;
-    }
-    
     struct SoulBoundTokenDetail {
         string nickName;
-        string handle;
+        string imageURI;
         bool locked;
-        uint256 reputation;
     }
     
     struct HubData {
@@ -78,6 +69,8 @@ library DataTypes {
      * @param soulBoundTokenId id of NDPT
      * @param hubId id of hub
      * @param projectId id of project
+     * @param salePrice price for sale
+     * @param royaltyBasisPoints fee point of publish, base 10000, when royalty      
      * @param amount amount of publish
      * @param name name of publication
      * @param description description of publication
@@ -92,6 +85,8 @@ library DataTypes {
         uint256 soulBoundTokenId;
         uint256 hubId;
         uint256 projectId;
+        uint256 salePrice;
+        uint256 royaltyBasisPoints;          
         uint256 amount;
         string name;
         string description;
@@ -102,7 +97,34 @@ library DataTypes {
         address publishModule;
         bytes publishModuleInitData;
     }
-        
+
+    /**
+     * @notice A struct containing data associated with each new publication.
+     *
+     * @param publishId The publish id
+     * @param hubId The hub ID 
+     * @param projectId The project Id
+     * @param name The name
+     * @param description The description
+     * @param materialURIs The array of the materialURI
+     * @param fromTokenIds The array of the fromTokenId
+     * @param publishModule The address of the template module associated with this publication, this exists for all publication.
+     * @param derivativeNFT The address of the derivativeNFT associated with this publication, if any.
+     * @param collectModule The address of the collect module associated with this publication, this exists for all publication.
+     */
+    struct PublicationStruct {
+        uint256 publishId;
+        uint256 hubId;
+        uint256 projectId;      
+        string name;
+        string description;
+        string[] materialURIs;
+        uint256[] fromTokenIds;
+        address publishModule;
+        address derivativeNFT;
+        address collectModule;
+    }
+
     /**
      * @notice Properties of the slot, which determine the value of slot.
      */
@@ -193,74 +215,19 @@ library DataTypes {
         uint256 deadline;
     }
 
-
     /**
      * @notice A struct containing the parameters required for the `createProfile()` function.
      *
      * @param to The address receiving the profile.
-     * @param handle The handle to set for the profile, must be unique and non-empty.
      * @param nickName The nick name to set for the profile, must be unique and non-empty.
      * @param imageURI The URI to set for the profile image.
-     * @param followModule The follow module to use, can be the zero address.
-     * @param followModuleInitData The follow module initialization data, if any.
-     * @param followNFTURI The URI to use for the follow NFT.
      */
     struct CreateProfileData {
         address to;
-        string handle;
         string nickName;
         string imageURI;
-        address followModule;
-        bytes followModuleInitData;
-        string followNFTURI;
     }
 
-    /**
-     * @notice A struct containing profile data.
-     *
-     * @param pubCount The number of publications made to this profile.
-     * @param followModule The address of the current follow module in use by this profile, can be empty.
-     * @param followNFT The address of the followNFT associated with this profile, can be empty..
-     * @param handle The profile's associated handle.
-     * @param imageURI The URI to be used for the profile's image.
-     * @param followNFTURI The URI to be used for the follow NFT.
-     */
-    struct ProfileStruct {
-        uint256 pubCount;
-        address followModule;
-        address followNFT;
-        string handle;
-        string imageURI;
-        string followNFTURI;
-    }
-
-
-    /**
-     * @notice A struct containing data associated with each new publication.
-     *
-     * @param publishId The publish id
-     * @param hubId The hub ID 
-     * @param projectId The project Id
-     * @param name The name
-     * @param description The description
-     * @param materialURIs The array of the materialURI
-     * @param fromTokenIds The array of the fromTokenId
-     * @param publishModule The address of the template module associated with this publication, this exists for all publication.
-     * @param derivativeNFT The address of the derivativeNFT associated with this publication, if any.
-     * @param collectModule The address of the collect module associated with this publication, this exists for all publication.
-     */
-    struct PublicationStruct {
-        uint256 publishId;
-        uint256 hubId;
-        uint256 projectId;
-        string name;
-        string description;
-        string[] materialURIs;
-        uint256[] fromTokenIds;
-        address publishModule;
-        address derivativeNFT;
-        address collectModule;
-    }
 
     //BankTreasury
     
@@ -299,7 +266,6 @@ library DataTypes {
         uint256 x;
         uint256 y;
     }
-
 
     //voucher struct
     struct VoucherData {

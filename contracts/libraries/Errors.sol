@@ -36,6 +36,9 @@ library Errors {
   error TokenIdNotExists();
   error HandleLengthInvalid();
   error HandleContainsInvalidCharacters();
+  error NickNameLengthInvalid();
+  error NickNameContainsInvalidCharacters();
+  error ProfileImageURILengthInvalid();
   error CannotInitImplementation();
   error NotGovernance();
   error NotManager();
@@ -98,4 +101,7 @@ library Errors {
   error InvidVoucherParValueType();
   error VoucherNotExists();
   error VoucherIsUsed();
+  error ToWalletIsZero();
+  error AirdropTotalExceed();
+  error NotOwerOFTokenId();
 }

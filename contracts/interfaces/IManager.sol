@@ -32,15 +32,9 @@ interface IManager {
 
   function setTreasury(address treasury) external;
 
-  function getGovernance() external returns(address);
+  function setGlobalModule(address moduleGlobals) external;
 
-    /**
-     * @notice Sets a soulBoundTokenId's dispatcher, giving that dispatcher rights to publish to that profile.
-     *
-     * @param soulBoundTokenId The token ID of the profile of the profile to set the dispatcher for.
-     * @param dispatcher The dispatcher address to set for the given profile ID.
-     */
-    function setDispatcher(uint256 soulBoundTokenId, address dispatcher) external;
+  function getGovernance() external returns(address);
 
     /**
      * @notice Sets a soulBoundTokenId's dispatcher via signature with the specified parameters.
@@ -102,24 +96,16 @@ interface IManager {
      *
      * @param vars A CreateProfileData struct containing the following params:
      *      to: The address receiving the profile.
-     *      handle: The handle to set for the profile, must be unique and non-empty.
+     *      nickName: The nickName to set for the profile, must be unique and non-empty.
      *      imageURI: The URI to set for the profile image.
-     *      followModule: The follow module to use, can be the zero address.
-     *      followModuleInitData: The follow module initialization data, if any.
      */
     function createProfile(
         DataTypes.CreateProfileData calldata vars
     ) external returns (uint256);
 
-    /**
-     * @notice Returns the follow module associated with a given soulBoundTokenId, if any.
-     *
-     * @param soulBoundTokenId The token ID of the SoulBoundToken to query the follow module for.
-     *
-     * @return address The address of the follow module associated with the given profile.
-     */
-    function getFollowModule(uint256 soulBoundTokenId) external view returns (address);
-
+    
+    function setProfileImageURI(uint256 soulBoundTokenId, string calldata imageURI)
+        external;
     /**
      * @notice Returns the address of the SoulBundToken contract
      *
@@ -146,14 +132,6 @@ interface IManager {
      */
     function getGenesisSoulBoundTokenIdByPublishId(uint256 publishId) external view returns(uint256);
 
-    /**
-     * @notice Returns the address of the Derivative NFT contract implementation
-     *
-     * 
-     * @return address The address of the implementation.
-     */
-    function getDNFTImpl() external view returns (address);
-
     function getReceiver() external view returns (address);
 
 
@@ -166,21 +144,7 @@ interface IManager {
      */
     function whitelistProfileCreator(address profileCreator, bool whitelist) external;
 
-    /**
-     * @notice Follows the given project id, executing each SBT Id's follow module logic (if any).
-     *
-     * @param projectId The project Id 
-     * @param soulBoundTokenId The soulBoundTokenId  of sender
-     * @param data The arbitrary data  to pass to the follow module
-     *
-     */
-    function follow(
-        uint256 projectId,
-        uint256 soulBoundTokenId,
-        bytes calldata data
-    ) external;
-
-     function createHub(
+    function createHub(
         DataTypes.HubData memory hub
     ) external returns(uint256);
 
@@ -204,12 +168,10 @@ interface IManager {
 
     function getDerivativeNFT(uint256 publishId_) external view returns (address);
 
-    // function deployDerivativeNFT(
-    //     address descriptor_
-    // ) external;
-
-    // function getProjectInfo_name(uint256 projectId_) external view returns (string memory) ;
+    function getPublicationByTokenId(uint256 tokenId_) external view returns (DataTypes.Publication memory);
     
+    function getPreviousByTokenId(uint256 tokenId_) external view returns (uint256, uint256);
+
     function getWalletBySoulBoundTokenId(uint256 soulBoundTokenId) external view returns(address);
 
     function prePublish(
@@ -218,8 +180,8 @@ interface IManager {
 
     function updatePublish(
         uint256 publishId,
-        // uint256 price,
-        // address currency,
+        uint256 salePrice,
+        uint256 royaltyBasisPoints,        
         uint256 amount,
         string memory name,
         string memory description,
@@ -248,9 +210,19 @@ interface IManager {
         DataTypes.CollectData memory collectData
     ) external returns(uint256);
 
+    /**
+     * @notice Airdrop array of values to many SBT Ids.
+     * 
+     * @param airdropData The airdrop data, only call by hub owner
+     *     -- publishId : publish id
+     *     -- ownershipSoulBoundTokenId: ownership of soulBoundTokenId
+     *     -- toSoulBoundTokenIds: array SoulBoundTokenIds of to 
+     *     -- tokenId: tokenId of dNFT
+     *     -- values: array values 
+     */ 
     function airdrop(
         DataTypes.AirdropData memory airdropData
-    ) external ;
+    ) external;
 
     /**
      * @notice Transfer a dNFT to a address.

@@ -286,6 +286,17 @@ library Events {
         uint256 timestamp
     );
 
+
+    /**
+     * @dev Emitted when a profile's URI is set.
+     *
+     * @param soulBoundTokenId The token ID of the profile for which the URI is set.
+     * @param imageURI The URI set for the given profile.
+     * @param timestamp The current block timestamp.
+     */
+    event ProfileImageURISet(uint256 indexed soulBoundTokenId, string imageURI, uint256 timestamp);
+
+
     event CollectDerivativeNFT(
         uint256 projectId,
         address derivativeNFT,
@@ -303,7 +314,6 @@ library Events {
         address derivativeNFT,
         uint256 fromSoulBoundTokenId,
         address operator,
-        address[] toWallets,
         uint256 tokenId,
         uint256[] values,
         uint256[] newTokenIds,

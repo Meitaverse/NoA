@@ -66,21 +66,10 @@ interface IManagerV2 {
      *
      * @param vars A CreateProfileData struct containing the following params:
      *      to: The address receiving the profile.
-     *      handle: The handle to set for the profile, must be unique and non-empty.
+     *      nickName: The nickName to set for the profile, must be unique and non-empty.
      *      imageURI: The URI to set for the profile image.
-     *      followModule: The follow module to use, can be the zero address.
-     *      followModuleInitData: The follow module initialization data, if any.
      */
     function createProfile(DataTypes.CreateProfileData calldata vars) external returns (uint256);
-
-    /**
-     * @notice Returns the follow module associated with a given soulBoundTokenId, if any.
-     *
-     * @param soulBoundTokenId The token ID of the SoulBoundToken to query the follow module for.
-     *
-     * @return address The address of the follow module associated with the given profile.
-     */
-    function getFollowModule(uint256 soulBoundTokenId) external view returns (address);
 
     /**
      * @notice Returns the address of the SoulBundToken contract
@@ -88,15 +77,6 @@ interface IManagerV2 {
      * @return address The address of the SoulBundToken contract.
      */
     function getSoulBoundToken() external view returns (address);
-
-
-    /**
-     * @notice Returns the address of the Derivative NFT contract implementation
-     *
-     * 
-     * @return address The address of the implementation.
-     */
-    function getDNFTImpl() external view returns (address);
 
     function getReceiver() external view returns (address);
 
@@ -109,21 +89,8 @@ interface IManagerV2 {
      */
     function whitelistProfileCreator(address profileCreator, bool whitelist) external;
 
-    /**
-     * @notice Follows the given project id, executing each SBT Id's follow module logic (if any).
-     *
-     * @param projectId The project Id 
-     * @param soulBoundTokenId The soulBoundTokenId  of sender
-     * @param data The arbitrary data  to pass to the follow module
-     *
-     */
-    function follow(
-        uint256 projectId,
-        uint256 soulBoundTokenId,
-        bytes calldata data
-    ) external;
 
-     function createHub(
+    function createHub(
         DataTypes.HubData memory hub
     ) external;
 
@@ -147,27 +114,7 @@ interface IManagerV2 {
     function publish(
         DataTypes.Publication memory publication
     ) external returns(uint256);
-    
-    /**
-     * @notice Split a dNFT to two parts 
-     *
-     * @param projectId Event Id  
-     * @param fromSoulBoundTokenId From SBT Id  
-     * @param toSoulBoundTokenId to SBT Id  
-     * @param tokenId The tokenId of dNFT.
-     * @param amount The amount to split.
-     * @param splitModuleData The arbitrary data to pass to the split module if needed.
-     *
-     * @return new tokenId
-     */
-    function split(
-        uint256 projectId, 
-        uint256 fromSoulBoundTokenId, 
-        uint256 toSoulBoundTokenId, 
-        uint256 tokenId, 
-        uint256 amount, 
-        bytes calldata splitModuleData
-    ) external returns(uint256);
+  
 
     function collect(
         uint256 projectId, 

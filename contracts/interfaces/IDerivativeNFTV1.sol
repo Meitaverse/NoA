@@ -83,6 +83,16 @@ interface IDerivativeNFTV1 {
 
   function setState(DataTypes.ProtocolState newState) external;
 
+  function setDefaultRoyalty(address recipient, uint96 fraction) external;
+  
+  function deleteDefaultRoyalty() external;
+  
+  function setTokenRoyalty(
+        uint256 tokenId,
+        address recipient,
+        uint96 fraction
+  ) external;
+
   function mint(
         address mintTo, 
         uint256 slot, 
@@ -101,7 +111,7 @@ interface IDerivativeNFTV1 {
   ) external returns(uint256);
 
    /**
-     * @notice Split some value to a to_, only call by manager
+     * @notice Split some value to a to_, only call by manager, not need approve before
      *
      * @param fromTokenId_ The tokenId to be split
      * @param to_ amount to split
@@ -113,11 +123,11 @@ interface IDerivativeNFTV1 {
         uint256 value_
     ) external returns(uint256) ;
 
-    // function split(
-    //     uint256 toSoulBoundTokenId_,
-    //     uint256 fromTokenId_, 
-    //     uint256 value_
-    // ) external returns(uint256);
+    function transferValue(
+        uint256 fromTokenId_,
+        uint256 toTokenId_,
+        uint256 value_
+    ) external;
 
      /**
      * @notice Implementation of an EIP-712 permit function for an ERC-721 NFT. We don't need to check

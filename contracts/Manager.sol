@@ -12,6 +12,7 @@ import {IDerivativeNFTV1} from "./interfaces/IDerivativeNFTV1.sol";
 import "./interfaces/INFTDerivativeProtocolTokenV1.sol";
 import "./interfaces/IManager.sol";
 import "./base/DerivativeNFTMultiState.sol";
+import {Constants} from './libraries/Constants.sol';
 import {DataTypes} from './libraries/DataTypes.sol';
 import {Events} from"./libraries/Events.sol";
 import {InteractionLogic} from './libraries/InteractionLogic.sol';
@@ -22,6 +23,7 @@ import "./libraries/SafeMathUpgradeable128.sol";
 import {IBankTreasury} from "./interfaces/IBankTreasury.sol";
 import {Clones} from '@openzeppelin/contracts/proxy/Clones.sol';
 import {VersionedInitializable} from './upgradeability/VersionedInitializable.sol';
+import {IModuleGlobals} from "./interfaces/IModuleGlobals.sol";
 
 contract Manager is 
     IManager,
@@ -153,6 +155,9 @@ contract Manager is
             _derivativeNFTByProjectId 
         );
 
+        // set default royalty to 50/10000
+        IDerivativeNFTV1(derivativeNFT).setDefaultRoyalty(TREASURY, 50); 
+
         _projectInfoByProjectId[projectId] = DataTypes.ProjectData({
             hubId: project.hubId,
             soulBoundTokenId: project.soulBoundTokenId,
@@ -165,36 +170,6 @@ contract Manager is
 
         return projectId;
     }
-
-/*
-    function deployDerivativeNFT(
-        address descriptor_
-    ) external {
-        address derivativeNFT = Clones.clone(_DNFT_IMPL);
-        IDerivativeNFTV1(derivativeNFT).initialize(
-            NDPT,
-            TREASURY,    
-            "Bitsoul",
-            "Bitsoul Test",
-            1,
-            2,
-            descriptor_,
-            _RECEIVER 
-        );
-        _derivativeNFTByProjectId[1] = derivativeNFT;
-        // uint256 newTokenId =  IDerivativeNFTV1(derivativeNFT).mint(
-        //     msg.sender,
-        //     1,
-        //     1
-        // );
-    }
-
-    function getProjectInfo_name(uint256 projectId_) external view returns (string memory) {
-        address derivativeNFT = _derivativeNFTByProjectId[projectId_];
-        return IERC3525Metadata(derivativeNFT).name();
-    }
-*/
-
 
     function getProjectInfo(uint256 projectId_) external view returns (DataTypes.ProjectData memory) {
         return _projectInfoByProjectId[projectId_];
@@ -222,7 +197,9 @@ contract Manager is
         uint256 publishId =  _generateNextPublishId();
         if (publication.fromTokenIds.length == 0){
             previousPublishId = 0;
-            _genesisSoulBoundTokenIdByPublishId[publishId] = publication.soulBoundTokenId;
+            //记录projectId的创世者
+            _genesisPublishIdByProjectId[publication.projectId] = publishId;
+
         } else{
             previousPublishId = _tokenIdByPublishId[publication.fromTokenIds[0]];
         }
@@ -237,17 +214,21 @@ contract Manager is
             _publishIdByProjectData
         );
 
+       
+
         return publishId;
     }
 
     function updatePublish(
         uint256 publishId,
+        uint256 salePrice,
+        uint256 royaltyBasisPoints,
         uint256 amount,
         string memory name,
         string memory description,
         string[] memory materialURIs,
         uint256[] memory fromTokenIds
-    ) external override whenNotPaused {
+    ) external override whenNotPaused {  
         if (publishId == 0) revert Errors.InvalidParameter();
         if (amount == 0) revert Errors.InvalidParameter();
 
@@ -255,6 +236,8 @@ contract Manager is
 
         if (_publishIdByProjectData[publishId].isMinted) revert Errors.CannotUpdateAfterMinted();
 
+        _publishIdByProjectData[publishId].publication.salePrice = salePrice;
+        _publishIdByProjectData[publishId].publication.royaltyBasisPoints = royaltyBasisPoints;
         _publishIdByProjectData[publishId].publication.amount = amount;
         _publishIdByProjectData[publishId].publication.name = name;
         _publishIdByProjectData[publishId].publication.description = description;
@@ -270,7 +253,20 @@ contract Manager is
     function getDerivativeNFT(uint256 publishId_) external view returns (address) {
         return _derivativeNFTByProjectId[publishId_];
     }
+    
 
+    function getPublicationByTokenId(uint256 tokenId_) external view returns (DataTypes.Publication memory) {
+       uint256 publishId = _tokenIdByPublishId[tokenId_];
+       return _publishIdByProjectData[publishId].publication;
+    }
+
+    function getPreviousByTokenId(uint256 tokenId_) external view returns (uint256, uint256) {
+       uint256 publishId = _tokenIdByPublishId[tokenId_];
+       uint256 previousPublishId = _publishIdByProjectData[publishId].previousPublishId;
+       uint256 prevoidTokenId =  _publishIdByProjectData[previousPublishId].tokenId;
+       return (previousPublishId, prevoidTokenId);
+    }
+ 
     function publish(
         uint256 publishId
     ) external whenNotPaused returns (uint256) { 
@@ -295,12 +291,31 @@ contract Manager is
             _collectModuleWhitelisted 
         );
 
+        //TODO
+        uint256 projectid = _publishIdByProjectData[publishId].publication.projectId;
+        uint256 previousPublishId = _publishIdByProjectData[publishId].previousPublishId;
+        (, uint16 treasuryFee ) = IModuleGlobals(MODULE_GLOBALS).getTreasuryData();
+
+        // treasuryFee = community fee + genesis fee + previous dNDT fee
+        uint96 fraction = 
+            uint96(treasuryFee) + 
+            uint96(_publishIdByProjectData[_genesisPublishIdByProjectId[projectid]].publication.royaltyBasisPoints) +
+            uint96(_publishIdByProjectData[previousPublishId].publication.royaltyBasisPoints);
+
+
+        IDerivativeNFTV1(derivativeNFT).setTokenRoyalty(
+            tokenId,
+            TREASURY,
+            fraction
+        );
+
         _publishIdByProjectData[publishId].isMinted = true;
         _publishIdByProjectData[publishId].tokenId = tokenId;
 
         _tokenIdByPublishId[tokenId] = publishId;
 
         return tokenId;
+
     }
 
     function collect(
@@ -313,17 +328,16 @@ contract Manager is
          _validateCallerIsSoulBoundTokenOwnerOrDispathcher(collectData.collectorSoulBoundTokenId);
 
         address derivativeNFT =  _derivativeNFTByProjectId[_publishIdByProjectData[collectData.publishId].publication.projectId];
-        // address derivativeNFT =  _derivativeNFTByProjectId[1];
 
         if ( derivativeNFT== address(0)) 
             revert Errors.DerivativeNFTIsZero();
         
-        uint256 newTokenId = IERC3525(derivativeNFT).transferFrom(
+        uint256 newTokenId = IDerivativeNFTV1(derivativeNFT).split(
             _publishIdByProjectData[collectData.publishId].tokenId, 
             _walletBySoulBoundTokenId[collectData.collectorSoulBoundTokenId],
             collectData.collectValue
-        ); 
-       
+        );
+
         PublishLogic.collectDerivativeNFT(
             collectData,
             _publishIdByProjectData[collectData.publishId].tokenId,
@@ -336,35 +350,48 @@ contract Manager is
         return newTokenId;    
     }
 
-
     function airdrop(
         DataTypes.AirdropData memory airdropData
     ) external override whenNotPaused{
          _validateCallerIsSoulBoundTokenOwnerOrDispathcher(airdropData.ownershipSoulBoundTokenId);
-        if (_hubBySoulBoundTokenId[airdropData.ownershipSoulBoundTokenId] != _publishIdByProjectData[airdropData.publishId].publication.hubId) 
-           revert Errors.NotHubOwner();
         
         address derivativeNFT = _derivativeNFTByProjectId[_publishIdByProjectData[airdropData.publishId].publication.projectId];
         if (derivativeNFT == address(0)) revert Errors.InvalidParameter();
+       
+        address from_ = _walletBySoulBoundTokenId[airdropData.ownershipSoulBoundTokenId];
 
-        address[] memory toWallets = new address[]( airdropData.toSoulBoundTokenIds.length);
+        if (IERC3525(derivativeNFT).ownerOf(airdropData.tokenId) != from_) {
+            revert Errors.NotOwerOFTokenId();
+        }
 
-         for (uint256 i = 0; i < airdropData.toSoulBoundTokenIds.length; ) {
+        uint256[] memory newTokenIds = new uint256[](airdropData.toSoulBoundTokenIds.length);
+        uint256 total;
+        for (uint256 i = 0; i < airdropData.toSoulBoundTokenIds.length; ) {
+            address toWallet = _walletBySoulBoundTokenId[airdropData.toSoulBoundTokenIds[i]];
+            if (toWallet == address(0)) revert Errors.ToWalletIsZero();
+            uint256 newTokenId = IDerivativeNFTV1(derivativeNFT).split(
+                airdropData.tokenId, 
+                toWallet,
+                airdropData.values[i]
+            );
            
-            toWallets[i] = _walletBySoulBoundTokenId[airdropData.toSoulBoundTokenIds[i]];
+            newTokenIds[i] = newTokenId;
+            total = total +  airdropData.values[i];
 
             unchecked {
                 ++i;
             }
         }
-        PublishLogic.airdropDerivativeNFT(
+
+        emit Events.AirdropDerivativeNFT(
             _publishIdByProjectData[airdropData.publishId].publication.projectId,
             derivativeNFT,
-            msg.sender,
             airdropData.ownershipSoulBoundTokenId,
-            toWallets,
+            msg.sender,
             airdropData.tokenId,
-            airdropData.values
+            airdropData.values,
+            newTokenIds,
+            block.timestamp
         );
     }
 
@@ -387,13 +414,13 @@ contract Manager is
         //must approve manager before
         IERC3525(derivativeNFT).transferFrom(fromWallet, toWallet, tokenId);
 
-         emit Events.TransferDerivativeNFT(
+        emit Events.TransferDerivativeNFT(
             fromSoulBoundTokenId,
             toSoulBoundTokenId,
             projectId,
             tokenId,
             block.timestamp
-         );
+        );
     } 
 
     function transferValueDerivativeNFT(
@@ -411,9 +438,9 @@ contract Manager is
         if (toWallet == address(0)) revert Errors.InvalidParameter();
 
         //must approve manager before
-         uint256 newTokenId = IERC3525(derivativeNFT).transferFrom(tokenId, toWallet, value);
+        uint256 newTokenId = IERC3525(derivativeNFT).transferFrom(tokenId, toWallet, value);
 
-         emit Events.TransferValueDerivativeNFT(
+        emit Events.TransferValueDerivativeNFT(
             fromSoulBoundTokenId,
             toSoulBoundTokenId,
             projectId,
@@ -421,9 +448,16 @@ contract Manager is
             value,
             newTokenId,
             block.timestamp
-         );
+        );
     }
 
+    function setProfileImageURI(uint256 soulBoundTokenId, string calldata imageURI)
+        external
+        whenNotPaused
+    {
+        _validateCallerIsSoulBoundTokenOwnerOrDispathcher(soulBoundTokenId);
+        INFTDerivativeProtocolTokenV1(NDPT).setProfileImageURI(soulBoundTokenId, imageURI);
+    }
 
 //market
     function publishFixedPrice(DataTypes.Sale memory sale) external whenNotPaused onlyGov {
@@ -467,6 +501,7 @@ contract Manager is
         if (sales[saleId].useAllowList) {
             require(_allowAddresses[sales[saleId].derivativeNFT].contains(buyer), "not in allow list");
         }
+
         return
             InteractionLogic.buyByUnits(
                 _generateNextTradeId(),
@@ -479,29 +514,13 @@ contract Manager is
             );
     }
 
-    function follow(
-        uint256 projectId,
-        uint256 soulBoundTokenId,
-        bytes calldata data
-    ) external override whenNotPaused {
-        _validateCallerIsSoulBoundTokenOwnerOrDispathcher(soulBoundTokenId);
-        PublishLogic.follow(projectId, msg.sender, soulBoundTokenId, data, _profileById, _profileIdByHandleHash);
-    }
-
-    function getFollowModule(uint256 soulBoundTokenId) external view override returns (address) {
-        return _profileById[soulBoundTokenId].followModule;
-    }
 
     function getSoulBoundToken() external view returns (address) {
         return NDPT;
     }
 
-    function getDNFTImpl() external view override returns (address) {
-        return _DNFT_IMPL;
-    }
-
     function getGenesisSoulBoundTokenIdByPublishId(uint256 publishId) external view returns(uint256) {
-       return _genesisSoulBoundTokenIdByPublishId[publishId];   
+       return _genesisPublishIdByProjectId[publishId];   
     }
 
     function getHubInfo(uint256 hubId) external view returns(DataTypes.HubData memory) {
@@ -543,6 +562,11 @@ contract Manager is
         TREASURY = treasury;
     }
 
+    function setGlobalModule(address moduleGlobals) external override onlyGov {
+        if (moduleGlobals == address(0)) revert Errors.InitParamsInvalid();
+        MODULE_GLOBALS = moduleGlobals;
+    }
+
     function setGovernance(address newGovernance) external override onlyGov {
         _setGovernance(newGovernance);
     }
@@ -555,10 +579,11 @@ contract Manager is
         return _dispatcherByProfile[soulBoundToken];
     }
 
-    function setDispatcher(uint256 soulBoundTokenId, address dispatcher) external override whenNotPaused {
-        _validateCallerIsSoulBoundTokenOwnerOrDispathcher(soulBoundTokenId);
-        _setDispatcher(soulBoundTokenId, dispatcher);
-    }
+
+    // function setDispatcher(uint256 soulBoundTokenId, address dispatcher) external override whenNotPaused {
+    //     _validateCallerIsSoulBoundTokenOwnerOrDispathcher(soulBoundTokenId);
+    //     _setDispatcher(soulBoundTokenId, dispatcher);
+    // }
 
     function setDispatcherWithSig(DataTypes.SetDispatcherWithSigData calldata vars)
         external
@@ -614,13 +639,6 @@ contract Manager is
 
     function _validateCallerIsGovernance() internal view {
         if (msg.sender != _governance) revert Errors.NotGovernance();
-    }
-
-    function _validateCallerIsSoulBoundTokenOwner(uint256 soulBoundTokenId) internal view {
-        if (msg.sender == _profileOwners[soulBoundTokenId]) {
-            return;
-        }
-        revert Errors.NotSoulBoundTokenOwner();
     }
 
     function _setDispatcher(uint256 soulBoundTokenId, address dispatcher) internal {
@@ -698,7 +716,6 @@ contract Manager is
         }
         return digest;
     }    
-
 
     /**
      * @dev Calculates EIP712 DOMAIN_SEPARATOR based on the current contract and chain ID.

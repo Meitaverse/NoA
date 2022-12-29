@@ -30,7 +30,7 @@ interface INFTDerivativeProtocolTokenV1  {
 
      function whitelistContract(address contract_, bool toWhitelist_) external;
 
-
+    function setProfileImageURI(uint256 soulBoundTokenId, string calldata imageURI) external;
     /**
      * @notice Approve or disapprove an operator to manage all of `_owner`'s tokens with the
      *  specified slot.
@@ -66,19 +66,19 @@ interface INFTDerivativeProtocolTokenV1  {
         address _operator
     ) external view returns (bool);
 
-    /**
-     * @notice Mint to a address spec tokenId.
-     *  Only admin can execute.
-     *
-     * @param mintTo to address 
-     * @param slot is the lost of tokenId
-     * @param value is the value of tokenId
-     */
-    function mint(
-        address mintTo,
-        uint256 slot,
-        uint256 value
-    ) external payable returns(uint256 tokenId);
+    // /**
+    //  * @notice Mint to a address spec tokenId.
+    //  *  Only admin can execute.
+    //  *
+    //  * @param mintTo to address 
+    //  * @param slot is the lost of tokenId
+    //  * @param value is the value of tokenId
+    //  */
+    // function mint(
+    //     address mintTo,
+    //     uint256 slot,
+    //     uint256 value
+    // ) external payable returns(uint256 tokenId);
   
     function createProfile(
        DataTypes.CreateProfileData calldata vars

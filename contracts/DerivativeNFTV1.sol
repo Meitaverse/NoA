@@ -73,6 +73,14 @@ contract DerivativeNFTV1 is
     bytes4 internal constant _INTERFACE_ID_ERC2981 = 0x2a55205a;
     uint16 internal constant _BASIS_POINTS = 10000;
 
+     struct RoyaltyInfo {
+        address receiver;
+        uint96 royaltyFraction;
+    }
+
+    RoyaltyInfo private _defaultRoyaltyInfo;
+    mapping(uint256 => RoyaltyInfo) private _tokenRoyaltyInfo;
+
     // @dev owner => slot => operator => approved
     mapping(address => mapping(uint256 => mapping(address => bool))) private _slotApprovals;
 
@@ -144,6 +152,22 @@ contract DerivativeNFTV1 is
     function setState(DataTypes.ProtocolState newState) external override onlyManager{
         _setState(newState);
     }
+  
+    function setTokenRoyalty(
+        uint256 tokenId,
+        address recipient,
+        uint96 fraction
+    ) public onlyManager {
+        _setTokenRoyalty(tokenId, recipient, fraction);
+    }
+
+    function setDefaultRoyalty(address recipient, uint96 fraction) public onlyManager{
+        _setDefaultRoyalty(recipient, fraction);
+    }
+
+    function deleteDefaultRoyalty() public onlyManager{
+        _deleteDefaultRoyalty();
+    }
 
     function mint(
         address mintTo, 
@@ -159,7 +183,7 @@ contract DerivativeNFTV1 is
     function publish(
         DataTypes.Publication memory publication,
         address publisher
-    ) external  whenPublishingEnabled onlyManager  returns (uint256) { //
+    ) external whenPublishingEnabled onlyManager  returns (uint256) { //
         
         if (_publicationNameHashBySlot[keccak256(bytes(publication.name))] > 0) revert Errors.PublicationIsExisted();
         if (publication.soulBoundTokenId != _soulBoundTokenId && publication.fromTokenIds.length == 0) revert Errors.InvalidParameter();
@@ -184,12 +208,7 @@ contract DerivativeNFTV1 is
         });
 
         _publicationNameHashBySlot[keccak256(bytes(publication.name))] = slot;
-        // address _goveranace = IManager(MANAGER).getGovernance();
-        // ERC3525Upgradeable.setApprovalForAll(_goveranace, true);
         return ERC3525Upgradeable._mint(publisher, slot, publication.amount);
-        
-        // return ERC3525Upgradeable._mint(publisher, 1, 1);
-        // return 1;
     }
 
     function split(
@@ -197,9 +216,12 @@ contract DerivativeNFTV1 is
         address to_,
         uint256 value_
     ) external returns(uint256) {
-        return transferFrom(fromTokenId_, to_, value_); 
-    }
+        uint256 newTokenId = ERC3525Upgradeable._createDerivedTokenId(fromTokenId_);
+        ERC3525Upgradeable._mint(to_, newTokenId, ERC3525Upgradeable.slotOf(fromTokenId_), 0);
+        ERC3525Upgradeable._transferValue(fromTokenId_, newTokenId, value_);
 
+        return newTokenId;
+    }
 
     function permit(
         address spender,
@@ -293,6 +315,7 @@ contract DerivativeNFTV1 is
             revert Errors.NotAllowed();
         }
         ERC3525Upgradeable._burn(tokenId_);
+        _resetTokenRoyalty(tokenId_);
         emit Events.BurnToken(slot, tokenId_, msg.sender);
     }
     
@@ -318,7 +341,8 @@ contract DerivativeNFTV1 is
                 sig
             );
         }
-        _burn(tokenId);
+        ERC3525Upgradeable._burn(tokenId);
+        _resetTokenRoyalty(tokenId);
     }
 
     function getSlotDetail(uint256 slot_) external view returns (DataTypes.SlotDetail memory) {
@@ -330,6 +354,14 @@ contract DerivativeNFTV1 is
         return IManager(MANAGER).getProjectInfo(projectId_);
     }
 
+    function transferValue(
+        uint256 fromTokenId_,
+        uint256 toTokenId_,
+        uint256 value_
+    ) external whenNotPaused onlyManager {
+        ERC3525Upgradeable._transferValue(fromTokenId_, toTokenId_, value_);
+    }
+    
     //------override------------//
     function supportsInterface(bytes4 interfaceId) public view virtual override returns (bool) {
         return interfaceId == _INTERFACE_ID_ERC2981 || super.supportsInterface(interfaceId);
@@ -339,7 +371,8 @@ contract DerivativeNFTV1 is
         uint256 fromTokenId_,
         address to_,
         uint256 value_
-    ) public payable virtual override  whenNotPaused onlyManager returns (uint256) { //
+    ) public payable virtual override  whenNotPaused onlyManager returns (uint256) {
+      //
        return super.transferFrom(fromTokenId_, to_, value_);
     }
 
@@ -347,7 +380,8 @@ contract DerivativeNFTV1 is
         uint256 fromTokenId_,
         uint256 toTokenId_,
         uint256 value_
-    ) public payable virtual override  whenNotPaused onlyManager { //
+    ) public payable virtual override whenNotPaused onlyManager { 
+      //
       super.transferFrom(fromTokenId_, toTokenId_, value_);
     }
 
@@ -364,7 +398,8 @@ contract DerivativeNFTV1 is
         address to_,
         uint256 tokenId_,
         bytes memory data_
-    ) public payable virtual override  whenNotPaused onlyManager { //
+    ) public payable virtual override  whenNotPaused onlyManager { 
+        //
         super.safeTransferFrom(from_, to_, tokenId_,data_);
     }
 
@@ -372,7 +407,8 @@ contract DerivativeNFTV1 is
         address from_,
         address to_,
         uint256 tokenId_
-    ) public payable virtual override  whenNotPaused onlyManager{ //
+    ) public payable virtual override  whenNotPaused onlyManager{ 
+        //
        super.safeTransferFrom(from_, to_, tokenId_, "");
     }
 
@@ -388,7 +424,7 @@ contract DerivativeNFTV1 is
         uint256 slot_,
         address operator_,
         bool approved_
-    ) external payable virtual onlyManager whenNotPaused{
+    ) external payable virtual whenNotPaused onlyManager {
         if (!(_msgSender() == owner_ || isApprovedForAll(owner_, _msgSender()))) {
             revert Errors.NotAllowed();
         }
@@ -431,23 +467,98 @@ contract DerivativeNFTV1 is
      *         is owed and to whom.
      *
      *
-     * @param tokenId The token ID of the derivativeNFT queried for royalty information.
-     * @param salePrice The sale price of the derivativeNFT specified.
+     * @param _tokenId The token ID of the derivativeNFT queried for royalty information.
+     * @param _salePrice The sale price of the derivativeNFT specified.
      * @return A tuple with the address who should receive the royalties and the royalty
      * payment amount for the given sale price.
      */
-    function royaltyInfo(uint256 tokenId, uint256 salePrice) external view returns (address, uint256) {
-        //TODO , get salePrice from PriceManager
-        tokenId;
+    function royaltyInfo(uint256 _tokenId, uint256 _salePrice) external view returns (address, uint256) {
+       /*
+        //get salePrice and royaltyBasisPoints from manager
+
+        //TODO
+        (uint256 previousPublishId, uint256 previousTokenId) = IManager(MANAGER).getPreviousByTokenId(tokenId);
+        
+        DataTypes.PublishData memory previousPub =  IManager(MANAGER).getPublishInfo(previousPublishId);
+        
         return (
-            IERC3525(_NDPT).ownerOf(_soulBoundTokenId),
-            (salePrice * _royaltyBasisPoints) / _BASIS_POINTS
+            ownerOf(previousTokenId),
+            (_salePrice * previousPub.publication.royaltyBasisPoints) / _BASIS_POINTS
         );
+        */
+
+        RoyaltyInfo memory royalty = _tokenRoyaltyInfo[_tokenId];
+
+        if (royalty.receiver == address(0)) {
+            royalty = _defaultRoyaltyInfo;
+        }
+
+        uint256 royaltyAmount = (_salePrice * royalty.royaltyFraction) / _feeDenominator();
+
+        return (royalty.receiver, royaltyAmount);
+
     }
 
     /// ****************************
     /// *****INTERNAL FUNCTIONS*****
     /// ****************************
+
+    /**
+     * @dev The denominator with which to interpret the fee set in {_setTokenRoyalty} and {_setDefaultRoyalty} as a
+     * fraction of the sale price. Defaults to 10000 so fees are expressed in basis points, but may be customized by an
+     * override.
+     */
+    function _feeDenominator() internal pure virtual returns (uint96) {
+        return _BASIS_POINTS;
+    }
+
+    /**
+     * @dev Sets the royalty information that all ids in this contract will default to.
+     *
+     * Requirements:
+     *
+     * - `receiver` cannot be the zero address.
+     * - `feeNumerator` cannot be greater than the fee denominator.
+     */
+    function _setDefaultRoyalty(address receiver, uint96 feeNumerator) internal virtual {
+        require(feeNumerator <= _feeDenominator(), "ERC2981: royalty fee will exceed salePrice");
+        require(receiver != address(0), "ERC2981: invalid receiver");
+
+        _defaultRoyaltyInfo = RoyaltyInfo(receiver, feeNumerator);
+    }
+
+    /**
+     * @dev Removes default royalty information.
+     */
+    function _deleteDefaultRoyalty() internal virtual {
+        delete _defaultRoyaltyInfo;
+    }
+
+    /**
+     * @dev Sets the royalty information for a specific token id, overriding the global default.
+     *
+     * Requirements:
+     *
+     * - `receiver` cannot be the zero address.
+     * - `feeNumerator` cannot be greater than the fee denominator.
+     */
+    function _setTokenRoyalty(
+        uint256 tokenId,
+        address receiver,
+        uint96 feeNumerator
+    ) internal virtual {
+        require(feeNumerator <= _feeDenominator(), "ERC2981: royalty fee will exceed salePrice");
+        require(receiver != address(0), "ERC2981: Invalid parameters");
+
+        _tokenRoyaltyInfo[tokenId] = RoyaltyInfo(receiver, feeNumerator);
+    }
+
+    /**
+     * @dev Resets royalty information for the token id back to the global default.
+     */
+    function _resetTokenRoyalty(uint256 tokenId) internal virtual {
+        delete _tokenRoyaltyInfo[tokenId];
+    }
 
     function _validateCallerIsManager() internal view {
         if (msg.sender != MANAGER) revert Errors.NotManager();

@@ -38,63 +38,29 @@ const nickName = 'BitsoulUser';
 makeSuiteCleanRoom('Profile Creation', function () {
     context('Generic', function () {
         context('Negatives', function () {
-            it('User should fail to create a profile with a handle longer than 31 bytes', async function () {
+            it('User should fail to create a profile with a nickName longer than 31 bytes', async function () {
                 const val = '11111111111111111111111111111111';
                 
                 expect(val.length).to.eq(32);
                 await expect(
                   manager.createProfile({
                     to: userAddress,
-                    handle: val,
-                    nickName: nickName,
+                    nickName: val,
                     imageURI: MOCK_PROFILE_URI,
-                    followModule: ZERO_ADDRESS,
-                    followModuleInitData: [],
-                    followNFTURI: MOCK_FOLLOW_NFT_URI,
                   })
-                ).to.be.revertedWith(ERRORS.INVALID_HANDLE_LENGTH);
+                ).to.be.revertedWith(ERRORS.INVALID_NICKNAME_LENGTH);
             });
 
-            it('User should fail to create a profile with an empty handle (0 length bytes)', async function () {
+            it('User should fail to create a profile with an empty nickName (0 length bytes)', async function () {
                 await expect(
                    manager.createProfile({
                     to: userAddress,
-                    handle: '',
-                    nickName: nickName,
+                    nickName: '',
                     imageURI: MOCK_PROFILE_URI,
-                    followModule: ZERO_ADDRESS,
-                    followModuleInitData: [],
-                    followNFTURI: MOCK_FOLLOW_NFT_URI,
                   })
-                ).to.be.revertedWith(ERRORS.INVALID_HANDLE_LENGTH);
+                ).to.be.revertedWith(ERRORS.INVALID_NICKNAME_LENGTH);
             });
-            it('User should fail to create a profile with a handle with a capital letter', async function () {
-                await expect(
-                  manager.createProfile({
-                    to: userAddress,
-                    handle: 'Egg',
-                    nickName: nickName,
-                    imageURI: MOCK_PROFILE_URI,
-                    followModule: ZERO_ADDRESS,
-                    followModuleInitData: [],
-                    followNFTURI: MOCK_FOLLOW_NFT_URI,
-                  })
-                ).to.be.revertedWith(ERRORS.HANDLE_CONTAINS_INVALID_CHARACTERS);
-            });
-
-            it('User should fail to create a profile with a handle with an invalid character', async function () {
-                await expect(
-                   manager.createProfile({
-                    to: userAddress,
-                    handle: 'egg?',
-                    nickName: nickName,
-                    imageURI: MOCK_PROFILE_URI,
-                    followModule: ZERO_ADDRESS,
-                    followModuleInitData: [],
-                    followNFTURI: MOCK_FOLLOW_NFT_URI,
-                  })
-                ).to.be.revertedWith(ERRORS.HANDLE_CONTAINS_INVALID_CHARACTERS);
-              });
+      
 
               it('User should fail to create a profile when they are not a whitelisted profile creator', async function () {
                 await expect(
@@ -104,12 +70,8 @@ makeSuiteCleanRoom('Profile Creation', function () {
                 await expect(
                   manager.createProfile({
                     to: userAddress,
-                    handle: MOCK_PROFILE_HANDLE,
                     nickName: nickName,
                     imageURI: MOCK_PROFILE_URI,
-                    followModule: ZERO_ADDRESS,
-                    followModuleInitData: [],
-                    followNFTURI: MOCK_FOLLOW_NFT_URI,
                   })
                 ).to.be.revertedWith(ERRORS.PROFILE_CREATOR_NOT_WHITELISTED);
               });
@@ -127,21 +89,23 @@ makeSuiteCleanRoom('Profile Creation', function () {
                 await expect(
                     manager.connect(user).createProfile({
                       to: userAddress,
-                      handle: MOCK_PROFILE_HANDLE,
                       nickName: nickName,
                       imageURI: MOCK_PROFILE_URI,
-                      followModule: ZERO_ADDRESS,
-                      followModuleInitData: [],
-                      followNFTURI: MOCK_FOLLOW_NFT_URI,
                     })
                   ).to.not.be.reverted;
+                // await  manager.connect(user).createProfile({
+                //   to: userAddress,
+                //   nickName: nickName,
+                //   imageURI: MOCK_PROFILE_URI,
+                // });
+
               });
 
         });
     });
 
     context('Scenarios', function () {
-        it('User should be able to create a profile with a handle, receive an NFT and the handle should resolve to the NFT ID, userTwo should do the same', async function () {
+        it('User should be able to create a profile with a nickName, receive an NFT and the handle should resolve to the NFT ID, userTwo should do the same', async function () {
             let timestamp: any;
             let owner: string;
             let totalSupply: BigNumber;
@@ -152,12 +116,8 @@ makeSuiteCleanRoom('Profile Creation', function () {
               await createProfileReturningTokenId({
                 vars: {
                   to: userAddress,
-                  handle: MOCK_PROFILE_HANDLE,
                   nickName: nickName,
                   imageURI: MOCK_PROFILE_URI,
-                  followModule: ZERO_ADDRESS,
-                  followModuleInitData: [],
-                  followNFTURI: MOCK_FOLLOW_NFT_URI,
                 },
               })
             ).to.eq(SECOND_PROFILE_ID);
@@ -203,12 +163,8 @@ makeSuiteCleanRoom('Profile Creation', function () {
                 await createProfileReturningTokenId({
                   vars: {
                     to: userAddress,
-                    handle: MOCK_PROFILE_HANDLE,
                     nickName: nickName,
                     imageURI: MOCK_PROFILE_URI,
-                    followModule: ZERO_ADDRESS,
-                    followModuleInitData: [],
-                    followNFTURI: MOCK_FOLLOW_NFT_URI,
                   },
                 })
             ).to.eq(SECOND_PROFILE_ID);
@@ -239,12 +195,8 @@ makeSuiteCleanRoom('Profile Creation', function () {
                 await createProfileReturningTokenId({
                   vars: {
                     to: userAddress,
-                    handle: MOCK_PROFILE_HANDLE,
                     nickName: nickName,
                     imageURI: MOCK_PROFILE_URI,
-                    followModule: ZERO_ADDRESS,
-                    followModuleInitData: [],
-                    followNFTURI: MOCK_FOLLOW_NFT_URI,
                   },
                 })
             ).to.eq(SECOND_PROFILE_ID);

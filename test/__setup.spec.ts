@@ -43,7 +43,6 @@ import {
   DerivativeMetadataDescriptor__factory,
   Template,
   Template__factory,
-  
 } from '../typechain';
 
 import { ManagerLibraryAddresses } from '../typechain/factories/Manager__factory';
@@ -175,7 +174,6 @@ before(async function () {
   helper = await new Helper__factory(deployer).deploy();
 
   //Template
-
  let canvas: CanvasDataStruct = {width:800, height:600};
  let watermark: CanvasDataStruct = {width:200, height:300};
  let position: PositionStruct = {x:400, y: 0};
@@ -326,6 +324,7 @@ before(async function () {
   //manager set ndptAddress
   await expect(manager.connect(governance).setNDPT(ndptAddress)).to.not.be.reverted;
   await expect(manager.connect(governance).setTreasury(bankTreasuryContract.address)).to.not.be.reverted;
+  await expect(manager.connect(governance).setGlobalModule(moduleGlobals.address)).to.not.be.reverted;
   
   await expect(ndptContract.connect(deployer).setBankTreasury(
     bankTreasuryContract.address, 
@@ -353,9 +352,6 @@ before(async function () {
   ).to.not.be.reverted;
 
 
-
-  
-
   expect((await manager.version()).toNumber()).to.eq(1);
   expect(await manager.NDPT()).to.eq(ndptContract.address);
   expect((await derivativeNFTV1Impl.MANAGER()).toUpperCase()).to.eq(manager.address.toUpperCase());
@@ -369,7 +365,6 @@ before(async function () {
   
   expect((await manager.version()).toNumber()).to.eq(1);
   expect((await moduleGlobals.getPublishCurrencyTax(ndptContract.address))).to.eq(PublishRoyaltyNDPT);
-  expect((await manager.getDNFTImpl()).toUpperCase()).to.eq(derivativeNFTV1Impl.address.toUpperCase());
 
   // Event library deployment is only needed for testing and is not reproduced in the live environment
   eventsLib = await new Events__factory(deployer).deploy();

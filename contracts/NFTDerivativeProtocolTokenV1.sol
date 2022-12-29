@@ -20,7 +20,6 @@ import {INFTDerivativeProtocolTokenV1} from "./interfaces/INFTDerivativeProtocol
 
 /**
  *  @title NFT Derivative Protocol Token
- * 
  */
 contract NFTDerivativeProtocolTokenV1 is
     Initializable,
@@ -82,7 +81,6 @@ contract NFTDerivativeProtocolTokenV1 is
         if (manager == address(0)) revert Errors.InitParamsInvalid();
         _MANAGER = manager;
 
- 
     }
     
     function version() external pure returns(uint256) {
@@ -129,7 +127,7 @@ contract NFTDerivativeProtocolTokenV1 is
     function createProfile(
         DataTypes.CreateProfileData calldata vars
     ) external override whenNotPaused onlyManager returns (uint256) {
-        _validateHandle(vars.handle);
+        _validateNickName(vars.nickName);
 
         if (balanceOf(vars.to) > 0) revert Errors.TokenIsClaimed(); 
         
@@ -137,24 +135,14 @@ contract NFTDerivativeProtocolTokenV1 is
 
         _sbtDetails[tokenId_] = DataTypes.SoulBoundTokenDetail({
             nickName: vars.nickName,
-            handle: vars.handle,
-            locked: true,
-            reputation: 0
+            imageURI: vars.imageURI,
+            locked: true
         });
+
 
         return tokenId_;
     }
 
-    function mint(
-        address mintTo, 
-        uint256 slot, 
-        uint256 value
-    ) external payable whenNotPaused onlyManager returns(uint256 tokenId){
-        tokenId =  ERC3525Upgradeable._mint(mintTo, slot, value);
-        emit Events.MintNDPT(mintTo, slot, value, block.timestamp);
-        return tokenId;
-    }
-    
     function mintValue(
         uint256 tokenId, 
         uint256 value
@@ -169,7 +157,7 @@ contract NFTDerivativeProtocolTokenV1 is
      
     function burn(uint256 tokenId) external whenNotPaused onlyManager{
         ERC3525Upgradeable._burn(tokenId);
-         emit Events.BurnNDPT(tokenId, block.timestamp);
+        emit Events.BurnNDPT(tokenId, block.timestamp);
     }
 
     function burnValue(uint256 tokenId, uint256 value) external whenNotPaused onlyManager {
@@ -186,7 +174,7 @@ contract NFTDerivativeProtocolTokenV1 is
     //     super.setApprovalForAll(operator_, approved_);
     // }
 
-    //-- orverride -- //
+
     function transferValue(
         uint256 fromTokenId_,
         uint256 toTokenId_,
@@ -199,9 +187,9 @@ contract NFTDerivativeProtocolTokenV1 is
             return;
         }
         revert Errors.NotAuthorised();
-     
     }
 
+    //-- orverride -- //
     function transferFrom(
         address from_,
         address to_,
@@ -284,9 +272,8 @@ contract NFTDerivativeProtocolTokenV1 is
 
         _sbtDetails[tokenId_] = DataTypes.SoulBoundTokenDetail({
             nickName: "Bank Treasury",
-            handle: "bankTreasury",
-            locked: true,
-            reputation: 0
+            imageURI: "", //TODO
+            locked: true
         });
         emit Events.BankTreasuryCreated(tokenId_, block.timestamp);
     }
@@ -295,26 +282,29 @@ contract NFTDerivativeProtocolTokenV1 is
         return _BANKTREASURY;
     }
 
+    function setProfileImageURI(uint256 soulBoundTokenId, string calldata imageURI)
+        external
+        override
+        whenNotPaused
+        onlyManager
+    { 
+        _setProfileImageURI(soulBoundTokenId, imageURI);
+    }
 
-    function _validateHandle(string calldata handle) private pure {
-        bytes memory byteHandle = bytes(handle);
-        if (byteHandle.length == 0 || byteHandle.length > Constants.MAX_HANDLE_LENGTH)
-            revert Errors.HandleLengthInvalid();
+    function _setProfileImageURI(uint256 soulBoundTokenId, string calldata imageURI) internal {
+        if (bytes(imageURI).length > Constants.MAX_PROFILE_IMAGE_URI_LENGTH)
+            revert Errors.ProfileImageURILengthInvalid(); 
 
-        uint256 byteHandleLength = byteHandle.length;
-        for (uint256 i = 0; i < byteHandleLength; ) {
-            if (
-                (byteHandle[i] < '0' ||
-                    byteHandle[i] > 'z' ||
-                    (byteHandle[i] > '9' && byteHandle[i] < 'a')) &&
-                byteHandle[i] != '.' &&
-                byteHandle[i] != '-' &&
-                byteHandle[i] != '_'
-            ) revert Errors.HandleContainsInvalidCharacters();
-            unchecked {
-                ++i;
-            }
-        }
+        DataTypes.SoulBoundTokenDetail storage detail = _sbtDetails[soulBoundTokenId];
+        detail.imageURI = imageURI;
+
+        emit Events.ProfileImageURISet(soulBoundTokenId, imageURI, block.timestamp);
+    }
+
+    function _validateNickName(string calldata nickName) private pure {
+        bytes memory byteNickName = bytes(nickName);
+        if (byteNickName.length == 0 || byteNickName.length > Constants.MAX_NICKNAME_LENGTH)
+            revert Errors.NickNameLengthInvalid();
     }
 
 }

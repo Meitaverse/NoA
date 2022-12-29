@@ -10,7 +10,6 @@ import {Constants} from './Constants.sol';
 import {IDerivativeNFTV1} from "../interfaces/IDerivativeNFTV1.sol";
 import {ICollectModule} from '../interfaces/ICollectModule.sol';
 import {IPublishModule} from '../interfaces/IPublishModule.sol';
-import {IFollowModule} from '../interfaces/IFollowModule.sol';
 /**
  * @title PublishLogic
  * @author bitsoul.xyz
@@ -60,6 +59,26 @@ library PublishLogic {
             publisher
         );
 
+        emit Events.PublishDerivativeNFT(
+            publication.soulBoundTokenId,
+            publication.projectId,
+            newTokenId,
+            publication.amount,
+            block.timestamp
+        ); 
+
+        bytes memory collectModuleReturnData = _initCollectModule(
+                publication.projectId,
+                publishId,
+                publication.soulBoundTokenId,
+                newTokenId,
+                publication.amount,
+                publication.collectModule,
+                publication.collectModuleInitData,
+                _pubByIdByProfile,
+                _collectModuleWhitelisted
+        );
+        
         //save
         _pubByIdByProfile[publication.projectId][newTokenId].publishId = publishId;
         _pubByIdByProfile[publication.projectId][newTokenId].hubId = publication.hubId;
@@ -70,26 +89,6 @@ library PublishLogic {
         _pubByIdByProfile[publication.projectId][newTokenId].fromTokenIds = publication.fromTokenIds;
         _pubByIdByProfile[publication.projectId][newTokenId].derivativeNFT = derivativeNFT;
         _pubByIdByProfile[publication.projectId][newTokenId].publishModule = publication.publishModule;
-
-        emit Events.PublishDerivativeNFT(
-            publication.soulBoundTokenId,
-            publication.projectId,
-            newTokenId,
-            publication.amount,
-            block.timestamp
-        ); 
-
-        bytes memory collectModuleReturnData = _initCollectModule(
-                publishId,
-                publication.soulBoundTokenId,
-                publication.projectId,
-                newTokenId,
-                publication.amount,
-                publication.collectModule,
-                publication.collectModuleInitData,
-                _pubByIdByProfile,
-                _collectModuleWhitelisted
-        );
 
         _emitPublishCreated(
             publishId,
@@ -111,26 +110,28 @@ library PublishLogic {
     }
 
     function _initCollectModule(
+        uint256 projectId,
         uint256 publishId,
         uint256 ownershipSoulBoundTokenId,
-        uint256 projectId,
         uint256 newTokenId,
         uint256 amount,
         address collectModule,
         bytes memory collectModuleInitData,
         mapping(uint256 => mapping(uint256 => DataTypes.PublicationStruct))
             storage _pubByIdByProfile,
-        mapping(address => bool) storage _collectModuleWhitelisted
+        mapping(address => bool) storage _collectModuleWhitelisted            
     ) private returns (bytes memory) {
+         _pubByIdByProfile[projectId][newTokenId].collectModule = collectModule;
+        
         if (!_collectModuleWhitelisted[collectModule]) revert Errors.CollectModuleNotWhitelisted();
-        _pubByIdByProfile[projectId][newTokenId].collectModule = collectModule;
+       
         return
             ICollectModule(collectModule).initializePublicationCollectModule(
                 publishId,
                 ownershipSoulBoundTokenId,
                 newTokenId,
                 amount,
-                collectModuleInitData
+                collectModuleInitData 
             );
     }
 
@@ -148,7 +149,7 @@ library PublishLogic {
             revert Errors.PublishModuleNotWhitelisted();
         if (_publishIdByProjectData[publishId].previousPublishId == 0) _publishIdByProjectData[publishId].previousPublishId = publishId;
       
-         _publishIdByProjectData[publishId].publication = publication;
+        _publishIdByProjectData[publishId].publication = publication;
         _publishIdByProjectData[publishId].previousPublishId = previousPublishId;
         _publishIdByProjectData[publishId].isMinted = false;
         _publishIdByProjectData[publishId].tokenId = 0;
@@ -163,48 +164,15 @@ library PublishLogic {
 
 
     /**
-     * @notice Follows the given SoulBoundTokens, executing the necessary logic and module calls before add.
-     * @param projectId The projectId to follow.
-     * @param follower The address executing the follow.
-     * @param soulBoundTokenId The profile token ID to follow.
-     * @param followModuleData The follow module data parameters to pass to each profile's follow module.
-     * @param _profileById A pointer to the storage mapping of profile structs by profile ID.
-     * @param _profileIdByHandleHash A pointer to the storage mapping of profile IDs by handle hash.
-     *
-     */
-    function follow(
-        uint256 projectId,
-        address follower,
-        uint256 soulBoundTokenId,
-        bytes calldata followModuleData,
-        mapping(uint256 => DataTypes.ProfileStruct) storage _profileById,
-        mapping(bytes32 => uint256) storage _profileIdByHandleHash
-    ) external {
-
-        string memory handle = _profileById[soulBoundTokenId].handle;
-        if (_profileIdByHandleHash[keccak256(bytes(handle))] != soulBoundTokenId)
-            revert Errors.TokenDoesNotExist();
-
-        address followModule = _profileById[soulBoundTokenId].followModule;
-        //调用followModule的processFollow函数进行后续处理
-        if (followModule != address(0)) {
-            IFollowModule(followModule).processFollow(
-                follower,
-                soulBoundTokenId,
-                followModuleData
-            );
-        }
-        emit Events.Followed(projectId, follower, soulBoundTokenId, followModuleData, block.timestamp);
-    }
-   
-    /**
      * @notice Collects the given dNFT, executing the necessary logic and module call before minting the
      * collect NFT to the toSoulBoundTokenId.
      * 
      * @param collectData The collect Data struct
      * @param tokenId The collect tokenId
+     * @param newTokenId The new tokenId after collected
      * @param derivativeNFT The dNFT contract
      * @param _pubByIdByProfile The collect Data struct
+     * @param _publishIdByProjectData The collect Data struct
      */
     function collectDerivativeNFT(
         DataTypes.CollectData calldata collectData,
@@ -240,43 +208,6 @@ library PublishLogic {
             newTokenId,
             block.timestamp
         );
-
     }
     
-   function airdropDerivativeNFT(
-        uint256 projectId,
-        address derivativeNFT,
-        address operator,
-        uint256 fromSoulBoundTokenId,
-        address[] memory toWallets,
-        uint256 tokenId,
-        uint256[] memory values
-    ) external {
-        if (toWallets.length != values.length) revert Errors.LengthNotSame();
-        uint256[] memory newTokenIds = new uint256[](toWallets.length);
-
-        for (uint256 i = 0; i < toWallets.length; ) {
-            //must approve PublishModule contract before
-            uint256 newTokenId = IERC3525(derivativeNFT).transferFrom(tokenId, toWallets[i], values[i]);
-           
-            newTokenIds[i] = newTokenId;
-
-            unchecked {
-                ++i;
-            }
-        }
-         
-        emit Events.AirdropDerivativeNFT(
-            projectId,
-            derivativeNFT,
-            fromSoulBoundTokenId,
-            operator,
-            toWallets,
-            tokenId,
-            values,
-            newTokenIds,
-            block.timestamp
-        );
-
-    }
 }    

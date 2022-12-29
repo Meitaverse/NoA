@@ -59,12 +59,8 @@ makeSuiteCleanRoom('Publishing', function () {
                 await createProfileReturningTokenId({
                     vars: {
                     to: userAddress,
-                    handle: MOCK_PROFILE_HANDLE,
                     nickName: NickName,
                     imageURI: MOCK_PROFILE_URI,
-                    followModule: ZERO_ADDRESS,
-                    followModuleInitData: [],
-                    followNFTURI: MOCK_FOLLOW_NFT_URI,
                     },
                 }) 
             ).to.eq(SECOND_PROFILE_ID);
@@ -105,8 +101,6 @@ makeSuiteCleanRoom('Publishing', function () {
             expect(projectInfo.metadataURI).to.eq("metadataURI");
             expect(projectInfo.descriptor.toUpperCase()).to.eq(metadataDescriptor.address.toUpperCase());
 
-            // await manager.connect(governance).deployDerivativeNFT(metadataDescriptor.address);
-            // expect(await  manager.connect(governance).getProjectInfo_name(FIRST_PROJECT_ID)).to.eq("Bitsoul");
             
         });
    
@@ -117,8 +111,8 @@ makeSuiteCleanRoom('Publishing', function () {
             );
 
             const collectModuleInitData = abiCoder.encode(
-                ['uint256', 'uint16', 'address', 'uint256', 'bool'],
-                [SECOND_PROFILE_ID, GENESIS_FEE_BPS, ndptAddress, DEFAULT_COLLECT_PRICE, false]
+                ['uint256', 'uint16', 'address', 'uint256', 'uint256'],
+                [SECOND_PROFILE_ID, GENESIS_FEE_BPS, ndptAddress, DEFAULT_COLLECT_PRICE, 50]
             );
 
             //mint 100Value to user
@@ -130,6 +124,8 @@ makeSuiteCleanRoom('Publishing', function () {
                     hubId: FIRST_HUB_ID,
                     projectId: FIRST_PROJECT_ID,
                     amount: 1,
+                    salePrice: DEFAULT_COLLECT_PRICE,
+                    royaltyBasisPoints: 50,
                     name: "Dollar",
                     description: "Hand draw",
                     materialURIs: [],
@@ -161,8 +157,8 @@ makeSuiteCleanRoom('Publishing', function () {
             );
 
             const collectModuleInitData = abiCoder.encode(
-                ['uint256', 'uint16', 'address', 'uint256', 'bool'],
-                [SECOND_PROFILE_ID, GENESIS_FEE_BPS, ndptAddress, DEFAULT_COLLECT_PRICE, false]
+                ['uint256', 'uint16', 'address', 'uint256', 'uint256'],
+                [SECOND_PROFILE_ID, GENESIS_FEE_BPS, ndptAddress, DEFAULT_COLLECT_PRICE, 50]
             );
 
             //mint 100Value to user
@@ -176,6 +172,8 @@ makeSuiteCleanRoom('Publishing', function () {
                     hubId: FIRST_HUB_ID,
                     projectId: FIRST_PROJECT_ID,
                     amount: 2,
+                    salePrice: DEFAULT_COLLECT_PRICE,
+                    royaltyBasisPoints: 50,                    
                     name: "Dollar",
                     description: "Hand draw",
                     materialURIs: [],
@@ -198,8 +196,8 @@ makeSuiteCleanRoom('Publishing', function () {
             );
 
             const collectModuleInitData = abiCoder.encode(
-                ['uint256', 'uint16', 'address', 'uint256', 'bool'],
-                [SECOND_PROFILE_ID, GENESIS_FEE_BPS, ndptAddress, DEFAULT_COLLECT_PRICE, false]
+                ['uint256', 'uint16', 'address', 'uint256', 'uint256'],
+                [SECOND_PROFILE_ID, GENESIS_FEE_BPS, ndptAddress, DEFAULT_COLLECT_PRICE, 50]
             );
             
             //mint 100Value to user
@@ -213,6 +211,8 @@ makeSuiteCleanRoom('Publishing', function () {
                    hubId: FIRST_HUB_ID,
                    projectId: FIRST_PROJECT_ID,
                    amount: 1,
+                   salePrice: DEFAULT_COLLECT_PRICE,
+                   royaltyBasisPoints: 50,                   
                    name: "Dollar",
                    description: "Hand draw",
                    materialURIs: [],
@@ -224,11 +224,14 @@ makeSuiteCleanRoom('Publishing', function () {
                })
            ).to.not.be.reverted;
 
-            await expect(
-                 manager.connect(user).publish(
-                    FIRST_PUBLISH_ID
-               )
-            ).to.not.be.reverted;
+            // await expect(
+            //      manager.connect(user).publish(
+            //         FIRST_PUBLISH_ID
+            //    )
+            // ).to.not.be.reverted;
+            await manager.connect(user).publish(
+                        FIRST_PUBLISH_ID
+            );
 
             // const dNFTTokenId = await manager.connect(user).callStatic.publish(FIRST_PUBLISH_ID);
             // await expect(manager.connect(user).publish(FIRST_PUBLISH_ID)).to.not.be.reverted;
@@ -239,7 +242,7 @@ makeSuiteCleanRoom('Publishing', function () {
             expect((await ndptContract.balanceOfNDPT(SECOND_PROFILE_ID)).toNumber()).to.eq(100);
 
         });
-
+/*
         it('User should be able to publish 11 dNFTs to himself', async function () {
             const publishModuleinitData = abiCoder.encode(
                 ['address', 'uint256'],
@@ -247,8 +250,8 @@ makeSuiteCleanRoom('Publishing', function () {
             );
 
             const collectModuleInitData = abiCoder.encode(
-                ['uint256', 'uint16', 'address', 'uint256', 'bool'],
-                [SECOND_PROFILE_ID, GENESIS_FEE_BPS, ndptAddress, DEFAULT_COLLECT_PRICE, false]
+                ['uint256', 'uint16', 'address', 'uint256', 'uint256'],
+                [SECOND_PROFILE_ID, GENESIS_FEE_BPS, ndptAddress, DEFAULT_COLLECT_PRICE, 50]
             );
             
             //mint 1000Value to user
@@ -262,6 +265,8 @@ makeSuiteCleanRoom('Publishing', function () {
                    hubId: FIRST_HUB_ID,
                    projectId: FIRST_PROJECT_ID,
                    amount: 11,
+                   salePrice: DEFAULT_COLLECT_PRICE,
+                   royaltyBasisPoints: 50,                   
                    name: "Dollar",
                    description: "Hand draw",
                    materialURIs: [],
@@ -282,7 +287,7 @@ makeSuiteCleanRoom('Publishing', function () {
             expect((await ndptContract.balanceOfNDPT(SECOND_PROFILE_ID)).toNumber()).to.eq(0);
 
         });
-        
+        */
     });
 });
 

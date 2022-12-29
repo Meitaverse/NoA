@@ -77,12 +77,8 @@ makeSuiteCleanRoom('Fee Collect Module', function () {
       await createProfileReturningTokenId({
           vars: {
           to: userAddress,
-          handle: MOCK_PROFILE_HANDLE,
           nickName: NickName,
           imageURI: MOCK_PROFILE_URI,
-          followModule: ZERO_ADDRESS,
-          followModuleInitData: [],
-          followNFTURI: MOCK_FOLLOW_NFT_URI,
           },
          }) 
       ).to.eq(SECOND_PROFILE_ID);
@@ -94,37 +90,15 @@ makeSuiteCleanRoom('Fee Collect Module', function () {
         manager.connect(governance).whitelistProfileCreator(userTwoAddress, true)
       ).to.not.be.reverted;
 
-      // expect(
-      //   await createProfileReturningTokenId({
-      //       vars: {
-      //       to: userTwoAddress,
-      //       handle: MOCK_PROFILE_HANDLE,
-      //       nickName: NickName3,
-      //       imageURI: MOCK_PROFILE_URI,
-      //       followModule: ZERO_ADDRESS,
-      //       followModuleInitData: [],
-      //       followNFTURI: MOCK_FOLLOW_NFT_URI,
-      //       },
-      //   }) 
-      // ).to.eq(THIRD_PROFILE_ID);
-
       const tokenId = await manager.connect(userTwo).callStatic.createProfile({ 
             to: userTwoAddress,
-            handle: MOCK_PROFILE_HANDLE,
             nickName: NickName3,
             imageURI: MOCK_PROFILE_URI,
-            followModule: ZERO_ADDRESS,
-            followModuleInitData: [],
-            followNFTURI: MOCK_FOLLOW_NFT_URI,
       });
       await expect(manager.connect(userTwo).createProfile({ 
             to: userTwoAddress,
-            handle: MOCK_PROFILE_HANDLE,
             nickName: NickName3,
             imageURI: MOCK_PROFILE_URI,
-            followModule: ZERO_ADDRESS,
-            followModuleInitData: [],
-            followNFTURI: MOCK_FOLLOW_NFT_URI,
       })).to.not.be.reverted;
       expect(tokenId).to.eq(THIRD_PROFILE_ID);
 
@@ -172,9 +146,9 @@ makeSuiteCleanRoom('Fee Collect Module', function () {
         );
 
         const collectModuleInitData = abiCoder.encode(
-            ['uint256', 'uint16', 'address', 'uint256', 'bool'],
+            ['uint256', 'uint16', 'address', 'uint256', 'uint256'],
             //userTwoAddress is unwhitelisted currency
-            [SECOND_PROFILE_ID, GENESIS_FEE_BPS, userTwoAddress, DEFAULT_COLLECT_PRICE, false]
+            [SECOND_PROFILE_ID, GENESIS_FEE_BPS, userTwoAddress, DEFAULT_COLLECT_PRICE, 50]
         );
 
         await expect(
@@ -183,6 +157,8 @@ makeSuiteCleanRoom('Fee Collect Module', function () {
              hubId: FIRST_HUB_ID,
              projectId: FIRST_PROJECT_ID,
              amount: 1,
+             salePrice: DEFAULT_COLLECT_PRICE,
+             royaltyBasisPoints: 50,             
              name: "Dollar",
              description: "Hand draw",
              materialURIs: [],
@@ -207,9 +183,9 @@ makeSuiteCleanRoom('Fee Collect Module', function () {
         );
 
         const collectModuleInitData = abiCoder.encode(
-            ['uint256', 'uint16', 'address', 'uint256', 'bool'],
+            ['uint256', 'uint16', 'address', 'uint256', 'uint256'],
            
-            [SECOND_PROFILE_ID, GENESIS_FEE_BPS, ndptAddress, DEFAULT_COLLECT_PRICE, false]
+            [SECOND_PROFILE_ID, GENESIS_FEE_BPS, ndptAddress, DEFAULT_COLLECT_PRICE, 50]
         );
 
         await expect(
@@ -218,6 +194,8 @@ makeSuiteCleanRoom('Fee Collect Module', function () {
              hubId: FIRST_HUB_ID,
              projectId: FIRST_PROJECT_ID,
              amount: 1,
+             salePrice: DEFAULT_COLLECT_PRICE,
+             royaltyBasisPoints: 50,             
              name: "Dollar",
              description: "Hand draw",
              materialURIs: [],
@@ -241,9 +219,9 @@ makeSuiteCleanRoom('Fee Collect Module', function () {
         );
 
         const collectModuleInitData = abiCoder.encode(
-            ['uint256', 'uint16', 'address', 'uint256', 'bool'],
+            ['uint256', 'uint16', 'address', 'uint256', 'uint256'],
            
-            [SECOND_PROFILE_ID, 10000, ndptAddress, DEFAULT_COLLECT_PRICE, false]
+            [SECOND_PROFILE_ID, 10000, ndptAddress, DEFAULT_COLLECT_PRICE, 50]
         );
 
         await expect(
@@ -252,6 +230,8 @@ makeSuiteCleanRoom('Fee Collect Module', function () {
              hubId: FIRST_HUB_ID,
              projectId: FIRST_PROJECT_ID,
              amount: 1,
+             salePrice: DEFAULT_COLLECT_PRICE,
+             royaltyBasisPoints: 50,             
              name: "Dollar",
              description: "Hand draw",
              materialURIs: [],
@@ -275,9 +255,9 @@ makeSuiteCleanRoom('Fee Collect Module', function () {
         );
 
         const collectModuleInitData = abiCoder.encode(
-            ['uint256', 'uint16', 'address', 'uint256', 'bool'],
+            ['uint256', 'uint16', 'address', 'uint256', 'uint256'],
            
-            [SECOND_PROFILE_ID, GENESIS_FEE_BPS, ndptAddress, DEFAULT_COLLECT_PRICE, false]
+            [SECOND_PROFILE_ID, GENESIS_FEE_BPS, ndptAddress, DEFAULT_COLLECT_PRICE, 50]
         );
 
         await expect(
@@ -286,6 +266,8 @@ makeSuiteCleanRoom('Fee Collect Module', function () {
              hubId: FIRST_HUB_ID,
              projectId: FIRST_PROJECT_ID,
              amount: 0,
+             salePrice: DEFAULT_COLLECT_PRICE,
+             royaltyBasisPoints: 50,             
              name: "Dollar",
              description: "Hand draw",
              materialURIs: [],
@@ -307,16 +289,23 @@ makeSuiteCleanRoom('Fee Collect Module', function () {
 
     context('Collecting', function () {
       beforeEach(async function () {
-       
+        //mint some Values to user
+        await manager.connect(governance).mintNDPTValue(SECOND_PROFILE_ID, 1000000000000);
+        expect((await ndptContract.balanceOfNDPT(SECOND_PROFILE_ID)).toNumber()).to.eq(1000000000000);
+
+        //mint some Values to userTwo
+        await manager.connect(governance).mintNDPTValue(THIRD_PROFILE_ID, 1000000000000);
+        expect((await ndptContract.balanceOfNDPT(THIRD_PROFILE_ID)).toNumber()).to.eq(1000000000000);
+        
         const publishModuleinitData = abiCoder.encode(
           ['address', 'uint256'],
           [template.address, DEFAULT_TEMPLATE_NUMBER],
         );
 
         const collectModuleInitData = abiCoder.encode(
-            ['uint256', 'uint16', 'address', 'uint256', 'bool'],
+            ['uint256', 'uint16', 'address', 'uint256', 'uint256'],
            
-            [SECOND_PROFILE_ID, GENESIS_FEE_BPS, ndptAddress, DEFAULT_COLLECT_PRICE, false]
+            [SECOND_PROFILE_ID, GENESIS_FEE_BPS, ndptAddress, DEFAULT_COLLECT_PRICE, 50]
         );
 
         await expect(
@@ -325,6 +314,8 @@ makeSuiteCleanRoom('Fee Collect Module', function () {
               hubId: FIRST_HUB_ID,
               projectId: FIRST_PROJECT_ID,
               amount: 1,
+              salePrice: DEFAULT_COLLECT_PRICE,
+              royaltyBasisPoints: 50,              
               name: "Dollar",
               description: "Hand draw",
               materialURIs: [],
@@ -351,18 +342,7 @@ makeSuiteCleanRoom('Fee Collect Module', function () {
             await derivativeNFT['balanceOf(uint256)'](FIRST_DNFT_TOKEN_ID)
           ).to.eq(1);
 
-          //mint some Values to userTwo
-          await manager.connect(governance).mintNDPTValue(THIRD_PROFILE_ID, 1000000000000);
-          expect((await ndptContract.balanceOfNDPT(THIRD_PROFILE_ID)).toNumber()).to.eq(1000000000000);
 
-         //userTwo授权给manager合约
-          await derivativeNFT['approve(uint256,address,uint256)'](FIRST_DNFT_TOKEN_ID, manager.address, 1);
-          
-          //查看授权额度是否正确
-          expect(
-            await derivativeNFT['allowance(uint256,address)'](FIRST_DNFT_TOKEN_ID, manager.address)
-          ).to.eq(1);
-          
       });
 
       it('UserTwo should fail to process collect without being the manager', async function () {
@@ -374,7 +354,7 @@ makeSuiteCleanRoom('Fee Collect Module', function () {
       });
 
       it('Governance should set the treasury fee BPS to zero, user call permit userTwo collecting should not emit a transfer event to the treasury', async function () {
-        // await expect(moduleGlobals.connect(governance).setTreasuryFee(0)).to.not.be.reverted;
+        await expect(moduleGlobals.connect(governance).setTreasuryFee(0)).to.not.be.reverted;
 
         /*
         //不开放直接调用transferFrom, 必须通过manager来调用
@@ -392,16 +372,6 @@ makeSuiteCleanRoom('Fee Collect Module', function () {
           }) 
           ).to.eq(SECOND_DNFT_TOKEN_ID);
 
-   
-        // const tx = manager.connect(userTwo).collect(
-        //   {
-        //     publishId: FIRST_PUBLISH_ID,
-        //     collectorSoulBoundTokenId: THIRD_PROFILE_ID,
-        //     collectValue: 1,
-        //   }
-        // );
-        // const receipt = await waitForTx(tx);
-
         expect(
           await derivativeNFT.ownerOf(SECOND_DNFT_TOKEN_ID)
         ).to.eq(userTwoAddress);
@@ -413,18 +383,271 @@ makeSuiteCleanRoom('Fee Collect Module', function () {
         //After transferFrom, user have zero dNFT
         expect(
           await derivativeNFT['balanceOf(uint256)'](FIRST_DNFT_TOKEN_ID)
-        ).to.eq(0);
+        ).to.eq(0);  //10 - 1
 
-        // matchEvent(
-        //   receipt,
-        //   'Transfer',
-        //   [userTwoAddress, userAddress, DEFAULT_COLLECT_PRICE],
-        //   currency,
-        //   currency.address
-        // );
+
+      });         
+   
+    });
+
+    context('Airdrop', function () {
+      beforeEach(async function () {
+
+        //mint some Values to user
+        await manager.connect(governance).mintNDPTValue(SECOND_PROFILE_ID, 1000000000000);
+        expect((await ndptContract.balanceOfNDPT(SECOND_PROFILE_ID)).toNumber()).to.eq(1000000000000);
+
+        //mint some Values to userTwo
+        await manager.connect(governance).mintNDPTValue(THIRD_PROFILE_ID, 1000000000000);
+        expect((await ndptContract.balanceOfNDPT(THIRD_PROFILE_ID)).toNumber()).to.eq(1000000000000);
+        
+        const publishModuleinitData = abiCoder.encode(
+          ['address', 'uint256'],
+          [template.address, DEFAULT_TEMPLATE_NUMBER],
+        );
+
+        const collectModuleInitData = abiCoder.encode(
+            ['uint256', 'uint16', 'address', 'uint256', 'uint256'],
+           
+            [SECOND_PROFILE_ID, GENESIS_FEE_BPS, ndptAddress, DEFAULT_COLLECT_PRICE, 50]
+        );
+
+        await expect(
+            manager.connect(user).prePublish({
+              soulBoundTokenId: SECOND_PROFILE_ID,
+              hubId: FIRST_HUB_ID,
+              projectId: FIRST_PROJECT_ID,
+              amount: 11,
+              salePrice: DEFAULT_COLLECT_PRICE,
+              royaltyBasisPoints: 50,              
+              name: "Dollar",
+              description: "Hand draw",
+              materialURIs: [],
+              fromTokenIds: [],
+              collectModule: feeCollectModule.address,
+              collectModuleInitData: collectModuleInitData,
+              publishModule: publishModule.address,
+              publishModuleInitData: publishModuleinitData,
+          })
+          ).to.not.be.reverted;
+
+          const dNFTTokenId = await manager.connect(user).callStatic.publish(FIRST_PUBLISH_ID);
+          await expect(
+            manager.connect(user).publish(FIRST_PUBLISH_ID)
+          ).to.not.be.reverted;
+
+          expect(dNFTTokenId).to.eq(FIRST_DNFT_TOKEN_ID);  
+
+          expect(
+            await derivativeNFT.ownerOf(FIRST_DNFT_TOKEN_ID)
+          ).to.eq(userAddress);
+
+          expect(
+            await derivativeNFT['balanceOf(uint256)'](FIRST_DNFT_TOKEN_ID)
+          ).to.eq(11);
+
+  
+      });
+
+      it('Hub owner airdrop ', async function () {
+        
+        expect(
+          await derivativeNFT.ownerOf(FIRST_DNFT_TOKEN_ID)
+        ).to.eq(userAddress);
+
+        await expect(manager.connect(user).airdrop({
+          publishId: FIRST_PROJECT_ID,
+          ownershipSoulBoundTokenId: SECOND_PROFILE_ID,
+          toSoulBoundTokenIds: [THIRD_PROFILE_ID],
+          tokenId: FIRST_DNFT_TOKEN_ID,
+          values: [1],
+        })).to.not.be.reverted;
+
+        expect(
+          await derivativeNFT.ownerOf(SECOND_DNFT_TOKEN_ID)
+        ).to.eq(userTwoAddress);
+
+        expect(
+          await derivativeNFT['balanceOf(uint256)'](FIRST_DNFT_TOKEN_ID)
+        ).to.eq(10);
+
+        expect(
+          await derivativeNFT['balanceOf(uint256)'](SECOND_DNFT_TOKEN_ID)
+        ).to.eq(1);
+      });      
+
+      it('Should fail to airdrop when amount is exceed', async function () {
+        
+        expect(
+          await derivativeNFT.ownerOf(FIRST_DNFT_TOKEN_ID)
+        ).to.eq(userAddress);
+
+        await expect(manager.connect(user).airdrop({
+          publishId: FIRST_PROJECT_ID,
+          ownershipSoulBoundTokenId: SECOND_PROFILE_ID,
+          toSoulBoundTokenIds: [THIRD_PROFILE_ID],
+          tokenId: FIRST_DNFT_TOKEN_ID,
+          values: [100],
+        })).to.be.revertedWith(ERRORS.ERC3525_INSUFFICIENT_BALANCE);
+
+     
+        expect(
+          await derivativeNFT['balanceOf(uint256)'](FIRST_DNFT_TOKEN_ID)
+        ).to.eq(11);
+      });      
+
+      it('Should fail to airdrop when ownership soulBoundTokenId is not owner of tokenId', async function () {
+        
+        expect(
+          await derivativeNFT.ownerOf(FIRST_DNFT_TOKEN_ID)
+        ).to.eq(userAddress);
+
+        expect(
+          await collectReturningTokenId({
+              vars: {
+                publishId: FIRST_PUBLISH_ID,
+                collectorSoulBoundTokenId: THIRD_PROFILE_ID,
+                collectValue: 1,
+              },
+          }) 
+        ).to.eq(SECOND_DNFT_TOKEN_ID);
+
+        expect(
+          await derivativeNFT.ownerOf(SECOND_DNFT_TOKEN_ID)
+        ).to.eq(userTwoAddress);
+
+          
+        await expect(manager.connect(user).airdrop({
+          publishId: FIRST_PROJECT_ID,
+          ownershipSoulBoundTokenId: SECOND_PROFILE_ID,
+          toSoulBoundTokenIds: [THIRD_PROFILE_ID],
+          tokenId: SECOND_DNFT_TOKEN_ID, //this tokenId is not owner of user
+          values: [1],
+        })).to.be.revertedWith(ERRORS.NOT_OWNEROF_TOKENID);
+
+      });      
+    });
+    
+    context('DerivativeNFT transfer', function () {
+      beforeEach(async function () {
+
+        //mint some Values to user
+        await manager.connect(governance).mintNDPTValue(SECOND_PROFILE_ID, 1000000000000);
+        expect((await ndptContract.balanceOfNDPT(SECOND_PROFILE_ID)).toNumber()).to.eq(1000000000000);
+
+        //mint some Values to userTwo
+        await manager.connect(governance).mintNDPTValue(THIRD_PROFILE_ID, 1000000000000);
+        expect((await ndptContract.balanceOfNDPT(THIRD_PROFILE_ID)).toNumber()).to.eq(1000000000000);
+        
+        const publishModuleinitData = abiCoder.encode(
+          ['address', 'uint256'],
+          [template.address, DEFAULT_TEMPLATE_NUMBER],
+        );
+
+        const collectModuleInitData = abiCoder.encode(
+            ['uint256', 'uint16', 'address', 'uint256', 'uint256'],
+           
+            [SECOND_PROFILE_ID, GENESIS_FEE_BPS, ndptAddress, DEFAULT_COLLECT_PRICE, 50]
+        );
+
+        await expect(
+            manager.connect(user).prePublish({
+              soulBoundTokenId: SECOND_PROFILE_ID,
+              hubId: FIRST_HUB_ID,
+              projectId: FIRST_PROJECT_ID,
+              amount: 11,
+              salePrice: DEFAULT_COLLECT_PRICE,
+              royaltyBasisPoints: 50,              
+              name: "Dollar",
+              description: "Hand draw",
+              materialURIs: [],
+              fromTokenIds: [],
+              collectModule: feeCollectModule.address,
+              collectModuleInitData: collectModuleInitData,
+              publishModule: publishModule.address,
+              publishModuleInitData: publishModuleinitData,
+          })
+          ).to.not.be.reverted;
+
+          const dNFTTokenId = await manager.connect(user).callStatic.publish(FIRST_PUBLISH_ID);
+          await expect(
+            manager.connect(user).publish(FIRST_PUBLISH_ID)
+          ).to.not.be.reverted;
+
+          expect(dNFTTokenId).to.eq(FIRST_DNFT_TOKEN_ID);  
+
+          expect(
+            await derivativeNFT.ownerOf(FIRST_DNFT_TOKEN_ID)
+          ).to.eq(userAddress);
+
+          expect(
+            await derivativeNFT['balanceOf(uint256)'](FIRST_DNFT_TOKEN_ID)
+          ).to.eq(11);
+
+  
+      });
+
+      it('Transfer dNFT to a soulBoundTokenId ', async function () {
+        
+        expect(
+          await derivativeNFT.ownerOf(FIRST_DNFT_TOKEN_ID)
+        ).to.eq(userAddress);
+
+        //approve manager contract
+        await derivativeNFT.connect(user)['approve(address,uint256)'](manager.address, FIRST_DNFT_TOKEN_ID);
+
+        await expect(manager.connect(user).transferDerivativeNFT(
+          FIRST_PROJECT_ID,
+          SECOND_PROFILE_ID,
+          THIRD_PROFILE_ID,
+          FIRST_DNFT_TOKEN_ID,
+        )).to.not.be.reverted;
+
+        expect(
+          await derivativeNFT.ownerOf(FIRST_DNFT_TOKEN_ID)
+        ).to.eq(userTwoAddress);
+
+        expect(
+          await derivativeNFT['balanceOf(uint256)'](FIRST_DNFT_TOKEN_ID)
+        ).to.eq(11);
 
       });      
 
+      it('Transfer dNFT value to a soulBoundTokenId ', async function () {
+        
+        expect(
+          await derivativeNFT.ownerOf(FIRST_DNFT_TOKEN_ID)
+        ).to.eq(userAddress);
+
+        //approve manager contract
+        await derivativeNFT.connect(user)['approve(address,uint256)'](manager.address, FIRST_DNFT_TOKEN_ID);
+
+        await expect(manager.connect(user).transferValueDerivativeNFT(
+          FIRST_PROJECT_ID,
+          SECOND_PROFILE_ID,
+          THIRD_PROFILE_ID,
+          FIRST_DNFT_TOKEN_ID,
+          1
+        )).to.not.be.reverted;
+
+        expect(
+          await derivativeNFT.ownerOf(FIRST_DNFT_TOKEN_ID)
+        ).to.eq(userAddress);
+
+        expect(
+          await derivativeNFT.ownerOf(SECOND_DNFT_TOKEN_ID)
+        ).to.eq(userTwoAddress);
+
+        expect(
+          await derivativeNFT['balanceOf(uint256)'](FIRST_DNFT_TOKEN_ID)
+        ).to.eq(10);
+
+        expect(
+          await derivativeNFT['balanceOf(uint256)'](SECOND_DNFT_TOKEN_ID)
+        ).to.eq(1);
+
+      });      
+      
     });
 
   });
@@ -438,11 +661,8 @@ makeSuiteCleanRoom('Fee Collect Module', function () {
         await expect(
           lensHub.connect(userTwo).createProfile({
             to: userTwoAddress,
-            handle: 'usertwo',
+            nickName: 'usertwo',
             imageURI: MOCK_PROFILE_URI,
-            followModule: ZERO_ADDRESS,
-            followModuleInitData: [],
-            followNFTURI: MOCK_FOLLOW_NFT_URI,
           })
         ).to.not.be.reverted;
         await expect(
@@ -455,13 +675,6 @@ makeSuiteCleanRoom('Fee Collect Module', function () {
             referenceModuleInitData: [],
           })
         ).to.not.be.reverted;
-
-        await expect(moduleGlobals.connect(governance).setTreasuryFee(0)).to.not.be.reverted;
-        const data = abiCoder.encode(
-          ['address', 'uint256'],
-          [currency.address, DEFAULT_COLLECT_PRICE]
-        );
-        await expect(lensHub.connect(userTwo).follow([FIRST_PROFILE_ID], [[]])).to.not.be.reverted;
 
         await expect(currency.mint(userTwoAddress, MAX_UINT256)).to.not.be.reverted;
         await expect(
@@ -511,51 +724,14 @@ makeSuiteCleanRoom('Fee Collect Module', function () {
         ).to.be.revertedWith(ERRORS.FOLLOW_INVALID);
       });
 
-      it('UserTwo should fail to collect passing a different expected price in data', async function () {
-        await expect(lensHub.connect(userTwo).follow([FIRST_PROFILE_ID], [[]])).to.not.be.reverted;
-
-        const data = abiCoder.encode(
-          ['address', 'uint256'],
-          [currency.address, DEFAULT_COLLECT_PRICE.div(2)]
-        );
-        await expect(
-          lensHub.connect(userTwo).collect(FIRST_PROFILE_ID, 1, data)
-        ).to.be.revertedWith(ERRORS.MODULE_DATA_MISMATCH);
-      });
-
-      it('UserTwo should fail to collect passing a different expected currency in data', async function () {
-        await expect(lensHub.connect(userTwo).follow([FIRST_PROFILE_ID], [[]])).to.not.be.reverted;
-
-        const data = abiCoder.encode(['address', 'uint256'], [userAddress, DEFAULT_COLLECT_PRICE]);
-        await expect(
-          lensHub.connect(userTwo).collect(FIRST_PROFILE_ID, 1, data)
-        ).to.be.revertedWith(ERRORS.MODULE_DATA_MISMATCH);
-      });
-
-      it('UserTwo should fail to collect without first approving module with currency', async function () {
-        await expect(currency.mint(userTwoAddress, MAX_UINT256)).to.not.be.reverted;
-
-        await expect(lensHub.connect(userTwo).follow([FIRST_PROFILE_ID], [[]])).to.not.be.reverted;
-
-        const data = abiCoder.encode(
-          ['address', 'uint256'],
-          [currency.address, DEFAULT_COLLECT_PRICE]
-        );
-        await expect(
-          lensHub.connect(userTwo).collect(FIRST_PROFILE_ID, 1, data)
-        ).to.be.revertedWith(ERRORS.ERC20_INSUFFICIENT_ALLOWANCE);
-      });
 
       it('UserTwo should mirror the original post, fail to collect from their mirror without following the original profile', async function () {
         const secondProfileId = FIRST_PROFILE_ID + 1;
         await expect(
           lensHub.connect(userTwo).createProfile({
             to: userTwoAddress,
-            handle: 'usertwo',
+            nickName: 'usertwo',
             imageURI: MOCK_PROFILE_URI,
-            followModule: ZERO_ADDRESS,
-            followModuleInitData: [],
-            followNFTURI: MOCK_FOLLOW_NFT_URI,
           })
         ).to.not.be.reverted;
         await expect(
@@ -574,382 +750,9 @@ makeSuiteCleanRoom('Fee Collect Module', function () {
           ERRORS.FOLLOW_INVALID
         );
       });
-
-      it('UserTwo should mirror the original post, fail to collect from their mirror passing a different expected price in data', async function () {
-        const secondProfileId = FIRST_PROFILE_ID + 1;
-        await expect(
-          lensHub.connect(userTwo).createProfile({
-            to: userTwoAddress,
-            handle: 'usertwo',
-            imageURI: MOCK_PROFILE_URI,
-            followModule: ZERO_ADDRESS,
-            followModuleInitData: [],
-            followNFTURI: MOCK_FOLLOW_NFT_URI,
-          })
-        ).to.not.be.reverted;
-        await expect(
-          lensHub.connect(userTwo).mirror({
-            profileId: secondProfileId,
-            profileIdPointed: FIRST_PROFILE_ID,
-            pubIdPointed: 1,
-            referenceModuleData: [],
-            referenceModule: ZERO_ADDRESS,
-            referenceModuleInitData: [],
-          })
-        ).to.not.be.reverted;
-
-        await expect(lensHub.connect(userTwo).follow([FIRST_PROFILE_ID], [[]])).to.not.be.reverted;
-
-        const data = abiCoder.encode(
-          ['address', 'uint256'],
-          [currency.address, DEFAULT_COLLECT_PRICE.div(2)]
-        );
-        await expect(lensHub.connect(userTwo).collect(secondProfileId, 1, data)).to.be.revertedWith(
-          ERRORS.MODULE_DATA_MISMATCH
-        );
-      });
-
-      it('UserTwo should mirror the original post, fail to collect from their mirror passing a different expected currency in data', async function () {
-        const secondProfileId = FIRST_PROFILE_ID + 1;
-        await expect(
-          lensHub.connect(userTwo).createProfile({
-            to: userTwoAddress,
-            handle: 'usertwo',
-            imageURI: MOCK_PROFILE_URI,
-            followModule: ZERO_ADDRESS,
-            followModuleInitData: [],
-            followNFTURI: MOCK_FOLLOW_NFT_URI,
-          })
-        ).to.not.be.reverted;
-        await expect(
-          lensHub.connect(userTwo).mirror({
-            profileId: secondProfileId,
-            profileIdPointed: FIRST_PROFILE_ID,
-            pubIdPointed: 1,
-            referenceModuleData: [],
-            referenceModule: ZERO_ADDRESS,
-            referenceModuleInitData: [],
-          })
-        ).to.not.be.reverted;
-
-        await expect(lensHub.connect(userTwo).follow([FIRST_PROFILE_ID], [[]])).to.not.be.reverted;
-
-        const data = abiCoder.encode(['address', 'uint256'], [userAddress, DEFAULT_COLLECT_PRICE]);
-        await expect(lensHub.connect(userTwo).collect(secondProfileId, 1, data)).to.be.revertedWith(
-          ERRORS.MODULE_DATA_MISMATCH
-        );
-      });
+      
     });
   });
 */
 
-/*
-  context('Scenarios', function () {
-    it('User should post with fee collect module as the collect module and data, correct events should be emitted', async function () {
-      const collectModuleInitData = abiCoder.encode(
-        ['uint256', 'address', 'address', 'uint16', 'bool'],
-        [DEFAULT_COLLECT_PRICE, currency.address, userAddress, REFERRAL_FEE_BPS, true]
-      );
-      const tx = lensHub.post({
-        profileId: FIRST_PROFILE_ID,
-        contentURI: MOCK_URI,
-        collectModule: feeCollectModule.address,
-        collectModuleInitData: collectModuleInitData,
-        referenceModule: ZERO_ADDRESS,
-        referenceModuleInitData: [],
-      });
-
-      const receipt = await waitForTx(tx);
-
-      expect(receipt.logs.length).to.eq(1);
-      matchEvent(receipt, 'PostCreated', [
-        FIRST_PROFILE_ID,
-        1,
-        MOCK_URI,
-        feeCollectModule.address,
-        [collectModuleInitData],
-        ZERO_ADDRESS,
-        [],
-        await getTimestamp(),
-      ]);
-    });
-
-    it('User should post with the fee collect module as the collect module and data, fetched publication data should be accurate', async function () {
-      const collectModuleInitData = abiCoder.encode(
-        ['uint256', 'address', 'address', 'uint16', 'bool'],
-        [DEFAULT_COLLECT_PRICE, currency.address, userAddress, REFERRAL_FEE_BPS, true]
-      );
-      await expect(
-        lensHub.post({
-          profileId: FIRST_PROFILE_ID,
-          contentURI: MOCK_URI,
-          collectModule: feeCollectModule.address,
-          collectModuleInitData: collectModuleInitData,
-          referenceModule: ZERO_ADDRESS,
-          referenceModuleInitData: [],
-        })
-      ).to.not.be.reverted;
-      const postTimestamp = await getTimestamp();
-
-      const fetchedData = await feeCollectModule.getPublicationData(FIRST_PROFILE_ID, 1);
-      expect(fetchedData.amount).to.eq(DEFAULT_COLLECT_PRICE);
-      expect(fetchedData.recipient).to.eq(userAddress);
-      expect(fetchedData.currency).to.eq(currency.address);
-      expect(fetchedData.referralFee).to.eq(REFERRAL_FEE_BPS);
-      expect(fetchedData.followerOnly).to.eq(true);
-    });
-
-    it('User should post with the fee collect module as the collect module and data, allowing non-followers to collect, user two collects without following, fee distribution is valid', async function () {
-      const collectModuleInitData = abiCoder.encode(
-        ['uint256', 'address', 'address', 'uint16', 'bool'],
-        [DEFAULT_COLLECT_PRICE, currency.address, userAddress, REFERRAL_FEE_BPS, false]
-      );
-      await expect(
-        lensHub.post({
-          profileId: FIRST_PROFILE_ID,
-          contentURI: MOCK_URI,
-          collectModule: feeCollectModule.address,
-          collectModuleInitData: collectModuleInitData,
-          referenceModule: ZERO_ADDRESS,
-          referenceModuleInitData: [],
-        })
-      ).to.not.be.reverted;
-
-      await expect(currency.mint(userTwoAddress, MAX_UINT256)).to.not.be.reverted;
-      await expect(
-        currency.connect(userTwo).approve(feeCollectModule.address, MAX_UINT256)
-      ).to.not.be.reverted;
-      const data = abiCoder.encode(
-        ['address', 'uint256'],
-        [currency.address, DEFAULT_COLLECT_PRICE]
-      );
-      await expect(lensHub.connect(userTwo).collect(FIRST_PROFILE_ID, 1, data)).to.not.be.reverted;
-
-      const expectedTreasuryAmount = BigNumber.from(DEFAULT_COLLECT_PRICE)
-        .mul(TREASURY_FEE_BPS)
-        .div(BPS_MAX);
-      const expectedRecipientAmount =
-        BigNumber.from(DEFAULT_COLLECT_PRICE).sub(expectedTreasuryAmount);
-
-      expect(await currency.balanceOf(userTwoAddress)).to.eq(
-        BigNumber.from(MAX_UINT256).sub(DEFAULT_COLLECT_PRICE)
-      );
-      expect(await currency.balanceOf(userAddress)).to.eq(expectedRecipientAmount);
-      expect(await currency.balanceOf(treasuryAddress)).to.eq(expectedTreasuryAmount);
-    });
-
-    it('User should post with the fee collect module as the collect module and data, user two follows, then collects and pays fee, fee distribution is valid', async function () {
-      const collectModuleInitData = abiCoder.encode(
-        ['uint256', 'address', 'address', 'uint16', 'bool'],
-        [DEFAULT_COLLECT_PRICE, currency.address, userAddress, REFERRAL_FEE_BPS, true]
-      );
-      await expect(
-        lensHub.post({
-          profileId: FIRST_PROFILE_ID,
-          contentURI: MOCK_URI,
-          collectModule: feeCollectModule.address,
-          collectModuleInitData: collectModuleInitData,
-          referenceModule: ZERO_ADDRESS,
-          referenceModuleInitData: [],
-        })
-      ).to.not.be.reverted;
-
-      await expect(currency.mint(userTwoAddress, MAX_UINT256)).to.not.be.reverted;
-      await expect(
-        currency.connect(userTwo).approve(feeCollectModule.address, MAX_UINT256)
-      ).to.not.be.reverted;
-      await expect(lensHub.connect(userTwo).follow([FIRST_PROFILE_ID], [[]])).to.not.be.reverted;
-      const data = abiCoder.encode(
-        ['address', 'uint256'],
-        [currency.address, DEFAULT_COLLECT_PRICE]
-      );
-      await expect(lensHub.connect(userTwo).collect(FIRST_PROFILE_ID, 1, data)).to.not.be.reverted;
-
-      const expectedTreasuryAmount = BigNumber.from(DEFAULT_COLLECT_PRICE)
-        .mul(TREASURY_FEE_BPS)
-        .div(BPS_MAX);
-      const expectedRecipientAmount =
-        BigNumber.from(DEFAULT_COLLECT_PRICE).sub(expectedTreasuryAmount);
-
-      expect(await currency.balanceOf(userTwoAddress)).to.eq(
-        BigNumber.from(MAX_UINT256).sub(DEFAULT_COLLECT_PRICE)
-      );
-      expect(await currency.balanceOf(userAddress)).to.eq(expectedRecipientAmount);
-      expect(await currency.balanceOf(treasuryAddress)).to.eq(expectedTreasuryAmount);
-    });
-
-    it('User should post with the fee collect module as the collect module and data, user two follows, then collects twice, fee distribution is valid', async function () {
-      const collectModuleInitData = abiCoder.encode(
-        ['uint256', 'address', 'address', 'uint16', 'bool'],
-        [DEFAULT_COLLECT_PRICE, currency.address, userAddress, REFERRAL_FEE_BPS, true]
-      );
-      await expect(
-        lensHub.post({
-          profileId: FIRST_PROFILE_ID,
-          contentURI: MOCK_URI,
-          collectModule: feeCollectModule.address,
-          collectModuleInitData: collectModuleInitData,
-          referenceModule: ZERO_ADDRESS,
-          referenceModuleInitData: [],
-        })
-      ).to.not.be.reverted;
-
-      await expect(currency.mint(userTwoAddress, MAX_UINT256)).to.not.be.reverted;
-      await expect(
-        currency.connect(userTwo).approve(feeCollectModule.address, MAX_UINT256)
-      ).to.not.be.reverted;
-      await expect(lensHub.connect(userTwo).follow([FIRST_PROFILE_ID], [[]])).to.not.be.reverted;
-      const data = abiCoder.encode(
-        ['address', 'uint256'],
-        [currency.address, DEFAULT_COLLECT_PRICE]
-      );
-      await expect(lensHub.connect(userTwo).collect(FIRST_PROFILE_ID, 1, data)).to.not.be.reverted;
-      await expect(lensHub.connect(userTwo).collect(FIRST_PROFILE_ID, 1, data)).to.not.be.reverted;
-
-      const expectedTreasuryAmount = BigNumber.from(DEFAULT_COLLECT_PRICE)
-        .mul(TREASURY_FEE_BPS)
-        .div(BPS_MAX);
-      const expectedRecipientAmount =
-        BigNumber.from(DEFAULT_COLLECT_PRICE).sub(expectedTreasuryAmount);
-
-      expect(await currency.balanceOf(userTwoAddress)).to.eq(
-        BigNumber.from(MAX_UINT256).sub(BigNumber.from(DEFAULT_COLLECT_PRICE).mul(2))
-      );
-      expect(await currency.balanceOf(userAddress)).to.eq(expectedRecipientAmount.mul(2));
-      expect(await currency.balanceOf(treasuryAddress)).to.eq(expectedTreasuryAmount.mul(2));
-    });
-
-    it('User should post with the fee collect module as the collect module and data, user two mirrors, follows, then collects from their mirror and pays fee, fee distribution is valid', async function () {
-      const secondProfileId = FIRST_PROFILE_ID + 1;
-      const collectModuleInitData = abiCoder.encode(
-        ['uint256', 'address', 'address', 'uint16', 'bool'],
-        [DEFAULT_COLLECT_PRICE, currency.address, userAddress, REFERRAL_FEE_BPS, true]
-      );
-
-      await expect(
-        lensHub.post({
-          profileId: FIRST_PROFILE_ID,
-          contentURI: MOCK_URI,
-          collectModule: feeCollectModule.address,
-          collectModuleInitData: collectModuleInitData,
-          referenceModule: ZERO_ADDRESS,
-          referenceModuleInitData: [],
-        })
-      ).to.not.be.reverted;
-
-      await expect(
-        lensHub.connect(userTwo).createProfile({
-          to: userTwoAddress,
-          handle: 'usertwo',
-          imageURI: MOCK_PROFILE_URI,
-          followModule: ZERO_ADDRESS,
-          followModuleInitData: [],
-          followNFTURI: MOCK_FOLLOW_NFT_URI,
-        })
-      ).to.not.be.reverted;
-      await expect(
-        lensHub.connect(userTwo).mirror({
-          profileId: secondProfileId,
-          profileIdPointed: FIRST_PROFILE_ID,
-          pubIdPointed: 1,
-          referenceModuleData: [],
-          referenceModule: ZERO_ADDRESS,
-          referenceModuleInitData: [],
-        })
-      ).to.not.be.reverted;
-
-      await expect(currency.mint(userTwoAddress, MAX_UINT256)).to.not.be.reverted;
-      await expect(
-        currency.connect(userTwo).approve(feeCollectModule.address, MAX_UINT256)
-      ).to.not.be.reverted;
-      await expect(lensHub.connect(userTwo).follow([FIRST_PROFILE_ID], [[]])).to.not.be.reverted;
-      const data = abiCoder.encode(
-        ['address', 'uint256'],
-        [currency.address, DEFAULT_COLLECT_PRICE]
-      );
-      await expect(lensHub.connect(userTwo).collect(secondProfileId, 1, data)).to.not.be.reverted;
-
-      const expectedTreasuryAmount = BigNumber.from(DEFAULT_COLLECT_PRICE)
-        .mul(TREASURY_FEE_BPS)
-        .div(BPS_MAX);
-      const expectedReferralAmount = BigNumber.from(DEFAULT_COLLECT_PRICE)
-        .sub(expectedTreasuryAmount)
-        .mul(REFERRAL_FEE_BPS)
-        .div(BPS_MAX);
-      const expectedReferrerAmount = BigNumber.from(MAX_UINT256)
-        .sub(DEFAULT_COLLECT_PRICE)
-        .add(expectedReferralAmount);
-      const expectedRecipientAmount = BigNumber.from(DEFAULT_COLLECT_PRICE)
-        .sub(expectedTreasuryAmount)
-        .sub(expectedReferralAmount);
-
-      expect(await currency.balanceOf(userTwoAddress)).to.eq(expectedReferrerAmount);
-      expect(await currency.balanceOf(userAddress)).to.eq(expectedRecipientAmount);
-      expect(await currency.balanceOf(treasuryAddress)).to.eq(expectedTreasuryAmount);
-    });
-
-    it('User should post with the fee collect module as the collect module and data, with no referral fee, user two mirrors, follows, then collects from their mirror and pays fee, fee distribution is valid', async function () {
-      const secondProfileId = FIRST_PROFILE_ID + 1;
-      const collectModuleInitData = abiCoder.encode(
-        ['uint256', 'address', 'address', 'uint16', 'bool'],
-        [DEFAULT_COLLECT_PRICE, currency.address, userAddress, 0, true]
-      );
-
-      await expect(
-        lensHub.post({
-          profileId: FIRST_PROFILE_ID,
-          contentURI: MOCK_URI,
-          collectModule: feeCollectModule.address,
-          collectModuleInitData: collectModuleInitData,
-          referenceModule: ZERO_ADDRESS,
-          referenceModuleInitData: [],
-        })
-      ).to.not.be.reverted;
-
-      await expect(
-        lensHub.connect(userTwo).createProfile({
-          to: userTwoAddress,
-          handle: 'usertwo',
-          imageURI: MOCK_PROFILE_URI,
-          followModule: ZERO_ADDRESS,
-          followModuleInitData: [],
-          followNFTURI: MOCK_FOLLOW_NFT_URI,
-        })
-      ).to.not.be.reverted;
-      await expect(
-        lensHub.connect(userTwo).mirror({
-          profileId: secondProfileId,
-          profileIdPointed: FIRST_PROFILE_ID,
-          pubIdPointed: 1,
-          referenceModuleData: [],
-          referenceModule: ZERO_ADDRESS,
-          referenceModuleInitData: [],
-        })
-      ).to.not.be.reverted;
-
-      await expect(currency.mint(userTwoAddress, MAX_UINT256)).to.not.be.reverted;
-      await expect(
-        currency.connect(userTwo).approve(feeCollectModule.address, MAX_UINT256)
-      ).to.not.be.reverted;
-      await expect(lensHub.connect(userTwo).follow([FIRST_PROFILE_ID], [[]])).to.not.be.reverted;
-      const data = abiCoder.encode(
-        ['address', 'uint256'],
-        [currency.address, DEFAULT_COLLECT_PRICE]
-      );
-      await expect(lensHub.connect(userTwo).collect(secondProfileId, 1, data)).to.not.be.reverted;
-
-      const expectedTreasuryAmount = BigNumber.from(DEFAULT_COLLECT_PRICE)
-        .mul(TREASURY_FEE_BPS)
-        .div(BPS_MAX);
-      const expectedRecipientAmount =
-        BigNumber.from(DEFAULT_COLLECT_PRICE).sub(expectedTreasuryAmount);
-
-      expect(await currency.balanceOf(userTwoAddress)).to.eq(
-        BigNumber.from(MAX_UINT256).sub(DEFAULT_COLLECT_PRICE)
-      );
-      expect(await currency.balanceOf(userAddress)).to.eq(expectedRecipientAmount);
-      expect(await currency.balanceOf(treasuryAddress)).to.eq(expectedTreasuryAmount);
-    });
-  });
-*/
 });

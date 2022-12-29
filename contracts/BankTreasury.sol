@@ -59,6 +59,7 @@ contract BankTreasury is
     bytes32 public constant UPGRADER_ROLE = keccak256("UPGRADER_ROLE");
     uint16 internal constant BPS_MAX = 10000;
 
+    string public name;
 
     /**
      * @dev This modifier reverts if the caller is not the configured governance address.
@@ -98,7 +99,7 @@ contract BankTreasury is
 
     /// @custom:oz-upgrades-unsafe-allow constructor
     constructor() initializer {
-        name = "BankTreasury";
+
     }
 
     function initialize(
@@ -146,6 +147,8 @@ contract BankTreasury is
             _signers.push(signer);
         }
         _numConfirmationsRequired = _numConfirmationsRequired;
+        
+        name = "BankTreasury";
     }
 
     function getManager() external view returns(address) {

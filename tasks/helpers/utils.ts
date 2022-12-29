@@ -12,6 +12,13 @@ export enum ProtocolState {
   Paused,
 }
 
+export enum Error {
+  None,
+  RevertWithMessage,
+  RevertWithoutMessage,
+  Panic
+}
+
 export function getAddrs(): any {
   const json = fs.readFileSync('addresses.json', 'utf8');
   const addrs = JSON.parse(json);

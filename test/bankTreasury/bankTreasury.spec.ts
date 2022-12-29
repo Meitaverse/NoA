@@ -82,12 +82,8 @@ makeSuiteCleanRoom('Fee Collect Module', function () {
       await createProfileReturningTokenId({
           vars: {
           to: userAddress,
-          handle: MOCK_PROFILE_HANDLE,
           nickName: NickName,
           imageURI: MOCK_PROFILE_URI,
-          followModule: ZERO_ADDRESS,
-          followModuleInitData: [],
-          followNFTURI: MOCK_FOLLOW_NFT_URI,
           },
          }) 
       ).to.eq(SECOND_PROFILE_ID);

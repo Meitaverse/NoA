@@ -65,6 +65,8 @@ contract BankTreasuryV2 is
     bytes32 public constant UPGRADER_ROLE = keccak256("UPGRADER_ROLE");
     uint16 internal constant BPS_MAX = 10000;
 
+     string public name;
+
     /**
      * @dev This modifier reverts if the caller is not the configured governance address.
      */

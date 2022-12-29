@@ -37,10 +37,6 @@ contract ManagerV2 is IManagerV2, DerivativeNFTMultiState, MockManagerV2Storage,
         _validateCallerIsGovernance();
         _;
     }
-    modifier onlySoulBoundTokenOwner(uint256 soulBoundTokenId) {
-        _validateCallerIsSoulBoundTokenOwner(soulBoundTokenId);
-        _;
-    }
 
 
     //-- external -- //
@@ -150,27 +146,6 @@ contract ManagerV2 is IManagerV2, DerivativeNFTMultiState, MockManagerV2Storage,
     }
 
 
-    function split(
-        uint256 projectId,
-        uint256 fromSoulBoundTokenId,
-        uint256 toSoulBoundTokenId,
-        uint256 tokenId,
-        uint256 amount,
-        bytes calldata splitModuleData
-    ) external override whenNotPaused onlySoulBoundTokenOwner(fromSoulBoundTokenId) returns (uint256) {
-        // address derivatveNFT = _derivativeNFTByProjectId[projectId];
-        // if (derivatveNFT == address(0)) revert Errors.InvalidParameter();
-        // return
-        //     PublishLogic.split(
-        //         derivatveNFT,
-        //         fromSoulBoundTokenId,
-        //         toSoulBoundTokenId,
-        //         tokenId,
-        //         amount,
-        //         splitModuleData
-        //     );
-    }
-
     function collect(
         uint256 projectId,
         address collector,
@@ -179,7 +154,7 @@ contract ManagerV2 is IManagerV2, DerivativeNFTMultiState, MockManagerV2Storage,
         uint256 tokenId,
         uint256 value,
         bytes calldata collectModuledata
-    ) external whenNotPaused onlySoulBoundTokenOwner(fromSoulBoundTokenId) {
+    ) external whenNotPaused  {
         address derivatveNFT = _derivativeNFTByProjectId[projectId];
         // if (derivatveNFT == address(0)) revert Errors.InvalidParameter();
 
@@ -205,7 +180,7 @@ contract ManagerV2 is IManagerV2, DerivativeNFTMultiState, MockManagerV2Storage,
         uint256[] memory toSoulBoundTokenIds,
         uint256 tokenId,
         uint256[] memory values
-    ) external whenNotPaused onlySoulBoundTokenOwner(fromSoulBoundTokenId) {
+    ) external whenNotPaused  {
         
     }
 
@@ -215,7 +190,7 @@ contract ManagerV2 is IManagerV2, DerivativeNFTMultiState, MockManagerV2Storage,
         uint256 toSoulBoundTokenId,
         uint256 tokenId,
         bytes calldata transferModuledata
-    ) external whenNotPaused onlySoulBoundTokenOwner(fromSoulBoundTokenId) {
+    ) external whenNotPaused  {
 
     }
 
@@ -226,7 +201,7 @@ contract ManagerV2 is IManagerV2, DerivativeNFTMultiState, MockManagerV2Storage,
         uint256 tokenId,
         uint256 value,
         bytes calldata transferValueModuledata
-    ) external whenNotPaused onlySoulBoundTokenOwner(fromSoulBoundTokenId) {
+    ) external whenNotPaused  {
 
      
     }
@@ -262,7 +237,7 @@ contract ManagerV2 is IManagerV2, DerivativeNFTMultiState, MockManagerV2Storage,
         address buyer,
         uint24 saleId,
         uint128 units
-    ) external payable whenNotPaused onlySoulBoundTokenOwner(soulBoundTokenId) returns (uint256 amount, uint128 fee) {
+    ) external payable whenNotPaused returns (uint256 amount, uint128 fee) {
         if (sales[saleId].max > 0) {
             require(saleRecords[sales[saleId].saleId][buyer].add(units) <= sales[saleId].max, "exceeds purchase limit");
             saleRecords[sales[saleId].saleId][buyer] = saleRecords[sales[saleId].saleId][buyer].add(units);
@@ -283,25 +258,11 @@ contract ManagerV2 is IManagerV2, DerivativeNFTMultiState, MockManagerV2Storage,
             );
     }
 
-    function follow(
-        uint256 projectId,
-        uint256 soulBoundTokenId,
-        bytes calldata data
-    ) external override whenNotPaused onlySoulBoundTokenOwner(soulBoundTokenId) {
-        PublishLogic.follow(projectId, msg.sender, soulBoundTokenId, data, _profileById, _profileIdByHandleHash);
-    }
-
-    function getFollowModule(uint256 soulBoundTokenId) external view override returns (address) {
-        return _profileById[soulBoundTokenId].followModule;
-    }
 
     function getSoulBoundToken() external view returns (address) {
         return NDPT;
     }
 
-    function getDNFTImpl() external view override returns (address) {
-        return _DNFT_IMPL;
-    }
 
     /// ***********************
     /// *****GOV FUNCTIONS*****
@@ -336,9 +297,6 @@ contract ManagerV2 is IManagerV2, DerivativeNFTMultiState, MockManagerV2Storage,
         if (msg.sender != _governance) revert Errors.NotGovernance();
     }
 
-    function _validateCallerIsSoulBoundTokenOwner(uint256 soulBoundTokenId) internal view {
-        if (msg.sender != _profileOwners[soulBoundTokenId]) revert Errors.NotSoulBoundTokenOwner();
-    }
 
     function _setGovernance(address newGovernance) internal {
         address prevGovernance = _governance;

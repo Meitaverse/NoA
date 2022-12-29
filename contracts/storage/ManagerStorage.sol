@@ -56,37 +56,33 @@ abstract contract ManagerStorage {
         keccak256('PermitValue(address spender,uint256 tokenId,uint256 value,uint256 nonce,uint256 deadline)');
     
 
-    mapping(uint256 => address) internal _profileOwners;
     mapping(address => bool) internal _profileCreatorWhitelisted;
-    mapping(address => bool) internal _followModuleWhitelisted;
     mapping(address => bool) internal _collectModuleWhitelisted;
     mapping(address => bool) internal _publishModuleWhitelisted;
-
     mapping(uint256 => DataTypes.HubData) internal _hubInfos;
     mapping(uint256 => uint256) internal _hubBySoulBoundTokenId;
-    mapping(bytes32 => uint256) internal _projectNameHashByEventId;
+    mapping(bytes32 => uint256) internal _projectNameHashByEventId; //用于判断project name是否重复
     mapping(uint256 => DataTypes.ProjectData) internal _projectInfoByProjectId;
     mapping(uint256 => address) internal _derivativeNFTByProjectId;
     mapping(uint256 => address) internal _walletBySoulBoundTokenId;
-    
     mapping(uint256 => address) internal _dispatcherByProfile;
-
-    mapping(bytes32 => uint256) internal _profileIdByHandleHash;
-    mapping(uint256 => DataTypes.ProfileStruct) internal _profileById;
-
     mapping(uint256 => mapping(uint256 => DataTypes.PublicationStruct)) internal _pubByIdByProfile;
-    mapping(uint256 => mapping(uint256 => DataTypes.PublicationStruct)) internal _comboByIdByProfile;
+    mapping(uint256 => uint256) internal _genesisPublishIdByProjectId;
 
-    mapping(uint256 => uint256) internal _genesisSoulBoundTokenIdByPublishId;
+    //publishId => publishData
+    mapping(uint256 => DataTypes.PublishData) internal _publishIdByProjectData;
+    
+    //tokenId => publishId
+    mapping(uint256 => uint256) internal _tokenIdByPublishId;
 
     address public  NDPT;
     address public  TREASURY;
+    address public MODULE_GLOBALS;
 
     uint256 internal _profileCounter;
     address internal _soulBoundToken;
     address internal _emergencyAdmin;
     address internal _governance;
-
 
     Counters.Counter internal _nextSaleId;
     Counters.Counter internal _nextTradeId;
@@ -111,11 +107,7 @@ abstract contract ManagerStorage {
     mapping(address => EnumerableSetUpgradeable.UintSet) internal _derivativeNFTSales;
     mapping(address => EnumerableSetUpgradeable.AddressSet) internal _allowAddresses;
 
-    //publishId => publishData
-    mapping(uint256 => DataTypes.PublishData) internal _publishIdByProjectData;
-    
-    //tokenId => publishId
-    mapping(uint256 => uint256) internal _tokenIdByPublishId;
+
 
     
 }

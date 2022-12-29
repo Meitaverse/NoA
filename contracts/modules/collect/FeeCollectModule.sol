@@ -7,7 +7,6 @@ import {IBankTreasury} from "../../interfaces/IBankTreasury.sol";
 import {Errors} from "../../libraries/Errors.sol";
 import {FeeModuleBase} from "../FeeModuleBase.sol";
 import {ModuleBase} from "../ModuleBase.sol";
-import {FollowValidationModuleBase} from "../FollowValidationModuleBase.sol";
 import {IERC20Upgradeable} from "@openzeppelin/contracts-upgradeable/token/ERC20/IERC20Upgradeable.sol";
 import {SafeERC20Upgradeable} from "@openzeppelin/contracts-upgradeable/token/ERC20/utils/SafeERC20Upgradeable.sol";
 import {SafeMathUpgradeable} from "@openzeppelin/contracts-upgradeable/utils/math/SafeMathUpgradeable.sol";
@@ -19,21 +18,21 @@ import {INFTDerivativeProtocolTokenV1} from "../../interfaces/INFTDerivativeProt
  * @param genesisSoulBoundTokenId The genesi sSoulBoundTokenId with this publication.
  * @param tokenId The tokenId with this publication.
  * @param amount The total supply with this publication.
- * @param price The collecting cost associated with this publication.
+ * @param salePrice The collecting cost associated with this publication.
+ * @param royaltyBasisPoints The royalty basis points for derivative or OpenSea
  * @param currency The currency associated with this publication.
  * @param ownershipSoulBoundTokenId The toSoulBoundTokenId associated with this publication.
  * @param genesisFee The percentage of the fee that will be transferred to the genesis soulBoundTokenId of this publication.
- * @param followerOnly Set if follower can collect.
  */
 struct ProfilePublicationData {
     uint256 genesisSoulBoundTokenId;       //创世的soulBoundTokenId
     uint256 tokenId;                       //发行对应的tokenId
     uint256 amount;                        //发行总量
-    uint256 price;                         //发行单价
+    uint256 salePrice;                     //发行单价
+    uint256 royaltyBasisPoints;            //二创及OpenSea税点
     address currency;                      //计价的ERC20，0地址为NDPT
-    uint256 ownershipSoulBoundTokenId;         //发行人的灵魂币ID
+    uint256 ownershipSoulBoundTokenId;     //发行人的灵魂币ID
     uint16 genesisFee;                     //创世NFT版税点数，最多90%，以后每个衍生NFT都需要支付
-    bool followerOnly;
 }
 
 /**
@@ -45,7 +44,7 @@ struct ProfilePublicationData {
  *
  * This module works by allowing unlimited collects for a publication at a given price.
  */
-contract FeeCollectModule is FeeModuleBase, FollowValidationModuleBase, ICollectModule {
+contract FeeCollectModule is FeeModuleBase, ModuleBase, ICollectModule {
     using SafeERC20Upgradeable for IERC20Upgradeable;
     using SafeMathUpgradeable for uint256;
 
@@ -61,10 +60,9 @@ contract FeeCollectModule is FeeModuleBase, FollowValidationModuleBase, ICollect
         uint256 amount,
         bytes calldata data 
     ) external override onlyManager returns (bytes memory) {
-        //解码出费率的相关传参
-        (uint256 genesisSoulBoundTokenId, uint16 genesisFee, address currency, uint256 price, bool followerOnly) = abi.decode(
+        (uint256 genesisSoulBoundTokenId, uint16 genesisFee, address currency, uint256 salePrice, uint256 royaltyBasisPoints) = abi.decode(
             data,
-            (uint256, uint16, address, uint256, bool)
+            (uint256, uint16, address, uint256, uint256)
         );
         if (currency == address(0)) {
             currency= _ndpt();
@@ -80,12 +78,12 @@ contract FeeCollectModule is FeeModuleBase, FollowValidationModuleBase, ICollect
         //Save 
         _dataByPublicationByProfile[publishId].tokenId = tokenId;
         _dataByPublicationByProfile[publishId].amount = amount;
-        _dataByPublicationByProfile[publishId].price = price;
+        _dataByPublicationByProfile[publishId].salePrice = salePrice;
+        _dataByPublicationByProfile[publishId].royaltyBasisPoints = royaltyBasisPoints;
         _dataByPublicationByProfile[publishId].currency = currency;
         _dataByPublicationByProfile[publishId].ownershipSoulBoundTokenId = ownershipSoulBoundTokenId;
         _dataByPublicationByProfile[publishId].genesisSoulBoundTokenId = genesisSoulBoundTokenId;
         _dataByPublicationByProfile[publishId].genesisFee = genesisFee;
-        _dataByPublicationByProfile[publishId].followerOnly = followerOnly;
 
         return data;
     }
@@ -123,6 +121,18 @@ contract FeeCollectModule is FeeModuleBase, FollowValidationModuleBase, ICollect
     ) external view returns (ProfilePublicationData memory) {
         return _dataByPublicationByProfile[publishId];
     }
+    
+
+    function getSaleInfo(
+        uint256 publishId
+    ) external view returns (uint256, uint256, uint256) {
+        return (
+            _dataByPublicationByProfile[publishId].genesisFee, 
+            _dataByPublicationByProfile[publishId].salePrice, 
+            _dataByPublicationByProfile[publishId].royaltyBasisPoints
+            );
+    }
+
 
     function _processCollect(
         uint256 ownershipSoulBoundTokenId,
@@ -130,15 +140,15 @@ contract FeeCollectModule is FeeModuleBase, FollowValidationModuleBase, ICollect
         uint256 publishId, 
         uint256 collectValue
     ) internal {
-        uint256 amountOfAll = collectValue.mul(_dataByPublicationByProfile[publishId].amount);
+        uint256 payValue = collectValue.mul(_dataByPublicationByProfile[publishId].salePrice);
         address currency = _dataByPublicationByProfile[publishId].currency;
         uint256 genesisSoulBoundTokenId = _dataByPublicationByProfile[publishId].genesisSoulBoundTokenId;
         
         //获取交易税点
         (address treasury, uint16 treasuryFee) = _treasuryData();
-        uint256 treasuryAmount = amountOfAll.mul(treasuryFee).div(BPS_MAX);
-        uint256 genesisAmount = amountOfAll.mul(_dataByPublicationByProfile[publishId].genesisFee).div(BPS_MAX);
-        uint256 adjustedAmount = amountOfAll.sub(treasuryAmount).sub(genesisAmount);
+        uint256 treasuryAmount = payValue.mul(treasuryFee).div(BPS_MAX);
+        uint256 genesisAmount = payValue.mul(_dataByPublicationByProfile[publishId].genesisFee).div(BPS_MAX);
+        uint256 adjustedAmount = payValue.sub(treasuryAmount).sub(genesisAmount);
 
         if (currency == _ndpt()) {
             if (adjustedAmount>0) 
@@ -150,7 +160,7 @@ contract FeeCollectModule is FeeModuleBase, FollowValidationModuleBase, ICollect
             if (genesisSoulBoundTokenId >0 && genesisAmount > 0) INFTDerivativeProtocolTokenV1(_ndpt()).transferValue(collectorSoulBoundTokenId, genesisSoulBoundTokenId, genesisAmount);
 
         } else {
-            //向owner支付剩余的currency
+            // must approve feeCollectModule contract before 
             if (adjustedAmount>0) IERC20Upgradeable(currency).safeTransferFrom(_wallet(collectorSoulBoundTokenId), _wallet(ownershipSoulBoundTokenId), adjustedAmount);
 
             //pay to treasury and genesis publisher

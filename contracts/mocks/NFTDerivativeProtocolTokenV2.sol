@@ -114,9 +114,8 @@ contract NFTDerivativeProtocolTokenV2 is
 
         _sbtDetails[tokenId_] = DataTypes.SoulBoundTokenDetail({
             nickName: vars.nickName,
-            handle: vars.handle,
-            locked: true,
-            reputation: 0
+            imageURI: "",
+            locked: true
         });
 
         return tokenId_;
