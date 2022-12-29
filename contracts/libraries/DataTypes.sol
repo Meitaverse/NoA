@@ -53,6 +53,7 @@ library DataTypes {
      * @param image Image of project, ipfs or arweave url
      * @param metadataURI metadata 
      * @param descriptor descriptor for SVG 
+     * @param defaultRoyaltyPoints default royalty points
      */
     struct ProjectData {
         uint256 hubId;
@@ -62,6 +63,7 @@ library DataTypes {
         string image;
         string metadataURI;
         address descriptor;
+        uint96  defaultRoyaltyPoints;
     }
     
     /**
@@ -139,6 +141,7 @@ library DataTypes {
         uint256 publishId;
         uint256 collectorSoulBoundTokenId;
         uint256 collectValue;
+        bytes data;
     }    
 
     struct AirdropData {

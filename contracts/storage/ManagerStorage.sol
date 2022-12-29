@@ -108,6 +108,7 @@ abstract contract ManagerStorage {
     mapping(address => EnumerableSetUpgradeable.AddressSet) internal _allowAddresses;
 
 
-
+    //MultiRecipient
+    mapping(uint256 => mapping(uint8 => uint16)) _splitPoints;
     
 }

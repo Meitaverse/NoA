@@ -104,4 +104,9 @@ library Errors {
   error ToWalletIsZero();
   error AirdropTotalExceed();
   error NotOwerOFTokenId();
+  error ERC3525INSUFFICIENTBALANCE();
+
+  error InvalidRoyaltyBasisPoints();
+  error MintLimitExceeded();
+  error CollectExpired();
 }

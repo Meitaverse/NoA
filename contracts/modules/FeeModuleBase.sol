@@ -48,13 +48,5 @@ abstract contract FeeModuleBase {
         return IModuleGlobals(MODULE_GLOBALS).getPublishCurrencyTax(currency);
     }
 
-    function _validateDataIsExpected(
-        bytes calldata data,
-        address currency,
-        uint256 amount
-    ) internal pure {
-        (address decodedCurrency, uint256 decodedAmount) = abi.decode(data, (address, uint256));
-        if (decodedAmount != amount || decodedCurrency != currency)
-            revert Errors.ModuleDataMismatch();
-    }
+
 }

@@ -18,6 +18,7 @@ interface IDerivativeNFTV1 {
      * @param  soulBoundTokenId_ The token id of the SoulBoundToken.
      * @param metadataDescriptor_ The Descriptor address to set.
      * @param receiver_ The receiver address to set.
+     * @param defaultRoyaltyPoints_ The default royalty points
      */
     function initialize( 
         address ndpt, 
@@ -27,7 +28,8 @@ interface IDerivativeNFTV1 {
         uint256 projectId_,
         uint256 soulBoundTokenId_,
         address metadataDescriptor_,
-        address receiver_
+        address receiver_,
+        uint96 defaultRoyaltyPoints_
     ) external;
 
 
@@ -93,31 +95,35 @@ interface IDerivativeNFTV1 {
         uint96 fraction
   ) external;
 
-  function mint(
-        address mintTo, 
-        uint256 slot, 
-        uint256 value
-    ) external  returns(uint256 tokenId);
+//   function mint(
+//         address mintTo, 
+//         uint256 slot, 
+//         uint256 value
+//     ) external  returns(uint256 tokenId);
   /**
    * @notice Publish some dNFT to a publisher wallet
    *        
+   * @param publishId The publishId
    * @param publication The publication
    * @param publisher The publisher 
    * @return uint256 The new tokenId.
    */
   function publish(
-      DataTypes.Publication memory publication,
+    uint256 publishId,
+    DataTypes.Publication memory publication,
     address publisher
   ) external returns(uint256);
 
    /**
      * @notice Split some value to a to_, only call by manager, not need approve before
      *
+     * @param publishId_ The tokenId to be publish
      * @param fromTokenId_ The tokenId to be split
      * @param to_ amount to split
      * @return uint256 The new tokenId.
      */
     function split(
+        uint256 publishId_, 
         uint256 fromTokenId_, 
         address to_,
         uint256 value_

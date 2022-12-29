@@ -54,18 +54,35 @@ library PublishLogic {
             storage _pubByIdByProfile,
         mapping(address => bool) storage _collectModuleWhitelisted
     ) external returns(uint256) {
+
         uint256 newTokenId =  IDerivativeNFTV1(derivativeNFT).publish(
+            publishId,
             publication,
             publisher
         );
+        
+        //Avoids stack too deep
+        {
 
-        emit Events.PublishDerivativeNFT(
-            publication.soulBoundTokenId,
-            publication.projectId,
-            newTokenId,
-            publication.amount,
-            block.timestamp
-        ); 
+            //save
+            _pubByIdByProfile[publication.projectId][newTokenId].publishId = publishId;
+            _pubByIdByProfile[publication.projectId][newTokenId].hubId = publication.hubId;
+            _pubByIdByProfile[publication.projectId][newTokenId].projectId = publication.projectId;
+            _pubByIdByProfile[publication.projectId][newTokenId].name = publication.name;
+            _pubByIdByProfile[publication.projectId][newTokenId].description = publication.description;
+            _pubByIdByProfile[publication.projectId][newTokenId].materialURIs = publication.materialURIs;
+            _pubByIdByProfile[publication.projectId][newTokenId].fromTokenIds = publication.fromTokenIds;
+            _pubByIdByProfile[publication.projectId][newTokenId].derivativeNFT = derivativeNFT;
+            _pubByIdByProfile[publication.projectId][newTokenId].publishModule = publication.publishModule;
+
+            emit Events.PublishDerivativeNFT(
+                publication.soulBoundTokenId,
+                publication.projectId,
+                newTokenId,
+                publication.amount,
+                block.timestamp
+            ); 
+        }
 
         bytes memory collectModuleReturnData = _initCollectModule(
                 publication.projectId,
@@ -79,17 +96,7 @@ library PublishLogic {
                 _collectModuleWhitelisted
         );
         
-        //save
-        _pubByIdByProfile[publication.projectId][newTokenId].publishId = publishId;
-        _pubByIdByProfile[publication.projectId][newTokenId].hubId = publication.hubId;
-        _pubByIdByProfile[publication.projectId][newTokenId].projectId = publication.projectId;
-        _pubByIdByProfile[publication.projectId][newTokenId].name = publication.name;
-        _pubByIdByProfile[publication.projectId][newTokenId].description = publication.description;
-        _pubByIdByProfile[publication.projectId][newTokenId].materialURIs = publication.materialURIs;
-        _pubByIdByProfile[publication.projectId][newTokenId].fromTokenIds = publication.fromTokenIds;
-        _pubByIdByProfile[publication.projectId][newTokenId].derivativeNFT = derivativeNFT;
-        _pubByIdByProfile[publication.projectId][newTokenId].publishModule = publication.publishModule;
-
+ 
         _emitPublishCreated(
             publishId,
             collectModuleReturnData
@@ -195,7 +202,8 @@ library PublishLogic {
             ownershipSoulBoundTokenId,
             collectData.collectorSoulBoundTokenId,
             collectData.publishId,
-            collectData.collectValue
+            collectData.collectValue,
+            collectData.data 
         );
 
         emit Events.CollectDerivativeNFT(

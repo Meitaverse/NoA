@@ -36,17 +36,23 @@ interface ICollectModule {
      * @param collectorSoulBoundTokenId The collector token ID of the profile associated with the publication being collected.
      * @param publishId The publish Id.
      * @param collectValue The value
-     *  data Arbitrary data __passed from the collector!__ to be decoded.
+     * @param data Arbitrary data __passed from the collector!__ to be decoded.
      */
     function processCollect(
         uint256 ownershipSoulBoundTokenId,
         uint256 collectorSoulBoundTokenId,
         uint256 publishId,
-        uint256 collectValue
+        uint256 collectValue,
+         bytes calldata data
     ) external;
 
     function getSaleInfo(
         uint256 publishId
     ) external view returns (uint256, uint256, uint256);
+
+    function getFees(
+        uint256 publishId, 
+        uint256 collectValue
+    ) external view returns (uint16, uint256, uint256, uint256, uint256);
 }
 

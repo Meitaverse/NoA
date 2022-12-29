@@ -271,6 +271,19 @@ library Events {
         uint256 timestamp
     );
 
+    event MintDerivativeNFT(
+        uint256 publishId,
+        address mintTo, uint256 slot, uint256 value,
+        uint256 timestamp
+    );
+
+    event SplitDerivativeNFT(
+        uint256 publishId,
+        uint256 fromTokenId, uint256 toTokenId,  uint256 value,
+        uint256 timestamp
+    );
+
+
     event BurnNDPT(uint256 tokenId, uint256 timestamp);
 
     event BurnNDPTValue(uint256 tokenId, uint256 value, uint256 timestamp);

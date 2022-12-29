@@ -14,25 +14,20 @@ import {IManager} from "../interfaces/IManager.sol";
  * 
  * @notice This contract contains data relevant to dNFT modules, such as the module governance address, treasury
  * address and treasury fee BPS.
- * 本合同包含与dNFT模块相关的数据，如模块管理地址、资金地址和国库费用税点BPS。
  *
  * NOTE: The reason we have an additional governance address instead of just fetching it from the manager is to
  * allow the flexibility of using different governance executors.
- * 我们之所以有一个额外的治理地址，而不是仅仅从中心获取它，是为了允许灵活使用不同的治理执行者。
  * 
- * 充当模块的中心数据提供者。它由一个特定的治理地址控制，与中心治理相比，
- * 该地址可以设置为不同的执行者。预计模块将获取动态变化的数据，例如模块全局治理地址、资金地址、资金费用以及白名单货币列表。
  */
 contract ModuleGlobals is IModuleGlobals {
     uint16 internal constant BPS_MAX = 10000;
     mapping(address => bool) internal _currencyWhitelisted;
-    address internal _MANAGER; //管理合约地址
-    address internal _NDPT; //NDPT地址
-    address internal _governance; //治理地址
-    address internal _treasury; //金库地址
-    uint16 internal _treasuryFee; //手续费率
-    
-    
+    address internal _MANAGER;
+    address internal _NDPT; 
+    address internal _governance;
+    address internal _treasury;
+    uint16 internal _treasuryFee; 
+
     mapping(address => uint256) internal _publishCurrencyTaxes; //publish的币种及数量
 
     modifier onlyGov() {
@@ -59,14 +54,13 @@ contract ModuleGlobals is IModuleGlobals {
         uint16 treasuryFee,
         uint256 publishRoyalty
     ) {
+        _setManager(manager);
+        _setNDPT(ndpt);
         _setGovernance(governance);
         _setTreasury(treasury);
         _setTreasuryFee(treasuryFee);
         _setPublishRoyalty(publishRoyalty);
-        _publishCurrencyTaxes[ndpt] = publishRoyalty;
         _whitelistCurrency(ndpt, true);
-        _setManager(manager);
-        _setNDPT(ndpt);
     } 
 
     function setManager(address newManager) external override onlyGov {
@@ -115,7 +109,6 @@ contract ModuleGlobals is IModuleGlobals {
     /// @inheritdoc IModuleGlobals
     function getNDPT() external view override returns (address) {
         return _NDPT;
-
     }
     
     /// @inheritdoc IModuleGlobals

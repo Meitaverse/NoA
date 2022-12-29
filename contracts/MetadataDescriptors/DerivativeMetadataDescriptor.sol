@@ -103,14 +103,14 @@ contract DerivativeMetadataDescriptor is IERC3525MetadataDescriptor {
 
   function _slotName(uint256 slot_) internal view returns (string memory) {
     DataTypes.SlotDetail memory slotDetail = IDerivativeNFTV1(msg.sender).getSlotDetail(slot_);
-    // return slotDetail.publication.name;
-    return "TODO";
+    return slotDetail.publication.name;
+    // return "TODO";
   }
 
   function _slotDescription(uint256 slot_) internal view returns (string memory) {
     DataTypes.SlotDetail memory slotDetail = IDerivativeNFTV1(msg.sender).getSlotDetail(slot_);
-    // return slotDetail.publication.description;
-     return "TODO";
+    return slotDetail.publication.description;
+    //  return "TODO";
   }
 
   // function _slotImage(uint256 slot_) internal view returns (string memory) {

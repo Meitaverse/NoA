@@ -75,8 +75,7 @@ interface IManager {
    * @param newState The state to set, as a member of the ProtocolState enum.
    */
    function setState(DataTypes.ProtocolState newState) external;
-   function setStateDerivative(address derivativeNFT, DataTypes.ProtocolState newState) external;
-
+ 
     function mintNDPTValue(
         uint256 tokenId, 
         uint256 value
@@ -104,8 +103,8 @@ interface IManager {
     ) external returns (uint256);
 
     
-    function setProfileImageURI(uint256 soulBoundTokenId, string calldata imageURI)
-        external;
+    function setProfileImageURI(uint256 soulBoundTokenId, string calldata imageURI) external;
+
     /**
      * @notice Returns the address of the SoulBundToken contract
      *
@@ -170,8 +169,6 @@ interface IManager {
 
     function getPublicationByTokenId(uint256 tokenId_) external view returns (DataTypes.Publication memory);
     
-    function getPreviousByTokenId(uint256 tokenId_) external view returns (uint256, uint256);
-
     function getWalletBySoulBoundTokenId(uint256 soulBoundTokenId) external view returns(address);
 
     function prePublish(
@@ -248,7 +245,9 @@ interface IManager {
         uint256 value
     ) external;
 
-     function publishFixedPrice(
+    function calculateRoyalty(uint256 publishId) external view returns(uint96);
+
+    function publishFixedPrice(
         DataTypes.Sale memory sale
     ) external;
 
@@ -293,6 +292,5 @@ interface IManager {
      * @param whitelist Whether or not the publish module should be whitelisted.
      */
     function whitelistPublishModule(address publishModule, bool whitelist) external;
-
 
 }

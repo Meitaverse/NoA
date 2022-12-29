@@ -54,7 +54,6 @@ contract Voucher is
         _;
     }
 
-
     function initialize(
         string memory uriBase
     ) public initializer {

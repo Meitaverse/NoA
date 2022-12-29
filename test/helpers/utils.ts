@@ -610,7 +610,7 @@ export interface CollectReturningTokenIdStruct {
 }
 
 export async function collectReturningTokenId({
-  sender = userTwo,
+  sender = user,
   vars,
 }: CollectReturningTokenIdStruct): Promise<BigNumber> {
   let tokenId = await manager

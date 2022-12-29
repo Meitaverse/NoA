@@ -88,6 +88,7 @@ makeSuiteCleanRoom('Publishing', function () {
                     image: "image",
                     metadataURI: "metadataURI",
                     descriptor: metadataDescriptor.address,
+                    defaultRoyaltyPoints: 0
                   },
                 })
             ).to.eq(FIRST_PROJECT_ID);

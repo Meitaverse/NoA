@@ -87,10 +87,6 @@ contract Manager is
        return  _profileCreatorWhitelisted[profileCreator];
     }
 
-    function setStateDerivative(address derivativeNFT, DataTypes.ProtocolState newState) external override onlyGov {
-        IDerivativeNFTV1(derivativeNFT).setState(newState);
-    }
-
     function mintNDPTValue(uint256 tokenId, uint256 value) external whenNotPaused onlyGov {
         INFTDerivativeProtocolTokenV1(NDPT).mintValue(tokenId, value);
     }
@@ -111,7 +107,7 @@ contract Manager is
 
         uint256 soulBoundTokenId = INFTDerivativeProtocolTokenV1(NDPT).createProfile(vars);
 
-        _walletBySoulBoundTokenId[soulBoundTokenId] = msg.sender;
+        _walletBySoulBoundTokenId[soulBoundTokenId] = vars.to;
 
         return soulBoundTokenId;
     }
@@ -145,7 +141,7 @@ contract Manager is
 
         uint256 projectId = _generateNextProjectId();
         _projectNameHashByEventId[keccak256(bytes(project.name))] = projectId;
-        address derivativeNFT = InteractionLogic.createProject(
+        InteractionLogic.createProject(
             _DNFT_IMPL,
             NDPT,
             TREASURY,
@@ -155,9 +151,6 @@ contract Manager is
             _derivativeNFTByProjectId 
         );
 
-        // set default royalty to 50/10000
-        IDerivativeNFTV1(derivativeNFT).setDefaultRoyalty(TREASURY, 50); 
-
         _projectInfoByProjectId[projectId] = DataTypes.ProjectData({
             hubId: project.hubId,
             soulBoundTokenId: project.soulBoundTokenId,
@@ -165,7 +158,8 @@ contract Manager is
             description: project.description,
             image: project.image,
             metadataURI: project.metadataURI,
-            descriptor: project.descriptor
+            descriptor: project.descriptor,
+            defaultRoyaltyPoints: project.defaultRoyaltyPoints
         });
 
         return projectId;
@@ -173,6 +167,23 @@ contract Manager is
 
     function getProjectInfo(uint256 projectId_) external view returns (DataTypes.ProjectData memory) {
         return _projectInfoByProjectId[projectId_];
+    }
+
+    function calculateRoyalty(uint256 publishId) external view returns(uint96) {
+        return _calculateRoyalty(publishId);
+    }
+ 
+    function _calculateRoyalty(uint256 publishId) internal view returns(uint96) {
+        uint256 projectid = _publishIdByProjectData[publishId].publication.projectId;
+        uint256 previousPublishId = _publishIdByProjectData[publishId].previousPublishId;
+        (, uint16 treasuryFee ) = IModuleGlobals(MODULE_GLOBALS).getTreasuryData();
+
+        // fraction = community treasuryFee + genesisFee + previous dNDT fee
+        uint96 fraction = 
+            uint96(treasuryFee) + 
+            uint96(_publishIdByProjectData[_genesisPublishIdByProjectId[projectid]].publication.royaltyBasisPoints) +
+            uint96(_publishIdByProjectData[previousPublishId].publication.royaltyBasisPoints);
+        return fraction;
     }
  
     //prepare publish
@@ -193,11 +204,11 @@ contract Manager is
 
         if (_derivativeNFTByProjectId[publication.projectId] == address(0)) revert Errors.InvalidParameter();
 
-        uint256 previousPublishId ;
-        uint256 publishId =  _generateNextPublishId();
+        uint256 previousPublishId;
+        uint256 publishId = _generateNextPublishId();
         if (publication.fromTokenIds.length == 0){
             previousPublishId = 0;
-            //记录projectId的创世者
+            //save genesisPublishId for this projectId 
             _genesisPublishIdByProjectId[publication.projectId] = publishId;
 
         } else{
@@ -214,8 +225,10 @@ contract Manager is
             _publishIdByProjectData
         );
 
-       
-
+        //calculate royalties
+        if (_calculateRoyalty(publishId) > uint96(Constants._BASIS_POINTS)) {
+           revert Errors.InvalidRoyaltyBasisPoints();   
+        }
         return publishId;
     }
 
@@ -244,6 +257,11 @@ contract Manager is
         _publishIdByProjectData[publishId].publication.materialURIs = materialURIs;
         _publishIdByProjectData[publishId].publication.fromTokenIds = fromTokenIds;
 
+        //calculate royalties
+        if (_calculateRoyalty(publishId) > uint96(Constants._BASIS_POINTS)) {
+           revert Errors.InvalidRoyaltyBasisPoints();   
+        }
+
     }
 
     function getPublishInfo(uint256 publishId_) external view returns (DataTypes.PublishData memory) {
@@ -253,20 +271,12 @@ contract Manager is
     function getDerivativeNFT(uint256 publishId_) external view returns (address) {
         return _derivativeNFTByProjectId[publishId_];
     }
-    
 
     function getPublicationByTokenId(uint256 tokenId_) external view returns (DataTypes.Publication memory) {
        uint256 publishId = _tokenIdByPublishId[tokenId_];
        return _publishIdByProjectData[publishId].publication;
     }
 
-    function getPreviousByTokenId(uint256 tokenId_) external view returns (uint256, uint256) {
-       uint256 publishId = _tokenIdByPublishId[tokenId_];
-       uint256 previousPublishId = _publishIdByProjectData[publishId].previousPublishId;
-       uint256 prevoidTokenId =  _publishIdByProjectData[previousPublishId].tokenId;
-       return (previousPublishId, prevoidTokenId);
-    }
- 
     function publish(
         uint256 publishId
     ) external whenNotPaused returns (uint256) { 
@@ -282,7 +292,7 @@ contract Manager is
         
         if (_publishIdByProjectData[publishId].publication.amount == 0) revert Errors.InitParamsInvalid();
         
-        uint256 tokenId = PublishLogic.createPublish(
+        uint256 newTokenId = PublishLogic.createPublish(
             _publishIdByProjectData[publishId].publication,
             publishId,
             publisher,
@@ -291,31 +301,14 @@ contract Manager is
             _collectModuleWhitelisted 
         );
 
-        //TODO
-        uint256 projectid = _publishIdByProjectData[publishId].publication.projectId;
-        uint256 previousPublishId = _publishIdByProjectData[publishId].previousPublishId;
-        (, uint16 treasuryFee ) = IModuleGlobals(MODULE_GLOBALS).getTreasuryData();
+        //Avoids stack too deep
+        {
+            _publishIdByProjectData[publishId].isMinted = true;
+            _publishIdByProjectData[publishId].tokenId = newTokenId;
+            _tokenIdByPublishId[newTokenId] = publishId;
+        }
 
-        // treasuryFee = community fee + genesis fee + previous dNDT fee
-        uint96 fraction = 
-            uint96(treasuryFee) + 
-            uint96(_publishIdByProjectData[_genesisPublishIdByProjectId[projectid]].publication.royaltyBasisPoints) +
-            uint96(_publishIdByProjectData[previousPublishId].publication.royaltyBasisPoints);
-
-
-        IDerivativeNFTV1(derivativeNFT).setTokenRoyalty(
-            tokenId,
-            TREASURY,
-            fraction
-        );
-
-        _publishIdByProjectData[publishId].isMinted = true;
-        _publishIdByProjectData[publishId].tokenId = tokenId;
-
-        _tokenIdByPublishId[tokenId] = publishId;
-
-        return tokenId;
-
+        return newTokenId;
     }
 
     function collect(
@@ -333,6 +326,7 @@ contract Manager is
             revert Errors.DerivativeNFTIsZero();
         
         uint256 newTokenId = IDerivativeNFTV1(derivativeNFT).split(
+            collectData.publishId, 
             _publishIdByProjectData[collectData.publishId].tokenId, 
             _walletBySoulBoundTokenId[collectData.collectorSoulBoundTokenId],
             collectData.collectValue
@@ -357,26 +351,38 @@ contract Manager is
         
         address derivativeNFT = _derivativeNFTByProjectId[_publishIdByProjectData[airdropData.publishId].publication.projectId];
         if (derivativeNFT == address(0)) revert Errors.InvalidParameter();
-       
-        address from_ = _walletBySoulBoundTokenId[airdropData.ownershipSoulBoundTokenId];
-
-        if (IERC3525(derivativeNFT).ownerOf(airdropData.tokenId) != from_) {
-            revert Errors.NotOwerOFTokenId();
+        
+        uint256 total;
+        for (uint256 i = 0; i < airdropData.values.length; ) {
+            total = total + airdropData.values[i];
+            unchecked {
+                ++i;
+            }
         }
+        if (total > IERC3525(derivativeNFT).balanceOf( airdropData.tokenId )) 
+          revert Errors.ERC3525INSUFFICIENTBALANCE();
+
+        _airdrop(derivativeNFT, airdropData);
+
+    }
+
+    function _airdrop(
+        address derivativeNFT, 
+        DataTypes.AirdropData memory airdropData
+    ) internal {
 
         uint256[] memory newTokenIds = new uint256[](airdropData.toSoulBoundTokenIds.length);
-        uint256 total;
         for (uint256 i = 0; i < airdropData.toSoulBoundTokenIds.length; ) {
             address toWallet = _walletBySoulBoundTokenId[airdropData.toSoulBoundTokenIds[i]];
             if (toWallet == address(0)) revert Errors.ToWalletIsZero();
             uint256 newTokenId = IDerivativeNFTV1(derivativeNFT).split(
+                _tokenIdByPublishId[airdropData.tokenId],
                 airdropData.tokenId, 
                 toWallet,
                 airdropData.values[i]
             );
-           
+
             newTokenIds[i] = newTokenId;
-            total = total +  airdropData.values[i];
 
             unchecked {
                 ++i;
@@ -451,6 +457,7 @@ contract Manager is
         );
     }
 
+
     function setProfileImageURI(uint256 soulBoundTokenId, string calldata imageURI)
         external
         whenNotPaused
@@ -513,7 +520,6 @@ contract Manager is
                 sales
             );
     }
-
 
     function getSoulBoundToken() external view returns (address) {
         return NDPT;
@@ -578,12 +584,6 @@ contract Manager is
     function getDispatcher(uint256 soulBoundToken) external view override returns (address) {
         return _dispatcherByProfile[soulBoundToken];
     }
-
-
-    // function setDispatcher(uint256 soulBoundTokenId, address dispatcher) external override whenNotPaused {
-    //     _validateCallerIsSoulBoundTokenOwnerOrDispathcher(soulBoundTokenId);
-    //     _setDispatcher(soulBoundTokenId, dispatcher);
-    // }
 
     function setDispatcherWithSig(DataTypes.SetDispatcherWithSigData calldata vars)
         external

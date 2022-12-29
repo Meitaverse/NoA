@@ -66,10 +66,6 @@ contract ManagerV2_BadRevision is
         emit Events.ProfileCreatorWhitelisted(profileCreator, whitelist, block.timestamp);
     }
 
-    function setStateDerivative(address derivativeNFT, DataTypes.ProtocolState newState) external override onlyGov {
-        IDerivativeNFTV1(derivativeNFT).setState(newState);
-    }
-
     function mintNDPTValue(uint256 tokenId, uint256 value) external whenNotPaused onlyGov {
         INFTDerivativeProtocolTokenV1(NDPT).mintValue(tokenId, value);
     }
@@ -130,7 +126,8 @@ contract ManagerV2_BadRevision is
             description: project.description,
             image: project.image,
             metadataURI: project.metadataURI,
-            descriptor: project.descriptor
+            descriptor: project.descriptor,
+            defaultRoyaltyPoints: project.defaultRoyaltyPoints
         });
         return projectId;
     }
@@ -141,6 +138,7 @@ contract ManagerV2_BadRevision is
     }
 
     function publish(
+        uint256  publishId,
         DataTypes.Publication memory publication
     ) external whenNotPaused returns (uint256) {
         // bool isHubOwner;

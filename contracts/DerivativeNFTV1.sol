@@ -69,6 +69,8 @@ contract DerivativeNFTV1 is
 
     uint256 internal _royaltyBasisPoints; //版税佣金点数, 本协议将版税的10%及金库固定税收5%设置为
 
+    mapping(uint256 => uint256) internal _tokenIdToPublishId;
+
     // bytes4(keccak256('royaltyInfo(uint256,uint256)')) == 0x2a55205a
     bytes4 internal constant _INTERFACE_ID_ERC2981 = 0x2a55205a;
     uint16 internal constant _BASIS_POINTS = 10000;
@@ -120,7 +122,8 @@ contract DerivativeNFTV1 is
         uint256 projectId_,
         uint256 soulBoundTokenId_,
         address metadataDescriptor_,
-        address receiver_ 
+        address receiver_,
+        uint96 defaultRoyaltyPoints_
     ) public virtual initializer {
         if (_initialized) revert Errors.Initialized();
         _initialized = true;
@@ -142,6 +145,8 @@ contract DerivativeNFTV1 is
         _projectId = projectId_;
         _soulBoundTokenId = soulBoundTokenId_;
         _receiver = receiver_;
+
+        _setDefaultRoyalty(_BANKTREASURY, defaultRoyaltyPoints_);
     }
 
     //only owner
@@ -169,21 +174,13 @@ contract DerivativeNFTV1 is
         _deleteDefaultRoyalty();
     }
 
-    function mint(
-        address mintTo, 
-        uint256 slot, 
-        uint256 value
-    ) external whenNotPaused returns(uint256 tokenId){
-        tokenId =  ERC3525Upgradeable._mint(mintTo, slot, value);
-        emit Events.MintNDPT(mintTo, slot, value, block.timestamp);
-        return tokenId;
-    }
 
     // Publication only can publish once
     function publish(
+        uint256 publishId,
         DataTypes.Publication memory publication,
         address publisher
-    ) external whenPublishingEnabled onlyManager  returns (uint256) { //
+    ) external whenPublishingEnabled onlyManager returns (uint256) { //
         
         if (_publicationNameHashBySlot[keccak256(bytes(publication.name))] > 0) revert Errors.PublicationIsExisted();
         if (publication.soulBoundTokenId != _soulBoundTokenId && publication.fromTokenIds.length == 0) revert Errors.InvalidParameter();
@@ -208,17 +205,31 @@ contract DerivativeNFTV1 is
         });
 
         _publicationNameHashBySlot[keccak256(bytes(publication.name))] = slot;
-        return ERC3525Upgradeable._mint(publisher, slot, publication.amount);
+        uint256 newTokenId = ERC3525Upgradeable._createOriginalTokenId();
+        _tokenIdToPublishId[newTokenId] = publishId;
+
+        _mint(publisher, newTokenId, slot, publication.amount);
+        
+
+        emit Events.MintDerivativeNFT(publishId, publisher, slot, publication.amount, block.timestamp);
+        return newTokenId;
     }
 
     function split(
+        uint256 publishId_, 
         uint256 fromTokenId_, 
         address to_,
         uint256 value_
     ) external returns(uint256) {
         uint256 newTokenId = ERC3525Upgradeable._createDerivedTokenId(fromTokenId_);
-        ERC3525Upgradeable._mint(to_, newTokenId, ERC3525Upgradeable.slotOf(fromTokenId_), 0);
+      
+        _tokenIdToPublishId[newTokenId] = publishId_;
+        _mint(to_, newTokenId, ERC3525Upgradeable.slotOf(fromTokenId_), 0);
+
         ERC3525Upgradeable._transferValue(fromTokenId_, newTokenId, value_);
+
+
+        emit Events.SplitDerivativeNFT(publishId_, fromTokenId_, newTokenId, value_, block.timestamp);
 
         return newTokenId;
     }
@@ -350,7 +361,6 @@ contract DerivativeNFTV1 is
     }
 
     function getProjectInfo(uint256 projectId_) external view returns (DataTypes.ProjectData memory) {
-       
         return IManager(MANAGER).getProjectInfo(projectId_);
     }
 
@@ -371,9 +381,21 @@ contract DerivativeNFTV1 is
         uint256 fromTokenId_,
         address to_,
         uint256 value_
-    ) public payable virtual override  whenNotPaused onlyManager returns (uint256) {
-      //
-       return super.transferFrom(fromTokenId_, to_, value_);
+    ) public payable virtual override whenNotPaused onlyManager returns (uint256) {
+        uint256 newTokenId = super.transferFrom(fromTokenId_, to_, value_);
+      
+        //set royalty
+        uint256 publishId = _tokenIdToPublishId[fromTokenId_];
+        uint96 _fraction = IManager(MANAGER).calculateRoyalty(publishId);
+
+        //set royalties
+         _setTokenRoyalty(
+            newTokenId,
+            _BANKTREASURY,
+            _fraction
+        );
+
+       return newTokenId;
     }
 
     function transferFrom(
@@ -410,6 +432,20 @@ contract DerivativeNFTV1 is
     ) public payable virtual override  whenNotPaused onlyManager{ 
         //
        super.safeTransferFrom(from_, to_, tokenId_, "");
+    }
+
+    function _mint(address to_, uint256 tokenId_, uint256 slot_, uint256 value_) internal virtual override {
+        super._mint(to_, tokenId_, slot_, value_);
+
+        uint256 publishId = _tokenIdToPublishId[tokenId_];
+        uint96 _fraction = IManager(MANAGER).calculateRoyalty(publishId);
+
+        //set royalties
+         _setTokenRoyalty(
+            tokenId_,
+            _BANKTREASURY,
+            _fraction
+        );
     }
 
     // function setApprovalForAll(
@@ -473,20 +509,6 @@ contract DerivativeNFTV1 is
      * payment amount for the given sale price.
      */
     function royaltyInfo(uint256 _tokenId, uint256 _salePrice) external view returns (address, uint256) {
-       /*
-        //get salePrice and royaltyBasisPoints from manager
-
-        //TODO
-        (uint256 previousPublishId, uint256 previousTokenId) = IManager(MANAGER).getPreviousByTokenId(tokenId);
-        
-        DataTypes.PublishData memory previousPub =  IManager(MANAGER).getPublishInfo(previousPublishId);
-        
-        return (
-            ownerOf(previousTokenId),
-            (_salePrice * previousPub.publication.royaltyBasisPoints) / _BASIS_POINTS
-        );
-        */
-
         RoyaltyInfo memory royalty = _tokenRoyaltyInfo[_tokenId];
 
         if (royalty.receiver == address(0)) {

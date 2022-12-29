@@ -66,7 +66,7 @@ import {
 let derivativeNFT: DerivativeNFTV1;
 
 makeSuiteCleanRoom('Fee Collect Module', function () {
-  const DEFAULT_COLLECT_PRICE = parseEther('10');
+  const DEFAULT_COLLECT_PRICE = 10000; // in wei parseEther('10');
 
   beforeEach(async function () {
     await expect(
@@ -84,6 +84,10 @@ makeSuiteCleanRoom('Fee Collect Module', function () {
       ).to.eq(SECOND_PROFILE_ID);
 
       expect(await manager.getWalletBySoulBoundTokenId(SECOND_PROFILE_ID)).to.eq(userAddress);
+       
+      //mint some Values to user
+      await manager.connect(governance).mintNDPTValue(SECOND_PROFILE_ID, parseEther('10'));
+      // expect((await ndptContract.balanceOfNDPT(SECOND_PROFILE_ID)).toNumber()).to.eq(parseEther('10'));
 
 
       await expect(
@@ -103,6 +107,11 @@ makeSuiteCleanRoom('Fee Collect Module', function () {
       expect(tokenId).to.eq(THIRD_PROFILE_ID);
 
       expect(await manager.getWalletBySoulBoundTokenId(THIRD_PROFILE_ID)).to.eq(userTwoAddress);
+
+      //mint some Values to userTwo
+      await manager.connect(governance).mintNDPTValue(THIRD_PROFILE_ID, parseEther('10'));
+      // expect((await ndptContract.balanceOfNDPT(THIRD_PROFILE_ID)).toNumber()).to.eq(parseEther('10'));
+        
 
       expect(
         await createHubReturningHubId({
@@ -126,6 +135,7 @@ makeSuiteCleanRoom('Fee Collect Module', function () {
             image: "image",
             metadataURI: "metadataURI",
             descriptor: metadataDescriptor.address,
+            defaultRoyaltyPoints: 0
           },
         })
     ).to.eq(FIRST_PROJECT_ID);
@@ -220,7 +230,7 @@ makeSuiteCleanRoom('Fee Collect Module', function () {
 
         const collectModuleInitData = abiCoder.encode(
             ['uint256', 'uint16', 'address', 'uint256', 'uint256'],
-           
+            //10000 is max
             [SECOND_PROFILE_ID, 10000, ndptAddress, DEFAULT_COLLECT_PRICE, 50]
         );
 
@@ -289,14 +299,7 @@ makeSuiteCleanRoom('Fee Collect Module', function () {
 
     context('Collecting', function () {
       beforeEach(async function () {
-        //mint some Values to user
-        await manager.connect(governance).mintNDPTValue(SECOND_PROFILE_ID, 1000000000000);
-        expect((await ndptContract.balanceOfNDPT(SECOND_PROFILE_ID)).toNumber()).to.eq(1000000000000);
 
-        //mint some Values to userTwo
-        await manager.connect(governance).mintNDPTValue(THIRD_PROFILE_ID, 1000000000000);
-        expect((await ndptContract.balanceOfNDPT(THIRD_PROFILE_ID)).toNumber()).to.eq(1000000000000);
-        
         const publishModuleinitData = abiCoder.encode(
           ['address', 'uint256'],
           [template.address, DEFAULT_TEMPLATE_NUMBER],
@@ -337,7 +340,13 @@ makeSuiteCleanRoom('Fee Collect Module', function () {
           expect(
             await derivativeNFT.ownerOf(FIRST_DNFT_TOKEN_ID)
           ).to.eq(userAddress);
-
+          
+          let [genesisFee, salePrice, royaltyBasisPoints] = await feeCollectModule.getSaleInfo(FIRST_PUBLISH_ID);
+          expect(genesisFee).to.eq(GENESIS_FEE_BPS);
+          expect(salePrice).to.eq(DEFAULT_COLLECT_PRICE);
+          expect(royaltyBasisPoints).to.eq(50);
+          
+         
           expect(
             await derivativeNFT['balanceOf(uint256)'](FIRST_DNFT_TOKEN_ID)
           ).to.eq(1);
@@ -349,7 +358,7 @@ makeSuiteCleanRoom('Fee Collect Module', function () {
         await expect(
           feeCollectModule
             .connect(userTwo)
-            .processCollect(SECOND_PROFILE_ID, 4, FIRST_PUBLISH_ID, 1)
+            .processCollect(SECOND_PROFILE_ID, 4, FIRST_PUBLISH_ID, 1, [])
         ).to.be.revertedWith(ERRORS.NOT_MANAGER);
       });
 
@@ -362,12 +371,21 @@ makeSuiteCleanRoom('Fee Collect Module', function () {
         const receipt = await waitForTx(tx);
         */
           
+        let [treasuryFee, genesisSoulBoundTokenId, treasuryAmount, genesisAmount, adjustedAmount] = await feeCollectModule.getFees(FIRST_PUBLISH_ID, 1);
+        console.log("\t --- treasuryFee:", treasuryFee);
+        console.log("\t --- genesisSoulBoundTokenId:", genesisSoulBoundTokenId);
+        console.log("\t --- treasuryAmount:", treasuryAmount);
+        console.log("\t --- genesisAmount:", genesisAmount);
+        console.log("\t --- adjustedAmount:", adjustedAmount);
+
         expect(
           await collectReturningTokenId({
+              sender: userTwo,
               vars: {
                 publishId: FIRST_PUBLISH_ID,
                 collectorSoulBoundTokenId: THIRD_PROFILE_ID,
                 collectValue: 1,
+                data: [],
               },
           }) 
           ).to.eq(SECOND_DNFT_TOKEN_ID);
@@ -383,7 +401,44 @@ makeSuiteCleanRoom('Fee Collect Module', function () {
         //After transferFrom, user have zero dNFT
         expect(
           await derivativeNFT['balanceOf(uint256)'](FIRST_DNFT_TOKEN_ID)
-        ).to.eq(0);  //10 - 1
+        ).to.eq(0); 
+
+
+      });         
+
+      it('User collecting a dNFT and pay to the treasury', async function () {
+          
+        let [treasuryFee, genesisSoulBoundTokenId, treasuryAmount, genesisAmount, adjustedAmount] = await feeCollectModule.getFees(FIRST_PUBLISH_ID, 1);
+        console.log("\t --- treasuryFee:", treasuryFee);
+        console.log("\t --- genesisSoulBoundTokenId:", genesisSoulBoundTokenId);
+        console.log("\t --- treasuryAmount:", treasuryAmount);
+        console.log("\t --- genesisAmount:", genesisAmount);
+        console.log("\t --- adjustedAmount:", adjustedAmount);
+
+        expect(
+          await collectReturningTokenId({
+              sender: userTwo,
+              vars: {
+                publishId: FIRST_PUBLISH_ID,
+                collectorSoulBoundTokenId: THIRD_PROFILE_ID,
+                collectValue: 1,
+                data : [],
+              },
+          }) 
+          ).to.eq(SECOND_DNFT_TOKEN_ID);
+
+        expect(
+          await derivativeNFT.ownerOf(SECOND_DNFT_TOKEN_ID)
+        ).to.eq(userTwoAddress);
+
+        expect(
+          await derivativeNFT.connect(userTwo)['balanceOf(uint256)'](SECOND_DNFT_TOKEN_ID)
+        ).to.eq(1);
+
+        //After transferFrom, user have zero dNFT
+        expect(
+          await derivativeNFT['balanceOf(uint256)'](FIRST_DNFT_TOKEN_ID)
+        ).to.eq(0); 
 
 
       });         
@@ -392,15 +447,6 @@ makeSuiteCleanRoom('Fee Collect Module', function () {
 
     context('Airdrop', function () {
       beforeEach(async function () {
-
-        //mint some Values to user
-        await manager.connect(governance).mintNDPTValue(SECOND_PROFILE_ID, 1000000000000);
-        expect((await ndptContract.balanceOfNDPT(SECOND_PROFILE_ID)).toNumber()).to.eq(1000000000000);
-
-        //mint some Values to userTwo
-        await manager.connect(governance).mintNDPTValue(THIRD_PROFILE_ID, 1000000000000);
-        expect((await ndptContract.balanceOfNDPT(THIRD_PROFILE_ID)).toNumber()).to.eq(1000000000000);
-        
         const publishModuleinitData = abiCoder.encode(
           ['address', 'uint256'],
           [template.address, DEFAULT_TEMPLATE_NUMBER],
@@ -449,7 +495,7 @@ makeSuiteCleanRoom('Fee Collect Module', function () {
   
       });
 
-      it('Hub owner airdrop ', async function () {
+      it('Should success to airdrop ', async function () {
         
         expect(
           await derivativeNFT.ownerOf(FIRST_DNFT_TOKEN_ID)
@@ -476,6 +522,7 @@ makeSuiteCleanRoom('Fee Collect Module', function () {
         ).to.eq(1);
       });      
 
+      
       it('Should fail to airdrop when amount is exceed', async function () {
         
         expect(
@@ -488,57 +535,18 @@ makeSuiteCleanRoom('Fee Collect Module', function () {
           toSoulBoundTokenIds: [THIRD_PROFILE_ID],
           tokenId: FIRST_DNFT_TOKEN_ID,
           values: [100],
-        })).to.be.revertedWith(ERRORS.ERC3525_INSUFFICIENT_BALANCE);
+        })).to.be.revertedWith(ERRORS.ERC3525INSUFFICIENTBALANCE);
 
-     
         expect(
           await derivativeNFT['balanceOf(uint256)'](FIRST_DNFT_TOKEN_ID)
         ).to.eq(11);
       });      
-
-      it('Should fail to airdrop when ownership soulBoundTokenId is not owner of tokenId', async function () {
-        
-        expect(
-          await derivativeNFT.ownerOf(FIRST_DNFT_TOKEN_ID)
-        ).to.eq(userAddress);
-
-        expect(
-          await collectReturningTokenId({
-              vars: {
-                publishId: FIRST_PUBLISH_ID,
-                collectorSoulBoundTokenId: THIRD_PROFILE_ID,
-                collectValue: 1,
-              },
-          }) 
-        ).to.eq(SECOND_DNFT_TOKEN_ID);
-
-        expect(
-          await derivativeNFT.ownerOf(SECOND_DNFT_TOKEN_ID)
-        ).to.eq(userTwoAddress);
-
-          
-        await expect(manager.connect(user).airdrop({
-          publishId: FIRST_PROJECT_ID,
-          ownershipSoulBoundTokenId: SECOND_PROFILE_ID,
-          toSoulBoundTokenIds: [THIRD_PROFILE_ID],
-          tokenId: SECOND_DNFT_TOKEN_ID, //this tokenId is not owner of user
-          values: [1],
-        })).to.be.revertedWith(ERRORS.NOT_OWNEROF_TOKENID);
-
-      });      
+         
     });
     
     context('DerivativeNFT transfer', function () {
       beforeEach(async function () {
 
-        //mint some Values to user
-        await manager.connect(governance).mintNDPTValue(SECOND_PROFILE_ID, 1000000000000);
-        expect((await ndptContract.balanceOfNDPT(SECOND_PROFILE_ID)).toNumber()).to.eq(1000000000000);
-
-        //mint some Values to userTwo
-        await manager.connect(governance).mintNDPTValue(THIRD_PROFILE_ID, 1000000000000);
-        expect((await ndptContract.balanceOfNDPT(THIRD_PROFILE_ID)).toNumber()).to.eq(1000000000000);
-        
         const publishModuleinitData = abiCoder.encode(
           ['address', 'uint256'],
           [template.address, DEFAULT_TEMPLATE_NUMBER],
@@ -583,7 +591,6 @@ makeSuiteCleanRoom('Fee Collect Module', function () {
           expect(
             await derivativeNFT['balanceOf(uint256)'](FIRST_DNFT_TOKEN_ID)
           ).to.eq(11);
-
   
       });
 

@@ -42,8 +42,6 @@ interface IManagerV2 {
    * @param newState The state to set, as a member of the ProtocolState enum.
    */
    function setState(DataTypes.ProtocolState newState) external;
-   function setStateDerivative(address derivativeNFT, DataTypes.ProtocolState newState) external;
-
 
     function mintNDPTValue(
         uint256 tokenId, 
@@ -108,10 +106,12 @@ interface IManagerV2 {
     /**
      * @notice Publish some amount of dNFTs
      *
+     * @param publishId publishId
      * @param publication publication infomation
      * @return uint256 The new tokenId.
      */
     function publish(
+        uint256 publishId,
         DataTypes.Publication memory publication
     ) external returns(uint256);
   

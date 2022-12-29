@@ -98,13 +98,15 @@ contract FeeCollectModule is FeeModuleBase, ModuleBase, ICollectModule {
         uint256 ownershipSoulBoundTokenId,
         uint256 collectorSoulBoundTokenId,
         uint256 publishId,
-        uint256 collectValue
+        uint256 collectValue,
+        bytes calldata data
     ) external virtual override onlyManager {
         _processCollect(
             ownershipSoulBoundTokenId, 
             collectorSoulBoundTokenId, 
             publishId, 
-            collectValue
+            collectValue,
+            data
         );
     }
 
@@ -121,7 +123,6 @@ contract FeeCollectModule is FeeModuleBase, ModuleBase, ICollectModule {
     ) external view returns (ProfilePublicationData memory) {
         return _dataByPublicationByProfile[publishId];
     }
-    
 
     function getSaleInfo(
         uint256 publishId
@@ -130,7 +131,37 @@ contract FeeCollectModule is FeeModuleBase, ModuleBase, ICollectModule {
             _dataByPublicationByProfile[publishId].genesisFee, 
             _dataByPublicationByProfile[publishId].salePrice, 
             _dataByPublicationByProfile[publishId].royaltyBasisPoints
-            );
+        );
+    }
+
+    function getFees(
+        uint256 publishId, 
+        uint256 collectValue
+    ) external view returns (
+        uint16 treasuryFee, 
+        uint256 genesisSoulBoundTokenId, 
+        uint256 treasuryAmount, 
+        uint256 genesisAmount, 
+        uint256 adjustedAmount
+    ) {
+        //Avoid stack too deep
+        {
+
+            uint256 payValue = collectValue.mul(_dataByPublicationByProfile[publishId].salePrice);
+            (,  treasuryFee) = _treasuryData();
+            genesisSoulBoundTokenId = _dataByPublicationByProfile[publishId].genesisSoulBoundTokenId;
+            treasuryAmount = payValue.mul(treasuryFee).div(BPS_MAX);
+            genesisAmount = payValue.mul(_dataByPublicationByProfile[publishId].genesisFee).div(BPS_MAX);
+            adjustedAmount = payValue.sub(payValue.mul(treasuryFee).div(BPS_MAX)).sub(payValue.mul(_dataByPublicationByProfile[publishId].genesisFee).div(BPS_MAX));
+        }
+
+        return (
+           treasuryFee,
+           genesisSoulBoundTokenId,
+           treasuryAmount, 
+           genesisAmount,
+           adjustedAmount
+        );
     }
 
 
@@ -138,34 +169,41 @@ contract FeeCollectModule is FeeModuleBase, ModuleBase, ICollectModule {
         uint256 ownershipSoulBoundTokenId,
         uint256 collectorSoulBoundTokenId,
         uint256 publishId, 
-        uint256 collectValue
+        uint256 collectValue,
+        bytes calldata data
     ) internal {
         uint256 payValue = collectValue.mul(_dataByPublicationByProfile[publishId].salePrice);
-        address currency = _dataByPublicationByProfile[publishId].currency;
+        // address currency = ;
         uint256 genesisSoulBoundTokenId = _dataByPublicationByProfile[publishId].genesisSoulBoundTokenId;
         
         //获取交易税点
         (address treasury, uint16 treasuryFee) = _treasuryData();
         uint256 treasuryAmount = payValue.mul(treasuryFee).div(BPS_MAX);
         uint256 genesisAmount = payValue.mul(_dataByPublicationByProfile[publishId].genesisFee).div(BPS_MAX);
-        uint256 adjustedAmount = payValue.sub(treasuryAmount).sub(genesisAmount);
-
-        if (currency == _ndpt()) {
-            if (adjustedAmount>0) 
-                INFTDerivativeProtocolTokenV1(_ndpt()).transferValue(collectorSoulBoundTokenId, ownershipSoulBoundTokenId, adjustedAmount);
+        // uint256 adjustedAmount = payValue.sub(treasuryAmount).sub(genesisAmount);
             
-            uint256 treasuryOfSoulBoundTokenId = IBankTreasury(treasury).getSoulBoundTokenId();
-            
-            if (treasuryAmount > 0) INFTDerivativeProtocolTokenV1(_ndpt()).transferValue(collectorSoulBoundTokenId, treasuryOfSoulBoundTokenId, treasuryAmount);
-            if (genesisSoulBoundTokenId >0 && genesisAmount > 0) INFTDerivativeProtocolTokenV1(_ndpt()).transferValue(collectorSoulBoundTokenId, genesisSoulBoundTokenId, genesisAmount);
+        {
+            if (_dataByPublicationByProfile[publishId].currency == _ndpt()) {
+                //TODO 
+                if ( payValue.sub(treasuryAmount).sub(genesisAmount)>0) 
+                    INFTDerivativeProtocolTokenV1(_ndpt()).transferValue(collectorSoulBoundTokenId, ownershipSoulBoundTokenId,  payValue.sub(treasuryAmount).sub(genesisAmount));
+                
+                uint256 treasuryOfSoulBoundTokenId = IBankTreasury(treasury).getSoulBoundTokenId();
+                
+                if (treasuryAmount > 0) INFTDerivativeProtocolTokenV1(_ndpt()).transferValue(collectorSoulBoundTokenId, treasuryOfSoulBoundTokenId, treasuryAmount);
+                if (genesisSoulBoundTokenId >0 && genesisAmount > 0) INFTDerivativeProtocolTokenV1(_ndpt()).transferValue(collectorSoulBoundTokenId, genesisSoulBoundTokenId, genesisAmount);
 
-        } else {
-            // must approve feeCollectModule contract before 
-            if (adjustedAmount>0) IERC20Upgradeable(currency).safeTransferFrom(_wallet(collectorSoulBoundTokenId), _wallet(ownershipSoulBoundTokenId), adjustedAmount);
+            } else {
+                // must approve feeCollectModule contract before 
+                if ( payValue.sub(treasuryAmount).sub(genesisAmount)>0) 
+                    IERC20Upgradeable(_dataByPublicationByProfile[publishId].currency).safeTransferFrom(_wallet(collectorSoulBoundTokenId), _wallet(ownershipSoulBoundTokenId),  payValue.sub(treasuryAmount).sub(genesisAmount));
 
-            //pay to treasury and genesis publisher
-            if (treasuryAmount > 0) IERC20Upgradeable(currency).safeTransferFrom(_wallet(collectorSoulBoundTokenId), treasury, treasuryAmount);
-            if (genesisSoulBoundTokenId >0 && genesisAmount > 0) IERC20Upgradeable(currency).safeTransferFrom(_wallet(collectorSoulBoundTokenId), _wallet(genesisSoulBoundTokenId), genesisAmount);
+                //pay to treasury and genesis publisher
+                if (treasuryAmount > 0) IERC20Upgradeable(_dataByPublicationByProfile[publishId].currency).safeTransferFrom(_wallet(collectorSoulBoundTokenId), treasury, treasuryAmount);
+                if (genesisSoulBoundTokenId >0 && genesisAmount > 0) 
+                    IERC20Upgradeable(_dataByPublicationByProfile[publishId].currency).safeTransferFrom(_wallet(collectorSoulBoundTokenId), _wallet(genesisSoulBoundTokenId), genesisAmount);
+            }
         }
+
     }
 }
