@@ -364,7 +364,7 @@ before(async function () {
   expect((await bankTreasuryContract.getNDPT()).toUpperCase()).to.eq(ndptContract.address.toUpperCase());
   
   expect((await manager.version()).toNumber()).to.eq(1);
-  expect((await moduleGlobals.getPublishCurrencyTax(ndptContract.address))).to.eq(PublishRoyaltyNDPT);
+  expect((await moduleGlobals.getPublishCurrencyTax())).to.eq(PublishRoyaltyNDPT);
 
   // Event library deployment is only needed for testing and is not reproduced in the live environment
   eventsLib = await new Events__factory(deployer).deploy();

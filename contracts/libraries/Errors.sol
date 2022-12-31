@@ -101,6 +101,7 @@ library Errors {
   error InvidVoucherParValueType();
   error VoucherNotExists();
   error VoucherIsUsed();
+  error NotOwnerVoucher();
   error ToWalletIsZero();
   error AirdropTotalExceed();
   error NotOwerOFTokenId();
@@ -109,4 +110,6 @@ library Errors {
   error InvalidRoyaltyBasisPoints();
   error MintLimitExceeded();
   error CollectExpired();
+
+  error InvalidRecipientSplits();
 }

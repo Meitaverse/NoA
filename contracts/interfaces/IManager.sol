@@ -165,7 +165,7 @@ interface IManager {
      */
     function getPublishInfo(uint256 publishId_) external view returns (DataTypes.PublishData memory);
 
-    function getDerivativeNFT(uint256 publishId_) external view returns (address);
+    function getDerivativeNFT(uint256 projectId) external view returns (address);
 
     function getPublicationByTokenId(uint256 tokenId_) external view returns (DataTypes.Publication memory);
     

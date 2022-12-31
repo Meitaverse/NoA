@@ -11,16 +11,31 @@ import {DataTypes} from '../libraries/DataTypes.sol';
  * @notice This is the interface for the Voucher contract
  */
 interface IVoucher {
-
-    // function mint(address account, uint256 id, uint256 amount, bytes memory data) external;
-    
+    /**
+     * @notice generate a voucher card by voucherType,
+     * 
+     * @dev only call by owner
+     *
+     * @param voucherType The type of voucher.
+     * @param account The account to received 
+     *
+     */
     function generateVoucher(
-        DataTypes.VoucherParValueType vouchType,
+        DataTypes.VoucherParValueType voucherType,
         address account
     ) external;
 
+    /**
+     * @notice generate a voucher card by voucherType,
+     * 
+     * @dev only call by owner
+     *
+     * @param voucherTypes The array type of voucher.
+     * @param account The account to received 
+     *
+     */
     function generateVoucherBatch(
-        DataTypes.VoucherParValueType[] memory vouchTypes,
+        DataTypes.VoucherParValueType[] memory voucherTypes,
         address account
     ) external;
 
@@ -30,7 +45,17 @@ interface IVoucher {
 
     function setBankTreasury(address bankTreasury) external;
     
-    function useVoucher(uint256 voucherId, uint256 soulBoundTokenId) external;
+    /**
+     * @notice generate a voucher card by voucherType,
+     * 
+     * @dev only call by owner
+     *
+     * @param account The account to exchange 
+     * @param voucherId The account to received 
+     * @param voucherId The soulBoundTokenId of  
+     *
+     */
+    function useVoucher(address account, uint256 voucherId, uint256 soulBoundTokenId) external;
 
      function burn(
         address owner,

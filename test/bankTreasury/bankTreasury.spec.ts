@@ -69,6 +69,8 @@ import {
 } from '../helpers/utils';
 
 let derivativeNFT: DerivativeNFTV1;
+const FIRST_VOUCHER_TOKEN_ID = 1;
+const SECOND_VOUCHER_TOKEN_ID = 2;
 
 makeSuiteCleanRoom('Fee Collect Module', function () {
   const DEFAULT_COLLECT_PRICE = parseEther('10');
@@ -80,6 +82,7 @@ makeSuiteCleanRoom('Fee Collect Module', function () {
 
     expect(
       await createProfileReturningTokenId({
+          sender: user,
           vars: {
           to: userAddress,
           nickName: NickName,
@@ -88,9 +91,20 @@ makeSuiteCleanRoom('Fee Collect Module', function () {
          }) 
       ).to.eq(SECOND_PROFILE_ID);
 
+    expect(
+      await createProfileReturningTokenId({
+          sender: userTwo,
+          vars: {
+          to: userTwoAddress,
+          nickName: NickName3,
+          imageURI: MOCK_PROFILE_URI,
+          },
+         }) 
+      ).to.eq(THIRD_PROFILE_ID);
+
       expect(await manager.getWalletBySoulBoundTokenId(FIRST_PROFILE_ID)).to.eq(ndptContract.address);
       expect(await manager.getWalletBySoulBoundTokenId(SECOND_PROFILE_ID)).to.eq(userAddress);
-
+      expect(await manager.getWalletBySoulBoundTokenId(THIRD_PROFILE_ID)).to.eq(userTwoAddress);
   });
 
   context('BankTreasury', function () {
@@ -98,7 +112,7 @@ makeSuiteCleanRoom('Fee Collect Module', function () {
       it('User should fail to exchange Voucher NDPT using none exists Voucher card', async function () {
         
         await expect(
-          bankTreasuryContract.exchangeVoucher(1, SECOND_PROFILE_ID)
+          bankTreasuryContract.connect(user).exchangeVoucher(FIRST_VOUCHER_TOKEN_ID, SECOND_PROFILE_ID)
         ).to.be.revertedWith(ERRORS.VOUCHER_NOT_EXISTS);
 
       });
@@ -109,12 +123,27 @@ makeSuiteCleanRoom('Fee Collect Module', function () {
         ).to.not.be.reverted;
 
         await expect(
-          bankTreasuryContract.exchangeVoucher(1, SECOND_PROFILE_ID)
+          bankTreasuryContract.connect(user).exchangeVoucher(FIRST_VOUCHER_TOKEN_ID, SECOND_PROFILE_ID)
         ).to.not.be.reverted;
 
         await expect(
-          bankTreasuryContract.exchangeVoucher(1, SECOND_PROFILE_ID)
+          bankTreasuryContract.connect(user).exchangeVoucher(FIRST_VOUCHER_TOKEN_ID, SECOND_PROFILE_ID)
         ).to.be.revertedWith(ERRORS.VOUCHER_IS_USED);
+
+      });
+
+      it('User should fail to exchange Voucher NDPT using a none owned of Voucher card', async function () {
+        await expect(
+          voucherContract.generateVoucher(0, userAddress)
+        ).to.not.be.reverted;
+
+        await expect(
+          bankTreasuryContract.connect(userTwo).exchangeVoucher(FIRST_VOUCHER_TOKEN_ID, THIRD_PROFILE_ID)
+        ).to.be.revertedWith(ERRORS.NOT_OWNER_VOUCHER);
+
+        // await expect(
+        //   bankTreasuryContract.exchangeVoucher(FIRST_VOUCHER_TOKEN_ID, SECOND_PROFILE_ID)
+        // ).to.be.revertedWith(ERRORS.VOUCHER_IS_USED);
 
       });
 
@@ -142,20 +171,61 @@ makeSuiteCleanRoom('Fee Collect Module', function () {
             voucherContract.generateVoucher(0, userAddress)
           ).to.not.be.reverted;
 
-         let voucherData = await voucherContract.getVoucher(1);
+         let voucherData = await voucherContract.getVoucher(FIRST_VOUCHER_TOKEN_ID);
 
-          expect(voucherData.tokenId).to.eq(1);
+          expect(voucherData.tokenId).to.eq(FIRST_VOUCHER_TOKEN_ID);
           expect(voucherData.ndptValue).to.eq(100);
           expect(voucherData.isUsed).to.eq(false);
 
           await expect(
-            bankTreasuryContract.exchangeVoucher(1, SECOND_PROFILE_ID)
+            bankTreasuryContract.connect(user).exchangeVoucher(FIRST_VOUCHER_TOKEN_ID, SECOND_PROFILE_ID)
           ).to.not.be.reverted;
 
           expect((await ndptContract.balanceOfNDPT(SECOND_PROFILE_ID)).toNumber()).to.eq(100);
         });
 
+        it('Voucher transfer to a new user, and new owner should exchange Voucher NDPT', async function () {
+          expect((await ndptContract.balanceOfNDPT(FIRST_PROFILE_ID)).toNumber()).to.eq(INITIAL_SUPPLY);
+          expect((await ndptContract.balanceOfNDPT(SECOND_PROFILE_ID)).toNumber()).to.eq(0);
+          
+          await expect(
+            voucherContract.generateVoucher(0, userAddress)
+          ).to.not.be.reverted;
+
+         let voucherData = await voucherContract.getVoucher(FIRST_VOUCHER_TOKEN_ID);
+
+          expect(voucherData.tokenId).to.eq(FIRST_VOUCHER_TOKEN_ID);
+          expect(voucherData.ndptValue).to.eq(100);
+          expect(voucherData.isUsed).to.eq(false);
+
+          await voucherContract.connect(user).safeTransferFrom(
+            userAddress, 
+            userTwoAddress, 
+            FIRST_VOUCHER_TOKEN_ID,
+            100,
+            []
+            );
+
+          expect(await voucherContract.balanceOf(userAddress, FIRST_VOUCHER_TOKEN_ID)).to.eq(0);  
+          expect(await voucherContract.balanceOf(userTwoAddress, FIRST_VOUCHER_TOKEN_ID)).to.eq(100);  
+
+          await expect(
+            bankTreasuryContract.connect(userTwo).exchangeVoucher(FIRST_VOUCHER_TOKEN_ID, THIRD_PROFILE_ID)
+          ).to.not.be.reverted;
+
+          expect((await ndptContract.balanceOfNDPT(THIRD_PROFILE_ID)).toNumber()).to.eq(100);
+
+          let voucherData2 = await voucherContract.getVoucher(FIRST_VOUCHER_TOKEN_ID);
+
+          expect(voucherData2.tokenId).to.eq(FIRST_VOUCHER_TOKEN_ID);
+          expect(voucherData2.ndptValue).to.eq(100);
+          expect(voucherData2.isUsed).to.eq(true);
+        });
+  
+
     });
+
+
 
   });
 

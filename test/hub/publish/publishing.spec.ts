@@ -88,7 +88,8 @@ makeSuiteCleanRoom('Publishing', function () {
                     image: "image",
                     metadataURI: "metadataURI",
                     descriptor: metadataDescriptor.address,
-                    defaultRoyaltyPoints: 0
+                    defaultRoyaltyPoints: 0,
+                    feeShareType: 0, //Level two
                   },
                 })
             ).to.eq(FIRST_PROJECT_ID);
@@ -112,8 +113,8 @@ makeSuiteCleanRoom('Publishing', function () {
             );
 
             const collectModuleInitData = abiCoder.encode(
-                ['uint256', 'uint16', 'address', 'uint256', 'uint256'],
-                [SECOND_PROFILE_ID, GENESIS_FEE_BPS, ndptAddress, DEFAULT_COLLECT_PRICE, 50]
+                ['uint256', 'uint16', 'uint256', 'uint256'],
+                [SECOND_PROFILE_ID, GENESIS_FEE_BPS, DEFAULT_COLLECT_PRICE, 50]
             );
 
             //mint 100Value to user
@@ -158,8 +159,8 @@ makeSuiteCleanRoom('Publishing', function () {
             );
 
             const collectModuleInitData = abiCoder.encode(
-                ['uint256', 'uint16', 'address', 'uint256', 'uint256'],
-                [SECOND_PROFILE_ID, GENESIS_FEE_BPS, ndptAddress, DEFAULT_COLLECT_PRICE, 50]
+                ['uint256', 'uint16', 'uint256', 'uint256'],
+                [SECOND_PROFILE_ID, GENESIS_FEE_BPS, DEFAULT_COLLECT_PRICE, 50]
             );
 
             //mint 100Value to user
@@ -197,8 +198,8 @@ makeSuiteCleanRoom('Publishing', function () {
             );
 
             const collectModuleInitData = abiCoder.encode(
-                ['uint256', 'uint16', 'address', 'uint256', 'uint256'],
-                [SECOND_PROFILE_ID, GENESIS_FEE_BPS, ndptAddress, DEFAULT_COLLECT_PRICE, 50]
+                ['uint256', 'uint16', 'uint256', 'uint256'],
+                [SECOND_PROFILE_ID, GENESIS_FEE_BPS, DEFAULT_COLLECT_PRICE, 50]
             );
             
             //mint 100Value to user
@@ -225,14 +226,14 @@ makeSuiteCleanRoom('Publishing', function () {
                })
            ).to.not.be.reverted;
 
-            // await expect(
-            //      manager.connect(user).publish(
-            //         FIRST_PUBLISH_ID
-            //    )
-            // ).to.not.be.reverted;
-            await manager.connect(user).publish(
-                        FIRST_PUBLISH_ID
-            );
+            await expect(
+                 manager.connect(user).publish(
+                    FIRST_PUBLISH_ID
+               )
+            ).to.not.be.reverted;
+            // await manager.connect(user).publish(
+            //             FIRST_PUBLISH_ID
+            // );
 
             // const dNFTTokenId = await manager.connect(user).callStatic.publish(FIRST_PUBLISH_ID);
             // await expect(manager.connect(user).publish(FIRST_PUBLISH_ID)).to.not.be.reverted;
@@ -251,8 +252,8 @@ makeSuiteCleanRoom('Publishing', function () {
             );
 
             const collectModuleInitData = abiCoder.encode(
-                ['uint256', 'uint16', 'address', 'uint256', 'uint256'],
-                [SECOND_PROFILE_ID, GENESIS_FEE_BPS, ndptAddress, DEFAULT_COLLECT_PRICE, 50]
+                ['uint256', 'uint16', 'uint256', 'uint256'],
+                [SECOND_PROFILE_ID, GENESIS_FEE_BPS, DEFAULT_COLLECT_PRICE, 50]
             );
             
             //mint 1000Value to user

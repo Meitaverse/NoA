@@ -121,7 +121,8 @@ contract ManagerV2 is IManagerV2, DerivativeNFTMultiState, MockManagerV2Storage,
             image: project.image,
             metadataURI: project.metadataURI,
             descriptor: project.descriptor,
-            defaultRoyaltyPoints: project.defaultRoyaltyPoints
+            defaultRoyaltyPoints: project.defaultRoyaltyPoints,
+            feeShareType: project.feeShareType
         });
         return projectId; 
     }

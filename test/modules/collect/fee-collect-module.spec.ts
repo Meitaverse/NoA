@@ -67,6 +67,7 @@ let derivativeNFT: DerivativeNFTV1;
 
 makeSuiteCleanRoom('Fee Collect Module', function () {
   const DEFAULT_COLLECT_PRICE = 10000; // in wei parseEther('10');
+  const Default_royaltyBasisPoints = 50; //
 
   beforeEach(async function () {
     await expect(
@@ -99,6 +100,7 @@ makeSuiteCleanRoom('Fee Collect Module', function () {
             nickName: NickName3,
             imageURI: MOCK_PROFILE_URI,
       });
+      
       await expect(manager.connect(userTwo).createProfile({ 
             to: userTwoAddress,
             nickName: NickName3,
@@ -135,7 +137,8 @@ makeSuiteCleanRoom('Fee Collect Module', function () {
             image: "image",
             metadataURI: "metadataURI",
             descriptor: metadataDescriptor.address,
-            defaultRoyaltyPoints: 0
+            defaultRoyaltyPoints: 0,
+            feeShareType: 0, //Level two
           },
         })
     ).to.eq(FIRST_PROJECT_ID);
@@ -149,43 +152,7 @@ makeSuiteCleanRoom('Fee Collect Module', function () {
 
   context('Negatives', function () {
     context('Publication publish', function () {
-      it('user should fail to publish with fee collect module using unwhitelisted currency', async function () {
-        const publishModuleinitData = abiCoder.encode(
-          ['address', 'uint256'],
-          [template.address, DEFAULT_TEMPLATE_NUMBER],
-        );
-
-        const collectModuleInitData = abiCoder.encode(
-            ['uint256', 'uint16', 'address', 'uint256', 'uint256'],
-            //userTwoAddress is unwhitelisted currency
-            [SECOND_PROFILE_ID, GENESIS_FEE_BPS, userTwoAddress, DEFAULT_COLLECT_PRICE, 50]
-        );
-
-        await expect(
-          manager.connect(user).prePublish({
-             soulBoundTokenId: SECOND_PROFILE_ID,
-             hubId: FIRST_HUB_ID,
-             projectId: FIRST_PROJECT_ID,
-             amount: 1,
-             salePrice: DEFAULT_COLLECT_PRICE,
-             royaltyBasisPoints: 50,             
-             name: "Dollar",
-             description: "Hand draw",
-             materialURIs: [],
-             fromTokenIds: [],
-             collectModule: feeCollectModule.address,
-             collectModuleInitData: collectModuleInitData,
-             publishModule: publishModule.address,
-             publishModuleInitData: publishModuleinitData,
-          })
-        ).to.not.be.reverted;
-
-        await expect(
-          manager.connect(user).publish(FIRST_PUBLISH_ID)
-        ).to.be.revertedWith(ERRORS.INIT_PARAMS_INVALID);
-
-      });
-
+      
       it('user should fail to publish with fee collect module using zero publishId', async function () {
         const publishModuleinitData = abiCoder.encode(
           ['address', 'uint256'],
@@ -193,9 +160,9 @@ makeSuiteCleanRoom('Fee Collect Module', function () {
         );
 
         const collectModuleInitData = abiCoder.encode(
-            ['uint256', 'uint16', 'address', 'uint256', 'uint256'],
+            ['uint256', 'uint16', 'uint256', 'uint256'],
            
-            [SECOND_PROFILE_ID, GENESIS_FEE_BPS, ndptAddress, DEFAULT_COLLECT_PRICE, 50]
+            [SECOND_PROFILE_ID, GENESIS_FEE_BPS, DEFAULT_COLLECT_PRICE, Default_royaltyBasisPoints]
         );
 
         await expect(
@@ -205,7 +172,7 @@ makeSuiteCleanRoom('Fee Collect Module', function () {
              projectId: FIRST_PROJECT_ID,
              amount: 1,
              salePrice: DEFAULT_COLLECT_PRICE,
-             royaltyBasisPoints: 50,             
+             royaltyBasisPoints: Default_royaltyBasisPoints,             
              name: "Dollar",
              description: "Hand draw",
              materialURIs: [],
@@ -229,9 +196,9 @@ makeSuiteCleanRoom('Fee Collect Module', function () {
         );
 
         const collectModuleInitData = abiCoder.encode(
-            ['uint256', 'uint16', 'address', 'uint256', 'uint256'],
+            ['uint256', 'uint16', 'uint256', 'uint256'],
             //10000 is max
-            [SECOND_PROFILE_ID, 10000, ndptAddress, DEFAULT_COLLECT_PRICE, 50]
+            [SECOND_PROFILE_ID, 10000, DEFAULT_COLLECT_PRICE, Default_royaltyBasisPoints]
         );
 
         await expect(
@@ -241,7 +208,7 @@ makeSuiteCleanRoom('Fee Collect Module', function () {
              projectId: FIRST_PROJECT_ID,
              amount: 1,
              salePrice: DEFAULT_COLLECT_PRICE,
-             royaltyBasisPoints: 50,             
+             royaltyBasisPoints: Default_royaltyBasisPoints,             
              name: "Dollar",
              description: "Hand draw",
              materialURIs: [],
@@ -265,9 +232,9 @@ makeSuiteCleanRoom('Fee Collect Module', function () {
         );
 
         const collectModuleInitData = abiCoder.encode(
-            ['uint256', 'uint16', 'address', 'uint256', 'uint256'],
+            ['uint256', 'uint16', 'uint256', 'uint256'],
            
-            [SECOND_PROFILE_ID, GENESIS_FEE_BPS, ndptAddress, DEFAULT_COLLECT_PRICE, 50]
+            [SECOND_PROFILE_ID, GENESIS_FEE_BPS, DEFAULT_COLLECT_PRICE, Default_royaltyBasisPoints]
         );
 
         await expect(
@@ -277,7 +244,7 @@ makeSuiteCleanRoom('Fee Collect Module', function () {
              projectId: FIRST_PROJECT_ID,
              amount: 0,
              salePrice: DEFAULT_COLLECT_PRICE,
-             royaltyBasisPoints: 50,             
+             royaltyBasisPoints: Default_royaltyBasisPoints,             
              name: "Dollar",
              description: "Hand draw",
              materialURIs: [],
@@ -306,9 +273,9 @@ makeSuiteCleanRoom('Fee Collect Module', function () {
         );
 
         const collectModuleInitData = abiCoder.encode(
-            ['uint256', 'uint16', 'address', 'uint256', 'uint256'],
+            ['uint256', 'uint16', 'uint256', 'uint256'],
            
-            [SECOND_PROFILE_ID, GENESIS_FEE_BPS, ndptAddress, DEFAULT_COLLECT_PRICE, 50]
+            [SECOND_PROFILE_ID, GENESIS_FEE_BPS, DEFAULT_COLLECT_PRICE, Default_royaltyBasisPoints]
         );
 
         await expect(
@@ -318,7 +285,7 @@ makeSuiteCleanRoom('Fee Collect Module', function () {
               projectId: FIRST_PROJECT_ID,
               amount: 1,
               salePrice: DEFAULT_COLLECT_PRICE,
-              royaltyBasisPoints: 50,              
+              royaltyBasisPoints: Default_royaltyBasisPoints,              
               name: "Dollar",
               description: "Hand draw",
               materialURIs: [],
@@ -341,10 +308,10 @@ makeSuiteCleanRoom('Fee Collect Module', function () {
             await derivativeNFT.ownerOf(FIRST_DNFT_TOKEN_ID)
           ).to.eq(userAddress);
           
-          let [genesisFee, salePrice, royaltyBasisPoints] = await feeCollectModule.getSaleInfo(FIRST_PUBLISH_ID);
-          expect(genesisFee).to.eq(GENESIS_FEE_BPS);
-          expect(salePrice).to.eq(DEFAULT_COLLECT_PRICE);
-          expect(royaltyBasisPoints).to.eq(50);
+          let fetchedData = await feeCollectModule.getPublicationData(FIRST_PUBLISH_ID);
+          expect(fetchedData.genesisFee).to.eq(GENESIS_FEE_BPS);
+          expect(fetchedData.salePrice).to.eq(DEFAULT_COLLECT_PRICE);
+          expect(fetchedData.royaltyBasisPoints).to.eq(Default_royaltyBasisPoints);
           
          
           expect(
@@ -453,9 +420,9 @@ makeSuiteCleanRoom('Fee Collect Module', function () {
         );
 
         const collectModuleInitData = abiCoder.encode(
-            ['uint256', 'uint16', 'address', 'uint256', 'uint256'],
+            ['uint256', 'uint16', 'uint256', 'uint256'],
            
-            [SECOND_PROFILE_ID, GENESIS_FEE_BPS, ndptAddress, DEFAULT_COLLECT_PRICE, 50]
+            [SECOND_PROFILE_ID, GENESIS_FEE_BPS, DEFAULT_COLLECT_PRICE, Default_royaltyBasisPoints]
         );
 
         await expect(
@@ -465,7 +432,7 @@ makeSuiteCleanRoom('Fee Collect Module', function () {
               projectId: FIRST_PROJECT_ID,
               amount: 11,
               salePrice: DEFAULT_COLLECT_PRICE,
-              royaltyBasisPoints: 50,              
+              royaltyBasisPoints: Default_royaltyBasisPoints,              
               name: "Dollar",
               description: "Hand draw",
               materialURIs: [],
@@ -553,9 +520,9 @@ makeSuiteCleanRoom('Fee Collect Module', function () {
         );
 
         const collectModuleInitData = abiCoder.encode(
-            ['uint256', 'uint16', 'address', 'uint256', 'uint256'],
+            ['uint256', 'uint16', 'uint256', 'uint256'],
            
-            [SECOND_PROFILE_ID, GENESIS_FEE_BPS, ndptAddress, DEFAULT_COLLECT_PRICE, 50]
+            [SECOND_PROFILE_ID, GENESIS_FEE_BPS, DEFAULT_COLLECT_PRICE, Default_royaltyBasisPoints]
         );
 
         await expect(
@@ -565,7 +532,7 @@ makeSuiteCleanRoom('Fee Collect Module', function () {
               projectId: FIRST_PROJECT_ID,
               amount: 11,
               salePrice: DEFAULT_COLLECT_PRICE,
-              royaltyBasisPoints: 50,              
+              royaltyBasisPoints: Default_royaltyBasisPoints,              
               name: "Dollar",
               description: "Hand draw",
               materialURIs: [],

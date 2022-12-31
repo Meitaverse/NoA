@@ -182,8 +182,8 @@ contract ModuleGlobals is IModuleGlobals {
         _setPublishRoyalty(publishRoyalty);
     }
 
-    function getPublishCurrencyTax(address currency) external view override returns(uint256) {
-       return _publishCurrencyTaxes[currency];
+    function getPublishCurrencyTax() external view override returns(uint256) {
+       return _publishCurrencyTaxes[_NDPT];
     }
     
 }

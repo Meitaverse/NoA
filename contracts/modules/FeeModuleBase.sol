@@ -44,8 +44,8 @@ abstract contract FeeModuleBase {
         return IModuleGlobals(MODULE_GLOBALS).getNDPT();
     }
     
-    function  _PublishCurrencyTax(address currency) internal returns (uint256) {
-        return IModuleGlobals(MODULE_GLOBALS).getPublishCurrencyTax(currency);
+    function  _PublishCurrencyTax() internal returns (uint256) {
+        return IModuleGlobals(MODULE_GLOBALS).getPublishCurrencyTax();
     }
 
 

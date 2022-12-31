@@ -4,11 +4,7 @@ pragma solidity ^0.8.13;
 
 import "@solvprotocol/erc-3525/contracts/IERC3525.sol";
 import "@solvprotocol/erc-3525/contracts/ERC3525Upgradeable.sol";
-import {IERC20Upgradeable} from "@openzeppelin/contracts-upgradeable/token/ERC20/IERC20Upgradeable.sol";
-import {SafeMathUpgradeable} from "@openzeppelin/contracts-upgradeable/utils/math/SafeMathUpgradeable.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
-import "@openzeppelin/contracts/utils/introspection/IERC165.sol";
-
 import {Errors} from "./libraries/Errors.sol";
 import {DataTypes} from './libraries/DataTypes.sol';
 import {Events} from "./libraries/Events.sol";
@@ -48,7 +44,7 @@ contract DerivativeNFTV1 is
         keccak256('PermitValue(address spender,uint256 tokenId,uint256 value,uint256 nonce,uint256 deadline)');
     
     using Counters for Counters.Counter;
-    using SafeMathUpgradeable for uint256;
+    // using SafeMathUpgradeable for uint256;
 
     bool private _initialized;
 
@@ -59,6 +55,7 @@ contract DerivativeNFTV1 is
 
     address internal _emergencyAdmin;
     address internal _receiver;
+    DataTypes.FeeShareType internal _feeShareType;
 
     // solhint-disable-next-line var-name-mixedcase
     address public immutable MANAGER;
@@ -67,7 +64,7 @@ contract DerivativeNFTV1 is
     // solhint-disable-next-line var-name-mixedcase
     address internal _BANKTREASURY;
 
-    uint256 internal _royaltyBasisPoints; //版税佣金点数, 本协议将版税的10%及金库固定税收5%设置为
+    uint96 internal _royaltyBasisPoints; //版税佣金点数, 本协议将版税的10%及金库固定税收5%设置为
 
     mapping(uint256 => uint256) internal _tokenIdToPublishId;
 
@@ -123,7 +120,8 @@ contract DerivativeNFTV1 is
         uint256 soulBoundTokenId_,
         address metadataDescriptor_,
         address receiver_,
-        uint96 defaultRoyaltyPoints_
+        uint96 defaultRoyaltyPoints_,
+        DataTypes.FeeShareType feeShareType_
     ) public virtual initializer {
         if (_initialized) revert Errors.Initialized();
         _initialized = true;
@@ -147,6 +145,9 @@ contract DerivativeNFTV1 is
         _receiver = receiver_;
 
         _setDefaultRoyalty(_BANKTREASURY, defaultRoyaltyPoints_);
+
+        _feeShareType = feeShareType_;
+
     }
 
     //only owner
@@ -168,6 +169,10 @@ contract DerivativeNFTV1 is
 
     function setDefaultRoyalty(address recipient, uint96 fraction) public onlyManager{
         _setDefaultRoyalty(recipient, fraction);
+    }
+
+    function getDefaultRoyalty() external view returns(uint96) {
+        return _defaultRoyaltyInfo.royaltyFraction;
     }
 
     function deleteDefaultRoyalty() public onlyManager{
@@ -330,6 +335,7 @@ contract DerivativeNFTV1 is
         emit Events.BurnToken(slot, tokenId_, msg.sender);
     }
     
+
     function burnWithSig(uint256 tokenId, DataTypes.EIP712Signature calldata sig)
         public
         virtual
@@ -386,10 +392,15 @@ contract DerivativeNFTV1 is
       
         //set royalty
         uint256 publishId = _tokenIdToPublishId[fromTokenId_];
-        uint96 _fraction = IManager(MANAGER).calculateRoyalty(publishId);
+        uint96 _fraction;
+        if (_feeShareType == DataTypes.FeeShareType.LEVEL_TWO) {
+            _fraction = IManager(MANAGER).calculateRoyalty(publishId);
+        } else {
+             _fraction = _royaltyBasisPoints;
+        }
 
         //set royalties
-         _setTokenRoyalty(
+        _setTokenRoyalty(
             newTokenId,
             _BANKTREASURY,
             _fraction
@@ -438,10 +449,15 @@ contract DerivativeNFTV1 is
         super._mint(to_, tokenId_, slot_, value_);
 
         uint256 publishId = _tokenIdToPublishId[tokenId_];
-        uint96 _fraction = IManager(MANAGER).calculateRoyalty(publishId);
+        uint96 _fraction;
+        if (_feeShareType == DataTypes.FeeShareType.LEVEL_TWO) {
+            _fraction = IManager(MANAGER).calculateRoyalty(publishId);
+        } else {
+             _fraction = _royaltyBasisPoints;
+        }
 
         //set royalties
-         _setTokenRoyalty(
+        _setTokenRoyalty(
             tokenId_,
             _BANKTREASURY,
             _fraction
@@ -486,7 +502,7 @@ contract DerivativeNFTV1 is
      * @param royaltyBasisPoints The royalty percentage meassured in basis points. Each basis point
      *                           represents 0.01%.
      */
-    function setRoyalty(uint256 royaltyBasisPoints) external onlyManager {
+    function setRoyalty(uint96 royaltyBasisPoints) external onlyManager {
         if (IERC3525(_NDPT).ownerOf(_soulBoundTokenId) == msg.sender) {
             if (royaltyBasisPoints > _BASIS_POINTS) {
                 revert Errors.InvalidParameter();

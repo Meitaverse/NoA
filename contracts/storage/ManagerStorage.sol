@@ -109,6 +109,5 @@ abstract contract ManagerStorage {
 
 
     //MultiRecipient
-    mapping(uint256 => mapping(uint8 => uint16)) _splitPoints;
-    
+  
 }

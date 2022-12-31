@@ -8,6 +8,7 @@ import "@openzeppelin/contracts-upgradeable/access/AccessControlUpgradeable.sol"
 import "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
 import "@openzeppelin/contracts/utils/introspection/IERC165.sol";
 import "@solvprotocol/erc-3525/contracts/IERC3525Receiver.sol";
+import "@solvprotocol/erc-3525/contracts/IERC3525.sol";
 
 import {IERC20Upgradeable} from "@openzeppelin/contracts-upgradeable/token/ERC20/IERC20Upgradeable.sol";
 import {SafeERC20Upgradeable} from "@openzeppelin/contracts-upgradeable/token/ERC20/utils/SafeERC20Upgradeable.sol";
@@ -275,6 +276,13 @@ contract BankTreasury is
             if (!success) revert Errors.TxFailed();
         } else if (transaction.currencyType == DataTypes.CurrencyType.ERC20) {
             IERC20Upgradeable(transaction.currency).safeTransfer(transaction.to, transaction.value);
+            emit Events.ExecuteTransaction(
+                msg.sender,
+                _txIndex,
+                transaction.to,
+                transaction.value
+            );
+
         } else if (transaction.currencyType == DataTypes.CurrencyType.ERC3525) {
             INFTDerivativeProtocolTokenV1(_NDPT).transferValue(
                 transaction.fromTokenId,
@@ -282,14 +290,13 @@ contract BankTreasury is
                 transaction.value
             );
             emit Events.ExecuteTransactionERC3525(
+                msg.sender,
                 _txIndex,
                 transaction.fromTokenId,
                 transaction.toTokenId,
                 transaction.value
             );
         }
-
-        emit Events.ExecuteTransaction(msg.sender, _txIndex);
     }
 
     function revokeConfirmation(
@@ -449,12 +456,17 @@ contract BankTreasury is
         external
         whenNotPaused
     {
+        //isvalid
+        if (IERC3525(_NDPT).ownerOf(soulBoundTokenId) != msg.sender ) {
+            revert Errors.Unauthorized();
+        }
+
        DataTypes.VoucherData memory voucherData =  IVoucher(_Voucher).getVoucher(voucherId);
        if (voucherData.tokenId == 0) revert Errors.VoucherNotExists();
        if (voucherData.isUsed) revert Errors.VoucherIsUsed();
 
-        INFTDerivativeProtocolTokenV1(_NDPT).transferValue(_soulBoundTokenId, soulBoundTokenId, voucherData.ndptValue);
-       IVoucher(_Voucher).useVoucher(voucherId, soulBoundTokenId); 
+       INFTDerivativeProtocolTokenV1(_NDPT).transferValue(_soulBoundTokenId, soulBoundTokenId, voucherData.ndptValue);
+       IVoucher(_Voucher).useVoucher(msg.sender, voucherId, soulBoundTokenId); 
 
     }
 

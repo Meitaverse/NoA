@@ -19,6 +19,7 @@ interface IDerivativeNFTV1 {
      * @param metadataDescriptor_ The Descriptor address to set.
      * @param receiver_ The receiver address to set.
      * @param defaultRoyaltyPoints_ The default royalty points
+     * @param feeShareType_ Fee share type
      */
     function initialize( 
         address ndpt, 
@@ -29,7 +30,8 @@ interface IDerivativeNFTV1 {
         uint256 soulBoundTokenId_,
         address metadataDescriptor_,
         address receiver_,
-        uint96 defaultRoyaltyPoints_
+        uint96 defaultRoyaltyPoints_,
+        DataTypes.FeeShareType feeShareType_
     ) external;
 
 
@@ -86,6 +88,8 @@ interface IDerivativeNFTV1 {
   function setState(DataTypes.ProtocolState newState) external;
 
   function setDefaultRoyalty(address recipient, uint96 fraction) external;
+  
+  function getDefaultRoyalty() external view returns(uint96);
   
   function deleteDefaultRoyalty() external;
   

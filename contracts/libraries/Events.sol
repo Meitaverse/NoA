@@ -283,7 +283,6 @@ library Events {
         uint256 timestamp
     );
 
-
     event BurnNDPT(uint256 tokenId, uint256 timestamp);
 
     event BurnNDPTValue(uint256 tokenId, uint256 value, uint256 timestamp);
@@ -342,15 +341,7 @@ library Events {
     );
 
 
-    event SplitDerivativeNFT(
-        uint256 fromSoulBoundTokenId,
-        uint256 toSoulBoundTokenId,
-        uint256 ororiginalTokenId,
-        uint256 ororiginalValue,
-        uint256 newTokenId,
-        uint256 splitValue,
-        uint256 timestamp
-    );
+
 
     event TransferDerivativeNFT(
         uint256 fromSoulBoundTokenId,
@@ -453,8 +444,8 @@ library Events {
 
     event ConfirmTransaction(address indexed owner, uint256 indexed txIndex);
     event RevokeConfirmation(address indexed owner, uint256 indexed txIndex);
-    event ExecuteTransaction(address indexed owner, uint256 indexed txIndex);
-    event ExecuteTransactionERC3525(uint256 indexed txIndex, uint256 indexed fromTokenId, uint256 indexed toTokenId, uint256 value);
+    event ExecuteTransaction(address indexed owner, uint256 indexed txIndex, address to, uint256 value);
+    event ExecuteTransactionERC3525(address indexed owner, uint256 indexed txIndex, uint256 indexed fromTokenId, uint256 toTokenId, uint256 value);
     event WithdrawERC3525(uint256 indexed fromTokenId, uint256 indexed toTokenId, uint256 value);
 
 
@@ -506,13 +497,19 @@ library Events {
         uint256 etherValue,
         uint256 ndptValue,
         uint256 generateTimestamp,
-        uint256 deadTimestamp
+        uint256 endTimestamp
     );
 
     event SetContractWhitelisted(
         address indexed contractAddress,
         bool indexed prevWhitelisted,
         bool indexed whitelisted,
+        uint256 timestamp
+    );
+    
+    event UpdateRoyaltyPoints(
+        uint256 indexed projectId,
+        uint16[5] indexed newRoyaltyPoints,
         uint256 timestamp
     );
 }

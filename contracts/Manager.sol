@@ -159,7 +159,8 @@ contract Manager is
             image: project.image,
             metadataURI: project.metadataURI,
             descriptor: project.descriptor,
-            defaultRoyaltyPoints: project.defaultRoyaltyPoints
+            defaultRoyaltyPoints: project.defaultRoyaltyPoints,
+            feeShareType: project.feeShareType
         });
 
         return projectId;
@@ -183,6 +184,7 @@ contract Manager is
             uint96(treasuryFee) + 
             uint96(_publishIdByProjectData[_genesisPublishIdByProjectId[projectid]].publication.royaltyBasisPoints) +
             uint96(_publishIdByProjectData[previousPublishId].publication.royaltyBasisPoints);
+
         return fraction;
     }
  
@@ -261,15 +263,14 @@ contract Manager is
         if (_calculateRoyalty(publishId) > uint96(Constants._BASIS_POINTS)) {
            revert Errors.InvalidRoyaltyBasisPoints();   
         }
-
     }
 
     function getPublishInfo(uint256 publishId_) external view returns (DataTypes.PublishData memory) {
         return _publishIdByProjectData[publishId_];
     }
  
-    function getDerivativeNFT(uint256 publishId_) external view returns (address) {
-        return _derivativeNFTByProjectId[publishId_];
+    function getDerivativeNFT(uint256 projectId) external view returns (address) {
+        return _derivativeNFTByProjectId[projectId];
     }
 
     function getPublicationByTokenId(uint256 tokenId_) external view returns (DataTypes.Publication memory) {

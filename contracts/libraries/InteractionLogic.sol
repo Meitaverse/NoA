@@ -17,7 +17,6 @@ import {Clones} from '@openzeppelin/contracts/proxy/Clones.sol';
 import "@openzeppelin/contracts-upgradeable/utils/structs/EnumerableSetUpgradeable.sol";
 import {IManager} from "../interfaces/IManager.sol";
 import "./SafeMathUpgradeable128.sol";
-import {RecipientSplitCannotBeZero, TooManyRecipients, InvalidRecipientSplits, MultirecipientFeeCollectProfilePublicationData, MultirecipientFeeCollectModuleInitData, RecipientData, MultirecipientFeeCollectModule} from '../modules/MultirecipientFeeCollectModule.sol';
 
 /**
  * @title InteractionLogic
@@ -81,6 +80,7 @@ library InteractionLogic {
                     project.description,
                     project.descriptor,
                     project.defaultRoyaltyPoints,
+                    project.feeShareType,
                     receiver
                 );
                 _derivativeNFTByProjectId[projectId] = derivativeNFT;
@@ -98,6 +98,7 @@ library InteractionLogic {
         string memory symbol_,
         address descriptor_,
         uint96 defaultRoyaltyPoints_,
+       DataTypes.FeeShareType feeShareType_,
         address receiver_
     ) private returns (address) {
 
@@ -111,7 +112,8 @@ library InteractionLogic {
             soulBoundTokenId,
             descriptor_,
             receiver_,
-            defaultRoyaltyPoints_
+            defaultRoyaltyPoints_,
+            feeShareType_
         );
 
         emit Events.DerivativeNFTDeployed(projectId, soulBoundTokenId, derivativeNFT, block.timestamp);
@@ -347,55 +349,6 @@ library InteractionLogic {
         returns (uint256)
     {
         return _derivativeNFTSale[derivativeNFT_].at(index_);
-    }
-
-    function setSplitPoints(
-        uint256 projectid,
-        uint16[5] calldata points,
-        mapping(uint256 => mapping(uint8 => uint16)) storage _splitPoints
-    ) external {
-        uint256 totalSplits;
-        for (uint8 i = 0; i < 5; ) {
-            totalSplits += points[i];
-             _splitPoints[projectid][i] = points[i];
-            unchecked {
-                ++i;
-            }
-        }
-        if (totalSplits >= Constants._BASIS_POINTS / 2) revert InvalidRecipientSplits();
-
-        // _splitPoints[projectid][0] = 100;
-        // _splitPoints[projectid][1] = 200;
-        // _splitPoints[projectid][2] = 300;
-        // _splitPoints[projectid][3] = 400;
-        // _splitPoints[projectid][4] = 500;
-    }
-
-    function generateMultirecipientFeeCollectParam(
-        uint256 projectid,
-        uint256[] calldata recipientSoulBoundTokenIds,
-        MultirecipientFeeCollectModuleInitData storage multirecipientExampleInitData,
-        mapping(uint256 => mapping(uint8 => uint16)) storage _splitPoints
-    ) external {
-          // Set users in initData to publisher, u2, u3, u4, userFive with equal split of fee
-        delete multirecipientExampleInitData.recipients;
-    
-        multirecipientExampleInitData.recipients.push(
-            RecipientData({recipientSoulBoundTokenId: recipientSoulBoundTokenIds[0], split: _splitPoints[projectid][0]})
-        );
-        multirecipientExampleInitData.recipients.push(
-            RecipientData({recipientSoulBoundTokenId: recipientSoulBoundTokenIds[1], split: _splitPoints[projectid][1]})
-        );
-        multirecipientExampleInitData.recipients.push(
-            RecipientData({recipientSoulBoundTokenId: recipientSoulBoundTokenIds[2], split: _splitPoints[projectid][2]})
-        );
-        multirecipientExampleInitData.recipients.push(
-            RecipientData({recipientSoulBoundTokenId: recipientSoulBoundTokenIds[3], split: _splitPoints[projectid][3]})
-        );
-        multirecipientExampleInitData.recipients.push(
-            RecipientData({recipientSoulBoundTokenId: recipientSoulBoundTokenIds[4], split: _splitPoints[projectid][4]})
-        );
-
     }
 
 }

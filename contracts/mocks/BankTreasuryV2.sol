@@ -227,6 +227,13 @@ contract BankTreasuryV2 is
             if (!success) revert Errors.TxFailed();
         } else if (transaction.currencyType == DataTypes.CurrencyType.ERC20) {
             IERC20Upgradeable(transaction.currency).safeTransfer(transaction.to, transaction.value);
+            emit Events.ExecuteTransaction(
+                msg.sender,
+                _txIndex,
+                transaction.to,
+                transaction.value
+            );
+
         } else if (transaction.currencyType == DataTypes.CurrencyType.ERC3525) {
             IERC3525(transaction.currency).transferFrom(
                 transaction.fromTokenId,
@@ -234,6 +241,7 @@ contract BankTreasuryV2 is
                 transaction.value
             );
             emit Events.ExecuteTransactionERC3525(
+                msg.sender,
                 _txIndex,
                 transaction.fromTokenId,
                 transaction.toTokenId,
@@ -241,7 +249,7 @@ contract BankTreasuryV2 is
             );
         }
 
-        emit Events.ExecuteTransaction(msg.sender, _txIndex);
+       
     }
 
     function revokeConfirmation(

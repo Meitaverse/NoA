@@ -61,7 +61,7 @@ contract PublishModule is FeeModuleBase, IPublishModule, ModuleBase {
         DataTypes.Publication calldata publication
     ) external override onlyManager { 
 
-        uint256 publishTaxes = (publication.amount - 1) * _PublishCurrencyTax(_NDPT);
+        uint256 publishTaxes = (publication.amount - 1) * _PublishCurrencyTax();
         
         //TODO
         if (publishId == 0 || 

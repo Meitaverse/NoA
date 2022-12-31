@@ -92,7 +92,7 @@ interface IModuleGlobals {
     
     function getWallet(uint256 soulBoundTokenId) external view returns (address);
     
-    function getPublishCurrencyTax(address currency) external returns(uint256) ;
+    function getPublishCurrencyTax() external returns(uint256) ;
 
     function setPublishRoyalty(uint256 publishRoyalty) external;
 

@@ -19,6 +19,11 @@ library DataTypes {
         FIXED
     }
 
+    enum FeeShareType {
+        LEVEL_TWO,
+        LEVEL_FIVE
+    }
+
     enum FeePayType {
         SELLER_PAY,
         BUYER_PAY
@@ -54,6 +59,7 @@ library DataTypes {
      * @param metadataURI metadata 
      * @param descriptor descriptor for SVG 
      * @param defaultRoyaltyPoints default royalty points
+     * @param feeShareType fee share type, level two or five
      */
     struct ProjectData {
         uint256 hubId;
@@ -64,6 +70,7 @@ library DataTypes {
         string metadataURI;
         address descriptor;
         uint96  defaultRoyaltyPoints;
+        DataTypes.FeeShareType feeShareType;
     }
     
     /**
@@ -98,6 +105,7 @@ library DataTypes {
         bytes collectModuleInitData;
         address publishModule;
         bytes publishModuleInitData;
+        
     }
 
     /**
@@ -277,7 +285,7 @@ library DataTypes {
         uint256 etherValue;
         uint256 ndptValue;
         uint256 generateTimestamp;
-        uint256 deadTimestamp;
+        uint256 endTimestamp;
         bool isUsed;
         uint256 soulBoundTokenId;
         uint256 usedTimestamp;

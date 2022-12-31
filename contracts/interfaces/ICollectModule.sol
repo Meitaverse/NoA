@@ -45,14 +45,5 @@ interface ICollectModule {
         uint256 collectValue,
          bytes calldata data
     ) external;
-
-    function getSaleInfo(
-        uint256 publishId
-    ) external view returns (uint256, uint256, uint256);
-
-    function getFees(
-        uint256 publishId, 
-        uint256 collectValue
-    ) external view returns (uint16, uint256, uint256, uint256, uint256);
 }
 

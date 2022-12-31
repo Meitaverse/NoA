@@ -8,6 +8,10 @@ import {ModuleBase} from "../ModuleBase.sol";
 import {ICollectModule} from '../../interfaces/ICollectModule.sol';
 import {ModuleBase} from '../ModuleBase.sol';
 import {IBankTreasury} from "../../interfaces/IBankTreasury.sol";
+import {IManager} from "../../interfaces/IManager.sol";
+import {DataTypes} from '../../libraries/DataTypes.sol';
+import {IDerivativeNFTV1} from "../../interfaces/IDerivativeNFTV1.sol";
+
 
 import {IERC20} from '@openzeppelin/contracts/token/ERC20/IERC20.sol';
 // import {IERC721} from '@openzeppelin/contracts/token/ERC721/IERC721.sol';
@@ -16,6 +20,12 @@ import {INFTDerivativeProtocolTokenV1} from "../../interfaces/INFTDerivativeProt
 import {SafeERC20} from '@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol';
 
 import {BaseFeeCollectModuleInitData, BaseProfilePublicationData, IBaseFeeCollectModule} from './IBaseFeeCollectModule.sol';
+
+
+struct MultirecipientProcessCollectData {
+    uint256[] recipients;
+}
+
 
 /**
  * @title BaseFeeCollectModule
@@ -35,8 +45,9 @@ abstract contract BaseFeeCollectModule is
 {
     using SafeERC20 for IERC20;
 
-    mapping(uint256 => mapping(uint256 => BaseProfilePublicationData))
+    mapping(uint256 => BaseProfilePublicationData)
         internal _dataByPublicationByProfile;
+  
 
     constructor(address hub, address moduleGlobals) ModuleBase(hub) FeeModuleBase(moduleGlobals) {}
  
@@ -53,94 +64,54 @@ abstract contract BaseFeeCollectModule is
         uint256 collectValue,     
         bytes calldata data
     ) external virtual onlyManager {
+
         _validateAndStoreCollect(collectorSoulBoundTokenId, ownershipSoulBoundTokenId, publishId, collectValue, data);
 
-        _processCollect(collectorSoulBoundTokenId, ownershipSoulBoundTokenId, publishId, collectValue, data);
+        _processCollect(collectorSoulBoundTokenId, publishId, collectValue, data);
     }
 
     // This function is not implemented because each Collect module has its own return data type
-    // function getPublicationData(uint256 ownershipSoulBoundTokenId, uint256 publishId) external view returns (.....) {}
+    // function getPublicationData(uint256 projectId) external view returns (.....) {}
 
     /**
      * @notice Returns the Base publication data for a given publication, or an empty struct if that publication was not
      * initialized with this module.
      *
-     * @param ownershipSoulBoundTokenId The token ID of the profile mapped to the publication to query.
-     * @param publishId The publication ID of the publication to query.
+     * @param projectId The project ID of the publication to query.
      *
      * @return The BaseProfilePublicationData struct mapped to that publication.
      */
-    function getBasePublicationData(uint256 ownershipSoulBoundTokenId, uint256 publishId)
+    function getBasePublicationData(uint256 projectId)
         public
         view
         virtual
         returns (BaseProfilePublicationData memory)
     {
-        return _dataByPublicationByProfile[ownershipSoulBoundTokenId][publishId];
+        return _dataByPublicationByProfile[projectId];
     }
 
-    /**
-     * @notice Calculates and returns the collect fee of a publication.
-     * @dev Override this function to use a different formula for the fee.
-     *
-     * @param ownershipSoulBoundTokenId The token ID of the profile mapped to the publication to query.
-     * @param publishId The publication ID of the publication to query.
-     * @param data Any additional params needed to calculate the fee.
-     *
-     * @return The collect fee of the specified publication.
-     */
-    function calculateFee(
-        uint256 ownershipSoulBoundTokenId,
-        uint256 publishId,
-        bytes calldata data
-    ) public view virtual returns (uint256) {
-        //TODO
-        return _dataByPublicationByProfile[ownershipSoulBoundTokenId][publishId].salePrice;
-    }
 
-    /**
-     * @dev Validates the Base parameters like:
-     * 1) Is the currency whitelisted
-     * 2) Is the referralFee in valid range
-     * 3) Is the end of collects timestamp in valid range
-     *
-     * This should be called during initializePublicationCollectModule()
-     *
-     * @param baseInitData Module initialization data (see BaseFeeCollectModuleInitData struct)
-     */
-    function _validateBaseInitData(BaseFeeCollectModuleInitData memory baseInitData)
-        internal
-        virtual
-    {
-        if (
-            !_currencyWhitelisted(baseInitData.currency) ||
-            (baseInitData.endTimestamp != 0 && baseInitData.endTimestamp < block.timestamp)
-        ) revert Errors.InitParamsInvalid();
-
-    }
 
     /**
      * @dev Stores the initial module parameters
      *
      * This should be called during initializePublicationCollectModule()
      *
-     * @param ownershipSoulBoundTokenId The token ID of the profile publishing the publication.
-     * @param publishId The publication ID.
+     * @param projectId The publication ID.
      * @param baseInitData Module initialization data (see BaseFeeCollectModuleInitData struct)
      */
     function _storeBasePublicationCollectParameters(
-        uint256 tokenId,
-        uint256 amount,
-        uint256 ownershipSoulBoundTokenId,
-        uint256 publishId,
+        uint256 projectId,
         BaseFeeCollectModuleInitData memory baseInitData
     ) internal virtual {
-        _dataByPublicationByProfile[ownershipSoulBoundTokenId][publishId].tokenId = tokenId;
-        _dataByPublicationByProfile[ownershipSoulBoundTokenId][publishId].amount = amount;
-        _dataByPublicationByProfile[ownershipSoulBoundTokenId][publishId].salePrice = baseInitData.salePrice;
-        _dataByPublicationByProfile[ownershipSoulBoundTokenId][publishId].currency = baseInitData.currency;
-        _dataByPublicationByProfile[ownershipSoulBoundTokenId][publishId].recipientSoulBoundTokenId = baseInitData.recipientSoulBoundTokenId;
-        _dataByPublicationByProfile[ownershipSoulBoundTokenId][publishId].endTimestamp =     baseInitData.endTimestamp;
+        //store to BaseProfilePublicationData
+        _dataByPublicationByProfile[projectId].ownershipSoulBoundTokenId = baseInitData.ownershipSoulBoundTokenId;
+        _dataByPublicationByProfile[projectId].projectId = projectId;
+        _dataByPublicationByProfile[projectId].publishId = baseInitData.publishId;
+        _dataByPublicationByProfile[projectId].amount = baseInitData.amount;
+        _dataByPublicationByProfile[projectId].salePrice = baseInitData.salePrice;
+        _dataByPublicationByProfile[projectId].royaltyPoints = baseInitData.royaltyPoints;
+        
     }
 
     /**
@@ -151,9 +122,9 @@ abstract contract BaseFeeCollectModule is
      *
      * This should be called during processCollect()
      *
-     * @param ownershipSoulBoundTokenId The collector soulBoundTokenId.
+     * @param collectorSoulBoundTokenId The collector soulBoundTokenId.
      * @param ownershipSoulBoundTokenId The token ID of the profile associated with the publication being collected.
-     * @param publishId The LensHub publication ID associated with the publication being collected.
+     * @param publishId The  publication ID associated with the publication being collected.
      * @param data Arbitrary data __passed from the collector!__ to be decoded.
      */
     function _validateAndStoreCollect(
@@ -164,17 +135,17 @@ abstract contract BaseFeeCollectModule is
         bytes calldata data
     ) internal virtual {
 
-        uint256 endTimestamp = _dataByPublicationByProfile[ownershipSoulBoundTokenId][publishId].endTimestamp;
+        MultirecipientProcessCollectData memory collectData = abi.decode(
+            data,
+            (MultirecipientProcessCollectData)
+        );
 
          if (collectorSoulBoundTokenId == 0 || 
             ownershipSoulBoundTokenId == 0 || 
             collectValue == 0 || 
-            publishId ==0 ) revert Errors.InitParamsInvalid();
+            collectData.recipients.length > 5 || 
+            publishId == 0 ) revert Errors.InitParamsInvalid();
 
-
-        if (endTimestamp != 0 && block.timestamp > endTimestamp) {
-            revert Errors.CollectExpired(); 
-        }
     }
 
     /**
@@ -184,19 +155,26 @@ abstract contract BaseFeeCollectModule is
      *  3. Transfer of fees to recipientSoulBoundTokenId(-s) and treasury
      *
      * @param collectorSoulBoundTokenId The token ID  that will collect the post.
-     * @param ownershipSoulBoundTokenId The token ID of the profile associated with the publication being collected.
-     * @param publishId The LensHub publication ID associated with the publication being collected.
+     * @param projectId The  publication ID associated with the publication being collected.
+     * @param collectValue The value being collected.
      * @param data Arbitrary data __passed from the collector!__ to be decoded.
      */
     function _processCollect(
         uint256 collectorSoulBoundTokenId,
-        uint256 ownershipSoulBoundTokenId,
-        uint256 publishId,
+        uint256 projectId,
         uint256 collectValue,
         bytes calldata data
     ) internal virtual {
-        uint256 payFees = collectValue * calculateFee(ownershipSoulBoundTokenId, publishId, data);
-        address currency = _dataByPublicationByProfile[ownershipSoulBoundTokenId][publishId].currency;
+        
+         MultirecipientProcessCollectData memory collectData = abi.decode(
+            data,
+            (MultirecipientProcessCollectData)
+        );
+
+        address derivativeNFT = IManager(MANAGER).getDerivativeNFT(projectId);
+        uint96 fraction = IDerivativeNFTV1(derivativeNFT).getDefaultRoyalty();
+         
+        uint256 payFees = collectValue * fraction;
 
         //社区金库地址及税点
         (address treasury, uint16 treasuryFee) = _treasuryData();
@@ -208,10 +186,14 @@ abstract contract BaseFeeCollectModule is
                 treasuryOfSoulBoundTokenId, 
                 treasuryAmount);
             
-
-        // Send amount after treasury cut, to all recipients
-        _transferToRecipients(currency, collectorSoulBoundTokenId, ownershipSoulBoundTokenId, publishId, payFees - treasuryAmount);
-
+         if (payFees - treasuryAmount > 0) 
+            // Send amount after treasury cut, to all recipients
+            _transferToRecipients(
+                collectorSoulBoundTokenId, 
+                projectId, 
+                payFees - treasuryAmount,
+                collectData.recipients
+            );
     }
 
     /**
@@ -219,23 +201,26 @@ abstract contract BaseFeeCollectModule is
      *
      * Override this to add additional functionality (e.g. multiple recipientSoulBoundTokenIds)
      *
-     * @param currency Currency of the transaction
      * @param collectorSoulBoundTokenId The token ID that collects the post (and pays the fee).
-     * @param ownershipSoulBoundTokenId The token ID of the profile associated with the publication being collected.
-     * @param publishId The LensHub publication ID associated with the publication being collected.
+     * @param projectId The  publication ID associated with the publication being collected.
      * @param salePrice salePrice
+     * @param recipients Array of recipient soulBoundTokenId
      */
     function _transferToRecipients(
-        address currency,
         uint256 collectorSoulBoundTokenId,
-        uint256 ownershipSoulBoundTokenId,
-        uint256 publishId,
-        uint256 salePrice
+        uint256 projectId,
+        uint256 salePrice,
+        uint256[] memory recipients
     ) internal virtual {
-        uint256 recipientSoulBoundTokenId = _dataByPublicationByProfile[ownershipSoulBoundTokenId][publishId].recipientSoulBoundTokenId;
-
-        if (salePrice > 0)
+        /*
+        uint16[] memory royaltyPoints = _dataByPublicationByProfile[projectId].royaltyPoints;
+        
+        if (salePrice > 0){
             INFTDerivativeProtocolTokenV1(_ndpt()).transferValue(collectorSoulBoundTokenId, recipientSoulBoundTokenId, salePrice);
+
+        }
+        */
     }
+
 }
 

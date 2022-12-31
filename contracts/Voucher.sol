@@ -19,7 +19,6 @@ import {IVoucher} from './interfaces/IVoucher.sol';
 import {Events} from "./libraries/Events.sol";
 import {DataTypes} from './libraries/DataTypes.sol';
 import "./libraries/EthAddressLib.sol";
-
 import "./storage/VoucherStorage.sol";
  
 /**
@@ -37,6 +36,8 @@ contract Voucher is
     UUPSUpgradeable
 {
     using Counters for Counters.Counter;
+
+    uint256 private constant EXPIRED_SECONDS= 5184000;
 
     bytes32 public constant PAUSER_ROLE = keccak256("PAUSER_ROLE");
     bytes32 public constant UPGRADER_ROLE = keccak256("UPGRADER_ROLE");
@@ -87,7 +88,7 @@ contract Voucher is
     }
 
     function generateVoucher(
-        DataTypes.VoucherParValueType vouchType,
+        DataTypes.VoucherParValueType voucherType,
         address account
     ) 
         external
@@ -97,23 +98,23 @@ contract Voucher is
         uint256 etherValue;
         uint256 amount;
 
-        if (vouchType == DataTypes.VoucherParValueType.ZEROPOINTONE){ //0
+        if (voucherType == DataTypes.VoucherParValueType.ZEROPOINTONE){ //0
             etherValue = 0.1 ether;
             amount = 100;
         } 
-        else if (vouchType == DataTypes.VoucherParValueType.ZEROPOINTTWO){ //1
+        else if (voucherType == DataTypes.VoucherParValueType.ZEROPOINTTWO){ //1
             etherValue = 0.2 ether;
             amount = 200;
         } 
-        else if (vouchType == DataTypes.VoucherParValueType.ZEROPOINTTHREE){//2
+        else if (voucherType == DataTypes.VoucherParValueType.ZEROPOINTTHREE){//2
             etherValue = 0.3 ether;
             amount = 300;
         } 
-        else if (vouchType == DataTypes.VoucherParValueType.ZEROPOINTFOUR){//3
+        else if (voucherType == DataTypes.VoucherParValueType.ZEROPOINTFOUR){//3
             etherValue = 0.4 ether;
             amount = 400;
         } 
-        else if (vouchType == DataTypes.VoucherParValueType.ZEROPOINTFIVE) {//4
+        else if (voucherType == DataTypes.VoucherParValueType.ZEROPOINTFIVE) {//4
             etherValue = 0.5 ether;
             amount = 500;
         } 
@@ -122,24 +123,24 @@ contract Voucher is
 
         _mint(account, _tokenId, amount, "");
         _vouchers[_tokenId] = DataTypes.VoucherData({
-            vouchType: vouchType,
+            vouchType: voucherType,
             tokenId: _tokenId,
             etherValue: etherValue,
             ndptValue: amount,
             generateTimestamp: block.timestamp,
-            deadTimestamp: block.timestamp + 5184000,
+            endTimestamp: block.timestamp + EXPIRED_SECONDS, 
             isUsed: false,
             soulBoundTokenId: 0,
             usedTimestamp: 0
         });
          
         emit Events.GenerateVoucher(
-             vouchType,
+             voucherType,
              _tokenId,
              etherValue,
              amount,
              block.timestamp,
-             block.timestamp + 5184000
+             block.timestamp + EXPIRED_SECONDS
         );
 
         // Signals frozen metadata to OpenSea; emitted in minting functions
@@ -148,15 +149,15 @@ contract Voucher is
     }
 
     function generateVoucherBatch(
-        DataTypes.VoucherParValueType[] memory vouchTypes,
+        DataTypes.VoucherParValueType[] memory voucherTypes,
         address account
     ) 
         external
         onlyOwner
     {
-        uint256[] memory ids = new uint256[](vouchTypes.length);
-        uint256[] memory amounts = new uint256[](vouchTypes.length);
-        for (uint256 i = 0; i < vouchTypes.length; ) {
+        uint256[] memory ids = new uint256[](voucherTypes.length);
+        uint256[] memory amounts = new uint256[](voucherTypes.length);
+        for (uint256 i = 0; i < voucherTypes.length; ) {
             ids[i] =  _generateNextVoucherId();
             unchecked {
                 ++i;
@@ -164,26 +165,26 @@ contract Voucher is
             emit Events.PermanentURI(string(abi.encodePacked(_uriBase, StringsUpgradeable.toString(ids[i]), ".json")), ids[i]);
         }
 
-        for (uint256 i = 0; i < vouchTypes.length; ) {
+        for (uint256 i = 0; i < voucherTypes.length; ) {
             uint256 etherValue;
             uint256 amount;
-            if (vouchTypes[i] == DataTypes.VoucherParValueType.ZEROPOINTONE){
+            if (voucherTypes[i] == DataTypes.VoucherParValueType.ZEROPOINTONE){
                 etherValue = 0.1 ether;
                 amount = 100;
             } 
-            else if (vouchTypes[i] == DataTypes.VoucherParValueType.ZEROPOINTTWO){
+            else if (voucherTypes[i] == DataTypes.VoucherParValueType.ZEROPOINTTWO){
                 etherValue = 0.2 ether;
                 amount = 200;
             } 
-            else if (vouchTypes[i] == DataTypes.VoucherParValueType.ZEROPOINTTHREE){
+            else if (voucherTypes[i] == DataTypes.VoucherParValueType.ZEROPOINTTHREE){
                 etherValue = 0.3 ether;
                 amount = 300;
             } 
-            else if (vouchTypes[i] == DataTypes.VoucherParValueType.ZEROPOINTFOUR){
+            else if (voucherTypes[i] == DataTypes.VoucherParValueType.ZEROPOINTFOUR){
                 etherValue = 0.4 ether;
                 amount = 400;
             } 
-            else if (vouchTypes[i] == DataTypes.VoucherParValueType.ZEROPOINTFIVE) {
+            else if (voucherTypes[i] == DataTypes.VoucherParValueType.ZEROPOINTFIVE) {
                 etherValue = 0.5 ether;
                 amount = 500;
             } 
@@ -196,23 +197,24 @@ contract Voucher is
         }
 
         _mintBatch(account, ids, amounts, "");
-        
     }
 
     function getVoucher(uint256 voucherId) external view returns(DataTypes.VoucherData memory) {
         return _vouchers[voucherId];
     }
 
-    function useVoucher(uint256 voucherId, uint256 soulBoundTokenId) 
+    function useVoucher(address account, uint256 voucherId, uint256 soulBoundTokenId) 
         external onlyBankTreasury 
     {
+        if (balanceOf(account, voucherId) == 0) {
+            revert Errors.NotOwnerVoucher();
+        }
          DataTypes.VoucherData storage voucherData = _vouchers[voucherId];
          if (voucherData.isUsed) revert Errors.VoucherIsUsed();
          voucherData.isUsed = true;
          voucherData.soulBoundTokenId = soulBoundTokenId;
          voucherData.usedTimestamp = block.timestamp;
     }
-    
     
     function burn(
         address owner,
@@ -311,7 +313,6 @@ contract Voucher is
         _nextVoucherId.increment();
         return uint256(_nextVoucherId.current());
     }
-
 
     function _validateCallerIsBankTreasury() internal view {
         if (msg.sender != _BANKTREASURY) revert Errors.NotBankTreasury();
