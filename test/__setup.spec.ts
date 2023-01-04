@@ -47,7 +47,8 @@ import {
   MultirecipientFeeCollectModule__factory
 } from '../typechain';
 
-import { ManagerLibraryAddresses } from '../typechain/factories/Manager__factory';
+import { ManagerLibraryAddresses } from '../typechain/factories/contracts/Manager__factory';
+
 import { FAKE_PRIVATEKEY, ZERO_ADDRESS } from './helpers/constants';
 import {
   computeContractAddress,
@@ -57,9 +58,11 @@ import {
   takeSnapshot,
 } from './helpers/utils';
 
-import {
-  CanvasDataStruct, PositionStruct
-} from '../typechain/Template';
+// import {
+//   CanvasDataStruct, PositionStruct
+// } from '../typechain/Template';
+
+import { DataTypes } from '../typechain/contracts/modules/template/Template';
 
 use(solidity);
 
@@ -178,9 +181,9 @@ before(async function () {
   helper = await new Helper__factory(deployer).deploy();
 
   //Template
- let canvas: CanvasDataStruct = {width:800, height:600};
- let watermark: CanvasDataStruct = {width:200, height:300};
- let position: PositionStruct = {x:400, y: 0};
+ let canvas: DataTypes.CanvasDataStruct = {width:800, height:600};
+ let watermark: DataTypes.CanvasDataStruct = {width:200, height:300};
+ let position: DataTypes.PositionStruct = {x:400, y: 0};
 
   template = await new Template__factory(deployer).deploy(
     1,

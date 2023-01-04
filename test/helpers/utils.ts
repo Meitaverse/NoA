@@ -18,25 +18,8 @@ import { TransactionReceipt, TransactionResponse } from '@ethersproject/provider
 import hre, { ethers } from 'hardhat';
 import { readFileSync } from 'fs';
 import { join } from 'path';
-import {
-  AirdropDataStruct,
-  CollectDataStruct,
-  HubDataStruct,
-  CreateProfileDataStruct,
-  ProjectDataStruct,
-  PublicationStruct,
-  SaleStruct,
-  EIP712SignatureStruct,
 
-  // CollectWithSigDataStruct
-  // CommentDataStruct,
-  // CommentWithSigDataStruct,
-  // FollowWithSigDataStruct,
-  // MirrorDataStruct,
-  // MirrorWithSigDataStruct,
-  // PostDataStruct,
-  // PostWithSigDataStruct,
-} from '../../typechain/Manager';
+import { DataTypes } from '../../typechain/contracts/Manager';
 
 export enum ProtocolState {
   Unpaused,
@@ -563,7 +546,7 @@ export function expectEqualArrays(actual: BigNumberish[], expected: BigNumberish
 */
 export interface CreateProfileReturningTokenIdStruct {
   sender?: Signer;
-  vars: CreateProfileDataStruct;
+  vars: DataTypes.CreateProfileDataStruct;
 }
 
 export async function createProfileReturningTokenId({
@@ -577,7 +560,7 @@ export async function createProfileReturningTokenId({
 
 export interface CreateHubReturningHubIdStruct {
   sender?: Signer;
-  hub: HubDataStruct;
+  hub: DataTypes.HubDataStruct;
 }
 
 export async function createHubReturningHubId({
@@ -591,7 +574,7 @@ export async function createHubReturningHubId({
 
 export interface CreateProjectReturningProjectId {
   sender?: Signer;
-  project: ProjectDataStruct;
+  project: DataTypes.ProjectDataStruct;
 }
 
 export async function createProjectReturningProjectId({
@@ -606,7 +589,7 @@ export async function createProjectReturningProjectId({
 
 export interface CollectReturningTokenIdStruct {
   sender?: Signer;
-  vars: CollectDataStruct;
+  vars: DataTypes.CollectDataStruct;
 }
 
 export async function collectReturningTokenId({

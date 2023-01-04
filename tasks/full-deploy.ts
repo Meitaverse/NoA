@@ -43,14 +43,9 @@ import {
   } from '../typechain';
 
   import { deployContract, waitForTx , ProtocolState, Error} from './helpers/utils';
-  import { ManagerLibraryAddresses } from '../typechain/factories/Manager__factory';
+  import { ManagerLibraryAddresses } from '../typechain/factories/contracts/Manager__factory';
 
-  import {
-    CanvasDataStruct, PositionStruct
-  } from '../typechain/Template';
-  
-//   export type CanvasDataStruct = { width: BigNumberish; height: BigNumberish };
-
+  import { DataTypes } from '../typechain/contracts/modules/template/Template';
 
    const TREASURY_FEE_BPS = 50;
    const  RECEIVER_MAGIC_VALUE = '0x009ce20b';
@@ -88,9 +83,9 @@ import {
         let deployerNonce = await ethers.provider.getTransactionCount(deployer.address);
 
         //Template
-        let canvas: CanvasDataStruct = {width:800, height:600};
-        let watermark: CanvasDataStruct = {width:200, height:300};
-        let position: PositionStruct = {x:400, y: 0};
+        let canvas: DataTypes.CanvasDataStruct = {width:800, height:600};
+        let watermark: DataTypes.CanvasDataStruct = {width:200, height:300};
+        let position: DataTypes.PositionStruct = {x:400, y: 0};
 
         console.log('\t-- deployer: ', deployer.address);
         console.log('\t-- governance: ', governance.address);
