@@ -74,11 +74,6 @@ contract DerivativeMetadataDescriptor is IERC3525MetadataDescriptor {
   }
 
   function constructTokenURI(uint256 tokenId_) external view override returns (string memory) {
-<<<<<<< HEAD:contracts/MetadataDescriptors/NoAMetadataDescriptor.sol
-    // INoAV1 dao = INoAV1(msg.sender);
-    IERC3525Metadata dao = IERC3525Metadata(msg.sender);
-=======
->>>>>>> dev:contracts/MetadataDescriptors/DerivativeMetadataDescriptor.sol
     return 
       string(
         abi.encodePacked(
@@ -144,13 +139,7 @@ contract DerivativeMetadataDescriptor is IERC3525MetadataDescriptor {
   }
 
   function _tokenName(uint256 tokenId_) internal view returns (string memory) {
-<<<<<<< HEAD:contracts/MetadataDescriptors/NoAMetadataDescriptor.sol
-    // INoAV1 dao = INoAV1(msg.sender);
-    IERC3525Metadata dao = IERC3525Metadata(msg.sender);
-    uint256 slot = dao.slotOf(tokenId_);
-=======
     uint256 slot = IERC3525(msg.sender).slotOf(tokenId_);
->>>>>>> dev:contracts/MetadataDescriptors/DerivativeMetadataDescriptor.sol
     // solhint-disable-next-line
     return 
       string(
@@ -162,29 +151,6 @@ contract DerivativeMetadataDescriptor is IERC3525MetadataDescriptor {
   }
 
   function _tokenDescription(uint256 tokenId_) internal view returns (string memory) {
-<<<<<<< HEAD:contracts/MetadataDescriptors/NoAMetadataDescriptor.sol
-    INoAV1 dao = INoAV1(msg.sender);
-   
-    uint256 slot = IERC3525Metadata(msg.sender).slotOf(tokenId_);
-    INoAV1.SlotDetail memory sd = dao.getSlotDetail(slot);
-    return sd.description;
-  }
-
-  function _tokenImage(uint256 tokenId_) internal view returns (string memory) {
-     INoAV1 dao = INoAV1(msg.sender);
-    uint256 slot = IERC3525Metadata(msg.sender).slotOf(tokenId_);
-    INoAV1.SlotDetail memory sd = dao.getSlotDetail(slot);
-    return sd.image;
-  }
-
-  function _tokenProperties(uint256 tokenId_) internal view returns (string memory) {
-    
-    INoAV1 dao = INoAV1(msg.sender);
-    uint256 slot = IERC3525Metadata(msg.sender).slotOf(tokenId_);
-    INoAV1.SlotDetail memory slotDetail = dao.getSlotDetail(slot);
-    INoAV1.Event memory event_ = dao.getEventInfo(slotDetail.eventId);
-
-=======
     uint256 slot = IERC3525(msg.sender).slotOf(tokenId_);
     DataTypes.SlotDetail memory sd = IDerivativeNFTV1(msg.sender).getSlotDetail(slot);
     // return sd.publication.description;
@@ -204,7 +170,6 @@ contract DerivativeMetadataDescriptor is IERC3525MetadataDescriptor {
     DataTypes.ProjectData memory project_ = IDerivativeNFTV1(msg.sender).getProjectInfo(slotDetail.projectId);
     uint256 totalSupply = ERC3525Upgradeable(msg.sender).totalSupply();
     
->>>>>>> dev:contracts/MetadataDescriptors/DerivativeMetadataDescriptor.sol
     return 
       string(
         abi.encodePacked(
