@@ -9,7 +9,7 @@ import {
     BurnToken,
     // SetOrganizerMainnetWallet,
     // SetUserMainnetWallet
-} from "../generated/showdao/NoAV1"
+} from "../generated/bitsoul/DerivativeNFT"
 
 import {
     EventItem,

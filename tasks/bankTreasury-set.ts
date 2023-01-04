@@ -30,9 +30,11 @@ import {
   Template__factory,
 } from '../typechain';
 
+import { deployContract, waitForTx , ProtocolState, Error} from './helpers/utils';
+
 export let runtimeHRE: HardhatRuntimeEnvironment;
 
-task("manager-verify", "manager-verify function")
+task("bankTreasury-set", "bankTreasury-set function")
 // .addParam("manager", "address of manager")
 .setAction(async ({}: {}, hre) =>  {
   runtimeHRE = hre;
@@ -48,20 +50,11 @@ task("manager-verify", "manager-verify function")
   const voucher = await ethers.getContractAt("Voucher", Voucher_ADDRESS);
   const moduleGlobals = await ethers.getContractAt("ModuleGlobals", ModuleGlobals_ADDRESS);
 
+  console.log('\n\t-- bankTreasury set moduleGlobals address --');
+  await waitForTx( bankTreasury.connect(governance).setGlobalModule(moduleGlobals.address));
+
   console.log(
-    "---\t manager version: ", (await managerImpl.version()).toNumber()
-    );
-  console.log(
-      "---\t manager governance address: ", await manager.getGovernance()
-    );
-  console.log(
-    "---\t ndp contract version: ", (await ndp.version()).toNumber()
-  );
-  console.log(
-    "---\t ndp getManager(): ", (await ndp.getManager())
-  );
-  console.log(
-    "---\t ndp getBankTreasury(): ", (await ndp.getBankTreasury())
+    "---\t bankTreasury name: ", (await bankTreasury.name())
   );
 
   console.log(
@@ -69,23 +62,7 @@ task("manager-verify", "manager-verify function")
   );
 
   console.log(
-    "---\t bankTreasury name: ", (await bankTreasury.name())
-  );
-
-  console.log(
     "---\t bankTreasury getNDPT(): ", (await bankTreasury.getNDPT())
-  );
-  console.log(
-    "---\t moduleGlobals tax: ", (await moduleGlobals.getPublishCurrencyTax()).toNumber()
-  );
+    );
     
-
-  console.log(
-    "---\t voucher name: ", (await voucher.name())
-  );
-
-  console.log(
-    "---\t voucher symbol: ", (await voucher.symbol())
-  );
-
 });

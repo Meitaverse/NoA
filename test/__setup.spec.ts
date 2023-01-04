@@ -352,7 +352,8 @@ before(async function () {
   await expect(ndptContract.connect(deployer).whitelistContract(voucherContract.address, true)).to.not.be.reverted;
 
   await expect(voucherContract.connect(deployer).setGlobalModule(moduleGlobals.address)).to.not.be.reverted;
-
+  console.log('voucherContract setGlobalModule ok ');
+  
   await expect(voucherContract.connect(deployer).setUserAmountLimit(VOUCHER_AMOUNT_LIMIT)).to.not.be.reverted;
 
   await expect(manager.connect(governance).setState(ProtocolState.Unpaused)).to.not.be.reverted;

@@ -26,7 +26,6 @@ interface IManager {
 
 //   function setTreasury(address treasury) external;
 
-//   function setGlobalModule(address moduleGlobals) external;
   function getGlobalModule() external returns(address);
 
   function getGovernance() external returns(address);

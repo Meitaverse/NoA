@@ -101,6 +101,16 @@ const config: HardhatUserConfig = {
         count: 20,
       },
     },
+    
+    bitsoul: {
+      url: 'http://3.91.54.50:8545/',
+      accounts: {
+        mnemonic: MNEMONIC,
+        path: MNEMONIC_PATH,
+        initialIndex: 0,
+        count: 20,
+      },
+    },
   },
   typechain: {
     outDir: "./typechain",

@@ -1,12 +1,11 @@
 specVersion: 0.0.4
-description: Showdao NoA Token
+description: NFT Derivative Token
 repository: https://github.com/Meitaverse/noa
 schema:
   file: ./schema.graphql
 dataSources:
   - kind: ethereum/contract
-    name: showdao
-    # network: anvil
+    name: bitsoul
     network: mainnet
     source:
       address: "0x0165878A594ca255338adfa4d48449f69242Eb8F"

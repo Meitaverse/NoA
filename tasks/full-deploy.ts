@@ -308,7 +308,9 @@ import {
         console.log('\n\t-- voucherContract set moduleGlobals address --');
         await waitForTx( voucherContract.connect(deployer).setGlobalModule(moduleGlobals.address));
         await waitForTx( voucherContract.connect(deployer).setUserAmountLimit(moduleGlobals.address));
-
+      
+        console.log('\n\t-- bankTreasuryContract set moduleGlobals address --');
+        await waitForTx( bankTreasuryContract.connect(governance).setGlobalModule(moduleGlobals.address));
 
         console.log('\n\t-- manager set Protocol state to unpaused --');
         await waitForTx( manager.connect(governance).setState(ProtocolState.Unpaused));

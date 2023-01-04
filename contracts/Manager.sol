@@ -520,7 +520,7 @@ contract Manager is
         return _governance;
     }
 
-    function setGlobalModule(address moduleGlobals) external onlyGov { //onlyOwner
+    function setGlobalModule(address moduleGlobals) external onlyGov {
         if (moduleGlobals == address(0)) revert Errors.InitParamsInvalid();
         MODULE_GLOBALS = moduleGlobals;
         _walletBySoulBoundTokenId[1] = IModuleGlobals(MODULE_GLOBALS).getTreasury();

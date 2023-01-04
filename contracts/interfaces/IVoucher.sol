@@ -54,7 +54,6 @@ interface IVoucher {
 
     function getUserAmountLimit() external view returns(uint256);
     
-    // function setGlobalModule(address moduleGlobals) external;
     
     /**
      * @notice generate a voucher card by voucherType,
