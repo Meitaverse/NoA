@@ -24,10 +24,6 @@ abstract contract FeeModuleBase {
         emit Events.FeeModuleBaseConstructed(moduleGlobals, block.timestamp);
     }
 
-    function _currencyWhitelisted(address currency) internal view returns (bool) {
-        return IModuleGlobals(MODULE_GLOBALS).isCurrencyWhitelisted(currency);
-    }
-
     function _treasuryData() internal view returns (address, uint16) {
         return IModuleGlobals(MODULE_GLOBALS).getTreasuryData();
     }
@@ -44,8 +40,12 @@ abstract contract FeeModuleBase {
         return IModuleGlobals(MODULE_GLOBALS).getNDPT();
     }
     
-    function  _PublishCurrencyTax() internal returns (uint256) {
+    function  _publishCurrencyTax() internal returns (uint256) {
         return IModuleGlobals(MODULE_GLOBALS).getPublishCurrencyTax();
+    }
+    
+    function  _isWhitelistTemplate(address template) internal view returns (bool) {
+        return IModuleGlobals(MODULE_GLOBALS).isWhitelistTemplate(template);
     }
 
 

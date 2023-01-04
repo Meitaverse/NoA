@@ -5,6 +5,7 @@ pragma solidity ^0.8.13;
 
 import {IPublishModule} from "../../interfaces/IPublishModule.sol";
 import {Errors} from "../../libraries/Errors.sol";
+import {Events} from '../../libraries/Events.sol';
 import {FeeModuleBase} from "../FeeModuleBase.sol";
 import {DataTypes} from '../../libraries/DataTypes.sol';
 import {ModuleBase} from "../ModuleBase.sol";
@@ -17,6 +18,7 @@ import {Base64Upgradeable} from "@openzeppelin/contracts-upgradeable/utils/Base6
 import {StringConvertor} from "../../utils/StringConvertor.sol";
 import {ITemplate} from "../../interfaces/ITemplate.sol";
 import {INFTDerivativeProtocolTokenV1} from "../../interfaces/INFTDerivativeProtocolTokenV1.sol";
+
 
 struct PublishData {
     DataTypes.Publication publication;
@@ -53,26 +55,39 @@ contract PublishModule is FeeModuleBase, IPublishModule, ModuleBase {
      * @param previousPublishId The previousPublishId .
      * @param publication The Publication .
      *
+     * @return tax
      */
     function initializePublishModule(
         uint256 publishId,
         uint256 previousPublishId,
         uint256 treasuryOfSoulBoundTokenId,
         DataTypes.Publication calldata publication
-    ) external override onlyManager { 
-
-        uint256 publishTaxes = (publication.amount - 1) * _PublishCurrencyTax();
+    ) external override onlyManager returns(uint256){ 
         
-        //TODO
         if (publishId == 0 || 
             treasuryOfSoulBoundTokenId == 0)
             revert Errors.InitParamsInvalid();
 
-        if ( publishTaxes > 0){
-            INFTDerivativeProtocolTokenV1(_NDPT).transferValue(publication.soulBoundTokenId, treasuryOfSoulBoundTokenId, publishTaxes);
-        } 
-        _dataPublishdNFTByProject[publishId].publication = publication;
-        _dataPublishdNFTByProject[publishId].previousPublishId = previousPublishId;
+        (address publishTemplate,) = abi.decode(publication.publishModuleInitData, (address, uint256));
+
+        if (!_isWhitelistTemplate(publishTemplate)) {
+           revert Errors.TemplateNotWhitelisted();
+
+        } else {
+
+            uint256 publishTaxes;
+            if (publication.amount >1) publishTaxes = (publication.amount - 1) * _publishCurrencyTax();
+            
+            if ( publishTaxes > 0){
+                INFTDerivativeProtocolTokenV1(_NDPT).transferValue(publication.soulBoundTokenId, treasuryOfSoulBoundTokenId, publishTaxes);
+            } 
+            
+            _dataPublishdNFTByProject[publishId].publication = publication;
+            _dataPublishdNFTByProject[publishId].previousPublishId = previousPublishId;
+
+            return publishTaxes;
+
+        }
 
     }
 
@@ -89,6 +104,9 @@ contract PublishModule is FeeModuleBase, IPublishModule, ModuleBase {
     ) external view returns (uint256, string memory) {
     
         (address publishTemplate, uint256 publishNum) = abi.decode(_dataPublishdNFTByProject[publishId].publication.publishModuleInitData, (address, uint256));
+
+        if (!_isWhitelistTemplate(publishTemplate)) 
+           revert Errors.TemplateNotWhitelisted();
         
         bytes memory jsonTemplate = ITemplate(publishTemplate).template();
 
@@ -103,10 +121,11 @@ contract PublishModule is FeeModuleBase, IPublishModule, ModuleBase {
         );
     }
 
-    // function getTreasuryOfSoulBoundTokenId() external view returns(uint256) {
-    //     address treasury = _treasury();
-    //     return IBankTreasury(treasury).getSoulBoundTokenId();
-    // }
-
+    function getTemplate(
+         uint256 publishId
+    ) external view returns (address) {
+         (address publishTemplate, ) = abi.decode(_dataPublishdNFTByProject[publishId].publication.publishModuleInitData, (address, uint256));
+        return publishTemplate;
+    }
 
 }

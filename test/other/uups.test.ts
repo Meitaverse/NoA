@@ -100,7 +100,6 @@ makeSuiteCleanRoom('UUPS ability', function () {
 
         console.log("v2.MANAGER: ", (await v2.getManager()).toUpperCase());
          expect((await v2.getManager()).toUpperCase()).to.eq(managerV1Address.toUpperCase());
-         expect((await v2.getGovernance()).toUpperCase()).to.eq(governanceAddress.toUpperCase());
       });
       
 

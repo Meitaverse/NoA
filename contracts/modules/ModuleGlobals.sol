@@ -7,6 +7,7 @@ import {Events} from '../libraries/Events.sol';
 import {IModuleGlobals} from '../interfaces/IModuleGlobals.sol';
 import {INFTDerivativeProtocolTokenV1} from "../interfaces/INFTDerivativeProtocolTokenV1.sol";
 import {IManager} from "../interfaces/IManager.sol";
+import {GlobalStorage} from "../storage/GlobalStorage.sol";
 
 /**
  * @title ModuleGlobals
@@ -19,16 +20,8 @@ import {IManager} from "../interfaces/IManager.sol";
  * allow the flexibility of using different governance executors.
  * 
  */
-contract ModuleGlobals is IModuleGlobals {
+contract ModuleGlobals is IModuleGlobals, GlobalStorage {
     uint16 internal constant BPS_MAX = 10000;
-    mapping(address => bool) internal _currencyWhitelisted;
-    address internal _MANAGER;
-    address internal _NDPT; 
-    address internal _governance;
-    address internal _treasury;
-    uint16 internal _treasuryFee; 
-
-    mapping(address => uint256) internal _publishCurrencyTaxes; //publish的币种及数量
 
     modifier onlyGov() {
         if (msg.sender != _governance) revert Errors.NotGovernance();
@@ -42,6 +35,7 @@ contract ModuleGlobals is IModuleGlobals {
      * @param ndpt The ndpt address
      * @param governance The governance address which has additional control over setting certain parameters.
      * @param treasury The treasury address to direct fees to.
+     * @param voucher The voucher(ERC1155) address 
      * @param treasuryFee The treasury fee in BPS to levy on collects.
      * @param publishRoyalty The fee when every dNFT publish or combo, count one is free
 
@@ -51,6 +45,7 @@ contract ModuleGlobals is IModuleGlobals {
         address ndpt,
         address governance,
         address treasury,
+        address voucher,
         uint16 treasuryFee,
         uint256 publishRoyalty
     ) {
@@ -58,10 +53,10 @@ contract ModuleGlobals is IModuleGlobals {
         _setNDPT(ndpt);
         _setGovernance(governance);
         _setTreasury(treasury);
+        _setVoucher(voucher);
         _setTreasuryFee(treasuryFee);
         _setPublishRoyalty(publishRoyalty);
-        _whitelistCurrency(ndpt, true);
-    } 
+    }
 
     function setManager(address newManager) external override onlyGov {
         _setManager(newManager);
@@ -81,19 +76,22 @@ contract ModuleGlobals is IModuleGlobals {
         _setTreasury(newTreasury);
     }
 
+    function setVoucher(address newVoucher) external override onlyGov {
+        _setVoucher(newVoucher);
+    }
+    
+    function getVoucher() external view override returns (address) {
+        return _voucher;
+    }
+
     /// @inheritdoc IModuleGlobals
     function setTreasuryFee(uint16 newTreasuryFee) external override onlyGov {
         _setTreasuryFee(newTreasuryFee);
     }
 
     /// @inheritdoc IModuleGlobals
-    function whitelistCurrency(address currency, bool toWhitelist) external override onlyGov {
-        _whitelistCurrency(currency, toWhitelist);
-    }
-
-    /// @inheritdoc IModuleGlobals
-    function isCurrencyWhitelisted(address currency) external view override returns (bool) {
-        return _currencyWhitelisted[currency];
+    function getManager() external view override returns (address) {
+        return _manager;
     }
 
     /// @inheritdoc IModuleGlobals
@@ -105,12 +103,12 @@ contract ModuleGlobals is IModuleGlobals {
     function getTreasury() external view override returns (address) {
         return _treasury;
     }
-    
+
     /// @inheritdoc IModuleGlobals
     function getNDPT() external view override returns (address) {
-        return _NDPT;
+        return _ndpt;
     }
-    
+
     /// @inheritdoc IModuleGlobals
     function getTreasuryFee() external view override returns (uint16) {
         return _treasuryFee;
@@ -122,7 +120,7 @@ contract ModuleGlobals is IModuleGlobals {
     }
 
     function getWallet(uint256 soulBoundTokenId) external view returns (address) {
-        return IManager(_MANAGER).getWalletBySoulBoundTokenId(soulBoundTokenId);
+        return IManager(_manager).getWalletBySoulBoundTokenId(soulBoundTokenId);
     }
 
     function _setGovernance(address newGovernance) internal {
@@ -139,23 +137,30 @@ contract ModuleGlobals is IModuleGlobals {
         emit Events.ModuleGlobalsTreasurySet(prevTreasury, newTreasury, block.timestamp);
     }
 
+    function _setVoucher(address newVoucher) internal {
+        if (newVoucher == address(0)) revert Errors.InitParamsInvalid();
+        address prevVoucher = _voucher;
+        _voucher = newVoucher;
+        emit Events.ModuleGlobalsVoucherSet(prevVoucher, newVoucher, block.timestamp);
+    }
+
     function _setManager(address newManager) internal {
         if (newManager == address(0)) revert Errors.InitParamsInvalid();
-        address prevManager = _MANAGER;
-        _MANAGER = newManager;
+        address prevManager = _manager;
+        _manager = newManager;
         emit Events.ModuleGlobalsManagerSet(prevManager, newManager, block.timestamp);
     }
 
     function _setNDPT(address newNDPT) internal {
         if (newNDPT == address(0)) revert Errors.InitParamsInvalid();
-        address prevNDPT = _NDPT;
-        _NDPT = newNDPT;
+        address prevNDPT = _ndpt;
+        _ndpt = newNDPT;
         emit Events.ModuleGlobalsNDPTSet(prevNDPT, newNDPT, block.timestamp);
     }
 
     function _setPublishRoyalty(uint256 publishRoyalty) internal {
-        uint256 prevPublishRoyalty = _publishCurrencyTaxes[_NDPT];
-        _publishCurrencyTaxes[_NDPT] = publishRoyalty;
+        uint256 prevPublishRoyalty = _publishCurrencyTaxes[_ndpt];
+        _publishCurrencyTaxes[_ndpt] = publishRoyalty;
         emit Events.ModuleGlobalsPublishRoyaltySet(prevPublishRoyalty, publishRoyalty, block.timestamp);
     }
 
@@ -166,24 +171,58 @@ contract ModuleGlobals is IModuleGlobals {
         emit Events.ModuleGlobalsTreasuryFeeSet(prevTreasuryFee, newTreasuryFee, block.timestamp);
     }
 
-    function _whitelistCurrency(address currency, bool toWhitelist) internal {
-        if (currency == address(0)) revert Errors.InitParamsInvalid();
-        bool prevWhitelisted = _currencyWhitelisted[currency];
-        _currencyWhitelisted[currency] = toWhitelist;
-        emit Events.ModuleGlobalsCurrencyWhitelisted(
-            currency,
-            prevWhitelisted,
-            toWhitelist,
-            block.timestamp
-        );
-    }
 
-    function setPublishRoyalty(uint256 publishRoyalty) external onlyGov override {
+    function setPublishRoyalty(uint256 publishRoyalty) external override onlyGov {
         _setPublishRoyalty(publishRoyalty);
     }
 
-    function getPublishCurrencyTax() external view override returns(uint256) {
-       return _publishCurrencyTaxes[_NDPT];
+    function getPublishCurrencyTax() external view override returns (uint256) {
+        return _publishCurrencyTaxes[_ndpt];
     }
-    
+
+    function whitelistProfileCreator(address profileCreator, bool whitelist) external override onlyGov {
+        _profileCreatorWhitelisted[profileCreator] = whitelist;
+        emit Events.ProfileCreatorWhitelisted(profileCreator, whitelist, block.timestamp);
+    }
+
+    function isWhitelistProfileCreator(address profileCreator) external view override returns (bool) {
+        return _profileCreatorWhitelisted[profileCreator];
+    }
+
+    function whitelistHubCreator(uint256 soulBoundTokenId, bool whitelist) external override onlyGov {
+        _hubCreatorWhitelisted[soulBoundTokenId] = whitelist;
+        emit Events.HubCreatorWhitelisted(soulBoundTokenId, whitelist, block.timestamp);
+    }
+
+    function isWhitelistHubCreator(uint256 soulBoundTokenId) external view override returns (bool) {
+        return _hubCreatorWhitelisted[soulBoundTokenId];
+    }
+
+    function whitelistCollectModule(address collectModule, bool whitelist) external override onlyGov {
+        _collectModuleWhitelisted[collectModule] = whitelist;
+        emit Events.CollectModuleWhitelisted(collectModule, whitelist, block.timestamp);
+    }
+
+    function isWhitelistCollectModule(address collectModule) external view returns (bool) {
+        return _collectModuleWhitelisted[collectModule];
+    }
+
+    function whitelistPublishModule(address publishModule, bool whitelist) external override onlyGov {
+        _publishModuleWhitelisted[publishModule] = whitelist;
+        emit Events.PublishModuleWhitelisted(publishModule, whitelist, block.timestamp);
+    }
+
+    function isWhitelistPublishModule(address publishModule) external view returns (bool) {
+        return _publishModuleWhitelisted[publishModule];
+    }
+
+    function whitelistTemplate(address template, bool whitelist) external override onlyGov {
+        _templateWhitelisted[template] = whitelist;
+        emit Events.TemplateWhitelisted(template, whitelist, block.timestamp);
+    }
+
+    function isWhitelistTemplate(address template) external view returns (bool) {
+        return _templateWhitelisted[template];
+    }
+
 }

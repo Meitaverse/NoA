@@ -24,13 +24,14 @@ import {IManager} from "../interfaces/IManager.sol";
 import {IVoucher} from "../interfaces/IVoucher.sol";
 import "../libraries/EthAddressLib.sol";
 import "../storage/BankTreasuryStorage.sol";
- 
+import {IModuleGlobals} from "../interfaces/IModuleGlobals.sol";
+import {INFTDerivativeProtocolTokenV1} from "../interfaces/INFTDerivativeProtocolTokenV1.sol";
 /**
  *  @title Bank Treasury
  *  @author bitsoul Protocol
  * 
  *  Holds the fee, and set currencies whitelist
- * 
+ *  
  */
 contract BankTreasuryV2 is
     Initializable,
@@ -104,39 +105,22 @@ contract BankTreasuryV2 is
     }
 
     function getManager() external view returns(address) {
-        return _MANAGER;
-    }
-
-    function setGovernance(address newGovernance) external override onlyGov {
-        _setGovernance(newGovernance);
+        return IModuleGlobals(MODULE_GLOBALS).getManager();
     }
 
     function getGovernance() external view returns (address) {
+        address _governance = IModuleGlobals(MODULE_GLOBALS).getGovernance();
         return _governance;
     }
 
-    function setNDPT(address newNDPT) external override onlyGov {
-        _setNDPT(newNDPT);
-    }
-
-    function _setNDPT(address newNDPT) internal {
-        _NDPT = newNDPT;
-    }
-
-    function setVoucher(address newVoucher) external override onlyGov {
-        _setVoucher(newVoucher);
-    }
-
-    function _setVoucher(address newVoucher) internal {
-        _Voucher = newVoucher;
-    }
-
     function getVoucher() external view returns (address) {
-        return _Voucher;
+        address _voucher = IModuleGlobals(MODULE_GLOBALS).getVoucher();
+        return _voucher;
     }
 
     function getNDPT() external view returns (address) {
-        return _NDPT;
+        address _ndpt = IModuleGlobals(MODULE_GLOBALS).getNDPT();
+        return _ndpt;
     }
 
     function pause() public onlyRole(PAUSER_ROLE) {
@@ -306,7 +290,9 @@ contract BankTreasuryV2 is
         uint256 toSoulBoundTokenId,
         uint256 amount
     ) external whenNotPaused {
-        IERC3525(_NDPT).transferFrom(_soulBoundTokenId, toSoulBoundTokenId, amount);
+        address _ndpt = IModuleGlobals(MODULE_GLOBALS).getNDPT();
+
+        IERC3525(_ndpt).transferFrom(_soulBoundTokenId, toSoulBoundTokenId, amount);
         emit Events.WithdrawERC3525(_soulBoundTokenId, toSoulBoundTokenId, amount);
 
     }
@@ -320,6 +306,7 @@ contract BankTreasuryV2 is
         if (_exchangePrice == 0) revert Errors.ExchangePriceIsZero();
         return ndptAmount.mul(_exchangePrice);
     }
+
 
     function exchangeNDPTByEth(
         uint256 soulBoundTokenId,
@@ -347,9 +334,13 @@ contract BankTreasuryV2 is
                 sig
             );
         }
+        
+        address _ndpt = IModuleGlobals(MODULE_GLOBALS).getNDPT();
 
-        IERC3525(_NDPT).transferFrom(_soulBoundTokenId, soulBoundTokenId, amount);
+        INFTDerivativeProtocolTokenV1(_ndpt).transferValue(_soulBoundTokenId, soulBoundTokenId, amount);
     }
+
+
 
     function exchangeEthByNDPT(
         uint256 soulBoundTokenId,
@@ -379,8 +370,9 @@ contract BankTreasuryV2 is
                 sig
             );
         }
+        address _ndpt = IModuleGlobals(MODULE_GLOBALS).getNDPT();
+        INFTDerivativeProtocolTokenV1(_ndpt).transferValue(soulBoundTokenId, _soulBoundTokenId, ndptAmount);
 
-        IERC3525(_NDPT).transferFrom(soulBoundTokenId, _soulBoundTokenId, ndptAmount);
 
         //transfer eth to msg.sender
         uint256 ethAmount = ndptAmount.mul(_exchangePrice);
@@ -414,18 +406,14 @@ contract BankTreasuryV2 is
 
     //--- internal  ---//
 
-    function _setGovernance(address newGovernance) internal {
-        address prevGovernance = _governance;
-        _governance = newGovernance;
-        emit Events.GovernanceSet(msg.sender, prevGovernance, newGovernance, block.timestamp);
-    }
-
     function _validateCallerIsGovernance() internal view {
+        address _governance = IModuleGlobals(MODULE_GLOBALS).getGovernance();
         if (msg.sender != _governance) revert Errors.NotGovernance();
     }
 
     function _validateCallerIsManager() internal view {
-        if (msg.sender != _MANAGER) revert Errors.NotManager();
+       address _manager = IModuleGlobals(MODULE_GLOBALS).getManager();
+        if (msg.sender != _manager) revert Errors.NotManager();
     }
 
     function _validateCallerIsSigner() internal view {

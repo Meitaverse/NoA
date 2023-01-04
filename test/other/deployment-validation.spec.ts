@@ -33,7 +33,8 @@ import {
   derivativeNFTV1Impl,
   ndptContract,
   bankTreasuryContract,
-  PublishRoyaltyNDPT
+  PublishRoyaltyNDPT,
+  voucherContract
   
 } from '../__setup.spec';
 
@@ -152,6 +153,7 @@ makeSuiteCleanRoom('deployment validation', () => {
         ndptAddress,
         governanceAddress,
         bankTreasuryContract.address, 
+        voucherContract.address,
         TREASURY_FEE_BPS,
         PublishRoyaltyNDPT
       )
@@ -165,6 +167,7 @@ makeSuiteCleanRoom('deployment validation', () => {
         ZERO_ADDRESS,
         governanceAddress,
         bankTreasuryContract.address, 
+        voucherContract.address,
         TREASURY_FEE_BPS,
         PublishRoyaltyNDPT
       )
@@ -178,6 +181,7 @@ makeSuiteCleanRoom('deployment validation', () => {
         ndptAddress,
         ZERO_ADDRESS, 
         bankTreasuryContract.address, 
+        voucherContract.address,
         TREASURY_FEE_BPS,
         PublishRoyaltyNDPT
       )
@@ -190,6 +194,21 @@ makeSuiteCleanRoom('deployment validation', () => {
         manager.address,
         ndptAddress,
         governanceAddress, 
+        ZERO_ADDRESS, 
+        voucherContract.address,
+        TREASURY_FEE_BPS,
+        PublishRoyaltyNDPT
+        )
+      ).to.be.revertedWith(ERRORS.INIT_PARAMS_INVALID);
+  });
+
+  it('Should fail to deploy module globals with zero address voucher', async function () {
+    await expect(
+      new ModuleGlobals__factory(deployer).deploy(
+        manager.address,
+        ndptAddress,
+        governanceAddress, 
+        bankTreasuryContract.address, 
         ZERO_ADDRESS, 
         TREASURY_FEE_BPS,
         PublishRoyaltyNDPT
@@ -204,6 +223,7 @@ makeSuiteCleanRoom('deployment validation', () => {
           ndptAddress,
           governanceAddress, 
           bankTreasuryContract.address, 
+          voucherContract.address,
           5001,
           PublishRoyaltyNDPT
           )
@@ -218,6 +238,7 @@ makeSuiteCleanRoom('deployment validation', () => {
         ndptAddress,
         governanceAddress, 
         bankTreasuryContract.address,  
+        voucherContract.address,
         BPS_MAX,
         PublishRoyaltyNDPT
         )
@@ -229,6 +250,7 @@ makeSuiteCleanRoom('deployment validation', () => {
         ndptAddress,
         governanceAddress, 
         bankTreasuryContract.address, 
+        voucherContract.address,
         BPS_MAX + 1,
         PublishRoyaltyNDPT
         )

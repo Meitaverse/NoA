@@ -5,6 +5,7 @@ import "../libraries/DataTypes.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
 
 contract VoucherStorage  {
+    address public MODULE_GLOBALS;
 
     Counters.Counter internal _nextVoucherId;
 

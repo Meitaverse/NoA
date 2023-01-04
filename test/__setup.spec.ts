@@ -43,6 +43,8 @@ import {
   DerivativeMetadataDescriptor__factory,
   Template,
   Template__factory,
+  MultirecipientFeeCollectModule,
+  MultirecipientFeeCollectModule__factory
 } from '../typechain';
 
 import { ManagerLibraryAddresses } from '../typechain/factories/Manager__factory';
@@ -73,7 +75,7 @@ export const NDPT_SYMBOL = 'NDPT';
 export const NDPT_DECIMALS = 18;
 export const MOCK_PROFILE_HANDLE = 'plant1ghost.eth';
 export const LENS_PERIPHERY_NAME = 'LensPeriphery';
-export const FIRST_PROFILE_ID = 1;
+export const FIRST_PROFILE_ID = 1; //金库
 export const SECOND_PROFILE_ID = 2;
 export const THIRD_PROFILE_ID = 3;
 export const FOUR_PROFILE_ID = 4;
@@ -137,6 +139,8 @@ export let voucherContract: Voucher
 export let publishModule: PublishModule;
 // Collect
 export let feeCollectModule: FeeCollectModule;
+// MultiRoyalties
+export let multirecipientFeeCollectModule: MultirecipientFeeCollectModule;
 
 //Template
 export let template: Template;
@@ -251,7 +255,6 @@ before(async function () {
       NDPT_SYMBOL, 
       NDPT_DECIMALS,
       manager.address,
-      // bankTreasuryImpl.address,
   ]);
   const ndptProxy = await new ERC1967Proxy__factory(deployer).deploy(
     ndptImpl.address,
@@ -263,10 +266,7 @@ before(async function () {
   const soulBoundTokenIdOfBankTreaury = FIRST_PROFILE_ID;
   bankTreasuryImpl = await new BankTreasury__factory(deployer).deploy( );
   let initializeData = bankTreasuryImpl.interface.encodeFunctionData("initialize", [
-    manager.address,
     governanceAddress,
-    ndptContract.address,
-    voucherContract.address,
     soulBoundTokenIdOfBankTreaury,
     [userAddress, userTwoAddress, userThreeAddress],
     NUM_CONFIRMATIONS_REQUIRED  //All full signed 
@@ -283,6 +283,7 @@ before(async function () {
     ndptAddress,
     governanceAddress,
     bankTreasuryContract.address,
+    voucherContract.address,
     TREASURY_FEE_BPS,
     PublishRoyaltyNDPT
   );
@@ -299,6 +300,11 @@ before(async function () {
     ndptAddress,
   );
 
+  multirecipientFeeCollectModule = await new MultirecipientFeeCollectModule__factory(deployer).deploy(
+    manager.address, 
+    moduleGlobals.address
+  );
+
   expect(bankTreasuryContract).to.not.be.undefined;
   expect(ndptContract).to.not.be.undefined;
   expect(receiverMock).to.not.be.undefined;
@@ -308,23 +314,29 @@ before(async function () {
   expect(metadataDescriptor).to.not.be.undefined;
   expect(feeCollectModule).to.not.be.undefined;
   expect(publishModule).to.not.be.undefined;
+  expect(moduleGlobals).to.not.be.undefined;
 
   // Add to module whitelist
   await expect(
-    manager.connect(governance).whitelistPublishModule(publishModule.address, true)
+    moduleGlobals.connect(governance).whitelistPublishModule(publishModule.address, true)
   ).to.not.be.reverted;
 
   await expect(
-    manager.connect(governance).whitelistCollectModule(feeCollectModule.address, true)
+    moduleGlobals.connect(governance).whitelistCollectModule(feeCollectModule.address, true)
   ).to.not.be.reverted;    
 
-  //make sure bankTreasury's souldBoundTokenId is 1
-  expect((await bankTreasuryContract.getSoulBoundTokenId()).toNumber()).to.eq(1);
+  await expect(
+    moduleGlobals.connect(governance).whitelistTemplate(template.address, true)
+  ).to.not.be.reverted;    
+
+  expect((await moduleGlobals.getNDPT()).toUpperCase()).to.eq(ndptContract.address.toUpperCase());
 
   //manager set ndptAddress
-  await expect(manager.connect(governance).setNDPT(ndptAddress)).to.not.be.reverted;
-  await expect(manager.connect(governance).setTreasury(bankTreasuryContract.address)).to.not.be.reverted;
-  await expect(manager.connect(governance).setGlobalModule(moduleGlobals.address)).to.not.be.reverted;
+  await manager.connect(governance).setGlobalModule(moduleGlobals.address);
+  console.log('manager setGlobalModule ok ');
+
+  await bankTreasuryContract.connect(governance).setGlobalModule(moduleGlobals.address);
+  console.log('bankTreasuryContract setGlobalModule ok ');
   
   await expect(ndptContract.connect(deployer).setBankTreasury(
     bankTreasuryContract.address, 
@@ -333,37 +345,48 @@ before(async function () {
   
   await expect(ndptContract.connect(deployer).whitelistContract(publishModule.address, true)).to.not.be.reverted;
   await expect(ndptContract.connect(deployer).whitelistContract(feeCollectModule.address, true)).to.not.be.reverted;
+  await expect(ndptContract.connect(deployer).whitelistContract(multirecipientFeeCollectModule.address, true)).to.not.be.reverted;
   await expect(ndptContract.connect(deployer).whitelistContract(bankTreasuryContract.address, true)).to.not.be.reverted;
 
-  await expect(voucherContract.connect(deployer).setBankTreasury(bankTreasuryContract.address)).to.not.be.reverted;
+  await expect(voucherContract.connect(deployer).setGlobalModule(moduleGlobals.address)).to.not.be.reverted;
 
   await expect(manager.connect(governance).setState(ProtocolState.Unpaused)).to.not.be.reverted;
+  
   await expect(
-    manager.connect(governance).whitelistProfileCreator(userAddress, true)
+    moduleGlobals.connect(governance).whitelistProfileCreator(userAddress, true)
   ).to.not.be.reverted;
   await expect(
-    manager.connect(governance).whitelistProfileCreator(userTwoAddress, true)
+    moduleGlobals.connect(governance).whitelistProfileCreator(userTwoAddress, true)
   ).to.not.be.reverted;
   await expect(
-    manager.connect(governance).whitelistProfileCreator(userThreeAddress, true)
+    moduleGlobals.connect(governance).whitelistProfileCreator(userThreeAddress, true)
   ).to.not.be.reverted;
   await expect(
-    manager.connect(governance).whitelistProfileCreator(testWallet.address, true)
+    moduleGlobals.connect(governance).whitelistProfileCreator(testWallet.address, true)
+  ).to.not.be.reverted;
+
+  await expect(
+    moduleGlobals.connect(governance).whitelistHubCreator(SECOND_PROFILE_ID, true)
   ).to.not.be.reverted;
 
 
   expect((await manager.version()).toNumber()).to.eq(1);
-  expect(await manager.NDPT()).to.eq(ndptContract.address);
+
+  expect(await manager.getWalletBySoulBoundTokenId(1)).to.eq(bankTreasuryContract.address);
+
   expect((await derivativeNFTV1Impl.MANAGER()).toUpperCase()).to.eq(manager.address.toUpperCase());
 
   expect((await ndptContract.version()).toNumber()).to.eq(1);
   expect((await ndptContract.getManager()).toUpperCase()).to.eq(manager.address.toUpperCase());
+  console.log('ndptContract getManager ok ');
+
   expect((await ndptContract.getBankTreasury()).toUpperCase()).to.eq(bankTreasuryContract.address.toUpperCase());
   
   expect((await bankTreasuryContract.getManager()).toUpperCase()).to.eq(manager.address.toUpperCase());
+  console.log('bankTreasuryContract getManager ok ');
+
   expect((await bankTreasuryContract.getNDPT()).toUpperCase()).to.eq(ndptContract.address.toUpperCase());
   
-  expect((await manager.version()).toNumber()).to.eq(1);
   expect((await moduleGlobals.getPublishCurrencyTax())).to.eq(PublishRoyaltyNDPT);
 
   // Event library deployment is only needed for testing and is not reproduced in the live environment

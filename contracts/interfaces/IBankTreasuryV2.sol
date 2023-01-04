@@ -33,6 +33,7 @@ interface IBankTreasuryV2 {
         DataTypes.EIP712Signature calldata sign
     ) external payable ;
 
+
      function exchangeEthByNDPT(
         uint256 soulBoundTokenId,
         uint256 ndptAmount,
@@ -49,15 +50,12 @@ interface IBankTreasuryV2 {
     function getTransactionCount() external view returns (uint256);
 
     function getManager() external view returns(address);
-    function setGovernance(address newGovernance) external;
     function getGovernance() external returns(address);
 
     function getSoulBoundTokenId() external returns (uint256);
 
-    function setNDPT(address newNDPT) external;
     function getNDPT() external returns(address);
 
-    function setVoucher(address newVoucher) external;
     function getVoucher() external view returns(address);
 
      function calculateAmountEther(uint256 ethAmount) external view returns(uint256);

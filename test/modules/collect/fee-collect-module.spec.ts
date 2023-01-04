@@ -70,9 +70,6 @@ makeSuiteCleanRoom('Fee Collect Module', function () {
   const Default_royaltyBasisPoints = 50; //
 
   beforeEach(async function () {
-    await expect(
-      manager.connect(governance).whitelistProfileCreator(userAddress, true)
-    ).to.not.be.reverted;
 
     expect(
       await createProfileReturningTokenId({
@@ -89,11 +86,6 @@ makeSuiteCleanRoom('Fee Collect Module', function () {
       //mint some Values to user
       await manager.connect(governance).mintNDPTValue(SECOND_PROFILE_ID, parseEther('10'));
       // expect((await ndptContract.balanceOfNDPT(SECOND_PROFILE_ID)).toNumber()).to.eq(parseEther('10'));
-
-
-      await expect(
-        manager.connect(governance).whitelistProfileCreator(userTwoAddress, true)
-      ).to.not.be.reverted;
 
       const tokenId = await manager.connect(userTwo).callStatic.createProfile({ 
             to: userTwoAddress,
@@ -117,6 +109,7 @@ makeSuiteCleanRoom('Fee Collect Module', function () {
 
       expect(
         await createHubReturningHubId({
+          sender: user,
           hub: {
             creator: userAddress,
             soulBoundTokenId: SECOND_PROFILE_ID,

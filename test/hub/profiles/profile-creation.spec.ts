@@ -18,6 +18,7 @@ import {
   FIRST_PROJECT_ID,
   governance,
   manager,
+  moduleGlobals,
   makeSuiteCleanRoom,
   MAX_PROFILE_IMAGE_URI_LENGTH,
   mockModuleData,
@@ -40,6 +41,7 @@ makeSuiteCleanRoom('Profile Creation', function () {
         context('Negatives', function () {
             it('User should fail to create a profile with a nickName longer than 31 bytes', async function () {
                 const val = '11111111111111111111111111111111';
+
                 
                 expect(val.length).to.eq(32);
                 await expect(
@@ -63,10 +65,11 @@ makeSuiteCleanRoom('Profile Creation', function () {
       
 
               it('User should fail to create a profile when they are not a whitelisted profile creator', async function () {
+    
                 await expect(
-                  manager.connect(governance).whitelistProfileCreator(userAddress, false)
+                  moduleGlobals.connect(governance).whitelistProfileCreator(userAddress, false)
                 ).to.not.be.reverted;
-        
+                
                 await expect(
                   manager.createProfile({
                     to: userAddress,
@@ -82,9 +85,6 @@ makeSuiteCleanRoom('Profile Creation', function () {
         context('Successful', function () {
 
             it('User should success to create a profile', async function () {
-                await expect(
-                    manager.connect(governance).whitelistProfileCreator(userAddress, true)
-                  ).to.not.be.reverted;
                   
                 await expect(
                     manager.connect(user).createProfile({
@@ -171,6 +171,7 @@ makeSuiteCleanRoom('Profile Creation', function () {
 
             expect(
                 await createHubReturningHubId({
+                  sender: user,
                   hub: {
                     creator: userAddress,
                     soulBoundTokenId: SECOND_PROFILE_ID,

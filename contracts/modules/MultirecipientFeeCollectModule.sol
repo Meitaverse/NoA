@@ -72,7 +72,7 @@ contract MultirecipientFeeCollectModule is BaseFeeCollectModule {
     //store royalty points by projectId
     mapping(uint256 => uint16[]) internal _royaltyPointsByPublicationByProfile;
 
-    constructor(address hub, address moduleGlobals) BaseFeeCollectModule(hub, moduleGlobals) {}
+    constructor(address manager, address moduleGlobals) BaseFeeCollectModule(manager, moduleGlobals) {}
 
     //projectId => level(0-4) => BPS 
     // mapping(uint256 => mapping(uint8 => uint16)) internal _splitPoints;  

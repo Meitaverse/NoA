@@ -12,14 +12,6 @@ import {DataTypes} from '../libraries/DataTypes.sol';
  */
 interface IManagerV2 {
     
-  /**
-   * @notice Sets the privileged governance role. This function can only be called by the current governance
-   * address.
-   *
-   * @param newGovernance The new governance address to set.
-   */
-  function setGovernance(address newGovernance) external;
-
   function getGovernance() external returns(address);
 
 
@@ -69,23 +61,8 @@ interface IManagerV2 {
      */
     function createProfile(DataTypes.CreateProfileData calldata vars) external returns (uint256);
 
-    /**
-     * @notice Returns the address of the SoulBundToken contract
-     *
-     * @return address The address of the SoulBundToken contract.
-     */
-    function getSoulBoundToken() external view returns (address);
-
     function getReceiver() external view returns (address);
 
-    /**
-     * @notice Adds or removes a profile creator from the whitelist. This function can only be called by the current
-     * governance address.
-     *
-     * @param profileCreator The profile creator address to add or remove from the whitelist.
-     * @param whitelist Whether or not the profile creator should be whitelisted.
-     */
-    function whitelistProfileCreator(address profileCreator, bool whitelist) external;
 
 
     function createHub(

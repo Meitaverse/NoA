@@ -59,4 +59,5 @@ export const ERRORS = {
   NOT_OWNEROF_TOKENID: 'NotOwerOFTokenId()',
   ERC3525INSUFFICIENTBALANCE: 'ERC3525INSUFFICIENTBALANCE()',
   NOT_OWNER_VOUCHER: 'NotOwnerVoucher()',
+  Template_Not_in_Whitelisted: 'TemplateNotWhitelisted()',
 };

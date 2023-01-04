@@ -12,7 +12,7 @@ library DataTypes {
     enum PriceType {FIXED, DECLIINING_BY_TIME}
 
     //0.1eth, 0.2eth, 0.3eth, 0.4eth, 0.5 eth
-    enum VoucherParValueType {ZEROPOINTONE, ZEROPOINTTWO, ZEROPOINTTHREE, ZEROPOINTFOUR, ZEROPOINTFIVE}
+    enum VoucherParValueType {ZEROPOINT, ZEROPOINTONE, ZEROPOINTTWO, ZEROPOINTTHREE, ZEROPOINTFOUR, ZEROPOINTFIVE}
 
     enum FeeType {
         BY_AMOUNT,
@@ -105,7 +105,6 @@ library DataTypes {
         bytes collectModuleInitData;
         address publishModule;
         bytes publishModuleInitData;
-        
     }
 
     /**
@@ -290,4 +289,6 @@ library DataTypes {
         uint256 soulBoundTokenId;
         uint256 usedTimestamp;
     }
+
+
 }

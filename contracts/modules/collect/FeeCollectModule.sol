@@ -5,10 +5,9 @@ pragma solidity ^0.8.13;
 import {ICollectModule} from "../../interfaces/ICollectModule.sol";
 import {IBankTreasury} from "../../interfaces/IBankTreasury.sol";
 import {Errors} from "../../libraries/Errors.sol";
+import {Events} from "../../libraries/Events.sol";
 import {FeeModuleBase} from "../FeeModuleBase.sol";
 import {ModuleBase} from "../ModuleBase.sol";
-// import {IERC20Upgradeable} from "@openzeppelin/contracts-upgradeable/token/ERC20/IERC20Upgradeable.sol";
-// import {SafeERC20Upgradeable} from "@openzeppelin/contracts-upgradeable/token/ERC20/utils/SafeERC20Upgradeable.sol";
 import {SafeMathUpgradeable} from "@openzeppelin/contracts-upgradeable/utils/math/SafeMathUpgradeable.sol";
 import {INFTDerivativeProtocolTokenV1} from "../../interfaces/INFTDerivativeProtocolTokenV1.sol";
 
@@ -146,7 +145,6 @@ contract FeeCollectModule is FeeModuleBase, ModuleBase, ICollectModule {
         );
     }
 
-
     function _processCollect(
         uint256 ownershipSoulBoundTokenId,
         uint256 collectorSoulBoundTokenId,
@@ -162,14 +160,22 @@ contract FeeCollectModule is FeeModuleBase, ModuleBase, ICollectModule {
         uint256 treasuryAmount = payValue.mul(treasuryFee).div(BPS_MAX);
         uint256 genesisAmount = payValue.mul(_dataByPublicationByProfile[publishId].genesisFee).div(BPS_MAX);
         {
-            if ( payValue.sub(treasuryAmount).sub(genesisAmount)>0) 
-                INFTDerivativeProtocolTokenV1(_ndpt()).transferValue(collectorSoulBoundTokenId, ownershipSoulBoundTokenId,  payValue.sub(treasuryAmount).sub(genesisAmount));
+            uint256 adjustedAmount = payValue.sub(treasuryAmount).sub(genesisAmount);
+            if ( adjustedAmount > 0) 
+                INFTDerivativeProtocolTokenV1(_ndpt()).transferValue(collectorSoulBoundTokenId, ownershipSoulBoundTokenId, adjustedAmount);
             
             uint256 treasuryOfSoulBoundTokenId = IBankTreasury(treasury).getSoulBoundTokenId();
             
             if (treasuryAmount > 0) INFTDerivativeProtocolTokenV1(_ndpt()).transferValue(collectorSoulBoundTokenId, treasuryOfSoulBoundTokenId, treasuryAmount);
             if (genesisSoulBoundTokenId >0 && genesisAmount > 0) INFTDerivativeProtocolTokenV1(_ndpt()).transferValue(collectorSoulBoundTokenId, genesisSoulBoundTokenId, genesisAmount);
            
+            emit Events.FeesForCollect(
+                collectorSoulBoundTokenId,
+                publishId,
+                treasuryAmount,
+                genesisAmount,
+                adjustedAmount
+            );
         }
 
     }

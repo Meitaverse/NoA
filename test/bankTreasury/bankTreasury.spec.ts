@@ -72,14 +72,11 @@ let derivativeNFT: DerivativeNFTV1;
 const FIRST_VOUCHER_TOKEN_ID = 1;
 const SECOND_VOUCHER_TOKEN_ID = 2;
 
-makeSuiteCleanRoom('Fee Collect Module', function () {
+makeSuiteCleanRoom('Bank Treasury', function () {
   const DEFAULT_COLLECT_PRICE = parseEther('10');
 
   beforeEach(async function () {
-    await expect(
-      manager.connect(governance).whitelistProfileCreator(userAddress, true)
-    ).to.not.be.reverted;
-
+ 
     expect(
       await createProfileReturningTokenId({
           sender: user,
@@ -102,7 +99,7 @@ makeSuiteCleanRoom('Fee Collect Module', function () {
          }) 
       ).to.eq(THIRD_PROFILE_ID);
 
-      expect(await manager.getWalletBySoulBoundTokenId(FIRST_PROFILE_ID)).to.eq(ndptContract.address);
+      expect(await manager.getWalletBySoulBoundTokenId(FIRST_PROFILE_ID)).to.eq(bankTreasuryContract.address);
       expect(await manager.getWalletBySoulBoundTokenId(SECOND_PROFILE_ID)).to.eq(userAddress);
       expect(await manager.getWalletBySoulBoundTokenId(THIRD_PROFILE_ID)).to.eq(userTwoAddress);
   });
@@ -119,8 +116,9 @@ makeSuiteCleanRoom('Fee Collect Module', function () {
 
       it('User should fail to exchange Voucher NDPT using a used Voucher card', async function () {
         await expect(
-          voucherContract.generateVoucher(0, userAddress)
+          voucherContract.connect(deployer).generateVoucher(1, userAddress)
         ).to.not.be.reverted;
+
 
         await expect(
           bankTreasuryContract.connect(user).exchangeVoucher(FIRST_VOUCHER_TOKEN_ID, SECOND_PROFILE_ID)
@@ -134,16 +132,12 @@ makeSuiteCleanRoom('Fee Collect Module', function () {
 
       it('User should fail to exchange Voucher NDPT using a none owned of Voucher card', async function () {
         await expect(
-          voucherContract.generateVoucher(0, userAddress)
+          voucherContract.connect(deployer).generateVoucher(1, userAddress)
         ).to.not.be.reverted;
 
         await expect(
           bankTreasuryContract.connect(userTwo).exchangeVoucher(FIRST_VOUCHER_TOKEN_ID, THIRD_PROFILE_ID)
         ).to.be.revertedWith(ERRORS.NOT_OWNER_VOUCHER);
-
-        // await expect(
-        //   bankTreasuryContract.exchangeVoucher(FIRST_VOUCHER_TOKEN_ID, SECOND_PROFILE_ID)
-        // ).to.be.revertedWith(ERRORS.VOUCHER_IS_USED);
 
       });
 
@@ -168,10 +162,10 @@ makeSuiteCleanRoom('Fee Collect Module', function () {
           expect((await ndptContract.balanceOfNDPT(SECOND_PROFILE_ID)).toNumber()).to.eq(0);
           
           await expect(
-            voucherContract.generateVoucher(0, userAddress)
+            voucherContract.connect(deployer).generateVoucher(1, userAddress)
           ).to.not.be.reverted;
 
-         let voucherData = await voucherContract.getVoucher(FIRST_VOUCHER_TOKEN_ID);
+         let voucherData = await voucherContract.getVoucherData(FIRST_VOUCHER_TOKEN_ID);
 
           expect(voucherData.tokenId).to.eq(FIRST_VOUCHER_TOKEN_ID);
           expect(voucherData.ndptValue).to.eq(100);
@@ -189,10 +183,10 @@ makeSuiteCleanRoom('Fee Collect Module', function () {
           expect((await ndptContract.balanceOfNDPT(SECOND_PROFILE_ID)).toNumber()).to.eq(0);
           
           await expect(
-            voucherContract.generateVoucher(0, userAddress)
+            voucherContract.connect(deployer).generateVoucher(1, userAddress)
           ).to.not.be.reverted;
 
-         let voucherData = await voucherContract.getVoucher(FIRST_VOUCHER_TOKEN_ID);
+         let voucherData = await voucherContract.getVoucherData(FIRST_VOUCHER_TOKEN_ID);
 
           expect(voucherData.tokenId).to.eq(FIRST_VOUCHER_TOKEN_ID);
           expect(voucherData.ndptValue).to.eq(100);
@@ -215,7 +209,7 @@ makeSuiteCleanRoom('Fee Collect Module', function () {
 
           expect((await ndptContract.balanceOfNDPT(THIRD_PROFILE_ID)).toNumber()).to.eq(100);
 
-          let voucherData2 = await voucherContract.getVoucher(FIRST_VOUCHER_TOKEN_ID);
+          let voucherData2 = await voucherContract.getVoucherData(FIRST_VOUCHER_TOKEN_ID);
 
           expect(voucherData2.tokenId).to.eq(FIRST_VOUCHER_TOKEN_ID);
           expect(voucherData2.ndptValue).to.eq(100);

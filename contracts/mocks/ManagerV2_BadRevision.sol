@@ -15,6 +15,7 @@ import {InteractionLogic} from '../libraries/InteractionLogic.sol';
 import {PublishLogic} from '../libraries/PublishLogic.sol';
 import {PriceManager} from '../libraries/PriceManager.sol';
 import {MockManagerV2Storage} from  "./MockManagerV2Storage.sol";
+import {IModuleGlobals} from "../interfaces/IModuleGlobals.sol";
 
 import "../libraries/SafeMathUpgradeable128.sol";
 
@@ -35,6 +36,10 @@ contract ManagerV2_BadRevision is
     uint256 internal constant REVISION = 1;
 
     using Counters for Counters.Counter;
+    address internal  _RECEIVER;
+    address internal  _DNFT_IMPL;
+
+    
 
 
     /**
@@ -57,14 +62,11 @@ contract ManagerV2_BadRevision is
         return _additionalValue;
     }
 
+
     function getReceiver() external view returns (address) {
         return _RECEIVER;
     }
 
-    function whitelistProfileCreator(address profileCreator, bool whitelist) external override onlyGov {
-        _profileCreatorWhitelisted[profileCreator] = whitelist;
-        emit Events.ProfileCreatorWhitelisted(profileCreator, whitelist, block.timestamp);
-    }
 
     function mintNDPTValue(uint256 tokenId, uint256 value) external whenNotPaused onlyGov {
         INFTDerivativeProtocolTokenV1(NDPT).mintValue(tokenId, value);
@@ -81,8 +83,7 @@ contract ManagerV2_BadRevision is
     function createProfile(
         DataTypes.CreateProfileData calldata vars
     ) external returns (uint256) {
-        if (!_profileCreatorWhitelisted[msg.sender]) revert Errors.ProfileCreatorNotWhitelisted();
-
+        if (!IModuleGlobals(MODULE_GLOBALS).isWhitelistProfileCreator(vars.to)) revert Errors.ProfileCreatorNotWhitelisted();
         uint256 soulBoundTokenId = INFTDerivativeProtocolTokenV1(NDPT).createProfile(vars);
         return soulBoundTokenId;
     }
@@ -118,6 +119,7 @@ contract ManagerV2_BadRevision is
             _RECEIVER,
             _derivativeNFTByProjectId
         );
+        
 
         _projectInfoByProjectId[projectId] = DataTypes.ProjectData({
             hubId: project.hubId,
@@ -262,10 +264,6 @@ contract ManagerV2_BadRevision is
             );
     }
 
-    function getSoulBoundToken() external view returns (address) {
-        return NDPT;
-    }
-
     /// ***********************
     /// *****GOV FUNCTIONS*****
     /// ***********************
@@ -286,10 +284,6 @@ contract ManagerV2_BadRevision is
         _setState(newState);
     }
 
-    function setGovernance(address newGovernance) external override onlyGov {
-        _setGovernance(newGovernance);
-    }
-
     function getGovernance() external view returns(address) {
         return _governance;
     }
@@ -299,13 +293,6 @@ contract ManagerV2_BadRevision is
         if (msg.sender != _governance) revert Errors.NotGovernance();
     }
 
-
-    function _setGovernance(address newGovernance) internal {
-        address prevGovernance = _governance;
-        _governance = newGovernance;
-
-        emit Events.GovernanceSet(msg.sender, prevGovernance, newGovernance, block.timestamp);
-    }
 
     function _generateNextSaleId() internal returns (uint24) {
         _nextSaleId.increment();

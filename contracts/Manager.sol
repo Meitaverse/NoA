@@ -5,8 +5,6 @@ import "@openzeppelin/contracts-upgradeable/utils/cryptography/ECDSAUpgradeable.
 import "@openzeppelin/contracts-upgradeable/utils/structs/EnumerableSetUpgradeable.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
 import "@solvprotocol/erc-3525/contracts/IERC3525.sol";
-import {IERC20Upgradeable} from "@openzeppelin/contracts-upgradeable/token/ERC20/IERC20Upgradeable.sol";
-import {SafeERC20Upgradeable} from "@openzeppelin/contracts-upgradeable/token/ERC20/utils/SafeERC20Upgradeable.sol";
 import {IERC3525Metadata} from "@solvprotocol/erc-3525/contracts/extensions/IERC3525Metadata.sol";
 import {IDerivativeNFTV1} from "./interfaces/IDerivativeNFTV1.sol";
 import "./interfaces/INFTDerivativeProtocolTokenV1.sol";
@@ -32,9 +30,6 @@ contract Manager is
     PriceManager,
     VersionedInitializable
 {
-    // using SafeMathUpgradeable for uint256;
-    using SafeERC20Upgradeable for IERC20Upgradeable;
-
     using SafeMathUpgradeable128 for uint128;
     using EnumerableSetUpgradeable for EnumerableSetUpgradeable.UintSet;
     using EnumerableSetUpgradeable for EnumerableSetUpgradeable.AddressSet;
@@ -45,12 +40,19 @@ contract Manager is
     mapping(address => uint256) public sigNonces;
     address internal immutable  _DNFT_IMPL;
     address internal immutable  _RECEIVER;
+    
+    string public name;
 
     /**
      * @dev This modifier reverts if the caller is not the configured governance address.
      */
     modifier onlyGov() {
         _validateCallerIsGovernance();
+        _;
+    }
+
+    modifier onlyOwner() {
+        _validateCallerIsOwner();
         _;
     }
 
@@ -63,14 +65,16 @@ contract Manager is
         
         _DNFT_IMPL = dNftV1_;
         _RECEIVER = receiver_;
+       
     }
 
-    function initialize(
-        address governance_
-    ) external override initializer {
+    function initialize(address governance) external override initializer {
         //default Paused
         _setState(DataTypes.ProtocolState.Paused);
-        _setGovernance(governance_);
+        _owner = msg.sender;
+        name = "Manager";
+        if (governance == address(0)) revert Errors.InitParamsInvalid();
+         _setGovernance(governance);
     }
 
     //-- external -- //
@@ -78,34 +82,29 @@ contract Manager is
         return _RECEIVER;
     }
 
-    function whitelistProfileCreator(address profileCreator, bool whitelist) external override onlyGov {
-        _profileCreatorWhitelisted[profileCreator] = whitelist;
-        emit Events.ProfileCreatorWhitelisted(profileCreator, whitelist, block.timestamp);
-    }
-
-    function isWhitelistProfileCreator(address profileCreator) external view returns(bool) {
-       return  _profileCreatorWhitelisted[profileCreator];
-    }
-
     function mintNDPTValue(uint256 tokenId, uint256 value) external whenNotPaused onlyGov {
-        INFTDerivativeProtocolTokenV1(NDPT).mintValue(tokenId, value);
+        address _ndpt = IModuleGlobals(MODULE_GLOBALS).getNDPT();
+        INFTDerivativeProtocolTokenV1(_ndpt).mintValue(tokenId, value);
     }
 
     function burnNDPT(uint256 tokenId) external whenNotPaused onlyGov {
-        INFTDerivativeProtocolTokenV1(NDPT).burn(tokenId);
+        address _ndpt = IModuleGlobals(MODULE_GLOBALS).getNDPT();
+        INFTDerivativeProtocolTokenV1(_ndpt).burn(tokenId);
     }
 
     function burnNDPTValue(uint256 tokenId, uint256 value) external whenNotPaused onlyGov {
-        INFTDerivativeProtocolTokenV1(NDPT).burnValue(tokenId, value);
+         address _ndpt = IModuleGlobals(MODULE_GLOBALS).getNDPT();
+        INFTDerivativeProtocolTokenV1(_ndpt).burnValue(tokenId, value);
     }
 
     function createProfile(
         DataTypes.CreateProfileData calldata vars
     ) external whenNotPaused returns (uint256) {
-        if (!_profileCreatorWhitelisted[msg.sender]) revert Errors.ProfileCreatorNotWhitelisted();
-        if (NDPT == address(0)) revert Errors.NDPTNotSet();
+        address _ndpt = IModuleGlobals(MODULE_GLOBALS).getNDPT();
+        if (!IModuleGlobals(MODULE_GLOBALS).isWhitelistProfileCreator(vars.to)) revert Errors.ProfileCreatorNotWhitelisted();
+        if (_ndpt == address(0)) revert Errors.NDPTNotSet();
 
-        uint256 soulBoundTokenId = INFTDerivativeProtocolTokenV1(NDPT).createProfile(vars);
+        uint256 soulBoundTokenId = INFTDerivativeProtocolTokenV1(_ndpt).createProfile(vars);
 
         _walletBySoulBoundTokenId[soulBoundTokenId] = vars.to;
 
@@ -116,6 +115,8 @@ contract Manager is
         DataTypes.HubData memory hub
     ) external whenNotPaused returns(uint256){
         _validateCallerIsSoulBoundTokenOwnerOrDispathcher(hub.soulBoundTokenId);
+
+        if (!IModuleGlobals(MODULE_GLOBALS).isWhitelistHubCreator(hub.soulBoundTokenId)) revert Errors.HubCreatorNotWhitelisted();
        
         uint256 hubId = _generateNextHubId();
         _hubBySoulBoundTokenId[hub.soulBoundTokenId] = hubId;
@@ -138,13 +139,12 @@ contract Manager is
         if (_projectNameHashByEventId[keccak256(bytes(project.name))] > 0) {
             revert Errors.ProjectExisted();
         }
-
         uint256 projectId = _generateNextProjectId();
         _projectNameHashByEventId[keccak256(bytes(project.name))] = projectId;
         InteractionLogic.createProject(
             _DNFT_IMPL,
-            NDPT,
-            TREASURY,
+            IModuleGlobals(MODULE_GLOBALS).getNDPT(),
+            IModuleGlobals(MODULE_GLOBALS).getTreasury(),
             projectId,
             project,
             _RECEIVER,
@@ -217,13 +217,15 @@ contract Manager is
             previousPublishId = _tokenIdByPublishId[publication.fromTokenIds[0]];
         }
         
-        uint256 treasuryOfSoulBoundTokenId = IBankTreasury(TREASURY).getSoulBoundTokenId();
+        if (!IModuleGlobals(MODULE_GLOBALS).isWhitelistPublishModule(publication.publishModule))
+            revert Errors.PublishModuleNotWhitelisted();
+
+        uint256 treasuryOfSoulBoundTokenId = IBankTreasury(IModuleGlobals(MODULE_GLOBALS).getTreasury()).getSoulBoundTokenId();
         PublishLogic.prePublish(
             publication,
             publishId,
             previousPublishId,
             treasuryOfSoulBoundTokenId,
-            _publishModuleWhitelisted,
             _publishIdByProjectData
         );
 
@@ -281,51 +283,45 @@ contract Manager is
     function publish(
         uint256 publishId
     ) external whenNotPaused returns (uint256) { 
-        if (publishId == 0) revert Errors.InitParamsInvalid();
-        
-        _validateCallerIsSoulBoundTokenOwnerOrDispathcher(_publishIdByProjectData[publishId].publication.soulBoundTokenId);
-        address publisher = _walletBySoulBoundTokenId[_publishIdByProjectData[publishId].publication.soulBoundTokenId];
-       
-        if (publisher == address(0)) revert Errors.PublisherIsZero();
+        if (publishId == 0) {
+            revert Errors.InitParamsInvalid();
+        } else {
 
-        address derivativeNFT = _derivativeNFTByProjectId[_publishIdByProjectData[publishId].publication.projectId];
-        if (derivativeNFT == address(0)) revert Errors.DerivativeNFTIsZero();
+            _validateCallerIsSoulBoundTokenOwnerOrDispathcher(_publishIdByProjectData[publishId].publication.soulBoundTokenId);
+            address publisher = _walletBySoulBoundTokenId[_publishIdByProjectData[publishId].publication.soulBoundTokenId];
+            address derivativeNFT = _derivativeNFTByProjectId[_publishIdByProjectData[publishId].publication.projectId];
+            if (_publishIdByProjectData[publishId].publication.amount == 0) revert Errors.InitParamsInvalid();
+            
+            if (!IModuleGlobals(MODULE_GLOBALS).isWhitelistCollectModule(_publishIdByProjectData[publishId].publication.collectModule))
+                revert Errors.CollectModuleNotWhitelisted();
         
-        if (_publishIdByProjectData[publishId].publication.amount == 0) revert Errors.InitParamsInvalid();
-        
-        uint256 newTokenId = PublishLogic.createPublish(
-            _publishIdByProjectData[publishId].publication,
-            publishId,
-            publisher,
-            derivativeNFT,
-            _pubByIdByProfile,
-            _collectModuleWhitelisted 
-        );
+            uint256 newTokenId = PublishLogic.createPublish(
+                _publishIdByProjectData[publishId].publication,
+                publishId,
+                publisher,
+                derivativeNFT,
+                _pubByIdByProfile
+            );
 
-        //Avoids stack too deep
-        {
-            _publishIdByProjectData[publishId].isMinted = true;
-            _publishIdByProjectData[publishId].tokenId = newTokenId;
-            _tokenIdByPublishId[newTokenId] = publishId;
+            //Avoids stack too deep
+            {
+                _publishIdByProjectData[publishId].isMinted = true;
+                _publishIdByProjectData[publishId].tokenId = newTokenId;
+                _tokenIdByPublishId[newTokenId] = publishId;
+            }
+
+            return newTokenId;
         }
-
-        return newTokenId;
     }
 
     function collect(
         DataTypes.CollectData memory collectData
     ) external whenNotPaused returns(uint256){
-        if (collectData.publishId == 0) revert Errors.InitParamsInvalid();
-        if (collectData.collectorSoulBoundTokenId == 0) revert Errors.InitParamsInvalid();
-        if (collectData.collectValue == 0) revert Errors.InitParamsInvalid();
 
          _validateCallerIsSoulBoundTokenOwnerOrDispathcher(collectData.collectorSoulBoundTokenId);
 
         address derivativeNFT =  _derivativeNFTByProjectId[_publishIdByProjectData[collectData.publishId].publication.projectId];
 
-        if ( derivativeNFT== address(0)) 
-            revert Errors.DerivativeNFTIsZero();
-        
         uint256 newTokenId = IDerivativeNFTV1(derivativeNFT).split(
             collectData.publishId, 
             _publishIdByProjectData[collectData.publishId].tokenId, 
@@ -351,55 +347,15 @@ contract Manager is
          _validateCallerIsSoulBoundTokenOwnerOrDispathcher(airdropData.ownershipSoulBoundTokenId);
         
         address derivativeNFT = _derivativeNFTByProjectId[_publishIdByProjectData[airdropData.publishId].publication.projectId];
-        if (derivativeNFT == address(0)) revert Errors.InvalidParameter();
-        
-        uint256 total;
-        for (uint256 i = 0; i < airdropData.values.length; ) {
-            total = total + airdropData.values[i];
-            unchecked {
-                ++i;
-            }
-        }
-        if (total > IERC3525(derivativeNFT).balanceOf( airdropData.tokenId )) 
-          revert Errors.ERC3525INSUFFICIENTBALANCE();
 
-        _airdrop(derivativeNFT, airdropData);
-
-    }
-
-    function _airdrop(
-        address derivativeNFT, 
-        DataTypes.AirdropData memory airdropData
-    ) internal {
-
-        uint256[] memory newTokenIds = new uint256[](airdropData.toSoulBoundTokenIds.length);
-        for (uint256 i = 0; i < airdropData.toSoulBoundTokenIds.length; ) {
-            address toWallet = _walletBySoulBoundTokenId[airdropData.toSoulBoundTokenIds[i]];
-            if (toWallet == address(0)) revert Errors.ToWalletIsZero();
-            uint256 newTokenId = IDerivativeNFTV1(derivativeNFT).split(
-                _tokenIdByPublishId[airdropData.tokenId],
-                airdropData.tokenId, 
-                toWallet,
-                airdropData.values[i]
-            );
-
-            newTokenIds[i] = newTokenId;
-
-            unchecked {
-                ++i;
-            }
-        }
-
-        emit Events.AirdropDerivativeNFT(
-            _publishIdByProjectData[airdropData.publishId].publication.projectId,
-            derivativeNFT,
-            airdropData.ownershipSoulBoundTokenId,
-            msg.sender,
-            airdropData.tokenId,
-            airdropData.values,
-            newTokenIds,
-            block.timestamp
+        PublishLogic.airdrop(
+            derivativeNFT, 
+            airdropData,
+            _walletBySoulBoundTokenId,
+            _tokenIdByPublishId,
+            _publishIdByProjectData
         );
+
     }
 
     function transferDerivativeNFT(
@@ -458,22 +414,24 @@ contract Manager is
         );
     }
 
-
     function setProfileImageURI(uint256 soulBoundTokenId, string calldata imageURI)
         external
         whenNotPaused
     {
         _validateCallerIsSoulBoundTokenOwnerOrDispathcher(soulBoundTokenId);
-        INFTDerivativeProtocolTokenV1(NDPT).setProfileImageURI(soulBoundTokenId, imageURI);
+        INFTDerivativeProtocolTokenV1(IModuleGlobals(MODULE_GLOBALS).getNDPT()).setProfileImageURI(soulBoundTokenId, imageURI);
     }
 
 //market
+
     function publishFixedPrice(DataTypes.Sale memory sale) external whenNotPaused onlyGov {
         uint24 saleId = _generateNextSaleId();
         _derivativeNFTSales[sale.derivativeNFT].add(saleId);
+        //TODO
         PriceManager.setFixedPrice(saleId, sale.price);
         InteractionLogic.publishFixedPrice(sale, markets, sales);
     }
+
 
     function removeSale(uint24 saleId_) external whenNotPaused onlyGov {
         InteractionLogic.removeSale(saleId_, sales);
@@ -522,10 +480,6 @@ contract Manager is
             );
     }
 
-    function getSoulBoundToken() external view returns (address) {
-        return NDPT;
-    }
-
     function getGenesisSoulBoundTokenIdByPublishId(uint256 publishId) external view returns(uint256) {
        return _genesisPublishIdByProjectId[publishId];   
     }
@@ -558,28 +512,22 @@ contract Manager is
         _setState(newState);
     }
 
-    function setNDPT(address ndpt) external override onlyGov {
-        if (ndpt == address(0)) revert Errors.InitParamsInvalid();
-         NDPT = ndpt;
-         _walletBySoulBoundTokenId[1] = ndpt;
-    }
-     
-    function setTreasury(address treasury) external override onlyGov {
-        if (treasury == address(0)) revert Errors.InitParamsInvalid();
-        TREASURY = treasury;
-    }
-
-    function setGlobalModule(address moduleGlobals) external override onlyGov {
-        if (moduleGlobals == address(0)) revert Errors.InitParamsInvalid();
-        MODULE_GLOBALS = moduleGlobals;
-    }
-
-    function setGovernance(address newGovernance) external override onlyGov {
+    function setGovernance(address newGovernance) external onlyGov {
         _setGovernance(newGovernance);
     }
 
     function getGovernance() external view returns(address) {
         return _governance;
+    }
+
+    function setGlobalModule(address moduleGlobals) external onlyGov { //onlyOwner
+        if (moduleGlobals == address(0)) revert Errors.InitParamsInvalid();
+        MODULE_GLOBALS = moduleGlobals;
+        _walletBySoulBoundTokenId[1] = IModuleGlobals(MODULE_GLOBALS).getTreasury();
+    }
+
+    function getGlobalModule() external view returns(address) {
+        return MODULE_GLOBALS;
     }
 
     function getDispatcher(uint256 soulBoundToken) external view override returns (address) {
@@ -591,7 +539,8 @@ contract Manager is
         override
         whenNotPaused
     {
-        address owner = IERC3525(NDPT).ownerOf(vars.soulBoundTokenId);
+        address _ndpt = IModuleGlobals(MODULE_GLOBALS).getNDPT();
+        address owner = IERC3525(_ndpt).ownerOf(vars.soulBoundTokenId);
         unchecked {
             _validateRecoveredAddress(
                 _calculateDigest(
@@ -612,27 +561,12 @@ contract Manager is
         _setDispatcher(vars.soulBoundTokenId, vars.dispatcher);
     }
 
-    function whitelistCollectModule(address collectModule, bool whitelist)
-        external
-        override
-        onlyGov
-    {
-        _collectModuleWhitelisted[collectModule] = whitelist;
-        emit Events.CollectModuleWhitelisted(collectModule, whitelist, block.timestamp);
-    }
-
-    function whitelistPublishModule(address publishModule, bool whitelist)
-        external
-        override
-        onlyGov
-    {
-        _publishModuleWhitelisted[publishModule] = whitelist;
-        emit Events.PublishModuleWhitelisted(publishModule, whitelist, block.timestamp);
-    }
+    
 
     //--- internal  ---//
     function  _validateCallerIsSoulBoundTokenOwnerOrDispathcher(uint256 soulBoundTokenId_) internal view {
-         if (IERC3525(NDPT).ownerOf(soulBoundTokenId_) == msg.sender || _dispatcherByProfile[soulBoundTokenId_] == msg.sender) {
+         address _ndpt = IModuleGlobals(MODULE_GLOBALS).getNDPT();
+         if (IERC3525(_ndpt).ownerOf(soulBoundTokenId_) == msg.sender || _dispatcherByProfile[soulBoundTokenId_] == msg.sender) {
             return;
          }
          revert Errors.NotProfileOwnerOrDispatcher();
@@ -640,6 +574,10 @@ contract Manager is
 
     function _validateCallerIsGovernance() internal view {
         if (msg.sender != _governance) revert Errors.NotGovernance();
+    }
+    
+    function _validateCallerIsOwner() internal view {
+        if (msg.sender != _owner) revert Errors.NotOwner();
     }
 
     function _setDispatcher(uint256 soulBoundTokenId, address dispatcher) internal {
@@ -726,7 +664,7 @@ contract Manager is
             keccak256(
                 abi.encode(
                     EIP712_DOMAIN_TYPEHASH,
-                    keccak256(bytes(IERC3525Metadata(NDPT).name())),
+                    keccak256(bytes(name)),
                     EIP712_REVISION_HASH,
                     block.chainid,
                     address(this)

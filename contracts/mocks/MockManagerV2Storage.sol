@@ -55,34 +55,30 @@ abstract contract MockManagerV2Storage {
     bytes32 internal constant PERMIT_VALUE_TYPEHASH =
         keccak256('PermitValue(address spender,uint256 tokenId,uint256 value,uint256 nonce,uint256 deadline)');
     
-
-    mapping(address => bool) internal _profileCreatorWhitelisted;
-    mapping(address => bool) internal _collectModuleWhitelisted;
-    mapping(address => bool) internal _publishModuleWhitelisted;
-
     mapping(uint256 => DataTypes.HubData) internal _hubInfos;
     mapping(uint256 => uint256) internal _hubBySoulBoundTokenId;
-    mapping(bytes32 => uint256) internal _projectNameHashByEventId;
+    mapping(bytes32 => uint256) internal _projectNameHashByEventId; //用于判断project name是否重复
     mapping(uint256 => DataTypes.ProjectData) internal _projectInfoByProjectId;
     mapping(uint256 => address) internal _derivativeNFTByProjectId;
-    mapping(address => uint256) internal _walletBySoulBoundTokenId;
-    
+    mapping(uint256 => address) internal _walletBySoulBoundTokenId;
     mapping(uint256 => address) internal _dispatcherByProfile;
-
     mapping(uint256 => mapping(uint256 => DataTypes.PublicationStruct)) internal _pubByIdByProfile;
-
     mapping(uint256 => uint256) internal _genesisPublishIdByProjectId;
 
-    address internal  _DNFT_IMPL;
-    address internal  _RECEIVER;
+    //publishId => publishData
+    mapping(uint256 => DataTypes.PublishData) internal _publishIdByProjectData;
+    
+    //tokenId => publishId
+    mapping(uint256 => uint256) internal _tokenIdByPublishId;
+
     address public  NDPT;
     address public  TREASURY;
+    address public MODULE_GLOBALS;
 
     uint256 internal _profileCounter;
     address internal _soulBoundToken;
     address internal _emergencyAdmin;
     address internal _governance;
-
 
     Counters.Counter internal _nextSaleId;
     Counters.Counter internal _nextTradeId;
@@ -107,12 +103,9 @@ abstract contract MockManagerV2Storage {
     mapping(address => EnumerableSetUpgradeable.UintSet) internal _derivativeNFTSales;
     mapping(address => EnumerableSetUpgradeable.AddressSet) internal _allowAddresses;
 
-    //publishId => publishData
-    mapping(uint256 => DataTypes.PublishData) internal _publishIdByProjectData;
-    //tokenId => publishId
-    mapping(uint256 => uint256) internal _tokenIdByPublishId;
 
-//V2
+    //MultiRecipient
+
     uint256 internal _additionalValue;
-    
+  
 }

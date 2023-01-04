@@ -11,6 +11,13 @@ import {DataTypes} from '../libraries/DataTypes.sol';
  * @notice This is the interface for the Voucher contract
  */
 interface IVoucher {
+
+    function mintNFT(
+        uint256 soulBoundTokenId,
+        uint256 amountNDP,
+        address account
+    ) external;
+
     /**
      * @notice generate a voucher card by voucherType,
      * 
@@ -39,11 +46,13 @@ interface IVoucher {
         address account
     ) external;
 
-    function getVoucher(uint256 voucherId) external view returns(DataTypes.VoucherData memory);
+    function getVoucherData(uint256 voucherId) external view returns(DataTypes.VoucherData memory);
 
     function setTokenUri(uint tokenId_, string memory uri_) external;
 
     function setBankTreasury(address bankTreasury) external;
+
+    // function setGlobalModule(address moduleGlobals) external;
     
     /**
      * @notice generate a voucher card by voucherType,

@@ -20,19 +20,14 @@ interface IManager {
        address governance_
     ) external;
    
-  /**
-   * @notice Sets the privileged governance role. This function can only be called by the current governance
-   * address.
-   *
-   * @param newGovernance The new governance address to set.
-   */
-  function setGovernance(address newGovernance) external;
+//   function setGovernance(address newGovernance) external;
     
-  function setNDPT(address ndpt) external;
+//   function setNDPT(address ndpt) external;
 
-  function setTreasury(address treasury) external;
+//   function setTreasury(address treasury) external;
 
-  function setGlobalModule(address moduleGlobals) external;
+//   function setGlobalModule(address moduleGlobals) external;
+  function getGlobalModule() external returns(address);
 
   function getGovernance() external returns(address);
 
@@ -105,22 +100,6 @@ interface IManager {
     
     function setProfileImageURI(uint256 soulBoundTokenId, string calldata imageURI) external;
 
-    /**
-     * @notice Returns the address of the SoulBundToken contract
-     *
-     * @return address The address of the SoulBundToken contract.
-     */
-    function getSoulBoundToken() external view returns (address);
-
-
-    /**
-     * @notice Returns True if in whitelist, otherwise false
-     *
-     * @param profileCreator The user wallet address.
-     * 
-     * @return bool where is in whitelist
-     */
-    function isWhitelistProfileCreator(address profileCreator) external view returns(bool);
 
     /**
      * @notice Returns the genesis soulBoundTokenId by publishId
@@ -134,15 +113,7 @@ interface IManager {
     function getReceiver() external view returns (address);
 
 
-    /**
-     * @notice Adds or removes a profile creator from the whitelist. This function can only be called by the current
-     * governance address.
-     *
-     * @param profileCreator The profile creator address to add or remove from the whitelist.
-     * @param whitelist Whether or not the profile creator should be whitelisted.
-     */
-    function whitelistProfileCreator(address profileCreator, bool whitelist) external;
-
+   
     function createHub(
         DataTypes.HubData memory hub
     ) external returns(uint256);
@@ -275,22 +246,5 @@ interface IManager {
         uint128 units
     )  external payable returns (uint256 amount, uint128 fee);
 
-    /**
-     * @notice Adds or removes a collect module from the whitelist. This function can only be called by the current
-     * governance address.
-     *
-     * @param collectModule The collect module contract address to add or remove from the whitelist.
-     * @param whitelist Whether or not the collect module should be whitelisted.
-     */
-    function whitelistCollectModule(address collectModule, bool whitelist) external;
-
-    /**
-     * @notice Adds or removes a publish module from the whitelist. This function can only be called by the current
-     * governance address.
-     *
-     * @param publishModule The publish module contract address to add or remove from the whitelist.
-     * @param whitelist Whether or not the publish module should be whitelisted.
-     */
-    function whitelistPublishModule(address publishModule, bool whitelist) external;
-
+   
 }

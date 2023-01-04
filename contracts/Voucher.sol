@@ -10,6 +10,8 @@ import "@openzeppelin/contracts-upgradeable/access/AccessControlUpgradeable.sol"
 import "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
+import "@solvprotocol/erc-3525/contracts/IERC3525.sol";
+
 import {IERC20Upgradeable} from "@openzeppelin/contracts-upgradeable/token/ERC20/IERC20Upgradeable.sol";
 import {SafeERC20Upgradeable} from "@openzeppelin/contracts-upgradeable/token/ERC20/utils/SafeERC20Upgradeable.sol";
 import {StringsUpgradeable} from "@openzeppelin/contracts-upgradeable/utils/StringsUpgradeable.sol";
@@ -20,7 +22,12 @@ import {Events} from "./libraries/Events.sol";
 import {DataTypes} from './libraries/DataTypes.sol';
 import "./libraries/EthAddressLib.sol";
 import "./storage/VoucherStorage.sol";
- 
+import {IModuleGlobals} from "./interfaces/IModuleGlobals.sol";
+import {IManager} from "./interfaces/IManager.sol";
+import "./interfaces/INFTDerivativeProtocolTokenV1.sol";
+
+import {IBankTreasury} from './interfaces/IBankTreasury.sol';
+
 /**
  *  @title Voucher
  *  @author bitsoul Protocol
@@ -47,9 +54,6 @@ contract Voucher is
 
     string private _uriBase; //"https://api.bitsoul.xyz/v1/metadata/"
 
-    // solhint-disable-next-line var-name-mixedcase
-    address internal _BANKTREASURY;
-    
     modifier onlyBankTreasury() {
         _validateCallerIsBankTreasury();
         _;
@@ -70,7 +74,6 @@ contract Voucher is
         _setURIPrefix(uriBase);
         name = "The Voucher of Bitsoul";
         symbol = "VOB";
-
     }
 
     function pause() public onlyRole(PAUSER_ROLE) {
@@ -86,6 +89,60 @@ contract Voucher is
     ) public view override(AccessControlUpgradeable, ERC1155Upgradeable) returns (bool) {
         return super.supportsInterface(interfaceId);
     }
+    
+    function mintNFT(
+        uint256 soulBoundTokenId,
+        uint256 amountNDP,
+        address account
+    ) 
+        external returns(uint256)
+    {
+        // only called by owner of soulBoundTokenId
+        address _manager = IModuleGlobals(MODULE_GLOBALS).getManager();
+
+        if (msg.sender != IManager(_manager).getWalletBySoulBoundTokenId(soulBoundTokenId) ) {
+            revert Errors.Unauthorized();
+        }
+
+        uint256 _tokenId = _generateNextVoucherId();
+
+        address _ndpt =  IModuleGlobals(MODULE_GLOBALS).getNDPT();
+        address _bankTreasury = IModuleGlobals(MODULE_GLOBALS).getTreasury();
+
+        uint256 treasuryOfSoulBoundTokenId = IBankTreasury(_bankTreasury).getSoulBoundTokenId();
+        
+        //must approve this contract first 
+        IERC3525(_ndpt).transferFrom(soulBoundTokenId, treasuryOfSoulBoundTokenId, amountNDP);
+
+        _mint(account, _tokenId, amountNDP, "");
+
+        _vouchers[_tokenId] = DataTypes.VoucherData({
+            vouchType: DataTypes.VoucherParValueType.ZEROPOINT,
+            tokenId: _tokenId,
+            etherValue: 0,
+            ndptValue: amountNDP,
+            generateTimestamp: block.timestamp,
+            endTimestamp: 0, 
+            isUsed: false,
+            soulBoundTokenId: soulBoundTokenId,
+            usedTimestamp: 0
+        });
+         
+        emit Events.GenerateVoucher(
+             DataTypes.VoucherParValueType.ZEROPOINT,
+             _tokenId,
+             0,
+             amountNDP,
+             block.timestamp,
+             0
+        );
+
+       // Signals frozen metadata to OpenSea; emitted in minting functions
+        emit Events.PermanentURI(string(abi.encodePacked(_uriBase, StringsUpgradeable.toString(_tokenId), ".json")), _tokenId);
+        
+        //owner can use setTokenUri to set token uri 
+        return _tokenId;
+    }
 
     function generateVoucher(
         DataTypes.VoucherParValueType voucherType,
@@ -98,26 +155,28 @@ contract Voucher is
         uint256 etherValue;
         uint256 amount;
 
-        if (voucherType == DataTypes.VoucherParValueType.ZEROPOINTONE){ //0
+        if (voucherType == DataTypes.VoucherParValueType.ZEROPOINTONE){ //1
             etherValue = 0.1 ether;
             amount = 100;
         } 
-        else if (voucherType == DataTypes.VoucherParValueType.ZEROPOINTTWO){ //1
+        else if (voucherType == DataTypes.VoucherParValueType.ZEROPOINTTWO){ //2
             etherValue = 0.2 ether;
             amount = 200;
         } 
-        else if (voucherType == DataTypes.VoucherParValueType.ZEROPOINTTHREE){//2
+        else if (voucherType == DataTypes.VoucherParValueType.ZEROPOINTTHREE){//3
             etherValue = 0.3 ether;
             amount = 300;
         } 
-        else if (voucherType == DataTypes.VoucherParValueType.ZEROPOINTFOUR){//3
+        else if (voucherType == DataTypes.VoucherParValueType.ZEROPOINTFOUR){//4
             etherValue = 0.4 ether;
             amount = 400;
         } 
-        else if (voucherType == DataTypes.VoucherParValueType.ZEROPOINTFIVE) {//4
+        else if (voucherType == DataTypes.VoucherParValueType.ZEROPOINTFIVE) {//5
             etherValue = 0.5 ether;
             amount = 500;
-        } 
+        }  else {
+            revert Errors.NotAllowed();
+        }
 
         if (amount == 0) revert Errors.InvidVoucherParValueType();
 
@@ -187,7 +246,9 @@ contract Voucher is
             else if (voucherTypes[i] == DataTypes.VoucherParValueType.ZEROPOINTFIVE) {
                 etherValue = 0.5 ether;
                 amount = 500;
-            } 
+            }   else {
+                revert Errors.NotAllowed();
+            }
 
             if (amount == 0) revert Errors.InvidVoucherParValueType();
 
@@ -199,7 +260,7 @@ contract Voucher is
         _mintBatch(account, ids, amounts, "");
     }
 
-    function getVoucher(uint256 voucherId) external view returns(DataTypes.VoucherData memory) {
+    function getVoucherData(uint256 voucherId) external view returns(DataTypes.VoucherData memory) {
         return _vouchers[voucherId];
     }
 
@@ -211,6 +272,7 @@ contract Voucher is
         }
          DataTypes.VoucherData storage voucherData = _vouchers[voucherId];
          if (voucherData.isUsed) revert Errors.VoucherIsUsed();
+         if (voucherData.endTimestamp !=0 && voucherData.endTimestamp < block.timestamp) revert Errors.VoucherExpired();
          voucherData.isUsed = true;
          voucherData.soulBoundTokenId = soulBoundTokenId;
          voucherData.usedTimestamp = block.timestamp;
@@ -296,8 +358,9 @@ contract Voucher is
         _setURIPrefix(_newBaseMetadataURI);
     }
 
-    function setBankTreasury(address bankTreasury) external  onlyOwner{
-        _BANKTREASURY = bankTreasury;
+    function setGlobalModule(address moduleGlobals) external onlyOwner {
+        if (moduleGlobals == address(0)) revert Errors.InitParamsInvalid();
+        MODULE_GLOBALS = moduleGlobals;
     }
 
     function _setURIPrefix(string memory _newBaseMetadataURI) internal {
@@ -307,7 +370,7 @@ contract Voucher is
     function setTokenUri(uint256 tokenId_, string memory uri_) external onlyOwner {
         if(bytes(_uris[tokenId_]).length > 0)  revert Errors.UpdateURITwice();
         _uris[tokenId_] = uri_;
-     }
+    }
 
     function _generateNextVoucherId() internal returns (uint256) {
         _nextVoucherId.increment();
@@ -315,6 +378,7 @@ contract Voucher is
     }
 
     function _validateCallerIsBankTreasury() internal view {
-        if (msg.sender != _BANKTREASURY) revert Errors.NotBankTreasury();
+        address _bankTreasury = IModuleGlobals(MODULE_GLOBALS).getTreasury();
+        if (msg.sender != _bankTreasury) revert Errors.NotBankTreasury();
     }
 }

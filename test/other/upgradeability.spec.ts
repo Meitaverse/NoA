@@ -73,7 +73,6 @@ makeSuiteCleanRoom('Upgradeability', function () {
       managerV2.connect(user).setAdditionalValue(valueToSet)
     ).to.not.be.reverted;
 
-    //  expect(await managerV2.connect(user).getGovernance()).to.eq(governanceAddress);
      expect(await managerV2.connect(user).getAdditionalValue()).to.eq(valueToSet);
      expect(await managerV2.connect(user).version()).to.eq(2);
 

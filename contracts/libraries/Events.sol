@@ -96,6 +96,13 @@ library Events {
         address indexed newTreasury,
         uint256 timestamp
     );
+    
+    event ModuleGlobalsVoucherSet(
+        address indexed prevVoucher,
+        address indexed newVoucher,
+        uint256 timestamp
+    );
+
     event ModuleGlobalsManagerSet(
         address indexed prevManager,
         address indexed newManager,
@@ -128,21 +135,6 @@ library Events {
         uint256 timestamp
     );
 
-
-    /**
-     * @notice Emitted when a currency is added to or removed from the ModuleGlobals whitelist.
-     *
-     * @param currency The currency address.
-     * @param prevWhitelisted Whether or not the currency was previously whitelisted.
-     * @param whitelisted Whether or not the currency is whitelisted.
-     * @param timestamp The current block timestamp.
-     */
-    event ModuleGlobalsCurrencyWhitelisted(
-        address indexed currency,
-        bool indexed prevWhitelisted,
-        bool indexed whitelisted,
-        uint256 timestamp
-    );
 
     /**
      * @notice Emitted when a module inheriting from the `FeeModuleBase` is constructed.
@@ -205,6 +197,12 @@ library Events {
      */
     event ProfileCreatorWhitelisted(
         address indexed profileCreator,
+        bool indexed whitelisted,
+        uint256 timestamp
+    );
+
+    event HubCreatorWhitelisted(
+        uint256 indexed soulBoundTokenId,
         bool indexed whitelisted,
         uint256 timestamp
     );
@@ -313,7 +311,6 @@ library Events {
         uint256 projectId,
         address derivativeNFT,
         uint256 fromSoulBoundTokenId,
-        // address collector,
         uint256 toSoulBoundTokenId,
         uint256 tokenId,
         uint256 value,
@@ -339,9 +336,6 @@ library Events {
         uint256 value,
         uint256 timestamp
     );
-
-
-
 
     event TransferDerivativeNFT(
         uint256 fromSoulBoundTokenId,
@@ -416,7 +410,6 @@ library Events {
         uint128 price,
         uint128 tradedUnits,
         uint256 tradedAmount,
-        // uint8 feePayType,
         uint128 fee
     );
 
@@ -461,6 +454,18 @@ library Events {
         bool indexed whitelisted,
         uint256 timestamp
     );
+    /**
+     * @dev Emitted when a template is added to or removed from the whitelist.
+     *
+     * @param template The address of the collect module.
+     * @param whitelisted Whether or not the collect module is being added to the whitelist.
+     * @param timestamp The current block timestamp.
+     */
+    event TemplateWhitelisted(
+        address indexed template,
+        bool indexed whitelisted,
+        uint256 timestamp
+    );
 
     /**
      * @dev Emitted when a publish module is added to or removed from the whitelist.
@@ -479,6 +484,7 @@ library Events {
         DataTypes.Publication publication,
         uint256 publishId,
         uint256 previousPublishId,
+        uint256 publishTaxAmount,
         uint256 timestamp
     );
    
@@ -512,5 +518,14 @@ library Events {
         uint16[5] indexed newRoyaltyPoints,
         uint256 timestamp
     );
+
+    event  FeesForCollect (
+        uint256 collectorSoulBoundTokenId,
+        uint256 publishId, 
+        uint256 treasuryAmount, 
+        uint256 genesisAmount,
+        uint256 adjustedAmount
+    );
+    
 }
 

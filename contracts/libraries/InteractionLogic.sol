@@ -30,7 +30,7 @@ import "./SafeMathUpgradeable128.sol";
 library InteractionLogic {
     using Strings for uint256;
 
-
+    
     function createHub(
         uint256 hubId,
         DataTypes.HubData memory hub,
@@ -46,7 +46,7 @@ library InteractionLogic {
              image: hub.image
         });
 
-        //TODO
+        //TODO hubModule
 
         emit Events.CreateHub(
             hubId, 
@@ -120,7 +120,6 @@ library InteractionLogic {
         return derivativeNFT;
     } 
     
-  
     using SafeMathUpgradeable for uint256;
     using EnumerableSetUpgradeable for EnumerableSetUpgradeable.UintSet;
     using EnumerableSetUpgradeable for EnumerableSetUpgradeable.AddressSet;

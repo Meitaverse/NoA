@@ -49,7 +49,7 @@ abstract contract BaseFeeCollectModule is
         internal _dataByPublicationByProfile;
   
 
-    constructor(address hub, address moduleGlobals) ModuleBase(hub) FeeModuleBase(moduleGlobals) {}
+    constructor(address manager, address moduleGlobals) ModuleBase(manager) FeeModuleBase(moduleGlobals) {}
  
     /**
      * @dev Processes a collect by:

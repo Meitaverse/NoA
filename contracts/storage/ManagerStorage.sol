@@ -55,10 +55,7 @@ abstract contract ManagerStorage {
     bytes32 internal constant PERMIT_VALUE_TYPEHASH =
         keccak256('PermitValue(address spender,uint256 tokenId,uint256 value,uint256 nonce,uint256 deadline)');
     
-
-    mapping(address => bool) internal _profileCreatorWhitelisted;
-    mapping(address => bool) internal _collectModuleWhitelisted;
-    mapping(address => bool) internal _publishModuleWhitelisted;
+    
     mapping(uint256 => DataTypes.HubData) internal _hubInfos;
     mapping(uint256 => uint256) internal _hubBySoulBoundTokenId;
     mapping(bytes32 => uint256) internal _projectNameHashByEventId; //用于判断project name是否重复
@@ -75,14 +72,15 @@ abstract contract ManagerStorage {
     //tokenId => publishId
     mapping(uint256 => uint256) internal _tokenIdByPublishId;
 
-    address public  NDPT;
-    address public  TREASURY;
-    address public MODULE_GLOBALS;
+    // address public  NDPT;
+    // address public  TREASURY;
+    address internal MODULE_GLOBALS;
+    address internal _governance;
 
     uint256 internal _profileCounter;
     address internal _soulBoundToken;
     address internal _emergencyAdmin;
-    address internal _governance;
+    address internal _owner;
 
     Counters.Counter internal _nextSaleId;
     Counters.Counter internal _nextTradeId;

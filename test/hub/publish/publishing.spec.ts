@@ -26,6 +26,7 @@ import {
   NickName,
   governance,
   manager,
+  moduleGlobals,
   makeSuiteCleanRoom,
   MAX_PROFILE_IMAGE_URI_LENGTH,
   mockModuleData,
@@ -51,9 +52,6 @@ import {
 makeSuiteCleanRoom('Publishing', function () {
     context('Scenarios', function () {
         beforeEach(async function () {
-            await expect(
-                manager.connect(governance).whitelistProfileCreator(userAddress, true)
-              ).to.not.be.reverted;
 
               expect(
                 await createProfileReturningTokenId({
@@ -68,6 +66,7 @@ makeSuiteCleanRoom('Publishing', function () {
 
             expect(
                 await createHubReturningHubId({
+                  sender: user,
                   hub: {
                     creator: userAddress,
                     soulBoundTokenId: SECOND_PROFILE_ID,
@@ -231,6 +230,9 @@ makeSuiteCleanRoom('Publishing', function () {
                     FIRST_PUBLISH_ID
                )
             ).to.not.be.reverted;
+
+            expect(await publishModule.getTemplate(FIRST_PROJECT_ID)).to.eq(template.address);
+
             // await manager.connect(user).publish(
             //             FIRST_PUBLISH_ID
             // );
@@ -244,8 +246,8 @@ makeSuiteCleanRoom('Publishing', function () {
             expect((await ndptContract.balanceOfNDPT(SECOND_PROFILE_ID)).toNumber()).to.eq(100);
 
         });
-/*
-        it('User should be able to publish 11 dNFTs to himself', async function () {
+        
+        it('User should fail to publish a dNFT when template is not in whitelisted', async function () {
             const publishModuleinitData = abiCoder.encode(
                 ['address', 'uint256'],
                 [template.address, DEFAULT_TEMPLATE_NUMBER],
@@ -256,17 +258,21 @@ makeSuiteCleanRoom('Publishing', function () {
                 [SECOND_PROFILE_ID, GENESIS_FEE_BPS, DEFAULT_COLLECT_PRICE, 50]
             );
             
-            //mint 1000Value to user
-            await manager.connect(governance).mintNDPTValue(SECOND_PROFILE_ID, 1000);
+            //mint 100Value to user
+            await manager.connect(governance).mintNDPTValue(SECOND_PROFILE_ID, 100);
+
+            expect((await ndptContract.balanceOfNDPT(SECOND_PROFILE_ID)).toNumber()).to.eq(100);
             
-            expect((await ndptContract.balanceOfNDPT(SECOND_PROFILE_ID)).toNumber()).to.eq(1000);
-            
+            await expect(
+                moduleGlobals.connect(governance).whitelistTemplate(template.address, false)
+              ).to.not.be.reverted;    
+
             await expect(
                 manager.connect(user).prePublish({
                    soulBoundTokenId: SECOND_PROFILE_ID,
                    hubId: FIRST_HUB_ID,
                    projectId: FIRST_PROJECT_ID,
-                   amount: 11,
+                   amount: 1,
                    salePrice: DEFAULT_COLLECT_PRICE,
                    royaltyBasisPoints: 50,                   
                    name: "Dollar",
@@ -278,18 +284,12 @@ makeSuiteCleanRoom('Publishing', function () {
                    publishModule: publishModule.address,
                    publishModuleInitData: publishModuleinitData,
                })
-           ).to.not.be.reverted;
+           ).to.be.revertedWith(ERRORS.Template_Not_in_Whitelisted);
 
-            const dNFTTokenId = await manager.connect(user).callStatic.publish(FIRST_PUBLISH_ID);
-            await expect(manager.connect(user).publish(FIRST_PUBLISH_ID)).to.not.be.reverted;
-            expect(dNFTTokenId).to.eq(FIRST_DNFT_TOKEN_ID);  
-
-            //ownerOf
-            
-            expect((await ndptContract.balanceOfNDPT(SECOND_PROFILE_ID)).toNumber()).to.eq(0);
-
+           
+            expect(await moduleGlobals.isWhitelistTemplate(template.address)).to.eq(false);
         });
-        */
+
     });
 });
 

@@ -9,6 +9,7 @@ library Errors {
   error InsufficientBalance();
   error ZeroValue();
   error NotAllowed();
+  error NotOwner();
   error Unauthorized();
   error Locked();
   error EventIdNotExists();
@@ -66,10 +67,12 @@ library Errors {
   error SignatureExpired();
   error SignatureInvalid();
   error ProfileCreatorNotWhitelisted();
+  error HubCreatorNotWhitelisted();
   error CallerNotWhitelistedModule();
   error CollectModuleNotWhitelisted();
   error FollowModuleNotWhitelisted();
   error PublishModuleNotWhitelisted();
+  error TemplateNotWhitelisted();
   error PublishWithZeroNDPT();
   error NotSameHub();
   error InsufficientAllowance();
@@ -101,6 +104,7 @@ library Errors {
   error InvidVoucherParValueType();
   error VoucherNotExists();
   error VoucherIsUsed();
+  error VoucherExpired();
   error NotOwnerVoucher();
   error ToWalletIsZero();
   error AirdropTotalExceed();

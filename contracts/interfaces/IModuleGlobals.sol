@@ -27,6 +27,9 @@ interface IModuleGlobals {
      */
     function setTreasury(address newTreasury) external;
 
+
+    function setVoucher(address newVoucher) external;
+
     /**
      * @notice Sets the treasury fee. This function can only be called by governance.
      *
@@ -40,20 +43,18 @@ interface IModuleGlobals {
      * @param currency The currency to add or remove from the whitelist.
      * @param toWhitelist Whether to add or remove the currency from the whitelist.
      */
-    function whitelistCurrency(address currency, bool toWhitelist) external;
+    // function whitelistCurrency(address currency, bool toWhitelist) external;
 
     /// ************************
     /// *****VIEW FUNCTIONS*****
     /// ************************
 
     /**
-     * @notice Returns whether a currency is whitelisted.
+     * @notice Returns the manager address.
      *
-     * @param currency The currency to query the whitelist for.
-     *
-     * @return bool True if the queried currency is whitelisted, false otherwise.
+     * @return address The manager address.
      */
-    function isCurrencyWhitelisted(address currency) external view returns (bool);
+     function getManager() external view returns (address);
 
     /**
      * @notice Returns the governance address.
@@ -68,6 +69,8 @@ interface IModuleGlobals {
      * @return address The treasury address.
      */
     function getTreasury() external view returns (address);
+
+    function getVoucher() external view  returns (address);
 
     /**
      * @notice Returns the NDPT address.
@@ -95,5 +98,55 @@ interface IModuleGlobals {
     function getPublishCurrencyTax() external returns(uint256) ;
 
     function setPublishRoyalty(uint256 publishRoyalty) external;
+
+    /**
+     * @notice Adds or removes a profile creator from the whitelist. This function can only be called by the current
+     * governance address.
+     *
+     * @param profileCreator The profile creator address to add or remove from the whitelist.
+     * @param whitelist Whether or not the profile creator should be whitelisted.
+     */
+    function whitelistProfileCreator(address profileCreator, bool whitelist) external;
+
+
+    function isWhitelistProfileCreator(address profileCreator) external view returns (bool);
+
+     /**
+     * @notice Adds or removes a collect module from the whitelist. This function can only be called by the current
+     * governance address.
+     *
+     * @param collectModule The collect module contract address to add or remove from the whitelist.
+     * @param whitelist Whether or not the collect module should be whitelisted.
+     */
+    function whitelistCollectModule(address collectModule, bool whitelist) external;
+
+    function isWhitelistCollectModule(address collectModule) external view returns (bool);
+
+    /**
+     * @notice Adds or removes a template from the whitelist. This function can only be called by the current
+     * governance address.
+     *
+     * @param template The collect module contract address to add or remove from the whitelist.
+     * @param whitelist Whether or not the collect module should be whitelisted.
+     */
+    function whitelistTemplate(address template, bool whitelist) external;
+
+    function isWhitelistTemplate(address template) external view returns (bool);
+
+    function whitelistHubCreator(uint256 soulBoundTokenId, bool whitelist) external;
+
+    function isWhitelistHubCreator(uint256 soulBoundTokenId) external view returns (bool);
+
+
+    /**
+     * @notice Adds or removes a publish module from the whitelist. This function can only be called by the current
+     * governance address.
+     *
+     * @param publishModule The publish module contract address to add or remove from the whitelist.
+     * @param whitelist Whether or not the publish module should be whitelisted.
+     */
+    function whitelistPublishModule(address publishModule, bool whitelist) external;
+
+    function isWhitelistPublishModule(address publishModule) external view returns (bool);
 
 }

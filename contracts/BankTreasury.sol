@@ -22,7 +22,7 @@ import {IVoucher} from "./interfaces/IVoucher.sol";
 import "./libraries/EthAddressLib.sol";
 import "./storage/BankTreasuryStorage.sol";
 import {INFTDerivativeProtocolTokenV1} from "./interfaces/INFTDerivativeProtocolTokenV1.sol";
-
+import {IModuleGlobals} from "./interfaces/IModuleGlobals.sol";
 
 /**
  *  @title Bank Treasury
@@ -99,15 +99,10 @@ contract BankTreasury is
     }
 
     /// @custom:oz-upgrades-unsafe-allow constructor
-    constructor() initializer {
-
-    }
+    constructor() initializer {}
 
     function initialize(
-        address manager,
         address governance,
-        address ndpt,
-        address voucher,
         uint256 soulBoundTokenId,
         address[] memory signers,
         uint256 _numConfirmationsRequired
@@ -120,16 +115,8 @@ contract BankTreasury is
         _setupRole(PAUSER_ROLE, msg.sender);
         _setupRole(UPGRADER_ROLE, msg.sender);
 
-        if (manager == address(0)) revert Errors.InitParamsInvalid();
-        _MANAGER = manager;
-
         if (governance == address(0)) revert Errors.InitParamsInvalid();
-        if (ndpt == address(0)) revert Errors.InitParamsInvalid();
-        if (voucher == address(0)) revert Errors.InitParamsInvalid();
-    
         _setGovernance(governance);
-        _setNDPT(ndpt);
-        _setVoucher(voucher);
 
         if (soulBoundTokenId == 0) revert Errors.SoulBoundTokenIdNotExists();
         _soulBoundTokenId = soulBoundTokenId;
@@ -152,40 +139,27 @@ contract BankTreasury is
         name = "BankTreasury";
     }
 
-    function getManager() external view returns(address) {
-        return _MANAGER;
+    function setGlobalModule(address moduleGlobals) external onlyGov {
+        if (moduleGlobals == address(0)) revert Errors.InitParamsInvalid();
+        MODULE_GLOBALS = moduleGlobals;
     }
-
-    function setGovernance(address newGovernance) external override onlyGov {
-        _setGovernance(newGovernance);
+    
+    function getManager() external view returns(address) {
+        return IModuleGlobals(MODULE_GLOBALS).getManager();
     }
 
     function getGovernance() external view returns (address) {
         return _governance;
     }
 
-    function setNDPT(address newNDPT) external override onlyGov {
-        _setNDPT(newNDPT);
-    }
-
-    function _setNDPT(address newNDPT) internal {
-        _NDPT = newNDPT;
-    }
-
-    function setVoucher(address newVoucher) external override onlyGov {
-        _setVoucher(newVoucher);
-    }
-
-    function _setVoucher(address newVoucher) internal {
-        _Voucher = newVoucher;
-    }
-
     function getVoucher() external view returns (address) {
-        return _Voucher;
+        address _voucher = IModuleGlobals(MODULE_GLOBALS).getVoucher();
+        return _voucher;
     }
 
     function getNDPT() external view returns (address) {
-        return _NDPT;
+        address _ndpt = IModuleGlobals(MODULE_GLOBALS).getNDPT();
+        return _ndpt;
     }
 
     function pause() public onlyRole(PAUSER_ROLE) {
@@ -264,6 +238,7 @@ contract BankTreasury is
     function executeTransaction(
         uint256 _txIndex
     ) public whenNotPaused onlySigner txExists(_txIndex) notExecuted(_txIndex) {
+        address _ndpt = IModuleGlobals(MODULE_GLOBALS).getNDPT();
         DataTypes.Transaction storage transaction = _transactions[_txIndex];
 
         if (transaction.numConfirmations < _numConfirmationsRequired) revert Errors.CannotExecuteTx();
@@ -284,7 +259,7 @@ contract BankTreasury is
             );
 
         } else if (transaction.currencyType == DataTypes.CurrencyType.ERC3525) {
-            INFTDerivativeProtocolTokenV1(_NDPT).transferValue(
+            INFTDerivativeProtocolTokenV1(_ndpt).transferValue(
                 transaction.fromTokenId,
                 transaction.toTokenId,
                 transaction.value
@@ -356,7 +331,8 @@ contract BankTreasury is
         external
         whenNotPaused
     {
-        INFTDerivativeProtocolTokenV1(_NDPT).transferValue(_soulBoundTokenId, toSoulBoundTokenId, amount);
+        address _ndpt = IModuleGlobals(MODULE_GLOBALS).getNDPT();
+        INFTDerivativeProtocolTokenV1(_ndpt).transferValue(_soulBoundTokenId, toSoulBoundTokenId, amount);
         emit Events.WithdrawERC3525(_soulBoundTokenId, toSoulBoundTokenId, amount);
     }
 
@@ -370,6 +346,7 @@ contract BankTreasury is
         return ndptAmount.mul(_exchangePrice);
     }
 
+
     function exchangeNDPTByEth(
         uint256 soulBoundTokenId,
         uint256 amount,
@@ -379,6 +356,13 @@ contract BankTreasury is
         payable
         whenNotPaused
     {
+        // only called by owner of soulBoundTokenId
+        address _manager = IModuleGlobals(MODULE_GLOBALS).getManager();
+
+        if (msg.sender != IManager(_manager).getWalletBySoulBoundTokenId(soulBoundTokenId) ) {
+            revert Errors.Unauthorized();
+        }
+
         if (_exchangePrice == 0) revert Errors.ExchangePriceIsZero();
         if (amount == 0) revert Errors.AmountIsZero();
         address exchangeWallet = msg.sender;
@@ -402,8 +386,8 @@ contract BankTreasury is
         }
 
         if (msg.value < _exchangePrice.mul(amount)) revert Errors.PaymentError();
-
-        INFTDerivativeProtocolTokenV1(_NDPT).transferValue(_soulBoundTokenId, soulBoundTokenId, amount);
+        address _ndpt = IModuleGlobals(MODULE_GLOBALS).getNDPT();
+        INFTDerivativeProtocolTokenV1(_ndpt).transferValue(_soulBoundTokenId, soulBoundTokenId, amount);
     }
 
     function exchangeEthByNDPT(
@@ -415,6 +399,13 @@ contract BankTreasury is
         payable
         whenNotPaused
     {
+        // only called by owner of soulBoundTokenId
+        address _manager = IModuleGlobals(MODULE_GLOBALS).getManager();
+
+        if (msg.sender != IManager(_manager).getWalletBySoulBoundTokenId(soulBoundTokenId)) {
+            revert Errors.Unauthorized();
+        }
+
         if (_exchangePrice == 0) revert Errors.ExchangePriceIsZero();
         if (ndptAmount == 0) revert Errors.AmountIsZero();
         if (soulBoundTokenId ==0) revert Errors.SoulBoundTokenIdNotExists();
@@ -438,8 +429,8 @@ contract BankTreasury is
                 sig
             );
         }
-
-        INFTDerivativeProtocolTokenV1(_NDPT).transferValue(soulBoundTokenId, _soulBoundTokenId, ndptAmount);
+        address _ndpt = IModuleGlobals(MODULE_GLOBALS).getNDPT();
+        INFTDerivativeProtocolTokenV1(_ndpt).transferValue(soulBoundTokenId, _soulBoundTokenId, ndptAmount);
 
         //transfer eth to msg.sender
         uint256 ethAmount = ndptAmount.mul(_exchangePrice);
@@ -456,30 +447,29 @@ contract BankTreasury is
         external
         whenNotPaused
     {
+        address _ndpt = IModuleGlobals(MODULE_GLOBALS).getNDPT();
+        address _voucher = IModuleGlobals(MODULE_GLOBALS).getVoucher();
         //isvalid
-        if (IERC3525(_NDPT).ownerOf(soulBoundTokenId) != msg.sender ) {
+        if (IERC3525(_ndpt).ownerOf(soulBoundTokenId) != msg.sender ) {
             revert Errors.Unauthorized();
         }
 
-       DataTypes.VoucherData memory voucherData =  IVoucher(_Voucher).getVoucher(voucherId);
+       DataTypes.VoucherData memory voucherData =  IVoucher(_voucher).getVoucherData(voucherId);
        if (voucherData.tokenId == 0) revert Errors.VoucherNotExists();
        if (voucherData.isUsed) revert Errors.VoucherIsUsed();
 
-       INFTDerivativeProtocolTokenV1(_NDPT).transferValue(_soulBoundTokenId, soulBoundTokenId, voucherData.ndptValue);
-       IVoucher(_Voucher).useVoucher(msg.sender, voucherId, soulBoundTokenId); 
+       INFTDerivativeProtocolTokenV1(_ndpt).transferValue(_soulBoundTokenId, soulBoundTokenId, voucherData.ndptValue);
+       IVoucher(_voucher).useVoucher(msg.sender, voucherId, soulBoundTokenId); 
 
     }
-
+    
     function setExchangePrice(uint256 exchangePrice_) external onlyGov {
         _exchangePrice = exchangePrice_;
     }
 
     //--- internal  ---//
-
     function _setGovernance(address newGovernance) internal {
-        address prevGovernance = _governance;
         _governance = newGovernance;
-        emit Events.GovernanceSet(msg.sender, prevGovernance, newGovernance, block.timestamp);
     }
 
     function _validateCallerIsGovernance() internal view {
@@ -487,7 +477,8 @@ contract BankTreasury is
     }
 
     function _validateCallerIsManager() internal view {
-        if (msg.sender != _MANAGER) revert Errors.NotManager();
+       address _manager = IModuleGlobals(MODULE_GLOBALS).getManager();
+        if (msg.sender != _manager) revert Errors.NotManager();
     }
 
     function _validateCallerIsSigner() internal view {
@@ -514,32 +505,6 @@ contract BankTreasury is
     function getSoulBoundTokenId() external view returns (uint256) {
         return _soulBoundTokenId;
     }
-
-    // function onERC1155Received(
-    //     address operator, //操作者
-    //     address from, //上一个owner
-    //     uint256 id,
-    //     uint256 value,
-    //     bytes calldata data
-    // ) external returns (bytes4) {
-    //     //TODO mint NDPT to {from} and burn {id}
-    //     emit Events.ERC1155Received(operator, from, id, value, data, gasleft());
-    //     return this.onERC1155Received.selector;
-    // }
-
-    // function onERC1155BatchReceived(
-    //     address operator,
-    //     address from,
-    //     uint256[] calldata ids,
-    //     uint256[] calldata values,
-    //     bytes calldata data
-    // ) external returns (bytes4) {
-    //     //TODO mint NDPT to {from} and burn {id}
-    //     emit Events.ERC1155BatchReceived(operator, from, ids, values, data, gasleft());
-
-    //     return this.onERC1155BatchReceived.selector;
-    // }
-
 
     function getDomainSeparator() external view override returns (bytes32) {
         return _calculateDomainSeparator();
