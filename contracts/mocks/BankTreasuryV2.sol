@@ -10,9 +10,6 @@ import "@openzeppelin/contracts/utils/introspection/IERC165.sol";
 import "@solvprotocol/erc-3525/contracts/IERC3525Receiver.sol";
 import "@solvprotocol/erc-3525/contracts/IERC3525.sol";
 
-import "@openzeppelin/contracts-upgradeable/token/ERC1155/IERC1155ReceiverUpgradeable.sol";
-import "@openzeppelin/contracts-upgradeable/token/ERC1155/IERC1155Upgradeable.sol";
-
 import {IERC20Upgradeable} from "@openzeppelin/contracts-upgradeable/token/ERC20/IERC20Upgradeable.sol";
 import {SafeERC20Upgradeable} from "@openzeppelin/contracts-upgradeable/token/ERC20/utils/SafeERC20Upgradeable.sol";
 import {SafeMathUpgradeable} from "@openzeppelin/contracts-upgradeable/utils/math/SafeMathUpgradeable.sol";
@@ -41,7 +38,6 @@ contract BankTreasuryV2 is
     IERC3525Receiver,
     PausableUpgradeable,
     AccessControlUpgradeable,
-    IERC1155ReceiverUpgradeable,
     UUPSUpgradeable
 {
     using SafeERC20Upgradeable for IERC20Upgradeable;
@@ -139,7 +135,7 @@ contract BankTreasuryV2 is
 
     function supportsInterface(
         bytes4 interfaceId
-    ) public view virtual override(AccessControlUpgradeable, IERC165, IERC165Upgradeable) returns (bool) {
+    ) public view virtual override(AccessControlUpgradeable, IERC165) returns (bool) {
         return
             interfaceId == type(IERC165).interfaceId ||
             interfaceId == type(AccessControlUpgradeable).interfaceId ||
@@ -439,31 +435,6 @@ contract BankTreasuryV2 is
 
     function getSoulBoundTokenId() external view returns (uint256) {
         return _soulBoundTokenId;
-    }
-
-    function onERC1155Received(
-        address operator, //操作者
-        address from, //上一个owner
-        uint256 id,
-        uint256 value,
-        bytes calldata data
-    ) external returns (bytes4) {
-        //TODO mint NDPT to {from} and burn {id}
-        emit Events.ERC1155Received(operator, from, id, value, data, gasleft());
-       
-        return this.onERC1155Received.selector;
-    }
-
-    function onERC1155BatchReceived(
-        address operator,
-        address from,
-        uint256[] calldata ids,
-        uint256[] calldata values,
-        bytes calldata data
-    ) external returns (bytes4) {
-        //TODO mint NDPT to {from} and burn {id}
-        emit Events.ERC1155BatchReceived(operator, from, ids, values, data, gasleft());
-        return this.onERC1155BatchReceived.selector;
     }
 
     function getDomainSeparator() external view override returns (bytes32) {

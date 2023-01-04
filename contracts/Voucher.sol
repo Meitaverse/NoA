@@ -149,13 +149,13 @@ contract Voucher is
                 usedTimestamp: 0
             });
             
-            emit Events.GenerateVoucher(
+            emit Events.MintNFTVoucher(
+                soulBoundTokenId,
+                account,
                 DataTypes.VoucherParValueType.ZEROPOINT,
                 _tokenId,
-                0,
                 amountNDP,
-                block.timestamp,
-                0
+                block.timestamp
             );
 
            // Signals frozen metadata to OpenSea; emitted in minting functions

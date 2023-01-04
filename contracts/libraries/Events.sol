@@ -6,27 +6,11 @@ import {DataTypes} from "./DataTypes.sol";
 
 library Events {
 
-  event ProjectAdded(
-      address organizer, 
-      uint256 projectId,
-      string name,
-      string description,
-      string image
-  );
-    
-  event ProjectToken(
-      uint256 projectId, 
-      uint256 tokenId, 
-    //   address organizer, 
-      address owner
-  );
-    
   event BurnToken(
       uint256 projectId, 
       uint256 tokenId, 
       address owner
   );
-
 
     /**
      * @dev Emitted when a dispatcher is set for a specific soulBoundToken.
@@ -48,16 +32,6 @@ library Events {
      */
     event ApprovalForSlot(address indexed _owner, uint256 indexed _slot, address indexed _operator, bool _approved);
 
-
-    /**
-     * @dev Emitted when the NFT contract's name and symbol are set at initialization.
-     *
-     * @param name The NFT name set.
-     * @param symbol The NFT symbol set.
-     * @param timestamp The current block timestamp.
-     */
-    event BaseInitialized(string name, string symbol, uint256 timestamp);
-
     /**
      * @dev Emitted when the hub state is set.
      *
@@ -75,10 +49,7 @@ library Events {
 
     //Receiver
     event ERC3525Received(address operator, uint256 fromTokenId, uint256 toTokenId, uint256 value, bytes data, uint256 gas);
-    event ERC1155Received(address operator, address from, uint256 id, uint256 value, bytes data, uint256 gas);
-    event ERC1155BatchReceived(address operator, address from, uint256[] ids, uint256[] values, bytes data, uint256 gas);
-    event ERC721Received(address operator, address from, uint256 tokenId, bytes data, uint256 gas);
-
+    event ReceiverReceived(address operator, uint256 fromTokenId, uint256 toTokenId, uint256 value, bytes data, uint256 gas);
 
     event BankTreasuryCreated(uint256 indexed soulBoundTokenId, uint256 timestamp);
     
@@ -181,13 +152,7 @@ library Events {
         address indexed newGovernance,
         uint256 timestamp
     );
-    event VoucherGovernanceSet(
-        address indexed caller,
-        address indexed prevGovernance,
-        address indexed newGovernance,
-        uint256 timestamp
-    );
-
+    
     /**
      * @dev Emitted when a profile creator is added to or removed from the whitelist.
      *
@@ -224,23 +189,6 @@ library Events {
     );
 
     /**
-     * @dev Emitted upon a successful follow action.
-     *
-     * @param projectId projectId
-     * @param follower The address following the given profiles.
-     * @param soulBoundTokenId The token ID  of the profiles being followed.
-     * @param followModuleData The  data parameters passed to each follow module.
-     * @param timestamp The current block timestamp.
-     */
-    event Followed(
-        uint256 indexed projectId,
-        address indexed follower,
-        uint256 indexed soulBoundTokenId,
-        bytes followModuleData,
-        uint256 timestamp
-    );
-
-    /**
      * @dev Emitted when a DerivativeNFT clone is deployed using a lazy deployment pattern.
      * @param projectId The project ID.
      * @param soulBoundTokenId The user's SoulBound token ID.
@@ -253,7 +201,6 @@ library Events {
         address derivativeNFT,
         uint256 timestamp
     );
-
 
     /**
      * @notice Emitted when Manager call to mint of NDPT Tokens.
@@ -504,6 +451,15 @@ library Events {
         uint256 ndptValue,
         uint256 generateTimestamp,
         uint256 endTimestamp
+    );
+
+    event MintNFTVoucher(
+        uint256 soulBoundTokenId,
+        address account,
+        DataTypes.VoucherParValueType vouchType,
+        uint256 tokenId,
+        uint256 ndptValue,
+        uint256 generateTimestamp
     );
 
     event SetUserAmountLimit(

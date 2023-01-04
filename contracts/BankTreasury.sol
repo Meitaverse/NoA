@@ -347,7 +347,6 @@ contract BankTreasury is
         return ndptAmount.mul(_exchangePrice);
     }
 
-
     function exchangeNDPTByEth(
         uint256 soulBoundTokenId,
         uint256 amount,

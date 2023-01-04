@@ -397,4 +397,5 @@ before(async function () {
 
   // Event library deployment is only needed for testing and is not reproduced in the live environment
   eventsLib = await new Events__factory(deployer).deploy();
+  console.log('eventsLib address: ', eventsLib.address);
 });

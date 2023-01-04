@@ -84,7 +84,6 @@ makeSuiteCleanRoom('Fee Collect Module', function () {
        
       //mint some Values to user
       await manager.connect(governance).mintNDPTValue(SECOND_PROFILE_ID, parseEther('10'));
-      // expect((await ndptContract.balanceOfNDPT(SECOND_PROFILE_ID)).toNumber()).to.eq(parseEther('10'));
 
       const tokenId = await manager.connect(userTwo).callStatic.createProfile({ 
             to: userTwoAddress,
@@ -248,10 +247,6 @@ makeSuiteCleanRoom('Fee Collect Module', function () {
           })
         ).to.be.revertedWith(ERRORS.INVALID_PARAMETER);
         
-        // const dNFTTokenId = await manager.connect(user).callStatic.publish(FIRST_PUBLISH_ID);
-        // await expect(
-        //   manager.connect(user).publish(FIRST_PUBLISH_ID) 
-        // ).to.be.revertedWith(ERRORS.INIT_PARAMS_INVALID);
       });      
 
     });
@@ -304,13 +299,10 @@ makeSuiteCleanRoom('Fee Collect Module', function () {
           expect(fetchedData.genesisFee).to.eq(GENESIS_FEE_BPS);
           expect(fetchedData.salePrice).to.eq(DEFAULT_COLLECT_PRICE);
           expect(fetchedData.royaltyBasisPoints).to.eq(Default_royaltyBasisPoints);
-          
-         
+
           expect(
             await derivativeNFT['balanceOf(uint256)'](FIRST_DNFT_TOKEN_ID)
           ).to.eq(1);
-
-
       });
 
       it('UserTwo should fail to process collect without being the manager', async function () {
@@ -321,7 +313,7 @@ makeSuiteCleanRoom('Fee Collect Module', function () {
         ).to.be.revertedWith(ERRORS.NOT_MANAGER);
       });
 
-      it('Governance should set the treasury fee BPS to zero, user call permit userTwo collecting should not emit a transfer event to the treasury', async function () {
+      it('Governance should set the treasury fee BPS to zero, userTwo call permit userTwo collecting should not emit a transfer event to the treasury', async function () {
         await expect(moduleGlobals.connect(governance).setTreasuryFee(0)).to.not.be.reverted;
 
         /*
@@ -337,18 +329,28 @@ makeSuiteCleanRoom('Fee Collect Module', function () {
         console.log("\t --- genesisAmount:", genesisAmount);
         console.log("\t --- adjustedAmount:", adjustedAmount);
 
-        expect(
-          await collectReturningTokenId({
-              sender: userTwo,
-              vars: {
-                publishId: FIRST_PUBLISH_ID,
-                collectorSoulBoundTokenId: THIRD_PROFILE_ID,
-                collectValue: 1,
-                data: [],
-              },
-          }) 
-          ).to.eq(SECOND_DNFT_TOKEN_ID);
+        const tx = manager.connect(userTwo).collect({
+            publishId: FIRST_PUBLISH_ID,
+            collectorSoulBoundTokenId: THIRD_PROFILE_ID,
+            collectValue: 1,
+            data: [],
+        });
+        const receipt = await waitForTx(tx);
 
+        matchEvent(
+          receipt,
+          'TransferValue',
+          [FIRST_DNFT_TOKEN_ID, SECOND_DNFT_TOKEN_ID, 1],
+          derivativeNFT,
+          derivativeNFT.address
+        );
+
+        matchEvent(
+          receipt,
+          'CollectDerivativeNFT',
+          [FIRST_PUBLISH_ID, derivativeNFT.address, SECOND_PROFILE_ID, THIRD_PROFILE_ID, FIRST_DNFT_TOKEN_ID, 1, SECOND_DNFT_TOKEN_ID, await getTimestamp()],
+        );
+  
         expect(
           await derivativeNFT.ownerOf(SECOND_DNFT_TOKEN_ID)
         ).to.eq(userTwoAddress);
@@ -617,108 +619,4 @@ makeSuiteCleanRoom('Fee Collect Module', function () {
     });
 
   });
-
-/*
-  context('Negatives', function () {
-    context('Collecting', function () {
-      
-      it('UserTwo should mirror the original post, governance should set the treasury fee BPS to zero, userTwo collecting their mirror should not emit a transfer event to the treasury', async function () {
-        const secondProfileId = FIRST_PROFILE_ID + 1;
-        await expect(
-          lensHub.connect(userTwo).createProfile({
-            to: userTwoAddress,
-            nickName: 'usertwo',
-            imageURI: MOCK_PROFILE_URI,
-          })
-        ).to.not.be.reverted;
-        await expect(
-          lensHub.connect(userTwo).mirror({
-            profileId: secondProfileId,
-            profileIdPointed: FIRST_PROFILE_ID,
-            pubIdPointed: 1,
-            referenceModuleData: [],
-            referenceModule: ZERO_ADDRESS,
-            referenceModuleInitData: [],
-          })
-        ).to.not.be.reverted;
-
-        await expect(currency.mint(userTwoAddress, MAX_UINT256)).to.not.be.reverted;
-        await expect(
-          currency.connect(userTwo).approve(feeCollectModule.address, MAX_UINT256)
-        ).to.not.be.reverted;
-
-        const tx = lensHub.connect(userTwo).collect(secondProfileId, 1, data);
-        const receipt = await waitForTx(tx);
-
-        let currencyEventCount = 0;
-        for (let log of receipt.logs) {
-          if (log.address == currency.address) {
-            currencyEventCount++;
-          }
-        }
-        expect(currencyEventCount).to.eq(2);
-
-        const expectedReferralAmount = BigNumber.from(DEFAULT_COLLECT_PRICE)
-          .mul(REFERRAL_FEE_BPS)
-          .div(BPS_MAX);
-        const amount = DEFAULT_COLLECT_PRICE.sub(expectedReferralAmount);
-
-        matchEvent(
-          receipt,
-          'Transfer',
-          [userTwoAddress, userAddress, amount],
-          currency,
-          currency.address
-        );
-
-        matchEvent(
-          receipt,
-          'Transfer',
-          [userTwoAddress, userTwoAddress, expectedReferralAmount],
-          currency,
-          currency.address
-        );
-      });
-
-      it('UserTwo should fail to collect without following', async function () {
-        const data = abiCoder.encode(
-          ['address', 'uint256'],
-          [currency.address, DEFAULT_COLLECT_PRICE]
-        );
-        await expect(
-          lensHub.connect(userTwo).collect(FIRST_PROFILE_ID, 1, data)
-        ).to.be.revertedWith(ERRORS.FOLLOW_INVALID);
-      });
-
-
-      it('UserTwo should mirror the original post, fail to collect from their mirror without following the original profile', async function () {
-        const secondProfileId = FIRST_PROFILE_ID + 1;
-        await expect(
-          lensHub.connect(userTwo).createProfile({
-            to: userTwoAddress,
-            nickName: 'usertwo',
-            imageURI: MOCK_PROFILE_URI,
-          })
-        ).to.not.be.reverted;
-        await expect(
-          lensHub.connect(userTwo).mirror({
-            profileId: secondProfileId,
-            profileIdPointed: FIRST_PROFILE_ID,
-            pubIdPointed: 1,
-            referenceModuleData: [],
-            referenceModule: ZERO_ADDRESS,
-            referenceModuleInitData: [],
-          })
-        ).to.not.be.reverted;
-
-        const data = abiCoder.encode(['uint256'], [DEFAULT_COLLECT_PRICE]);
-        await expect(lensHub.connect(userTwo).collect(secondProfileId, 1, data)).to.be.revertedWith(
-          ERRORS.FOLLOW_INVALID
-        );
-      });
-      
-    });
-  });
-*/
-
 });

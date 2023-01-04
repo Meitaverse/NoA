@@ -334,7 +334,6 @@ contract DerivativeNFTV1 is
         _resetTokenRoyalty(tokenId_);
         emit Events.BurnToken(slot, tokenId_, msg.sender);
     }
-    
 
     function burnWithSig(uint256 tokenId, DataTypes.EIP712Signature calldata sig)
         public

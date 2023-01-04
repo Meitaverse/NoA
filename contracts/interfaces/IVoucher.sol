@@ -11,7 +11,14 @@ import {DataTypes} from '../libraries/DataTypes.sol';
  * @notice This is the interface for the Voucher contract
  */
 interface IVoucher {
-
+    /**
+     * @notice mint a ERC1155 NFT and transfer value to bank treasury,
+     * 
+     * @param soulBoundTokenId The soulBoundToken Id of current caller
+     * @param amountNDP The amount of NDP
+     * @param account The account to received 
+     *
+     */
     function mintNFT(
         uint256 soulBoundTokenId,
         uint256 amountNDP,
@@ -50,11 +57,8 @@ interface IVoucher {
 
     function setTokenUri(uint tokenId_, string memory uri_) external;
 
-    function setBankTreasury(address bankTreasury) external;
-
     function getUserAmountLimit() external view returns(uint256);
-    
-    
+
     /**
      * @notice generate a voucher card by voucherType,
      * 

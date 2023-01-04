@@ -4,6 +4,7 @@ pragma solidity ^0.8.0;
 
 import "@openzeppelin/contracts/utils/introspection/IERC165.sol";
 import "@solvprotocol/erc-3525/contracts/IERC3525Receiver.sol";
+import {Events} from '../libraries/Events.sol';
 
 //模拟的接收者合约，实现了 onERC3525Received 
 contract ERC3525ReceiverMock is IERC165, IERC3525Receiver {
@@ -17,7 +18,6 @@ contract ERC3525ReceiverMock is IERC165, IERC3525Receiver {
     bytes4 private immutable _retval;
     Error private immutable _error;
 
-    event Received(address operator, uint256 fromTokenId, uint256 toTokenId, uint256 value, bytes data, uint256 gas);
 
     constructor(bytes4 retval, Error error) {
         _retval = retval;
@@ -45,7 +45,7 @@ contract ERC3525ReceiverMock is IERC165, IERC3525Receiver {
             uint256 a = uint256(0) / uint256(0);
             a;
         }
-        emit Received(operator, fromTokenId, toTokenId, value, data, gasleft());
+        emit Events.ReceiverReceived(operator, fromTokenId, toTokenId, value, data, gasleft());
         return _retval;
     }
 
