@@ -11,7 +11,7 @@ library Events {
      *
      * @param soulBoundTokenId The newly created profile's token ID.
      * @param creator The profile creator, who created the token with the given profile ID.
-     * @param to The address receiving the profile with the given profile ID.
+     * @param wallet The address receiving the profile with the given profile ID.
      * @param nickName The nickName set for the profile.
      * @param imageURI The image uri set for the profile.
      * @param timestamp The current block timestamp.
@@ -19,7 +19,7 @@ library Events {
     event ProfileCreated(
         uint256 indexed soulBoundTokenId,
         address indexed creator,
-        address indexed to,
+        address indexed wallet,
         string nickName,
         string imageURI,
         uint256 timestamp

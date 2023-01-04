@@ -101,12 +101,12 @@ contract Manager is
         DataTypes.CreateProfileData calldata vars
     ) external whenNotPaused returns (uint256) {
         address _ndpt = IModuleGlobals(MODULE_GLOBALS).getNDPT();
-        if (!IModuleGlobals(MODULE_GLOBALS).isWhitelistProfileCreator(vars.to)) revert Errors.ProfileCreatorNotWhitelisted();
+        if (!IModuleGlobals(MODULE_GLOBALS).isWhitelistProfileCreator(vars.wallet)) revert Errors.ProfileCreatorNotWhitelisted();
         if (_ndpt == address(0)) revert Errors.NDPTNotSet();
 
         uint256 soulBoundTokenId = INFTDerivativeProtocolTokenV1(_ndpt).createProfile(msg.sender, vars);
 
-        _walletBySoulBoundTokenId[soulBoundTokenId] = vars.to;
+        _walletBySoulBoundTokenId[soulBoundTokenId] = vars.wallet;
 
         return soulBoundTokenId;
     }

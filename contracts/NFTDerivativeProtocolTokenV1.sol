@@ -130,9 +130,9 @@ contract NFTDerivativeProtocolTokenV1 is
     ) external override whenNotPaused onlyManager returns (uint256) {
         _validateNickName(vars.nickName);
 
-        if (balanceOf(vars.to) > 0) revert Errors.TokenIsClaimed(); 
+        if (balanceOf(vars.wallet) > 0) revert Errors.TokenIsClaimed(); 
         
-        uint256 tokenId_ = ERC3525Upgradeable._mint(vars.to, 1, 0);
+        uint256 tokenId_ = ERC3525Upgradeable._mint(vars.wallet, 1, 0);
 
         _sbtDetails[tokenId_] = DataTypes.SoulBoundTokenDetail({
             nickName: vars.nickName,
@@ -143,7 +143,7 @@ contract NFTDerivativeProtocolTokenV1 is
         emit Events.ProfileCreated(
             tokenId_,
             creator,
-            vars.to,
+            vars.wallet,
             vars.nickName,
             vars.imageURI,
             block.timestamp

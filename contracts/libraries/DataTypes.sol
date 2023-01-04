@@ -228,12 +228,12 @@ library DataTypes {
     /**
      * @notice A struct containing the parameters required for the `createProfile()` function.
      *
-     * @param to The address receiving the profile.
+     * @param wallet The address receiving the profile.
      * @param nickName The nick name to set for the profile, must be unique and non-empty.
      * @param imageURI The URI to set for the profile image.
      */
     struct CreateProfileData {
-        address to;
+        address wallet;
         string nickName;
         string imageURI;
     }

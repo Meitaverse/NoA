@@ -47,7 +47,7 @@ makeSuiteCleanRoom('Profile Creation', function () {
                 expect(val.length).to.eq(32);
                 await expect(
                   manager.createProfile({
-                    to: userAddress,
+                    wallet: userAddress,
                     nickName: val,
                     imageURI: MOCK_PROFILE_URI,
                   })
@@ -57,7 +57,7 @@ makeSuiteCleanRoom('Profile Creation', function () {
             it('User should fail to create a profile with an empty nickName (0 length bytes)', async function () {
                 await expect(
                    manager.createProfile({
-                    to: userAddress,
+                    wallet: userAddress,
                     nickName: '',
                     imageURI: MOCK_PROFILE_URI,
                   })
@@ -73,7 +73,7 @@ makeSuiteCleanRoom('Profile Creation', function () {
                 
                 await expect(
                   manager.createProfile({
-                    to: userAddress,
+                    wallet: userAddress,
                     nickName: nickName,
                     imageURI: MOCK_PROFILE_URI,
                   })
@@ -89,13 +89,13 @@ makeSuiteCleanRoom('Profile Creation', function () {
                   
                 await expect(
                     manager.connect(user).createProfile({
-                      to: userAddress,
+                      wallet: userAddress,
                       nickName: nickName,
                       imageURI: MOCK_PROFILE_URI,
                     })
                   ).to.not.be.reverted;
                 // await  manager.connect(user).createProfile({
-                //   to: userAddress,
+                //   wallet: userAddress,
                 //   nickName: nickName,
                 //   imageURI: MOCK_PROFILE_URI,
                 // });
@@ -116,7 +116,7 @@ makeSuiteCleanRoom('Profile Creation', function () {
             expect(
               await createProfileReturningTokenId({
                 vars: {
-                  to: userAddress,
+                  wallet: userAddress,
                   nickName: nickName,
                   imageURI: MOCK_PROFILE_URI,
                 },
@@ -163,7 +163,7 @@ makeSuiteCleanRoom('Profile Creation', function () {
             expect(
                 await createProfileReturningTokenId({
                   vars: {
-                    to: userAddress,
+                    wallet: userAddress,
                     nickName: nickName,
                     imageURI: MOCK_PROFILE_URI,
                   },
@@ -195,7 +195,7 @@ makeSuiteCleanRoom('Profile Creation', function () {
             expect(
                 await createProfileReturningTokenId({
                   vars: {
-                    to: userAddress,
+                    wallet: userAddress,
                     nickName: nickName,
                     imageURI: MOCK_PROFILE_URI,
                   },

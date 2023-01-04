@@ -109,9 +109,9 @@ contract NFTDerivativeProtocolTokenV2 is
         address creator,
         DataTypes.CreateProfileData calldata vars
     ) external override whenNotPaused onlyManager returns (uint256) {
-        if (balanceOf(vars.to) > 0) revert Errors.TokenIsClaimed(); 
+        if (balanceOf(vars.wallet) > 0) revert Errors.TokenIsClaimed(); 
 
-        uint256 tokenId_ = ERC3525Upgradeable._mint(vars.to, 1, 0);
+        uint256 tokenId_ = ERC3525Upgradeable._mint(vars.wallet, 1, 0);
 
         _sbtDetails[tokenId_] = DataTypes.SoulBoundTokenDetail({
             nickName: vars.nickName,

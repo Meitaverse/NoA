@@ -73,7 +73,7 @@ makeSuiteCleanRoom('Fee Collect Module', function () {
     expect(
       await createProfileReturningTokenId({
           vars: {
-          to: userAddress,
+          wallet: userAddress,
           nickName: NickName,
           imageURI: MOCK_PROFILE_URI,
           },
@@ -86,13 +86,13 @@ makeSuiteCleanRoom('Fee Collect Module', function () {
       await manager.connect(governance).mintNDPTValue(SECOND_PROFILE_ID, parseEther('10'));
 
       const tokenId = await manager.connect(userTwo).callStatic.createProfile({ 
-            to: userTwoAddress,
+            wallet: userTwoAddress,
             nickName: NickName3,
             imageURI: MOCK_PROFILE_URI,
       });
       
       await expect(manager.connect(userTwo).createProfile({ 
-            to: userTwoAddress,
+            wallet: userTwoAddress,
             nickName: NickName3,
             imageURI: MOCK_PROFILE_URI,
       })).to.not.be.reverted;

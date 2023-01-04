@@ -79,7 +79,7 @@ makeSuiteCleanRoom('Bank Treasury', function () {
       await createProfileReturningTokenId({
           sender: user,
           vars: {
-          to: userAddress,
+          wallet: userAddress,
           nickName: NickName,
           imageURI: MOCK_PROFILE_URI,
           },
@@ -90,7 +90,7 @@ makeSuiteCleanRoom('Bank Treasury', function () {
       await createProfileReturningTokenId({
           sender: userTwo,
           vars: {
-          to: userTwoAddress,
+          wallet: userTwoAddress,
           nickName: NickName3,
           imageURI: MOCK_PROFILE_URI,
           },

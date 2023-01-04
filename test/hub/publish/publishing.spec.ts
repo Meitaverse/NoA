@@ -56,7 +56,7 @@ makeSuiteCleanRoom('Publishing', function () {
               expect(
                 await createProfileReturningTokenId({
                     vars: {
-                    to: userAddress,
+                    wallet: userAddress,
                     nickName: NickName,
                     imageURI: MOCK_PROFILE_URI,
                     },

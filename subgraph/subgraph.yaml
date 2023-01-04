@@ -16,16 +16,16 @@ dataSources:
       apiVersion: 0.0.5
       language: wasm/assemblyscript
       entities:
-        - ProjectAdded
-        - ProjectToken
-        - BurnToken
+        - ProfileCreated
+        # - ProjectToken
+        # - BurnToken
       abis:
         - name: Events
           file: ./abis/Events.json
       eventHandlers:
-        - event: ProjectAdded(address,uint256,string,string,string,uint256)
-          handler: handleEventAdded
-        # - event: ProjectToken(uint256,uint256,address,address)
+        - event: ProfileCreated(indexed uint256,indexed address,indexed address,string,string,uint256)
+          handler: handleProfileCreated
+        # - event: ProjectToken(uint256,uint256,address,address) 
         #   handler: handleEventToken
         # - event: BurnToken(uint256,uint256,address)
         #   handler: handleBurnToken

@@ -83,7 +83,7 @@ contract ManagerV2_BadRevision is
     function createProfile(
         DataTypes.CreateProfileData calldata vars
     ) external returns (uint256) {
-        if (!IModuleGlobals(MODULE_GLOBALS).isWhitelistProfileCreator(vars.to)) revert Errors.ProfileCreatorNotWhitelisted();
+        if (!IModuleGlobals(MODULE_GLOBALS).isWhitelistProfileCreator(vars.wallet)) revert Errors.ProfileCreatorNotWhitelisted();
         uint256 soulBoundTokenId = INFTDerivativeProtocolTokenV1(NDPT).createProfile(msg.sender, vars);
         return soulBoundTokenId;
     }

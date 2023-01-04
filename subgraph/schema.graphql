@@ -1,52 +1,10 @@
-# 管理NoA Event的增加与删除
-type EventItem @entity {
+# 管理Profile的增加与删除
+type Profile @entity {
   id: ID!
-  organizer: Organizer!
-  projectId: BigInt!
-  name: String!
-  description: String!
-  image: String!
-  mintMax: BigInt!
-}
-
-# 组织者
-type Organizer @entity {
-   id: ID!
-   organizer: Bytes!
-#    mainnetWallet: Bytes!
-#    name: String!
-#    cTokenId: BigInt!
-}
-
-# 用户
-type User @entity {
-  id: ID!  # alliance chain wallet address
-  localWallet: Bytes!
-  mainnetWallet: Bytes #Ethereum miannet wallet address
-  name: String
-  sbTokenId: BigInt
-  Tokens: [Token!] @derivedFrom(field: "owner")
-}
-
-# 铸造历史
-type History @entity {
-  id: ID!
-  projectId: BigInt!
-  token: Token!
-  organizer: Organizer!
-  owner: User!
-  createdAtTimestamp: BigInt!
-}
-
-# NoA勋章管理, _mintToken(铸造), _burn(跨链后销毁)
-type Token @entity {
-  id: ID!
-  projectId: BigInt!
-  tokenId: BigInt!
-  tokenURI: String!
-  slotURI: String!
-  organizer: Organizer!
-  owner: User!
-  history: [History!] @derivedFrom(field: "token")
-  createdAtTimestamp: BigInt!
+  soulBoundTokenId: BigInt!
+  creator: Bytes!
+  wallet: Bytes!
+  nickName: String!
+  imageURI: String!
+  timestamp: BigInt!
 }
