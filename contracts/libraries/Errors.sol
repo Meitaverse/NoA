@@ -14,8 +14,10 @@ library Errors {
   error Locked();
   error EventIdNotExists();
   error NotOwnerNorApproved();
-  error NotAuthorised();
+  error NotTransferValueAuthorised();
   error NotSameSlot();
+  error AmountLimitNotSet();
+  error AmountNDPIsZero();
   error NotSameOwnerOfBothTokenId();
   error TokenExisted(uint256 tokenId);
   error NotProfileOwner();
@@ -116,4 +118,6 @@ library Errors {
   error CollectExpired();
 
   error InvalidRecipientSplits();
+
+  error AmountLimit();
 }

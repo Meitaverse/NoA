@@ -95,6 +95,7 @@ export const  RECEIVER_MAGIC_VALUE = '0x009ce20b';
 export const TreasuryFee = 50; 
 
 export const INITIAL_SUPPLY = 1000000;  //NDPT初始发行总量
+export const VOUCHER_AMOUNT_LIMIT = 100;  //用户用NDP兑换Voucher的最低数量 
 
 export const DEFAULT_COLLECT_PRICE = parseEther('10');
 export const DEFAULT_TEMPLATE_NUMBER = 1;
@@ -345,8 +346,11 @@ before(async function () {
   await expect(ndptContract.connect(deployer).whitelistContract(feeCollectModule.address, true)).to.not.be.reverted;
   await expect(ndptContract.connect(deployer).whitelistContract(multirecipientFeeCollectModule.address, true)).to.not.be.reverted;
   await expect(ndptContract.connect(deployer).whitelistContract(bankTreasuryContract.address, true)).to.not.be.reverted;
+  await expect(ndptContract.connect(deployer).whitelistContract(voucherContract.address, true)).to.not.be.reverted;
 
   await expect(voucherContract.connect(deployer).setGlobalModule(moduleGlobals.address)).to.not.be.reverted;
+
+  await expect(voucherContract.connect(deployer).setUserAmountLimit(VOUCHER_AMOUNT_LIMIT)).to.not.be.reverted;
 
   await expect(manager.connect(governance).setState(ProtocolState.Unpaused)).to.not.be.reverted;
   

@@ -52,6 +52,8 @@ interface IVoucher {
 
     function setBankTreasury(address bankTreasury) external;
 
+    function getUserAmountLimit() external view returns(uint256);
+    
     // function setGlobalModule(address moduleGlobals) external;
     
     /**

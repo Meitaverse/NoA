@@ -330,6 +330,7 @@ contract BankTreasury is
     )
         external
         whenNotPaused
+        onlyGov
     {
         address _ndpt = IModuleGlobals(MODULE_GLOBALS).getNDPT();
         INFTDerivativeProtocolTokenV1(_ndpt).transferValue(_soulBoundTokenId, toSoulBoundTokenId, amount);

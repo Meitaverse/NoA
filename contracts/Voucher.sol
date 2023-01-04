@@ -10,8 +10,8 @@ import "@openzeppelin/contracts-upgradeable/access/AccessControlUpgradeable.sol"
 import "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
-import "@solvprotocol/erc-3525/contracts/IERC3525.sol";
-
+// import "@solvprotocol/erc-3525/contracts/IERC3525.sol";
+import {INFTDerivativeProtocolTokenV1} from "./interfaces/INFTDerivativeProtocolTokenV1.sol";
 import {IERC20Upgradeable} from "@openzeppelin/contracts-upgradeable/token/ERC20/IERC20Upgradeable.sol";
 import {SafeERC20Upgradeable} from "@openzeppelin/contracts-upgradeable/token/ERC20/utils/SafeERC20Upgradeable.sol";
 import {StringsUpgradeable} from "@openzeppelin/contracts-upgradeable/utils/StringsUpgradeable.sol";
@@ -24,7 +24,6 @@ import "./libraries/EthAddressLib.sol";
 import "./storage/VoucherStorage.sol";
 import {IModuleGlobals} from "./interfaces/IModuleGlobals.sol";
 import {IManager} from "./interfaces/IManager.sol";
-import "./interfaces/INFTDerivativeProtocolTokenV1.sol";
 
 import {IBankTreasury} from './interfaces/IBankTreasury.sol';
 
@@ -89,6 +88,17 @@ contract Voucher is
     ) public view override(AccessControlUpgradeable, ERC1155Upgradeable) returns (bool) {
         return super.supportsInterface(interfaceId);
     }
+
+    function setUserAmountLimit(uint256 userAmountLimit) external onlyOwner {
+        if (userAmountLimit == 0) revert Errors.InvalidParameter();
+        uint256 preUserAmountLimit = _userAmountLimit;
+        _userAmountLimit = userAmountLimit;
+        emit Events.SetUserAmountLimit(preUserAmountLimit, _userAmountLimit, block.timestamp);
+    }
+    
+    function getUserAmountLimit() external view returns(uint256) {
+        return _userAmountLimit;
+    }
     
     function mintNFT(
         uint256 soulBoundTokenId,
@@ -102,46 +112,62 @@ contract Voucher is
 
         if (msg.sender != IManager(_manager).getWalletBySoulBoundTokenId(soulBoundTokenId) ) {
             revert Errors.Unauthorized();
+            return 0;
         }
 
-        uint256 _tokenId = _generateNextVoucherId();
-
-        address _ndpt =  IModuleGlobals(MODULE_GLOBALS).getNDPT();
-        address _bankTreasury = IModuleGlobals(MODULE_GLOBALS).getTreasury();
-
-        uint256 treasuryOfSoulBoundTokenId = IBankTreasury(_bankTreasury).getSoulBoundTokenId();
+        if (amountNDP == 0)  {
+            revert Errors.AmountNDPIsZero();
+            return 0;
+        }
         
-        //must approve this contract first 
-        IERC3525(_ndpt).transferFrom(soulBoundTokenId, treasuryOfSoulBoundTokenId, amountNDP);
+        if (_userAmountLimit > 0 ){
+            if (amountNDP < _userAmountLimit) {
+                revert Errors.AmountLimit();
+            } else {
+            uint256 _tokenId = _generateNextVoucherId();
 
-        _mint(account, _tokenId, amountNDP, "");
+            address _ndpt =  IModuleGlobals(MODULE_GLOBALS).getNDPT();
+            address _bankTreasury = IModuleGlobals(MODULE_GLOBALS).getTreasury();
 
-        _vouchers[_tokenId] = DataTypes.VoucherData({
-            vouchType: DataTypes.VoucherParValueType.ZEROPOINT,
-            tokenId: _tokenId,
-            etherValue: 0,
-            ndptValue: amountNDP,
-            generateTimestamp: block.timestamp,
-            endTimestamp: 0, 
-            isUsed: false,
-            soulBoundTokenId: soulBoundTokenId,
-            usedTimestamp: 0
-        });
-         
-        emit Events.GenerateVoucher(
-             DataTypes.VoucherParValueType.ZEROPOINT,
-             _tokenId,
-             0,
-             amountNDP,
-             block.timestamp,
-             0
-        );
+            uint256 treasuryOfSoulBoundTokenId = IBankTreasury(_bankTreasury).getSoulBoundTokenId();
+            if (treasuryOfSoulBoundTokenId == 0)  revert Errors.Unauthorized();
+            
+            //not need to approve this contract first 
+            INFTDerivativeProtocolTokenV1(_ndpt).transferValue(soulBoundTokenId, treasuryOfSoulBoundTokenId, amountNDP);
 
-       // Signals frozen metadata to OpenSea; emitted in minting functions
-        emit Events.PermanentURI(string(abi.encodePacked(_uriBase, StringsUpgradeable.toString(_tokenId), ".json")), _tokenId);
-        
-        //owner can use setTokenUri to set token uri 
-        return _tokenId;
+            _mint(account, _tokenId, amountNDP, "");
+
+            _vouchers[_tokenId] = DataTypes.VoucherData({
+                vouchType: DataTypes.VoucherParValueType.ZEROPOINT,
+                tokenId: _tokenId,
+                etherValue: 0,
+                ndptValue: amountNDP,
+                generateTimestamp: block.timestamp,
+                endTimestamp: 0, 
+                isUsed: false,
+                soulBoundTokenId: soulBoundTokenId,
+                usedTimestamp: 0
+            });
+            
+            emit Events.GenerateVoucher(
+                DataTypes.VoucherParValueType.ZEROPOINT,
+                _tokenId,
+                0,
+                amountNDP,
+                block.timestamp,
+                0
+            );
+
+           // Signals frozen metadata to OpenSea; emitted in minting functions
+            emit Events.PermanentURI(string(abi.encodePacked(_uriBase, StringsUpgradeable.toString(_tokenId), ".json")), _tokenId);
+            
+            //owner can use setTokenUri to set token uri 
+            return _tokenId;
+          }
+        }  else {
+            revert Errors.AmountLimitNotSet(); 
+        }
+
     }
 
     function generateVoucher(

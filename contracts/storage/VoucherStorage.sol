@@ -7,6 +7,8 @@ import "@openzeppelin/contracts/utils/Counters.sol";
 contract VoucherStorage  {
     address public MODULE_GLOBALS;
 
+    uint256 internal _userAmountLimit;
+
     Counters.Counter internal _nextVoucherId;
 
     mapping(uint256 => string) internal _uris;

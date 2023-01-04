@@ -21,6 +21,7 @@ import {
 import {
   abiCoder,
   INITIAL_SUPPLY,
+  VOUCHER_AMOUNT_LIMIT,
   FIRST_PROFILE_ID,
   SECOND_PROFILE_ID,
   THIRD_PROFILE_ID,
@@ -98,7 +99,6 @@ makeSuiteCleanRoom('Bank Treasury', function () {
          }) 
       ).to.eq(THIRD_PROFILE_ID);
 
-      expect(await manager.getWalletBySoulBoundTokenId(FIRST_PROFILE_ID)).to.eq(bankTreasuryContract.address);
       expect(await manager.getWalletBySoulBoundTokenId(SECOND_PROFILE_ID)).to.eq(userAddress);
       expect(await manager.getWalletBySoulBoundTokenId(THIRD_PROFILE_ID)).to.eq(userTwoAddress);
   });
@@ -148,7 +148,7 @@ makeSuiteCleanRoom('Bank Treasury', function () {
           expect((await ndptContract.balanceOfNDPT(SECOND_PROFILE_ID)).toNumber()).to.eq(0);
           
           await expect(
-            bankTreasuryContract.withdrawERC3525(SECOND_PROFILE_ID, 1)
+            bankTreasuryContract.connect(governance).withdrawERC3525(SECOND_PROFILE_ID, 1)
           ).to.not.be.reverted;
 
           expect((await ndptContract.balanceOfNDPT(FIRST_PROFILE_ID)).toNumber()).to.eq(INITIAL_SUPPLY-1);
@@ -215,10 +215,75 @@ makeSuiteCleanRoom('Bank Treasury', function () {
           expect(voucherData2.isUsed).to.eq(true);
         });
   
-
     });
 
+    context('Voucher generate', function () {
+        
+      it('User should success mint a ERC1155 NFT and transfer NDP to bank treasury', async function () {
+        expect((await ndptContract.balanceOfNDPT(FIRST_PROFILE_ID)).toNumber()).to.eq(INITIAL_SUPPLY);
+        expect((await ndptContract.balanceOfNDPT(SECOND_PROFILE_ID)).toNumber()).to.eq(0);
+        //mint 100Value to user
+        await manager.connect(governance).mintNDPTValue(SECOND_PROFILE_ID, 100);
+        expect((await ndptContract.balanceOfNDPT(SECOND_PROFILE_ID)).toNumber()).to.eq(100);
 
+        expect(await manager.getWalletBySoulBoundTokenId(SECOND_PROFILE_ID)).to.eq(userAddress);
+
+        const tx  = await voucherContract.connect(user).mintNFT(
+          SECOND_PROFILE_ID,
+          100,
+          userAddress,
+        );
+        console.log('mintNFT ok');
+
+        expect((await ndptContract.balanceOfNDPT(SECOND_PROFILE_ID)).toNumber()).to.eq(0);
+        expect((await ndptContract.balanceOfNDPT(FIRST_PROFILE_ID)).toNumber()).to.eq(INITIAL_SUPPLY + 100);
+       
+
+      });
+
+    
+      it('Should faild to mint a ERC1155 NFT when balance of user is less than 100', async function () {
+        expect((await ndptContract.balanceOfNDPT(FIRST_PROFILE_ID)).toNumber()).to.eq(INITIAL_SUPPLY);
+        
+        expect((await ndptContract.balanceOfNDPT(SECOND_PROFILE_ID)).toNumber()).to.eq(0);
+
+        await expect(
+          voucherContract.connect(user).mintNFT(
+            SECOND_PROFILE_ID,
+            100,
+            userAddress,
+          )
+        ).to.be.revertedWith(ERRORS.ERC3525_INSUFFICIENT_BALANCE);
+
+        expect((await ndptContract.balanceOfNDPT(FIRST_PROFILE_ID)).toNumber()).to.eq(INITIAL_SUPPLY);
+        expect((await ndptContract.balanceOfNDPT(SECOND_PROFILE_ID)).toNumber()).to.eq(0);
+       
+
+      });
+
+      it('Should faild to mint a ERC1155 NFT when amount is zero', async function () {
+        expect((await ndptContract.balanceOfNDPT(FIRST_PROFILE_ID)).toNumber()).to.eq(INITIAL_SUPPLY);
+        expect((await ndptContract.balanceOfNDPT(SECOND_PROFILE_ID)).toNumber()).to.eq(0);
+        //mint 100Value to user
+        await manager.connect(governance).mintNDPTValue(SECOND_PROFILE_ID, 100);
+        expect((await ndptContract.balanceOfNDPT(SECOND_PROFILE_ID)).toNumber()).to.eq(100);
+
+               
+        await expect(
+          voucherContract.connect(user).mintNFT(
+            SECOND_PROFILE_ID,
+            0,
+            userAddress,
+          )
+        ).to.be.revertedWith(ERRORS.AmountNDP_Is_Zero);
+
+        expect((await ndptContract.balanceOfNDPT(FIRST_PROFILE_ID)).toNumber()).to.eq(INITIAL_SUPPLY);
+        expect((await ndptContract.balanceOfNDPT(SECOND_PROFILE_ID)).toNumber()).to.eq(100);
+       
+
+      });
+
+    });
 
   });
 

@@ -506,6 +506,12 @@ library Events {
         uint256 endTimestamp
     );
 
+    event SetUserAmountLimit(
+        uint256 preUserAmountLimit,
+        uint256 userAmountLimit,
+        uint256 endTimestamp
+    );
+
     event SetContractWhitelisted(
         address indexed contractAddress,
         bool indexed prevWhitelisted,

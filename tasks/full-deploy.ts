@@ -55,11 +55,15 @@ import {
    const TREASURY_FEE_BPS = 50;
    const  RECEIVER_MAGIC_VALUE = '0x009ce20b';
    const TreasuryFee = 50; 
+   const FIRST_PROFILE_ID = 1; //金库
    const INITIAL_SUPPLY = 1000000;  //NDPT初始发行总量
+   export const VOUCHER_AMOUNT_LIMIT = 100;  //用户用NDP兑换Voucher的最低数量 
+   
 
    const NDPT_NAME = 'NFT Derivative Protocol';
    const NDPT_SYMBOL = 'NDP';
    const NDPT_DECIMALS = 18;
+
 
    const NUM_CONFIRMATIONS_REQUIRED = 3;
    const PublishRoyaltyNDPT = 100;
@@ -239,10 +243,7 @@ import {
         );
 
         let initializeData = bankTreasuryImpl.interface.encodeFunctionData("initialize", [
-          manager.address,
           governance.address,
-          ndptContract.address,
-          voucherContract.address,
           soulBoundTokenIdOfBankTreaury,
           [user.address, userTwo.address, userThree.address],
           NUM_CONFIRMATIONS_REQUIRED  //All full signed 
@@ -263,6 +264,7 @@ import {
                 ndptContract.address,
                 governance.address,
                 bankTreasuryContract.address,
+                voucherContract.address,
                 TREASURY_FEE_BPS,
                 PublishRoyaltyNDPT,
                 { nonce: deployerNonce++ })
@@ -289,16 +291,7 @@ import {
         );
         console.log('\t-- publishModule: ', publishModule.address);
 
-        console.log('\n\t-- manager set ndptContract address --');
-        await waitForTx(
-            manager.connect(governance).setNDPT(ndptContract.address)
-        );
-
-        console.log('\n\t-- manager set bankTreasuryContract address --');
-        
-        await waitForTx(
-            manager.connect(governance).setTreasury(bankTreasuryContract.address)
-        );
+       
         await waitForTx(
             manager.connect(governance).setGlobalModule(moduleGlobals.address)
         );
@@ -308,22 +301,26 @@ import {
             bankTreasuryContract.address, 
             INITIAL_SUPPLY
         ));
+        let balance =  await ndptContract.balanceOfNDPT(FIRST_PROFILE_ID)
+        console.log('\t-- INITIAL SUPPLY of the first soul bound token id:', balance.toNumber());
         
         console.log('\n\t-- Whitelisting ndptContract Contract address --');
-        
         await waitForTx( ndptContract.connect(deployer).whitelistContract(publishModule.address, true));
         await waitForTx( ndptContract.connect(deployer).whitelistContract(feeCollectModule.address, true));
         await waitForTx( ndptContract.connect(deployer).whitelistContract(bankTreasuryContract.address, true));
+        await waitForTx( ndptContract.connect(deployer).whitelistContract(voucherContract.address, true));
             
-        console.log('\n\t-- voucherContract set BankTreasury address --');
-        await waitForTx( voucherContract.connect(deployer).setBankTreasury(bankTreasuryContract.address));
+        console.log('\n\t-- voucherContract set moduleGlobals address --');
+        await waitForTx( voucherContract.connect(deployer).setGlobalModule(moduleGlobals.address));
+        await waitForTx( voucherContract.connect(deployer).setUserAmountLimit(moduleGlobals.address));
+
 
         console.log('\n\t-- manager set Protocol state to unpaused --');
         await waitForTx( manager.connect(governance).setState(ProtocolState.Unpaused));
 
-        console.log('\n\t-- manager set whitelistProfileCreator --');
-        await waitForTx( manager.connect(governance).whitelistProfileCreator(user.address, true));
-        await waitForTx( manager.connect(governance).whitelistProfileCreator(userTwo.address, true));
-        await waitForTx( manager.connect(governance).whitelistProfileCreator(userThree.address, true));
+        console.log('\n\t-- moduleGlobals set whitelistProfileCreator --');
+        await waitForTx( moduleGlobals.connect(governance).whitelistProfileCreator(user.address, true));
+        await waitForTx( moduleGlobals.connect(governance).whitelistProfileCreator(userTwo.address, true));
+        await waitForTx( moduleGlobals.connect(governance).whitelistProfileCreator(userThree.address, true));
 
    });

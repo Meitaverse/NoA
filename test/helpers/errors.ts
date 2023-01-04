@@ -60,4 +60,6 @@ export const ERRORS = {
   ERC3525INSUFFICIENTBALANCE: 'ERC3525INSUFFICIENTBALANCE()',
   NOT_OWNER_VOUCHER: 'NotOwnerVoucher()',
   Template_Not_in_Whitelisted: 'TemplateNotWhitelisted()',
+  Amount_Limit: 'AmountLimit()',
+  AmountNDP_Is_Zero: 'AmountNDPIsZero()',
 };

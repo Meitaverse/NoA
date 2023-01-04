@@ -180,13 +180,12 @@ contract NFTDerivativeProtocolTokenV1 is
         uint256 toTokenId_,
         uint256 value_
     ) external {
-         //call only by BankTreasury or FeeCollectModule or _PublishModule 
+         //call only by BankTreasury or FeeCollectModule or publishModule  or Voucher
         if (_contractWhitelisted[msg.sender]) {
-
             ERC3525Upgradeable._transferValue(fromTokenId_, toTokenId_, value_);
             return;
         }
-        revert Errors.NotAuthorised();
+        revert Errors.NotTransferValueAuthorised();
     }
 
     //-- orverride -- //
