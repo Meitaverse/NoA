@@ -130,7 +130,6 @@ export let ndptContract: NFTDerivativeProtocolTokenV1;
 export let derivativeNFTV1Impl: DerivativeNFTV1;
 export let metadataDescriptor: DerivativeMetadataDescriptor;
 
-export let ndptAddress: string;
 export let voucherImpl: Voucher;
 export let voucherContract: Voucher
 
@@ -234,7 +233,7 @@ before(async function () {
     data
   );
 
-  // Connect the manager proxy to the Manager factory and the user for ease of use.
+  // Connect the manager proxy to the Manager factory, must connect by user, not deployer
   manager = Manager__factory.connect(proxy.address, user);
   
   console.log("manager.address: ", manager.address);
@@ -261,7 +260,6 @@ before(async function () {
     initializeNDPTData
   );
   ndptContract = new NFTDerivativeProtocolTokenV1__factory(deployer).attach(ndptProxy.address);
-  ndptAddress = ndptContract.address;
 
   const soulBoundTokenIdOfBankTreaury = FIRST_PROFILE_ID;
   bankTreasuryImpl = await new BankTreasury__factory(deployer).deploy( );
@@ -280,7 +278,7 @@ before(async function () {
 
   moduleGlobals = await new ModuleGlobals__factory(deployer).deploy(
     manager.address,
-    ndptAddress,
+    ndptContract.address,
     governanceAddress,
     bankTreasuryContract.address,
     voucherContract.address,
@@ -297,7 +295,7 @@ before(async function () {
   publishModule = await new PublishModule__factory(deployer).deploy(
     manager.address, 
     moduleGlobals.address,
-    ndptAddress,
+    ndptContract.address,
   );
 
   multirecipientFeeCollectModule = await new MultirecipientFeeCollectModule__factory(deployer).deploy(
@@ -331,7 +329,7 @@ before(async function () {
 
   expect((await moduleGlobals.getNDPT()).toUpperCase()).to.eq(ndptContract.address.toUpperCase());
 
-  //manager set ndptAddress
+  //manager set moduleGlobals
   await manager.connect(governance).setGlobalModule(moduleGlobals.address);
   console.log('manager setGlobalModule ok ');
 

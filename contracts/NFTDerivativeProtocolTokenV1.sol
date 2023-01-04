@@ -266,7 +266,7 @@ contract NFTDerivativeProtocolTokenV1 is
         if (_BANKTREASURY != address(0)) revert Errors.InitialIsAlreadyDone();
         _BANKTREASURY = bankTreasury;
 
-        //create profile for bankTreasury
+        //create profile for bankTreasury, tokenId is 1
         uint256 tokenId_ = ERC3525Upgradeable._mint(_BANKTREASURY, 1, initialSupply);
         ERC3525Upgradeable.setApprovalForAll(_BANKTREASURY, true);
 

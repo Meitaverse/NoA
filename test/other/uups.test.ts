@@ -40,7 +40,6 @@ import {
   governanceAddress,
   ndptImpl,
   ndptContract,
-  ndptAddress,
   bankTreasuryContract,
   bankTreasuryImpl,
   

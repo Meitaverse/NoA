@@ -49,7 +49,6 @@ import {
   userTwoAddress,
   ndptContract,
   metadataDescriptor,
-  ndptAddress,
   publishModule,
   feeCollectModule,
   template,

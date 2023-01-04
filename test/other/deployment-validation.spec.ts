@@ -29,7 +29,6 @@ import {
   user,
   userAddress,
   receiverMock,
-  ndptAddress,
   derivativeNFTV1Impl,
   ndptContract,
   bankTreasuryContract,
@@ -150,7 +149,7 @@ makeSuiteCleanRoom('deployment validation', () => {
     await expect(
       new ModuleGlobals__factory(deployer).deploy(
         ZERO_ADDRESS, 
-        ndptAddress,
+        ndptContract.address,
         governanceAddress,
         bankTreasuryContract.address, 
         voucherContract.address,
@@ -178,7 +177,7 @@ makeSuiteCleanRoom('deployment validation', () => {
     await expect(
       new ModuleGlobals__factory(deployer).deploy(
         manager.address,
-        ndptAddress,
+        ndptContract.address,
         ZERO_ADDRESS, 
         bankTreasuryContract.address, 
         voucherContract.address,
@@ -192,7 +191,7 @@ makeSuiteCleanRoom('deployment validation', () => {
     await expect(
       new ModuleGlobals__factory(deployer).deploy(
         manager.address,
-        ndptAddress,
+        ndptContract.address,
         governanceAddress, 
         ZERO_ADDRESS, 
         voucherContract.address,
@@ -206,7 +205,7 @@ makeSuiteCleanRoom('deployment validation', () => {
     await expect(
       new ModuleGlobals__factory(deployer).deploy(
         manager.address,
-        ndptAddress,
+        ndptContract.address,
         governanceAddress, 
         bankTreasuryContract.address, 
         ZERO_ADDRESS, 
@@ -220,7 +219,7 @@ makeSuiteCleanRoom('deployment validation', () => {
       await expect(
         new ModuleGlobals__factory(deployer).deploy(
           manager.address,
-          ndptAddress,
+          ndptContract.address,
           governanceAddress, 
           bankTreasuryContract.address, 
           voucherContract.address,
@@ -235,7 +234,7 @@ makeSuiteCleanRoom('deployment validation', () => {
     await expect(
       new ModuleGlobals__factory(deployer).deploy(
         manager.address,
-        ndptAddress,
+        ndptContract.address,
         governanceAddress, 
         bankTreasuryContract.address,  
         voucherContract.address,
@@ -247,7 +246,7 @@ makeSuiteCleanRoom('deployment validation', () => {
     await expect(
       new ModuleGlobals__factory(deployer).deploy(
         manager.address,
-        ndptAddress,
+        ndptContract.address,
         governanceAddress, 
         bankTreasuryContract.address, 
         voucherContract.address,

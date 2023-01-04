@@ -29,7 +29,6 @@ import {
   derivativeNFTV1Impl,
   receiverMock,
   governanceAddress,
-  ndptAddress,
   ndptContract,
 } from '../__setup.spec';
 
