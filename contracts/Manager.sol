@@ -104,7 +104,7 @@ contract Manager is
         if (!IModuleGlobals(MODULE_GLOBALS).isWhitelistProfileCreator(vars.to)) revert Errors.ProfileCreatorNotWhitelisted();
         if (_ndpt == address(0)) revert Errors.NDPTNotSet();
 
-        uint256 soulBoundTokenId = INFTDerivativeProtocolTokenV1(_ndpt).createProfile(vars);
+        uint256 soulBoundTokenId = INFTDerivativeProtocolTokenV1(_ndpt).createProfile(msg.sender, vars);
 
         _walletBySoulBoundTokenId[soulBoundTokenId] = vars.to;
 
@@ -122,6 +122,7 @@ contract Manager is
         _hubBySoulBoundTokenId[hub.soulBoundTokenId] = hubId;
 
         InteractionLogic.createHub(
+            msg.sender,
             hubId,
             hub, 
             _hubInfos
@@ -252,19 +253,23 @@ contract Manager is
         _validateCallerIsSoulBoundTokenOwnerOrDispathcher(_publishIdByProjectData[publishId].publication.soulBoundTokenId);
 
         if (_publishIdByProjectData[publishId].isMinted) revert Errors.CannotUpdateAfterMinted();
-
-        _publishIdByProjectData[publishId].publication.salePrice = salePrice;
-        _publishIdByProjectData[publishId].publication.royaltyBasisPoints = royaltyBasisPoints;
-        _publishIdByProjectData[publishId].publication.amount = amount;
-        _publishIdByProjectData[publishId].publication.name = name;
-        _publishIdByProjectData[publishId].publication.description = description;
-        _publishIdByProjectData[publishId].publication.materialURIs = materialURIs;
-        _publishIdByProjectData[publishId].publication.fromTokenIds = fromTokenIds;
-
+        
         //calculate royalties
         if (_calculateRoyalty(publishId) > uint96(Constants._BASIS_POINTS)) {
            revert Errors.InvalidRoyaltyBasisPoints();   
         }
+
+        PublishLogic.updatePublish(
+            publishId,
+            salePrice,
+            royaltyBasisPoints,
+            amount,
+            name,
+            description,
+            materialURIs,
+            fromTokenIds,
+            _publishIdByProjectData
+        );
     }
 
     function getPublishInfo(uint256 publishId_) external view returns (DataTypes.PublishData memory) {
@@ -560,8 +565,6 @@ contract Manager is
         }
         _setDispatcher(vars.soulBoundTokenId, vars.dispatcher);
     }
-
-    
 
     //--- internal  ---//
     function  _validateCallerIsSoulBoundTokenOwnerOrDispathcher(uint256 soulBoundTokenId_) internal view {

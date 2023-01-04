@@ -64,8 +64,6 @@ import {
 
 import { 
   createProfileReturningTokenId,
-  createHubReturningHubId,
-  createProjectReturningProjectId,
 } from '../helpers/utils';
 
 let derivativeNFT: DerivativeNFTV1;

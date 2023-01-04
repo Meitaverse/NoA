@@ -68,11 +68,10 @@ makeSuiteCleanRoom('Publishing', function () {
                 await createHubReturningHubId({
                   sender: user,
                   hub: {
-                    creator: userAddress,
                     soulBoundTokenId: SECOND_PROFILE_ID,
                     name: "bitsoul",
                     description: "Hub for bitsoul",
-                    image: "image",
+                    imageURI: "image",
                   },
                 })
             ).to.eq(FIRST_HUB_ID);

@@ -125,6 +125,7 @@ contract NFTDerivativeProtocolTokenV1 is
     }
 
     function createProfile(
+        address creator,
         DataTypes.CreateProfileData calldata vars
     ) external override whenNotPaused onlyManager returns (uint256) {
         _validateNickName(vars.nickName);
@@ -139,6 +140,14 @@ contract NFTDerivativeProtocolTokenV1 is
             locked: true
         });
 
+        emit Events.ProfileCreated(
+            tokenId_,
+            creator,
+            vars.to,
+            vars.nickName,
+            vars.imageURI,
+            block.timestamp
+        );
 
         return tokenId_;
     }

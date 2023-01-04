@@ -42,11 +42,11 @@ library DataTypes {
     }
     
     struct HubData {
-        address creator;
+        // address creator;
         uint256 soulBoundTokenId;
         string name;
         string description;
-        string image;
+        string imageURI;
     }
 
     /**
@@ -237,7 +237,6 @@ library DataTypes {
         string nickName;
         string imageURI;
     }
-
 
     //BankTreasury
     

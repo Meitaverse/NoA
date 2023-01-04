@@ -74,7 +74,7 @@ contract ManagerV2 is IManagerV2, DerivativeNFTMultiState, MockManagerV2Storage,
         DataTypes.CreateProfileData calldata vars
     ) external returns (uint256) {
         if (!IModuleGlobals(MODULE_GLOBALS).isWhitelistProfileCreator(vars.to)) revert Errors.ProfileCreatorNotWhitelisted();
-        uint256 soulBoundTokenId = INFTDerivativeProtocolTokenV1(NDPT).createProfile(vars);
+        uint256 soulBoundTokenId = INFTDerivativeProtocolTokenV1(NDPT).createProfile(msg.sender, vars);
 
         return soulBoundTokenId;
     }
@@ -85,6 +85,7 @@ contract ManagerV2 is IManagerV2, DerivativeNFTMultiState, MockManagerV2Storage,
         uint256 hubId = _generateNextHubId();
         _hubBySoulBoundTokenId[hub.soulBoundTokenId] = hubId;
         InteractionLogic.createHub(
+            msg.sender,
             hubId, 
             hub,
             _hubInfos

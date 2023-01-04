@@ -83,6 +83,7 @@ interface IManager {
         uint256 tokenId,
         uint256 value
     ) external;
+
     /**
      * @notice Creates a profile with the specified parameters, minting a profile NFT to the given recipient. This
      * function must be called by a whitelisted profile creator.

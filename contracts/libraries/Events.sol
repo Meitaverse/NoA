@@ -6,11 +6,40 @@ import {DataTypes} from "./DataTypes.sol";
 
 library Events {
 
-  event BurnToken(
-      uint256 projectId, 
-      uint256 tokenId, 
-      address owner
-  );
+    /**
+     * @dev Emitted when a profile is created.
+     *
+     * @param soulBoundTokenId The newly created profile's token ID.
+     * @param creator The profile creator, who created the token with the given profile ID.
+     * @param to The address receiving the profile with the given profile ID.
+     * @param nickName The nickName set for the profile.
+     * @param imageURI The image uri set for the profile.
+     * @param timestamp The current block timestamp.
+     */
+    event ProfileCreated(
+        uint256 indexed soulBoundTokenId,
+        address indexed creator,
+        address indexed to,
+        string nickName,
+        string imageURI,
+        uint256 timestamp
+    );
+
+    event HubCreated(
+        uint256 indexed soulBoundTokenId,
+        address indexed creator,
+        uint256 indexed hubId,
+        string name,
+        string description,
+        string imageURI,
+        uint256 timestamp
+    );
+
+    event BurnToken(
+        uint256 projectId, 
+        uint256 tokenId, 
+        address owner
+    );
 
     /**
      * @dev Emitted when a dispatcher is set for a specific soulBoundToken.
@@ -254,7 +283,7 @@ library Events {
     event ProfileImageURISet(uint256 indexed soulBoundTokenId, string imageURI, uint256 timestamp);
 
 
-    event CollectDerivativeNFT(
+    event DerivativeNFTCollected(
         uint256 projectId,
         address derivativeNFT,
         uint256 fromSoulBoundTokenId,
@@ -265,7 +294,7 @@ library Events {
         uint256 timestamp
     );
 
-    event AirdropDerivativeNFT(
+    event DerivativeNFTAirdroped(
         uint256 projectId,
         address derivativeNFT,
         uint256 fromSoulBoundTokenId,
@@ -276,11 +305,12 @@ library Events {
         uint256 timestamp
     );
 
-    event PublishDerivativeNFT(
+    event PublishCreated(
         uint256 soulBoundTokenId,
         uint256 projectId,
         uint256 newTokenId,
         uint256 value,
+        bytes collectModuleReturnData,
         uint256 timestamp
     );
 
@@ -360,16 +390,6 @@ library Events {
         uint128 fee
     );
 
-    event CreateHub(
-        uint256 indexed hubId,
-        address indexed creator,
-        uint256 indexed soulBoundTokenId,
-        string name,
-        string description,
-        string image,
-        uint32 createdTime
-    );
-
     //BankTreasury
 
     event Deposit(address indexed sender, uint256 amount, uint256 balance);
@@ -435,11 +455,18 @@ library Events {
         uint256 timestamp
     );
    
-    event PublishCreated(
+    event PublishUpdated(
         uint256 publishId,
-        bytes collectModuleReturnData,
-        uint256 timestamp
+        uint256 salePrice,
+        uint256 royaltyBasisPoints,
+        uint256 amount,
+        string name,
+        string description,
+        string[] materialURIs,
+        uint256[] fromTokenIds,
+         uint256 timestamp
     );
+   
     
     // Signals frozen metadata to OpenSea; emitted in minting functions
     event PermanentURI(string _value, uint256 indexed _id);

@@ -106,6 +106,7 @@ contract NFTDerivativeProtocolTokenV2 is
     }
  
     function createProfile(
+        address creator,
         DataTypes.CreateProfileData calldata vars
     ) external override whenNotPaused onlyManager returns (uint256) {
         if (balanceOf(vars.to) > 0) revert Errors.TokenIsClaimed(); 

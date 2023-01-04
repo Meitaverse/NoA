@@ -64,6 +64,7 @@ interface INFTDerivativeProtocolTokenV2  {
     ) external view returns (bool);
 
     function createProfile(
+        address creator,
        DataTypes.CreateProfileData calldata vars
     ) external returns(uint256);
 

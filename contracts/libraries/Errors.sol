@@ -35,6 +35,7 @@ library Errors {
   error InvalidParameter();
   error NotSoulBoundTokenOwner();
   error NotHubOwner();
+  error HubIdIsZero();
   error SoulBoundTokenIdNotExists();
   error TokenIdNotExists();
   error HandleLengthInvalid();

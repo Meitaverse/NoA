@@ -174,21 +174,20 @@ makeSuiteCleanRoom('Profile Creation', function () {
                 await createHubReturningHubId({
                   sender: user,
                   hub: {
-                    creator: userAddress,
+                    // creator: userAddress,
                     soulBoundTokenId: SECOND_PROFILE_ID,
                     name: "bitsoul",
                     description: "Hub for bitsoul",
-                    image: "image",
+                    imageURI: "image",
                   },
                 })
             ).to.eq(FIRST_HUB_ID);
 
             let hubData = await manager.getHubInfo(FIRST_HUB_ID);
-            expect(hubData.creator).to.eq(userAddress);
             expect(hubData.soulBoundTokenId).to.eq(SECOND_PROFILE_ID);
             expect(hubData.name).to.eq("bitsoul");
             expect(hubData.description).to.eq("Hub for bitsoul");
-            expect(hubData.image).to.eq("image");
+            expect(hubData.imageURI).to.eq("image");
 
         });
         
@@ -206,11 +205,10 @@ makeSuiteCleanRoom('Profile Creation', function () {
             expect(
                 await createHubReturningHubId({
                   hub: {
-                    creator: userAddress,
                     soulBoundTokenId: SECOND_PROFILE_ID,
                     name: "bitsoul",
                     description: "Hub for bitsoul",
-                    image: "image",
+                    imageURI: "image",
                   },
                 })
             ).to.eq(FIRST_HUB_ID);

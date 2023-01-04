@@ -9,37 +9,25 @@ dataSources:
     network: mainnet
     source:
       address: "0xB7f8BC63BbcaD18155201308C8f3540b07f84F5e"
-      abi: NFTDerivativeProtocolTokenV1
+      abi: Events
       startBlock: 0
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.5
       language: wasm/assemblyscript
       entities:
-        # - OrganizerAdded
-        # - OrganizerRemoved
         - ProjectAdded
         - ProjectToken
         - BurnToken
-        # - SetOrganizerMainnetWallet
-        # - SetUserMainnetWallet
       abis:
-        - name: NoAV1
-          file: ./abis/NoAV1.json
+        - name: Events
+          file: ./abis/Events.json
       eventHandlers:
-        # - event:  OrganizerAdded(address,address,string,uint256)
-        #   handler: handleOrganizerAdded
-        # - event: OrganizerRemoved(indexed address)
-        #   handler: handleOrganizerRemoved
         - event: ProjectAdded(address,uint256,string,string,string,uint256)
           handler: handleEventAdded
-        - event: ProjectToken(uint256,uint256,address,address)
-          handler: handleEventToken
-        - event: BurnToken(uint256,uint256,address)
-          handler: handleBurnToken
-        # - event: SetOrganizerMainnetWallet(address,address,string,uint256)
-        #   handler: handleSetOrganizerMainnetWallet
-        # - event: SetUserMainnetWallet(address,address,string,uint256)
-        #   handler: handleSetUserMainnetWallet
+        # - event: ProjectToken(uint256,uint256,address,address)
+        #   handler: handleEventToken
+        # - event: BurnToken(uint256,uint256,address)
+        #   handler: handleBurnToken
       file: ./src/mapping.ts
   

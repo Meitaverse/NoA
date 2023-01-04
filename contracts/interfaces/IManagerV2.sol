@@ -59,11 +59,11 @@ interface IManagerV2 {
      *      nickName: The nickName to set for the profile, must be unique and non-empty.
      *      imageURI: The URI to set for the profile image.
      */
-    function createProfile(DataTypes.CreateProfileData calldata vars) external returns (uint256);
+    function createProfile(
+        DataTypes.CreateProfileData calldata vars
+    ) external returns (uint256);
 
     function getReceiver() external view returns (address);
-
-
 
     function createHub(
         DataTypes.HubData memory hub

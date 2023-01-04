@@ -109,11 +109,10 @@ makeSuiteCleanRoom('Fee Collect Module', function () {
         await createHubReturningHubId({
           sender: user,
           hub: {
-            creator: userAddress,
             soulBoundTokenId: SECOND_PROFILE_ID,
             name: "bitsoul",
             description: "Hub for bitsoul",
-            image: "image",
+            imageURI: "image",
           },
         })
     ).to.eq(FIRST_HUB_ID);
@@ -347,7 +346,7 @@ makeSuiteCleanRoom('Fee Collect Module', function () {
 
         matchEvent(
           receipt,
-          'CollectDerivativeNFT',
+          'DerivativeNFTCollected',
           [FIRST_PUBLISH_ID, derivativeNFT.address, SECOND_PROFILE_ID, THIRD_PROFILE_ID, FIRST_DNFT_TOKEN_ID, 1, SECOND_DNFT_TOKEN_ID, await getTimestamp()],
         );
   

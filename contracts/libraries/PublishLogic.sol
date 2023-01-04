@@ -44,6 +44,41 @@ library PublishLogic {
         );
     }
 
+    function updatePublish(
+        uint256 publishId,
+        uint256 salePrice,
+        uint256 royaltyBasisPoints,
+        uint256 amount,
+        string memory name,
+        string memory description,
+        string[] memory materialURIs,
+        uint256[] memory fromTokenIds,
+        mapping(uint256 => DataTypes.PublishData) storage _publishIdByProjectData
+    )external {
+
+        _publishIdByProjectData[publishId].publication.salePrice = salePrice;
+        _publishIdByProjectData[publishId].publication.royaltyBasisPoints = royaltyBasisPoints;
+        _publishIdByProjectData[publishId].publication.amount = amount;
+        _publishIdByProjectData[publishId].publication.name = name;
+        _publishIdByProjectData[publishId].publication.description = description;
+        _publishIdByProjectData[publishId].publication.materialURIs = materialURIs;
+        _publishIdByProjectData[publishId].publication.fromTokenIds = fromTokenIds;
+
+        emit Events.PublishUpdated(
+            publishId,
+            salePrice,
+            royaltyBasisPoints,
+            amount,
+            name,
+            description,
+            materialURIs,
+            fromTokenIds,
+            block.timestamp
+        );
+
+        
+    }
+
     function createPublish(
         DataTypes.Publication memory publication,
         uint256 publishId,
@@ -77,13 +112,7 @@ library PublishLogic {
             _pubByIdByProfile[publication.projectId][newTokenId].derivativeNFT = derivativeNFT;
             _pubByIdByProfile[publication.projectId][newTokenId].publishModule = publication.publishModule;
 
-            emit Events.PublishDerivativeNFT(
-                publication.soulBoundTokenId,
-                publication.projectId,
-                newTokenId,
-                publication.amount,
-                block.timestamp
-            ); 
+            
         }
 
         bytes memory collectModuleReturnData = _initCollectModule(
@@ -96,25 +125,18 @@ library PublishLogic {
                 publication.collectModuleInitData,
                 _pubByIdByProfile
         );
-        
-        _emitPublishCreated(
-            publishId,
-            collectModuleReturnData
-        );
-        
+
+        emit Events.PublishCreated(
+                publication.soulBoundTokenId,
+                publication.projectId,
+                newTokenId,
+                publication.amount,
+                collectModuleReturnData, 
+                block.timestamp
+            ); 
         return newTokenId;
     }
 
-    function _emitPublishCreated(
-        uint256 publishId,
-        bytes memory collectModuleReturnData
-    ) internal {
-        emit Events.PublishCreated(
-            publishId,
-            collectModuleReturnData,
-            block.timestamp
-        );
-    }
 
     function _initCollectModule(
         uint256 projectId,
@@ -206,7 +228,7 @@ library PublishLogic {
             collectData.data 
         );
 
-        emit Events.CollectDerivativeNFT(
+        emit Events.DerivativeNFTCollected(
             projectId,
             derivativeNFT,
             ownershipSoulBoundTokenId,
@@ -255,7 +277,7 @@ library PublishLogic {
             }
         }
 
-        emit Events.AirdropDerivativeNFT(
+        emit Events.DerivativeNFTAirdroped(
             _publishIdByProjectData[airdropData.publishId].publication.projectId,
             derivativeNFT,
             airdropData.ownershipSoulBoundTokenId,

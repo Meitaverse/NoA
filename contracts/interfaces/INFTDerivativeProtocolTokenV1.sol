@@ -81,6 +81,7 @@ interface INFTDerivativeProtocolTokenV1  {
     // ) external payable returns(uint256 tokenId);
   
     function createProfile(
+        address creator,
        DataTypes.CreateProfileData calldata vars
     ) external returns(uint256);
 

@@ -32,30 +32,30 @@ library InteractionLogic {
 
     
     function createHub(
+        address creator,
         uint256 hubId,
         DataTypes.HubData memory hub,
         mapping(uint256 => DataTypes.HubData) storage _hubInfos
     ) external {
-        if (hub.creator == address(0)) revert Errors.InvalidParameter();
+        
+        if (hubId == 0) revert Errors.HubIdIsZero();
         
          _hubInfos[hubId] = DataTypes.HubData({
-             creator: hub.creator,
              soulBoundTokenId : hub.soulBoundTokenId,
              name: hub.name,
              description: hub.description,
-             image: hub.image
+             imageURI: hub.imageURI
         });
 
-        //TODO hubModule
-
-        emit Events.CreateHub(
-            hubId, 
-            hub.creator, 
+        emit Events.HubCreated(
             hub.soulBoundTokenId, 
+            creator, 
+            hubId,
             hub.name,
             hub.description,
-            hub.image,
-            uint32(block.timestamp));
+            hub.imageURI,
+            uint32(block.timestamp)
+        );
 
     }
 
