@@ -2,10 +2,10 @@
 type EventItem @entity {
   id: ID!
   organizer: Organizer!
-  eventId: BigInt!
-  eventName: String!
-  eventDescription: String!
-  eventImage: String!
+  projectId: BigInt!
+  name: String!
+  description: String!
+  image: String!
   mintMax: BigInt!
 }
 
@@ -31,7 +31,7 @@ type User @entity {
 # 铸造历史
 type History @entity {
   id: ID!
-  eventId: BigInt!
+  projectId: BigInt!
   token: Token!
   organizer: Organizer!
   owner: User!
@@ -41,7 +41,7 @@ type History @entity {
 # NoA勋章管理, _mintToken(铸造), _burn(跨链后销毁)
 type Token @entity {
   id: ID!
-  eventId: BigInt!
+  projectId: BigInt!
   tokenId: BigInt!
   tokenURI: String!
   slotURI: String!

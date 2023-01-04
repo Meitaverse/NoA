@@ -1,27 +1,29 @@
 {
-  "name": "showdao-protocol",
-  "version": "0.0.1",
-  "description": "Hold some nfts and split or merge to a new one",
-  "license": "MIT",
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/MeitaVerse/showdao-protocol.git"
-  },
-  "engines": {
-    "node": ">=12.10"
-  },
-  "contributors": [
-    "Sky Lee <zokesky@gmail.com>"
-  ],
+  "name": "@bitsoul/derivative-nft-protocol",
+  "version": "1.0.0",
+  "description": "Derivative and decentralized NFT protocol",
+  "main": "index.js",
   "scripts": {
-    "hardhat-local": "hardhat node --hostname 0.0.0.0",
-    "deploy": "npx hardhat run scripts/deploy.js",
-    "deploy_UToken": "npx hardhat run scripts/deploy_UToken.js",
-    "deploy-alliance": "npx hardhat run alliance/deploy-alliance.js --network allianceChain",
-    "merkleTree": "node ./scripts/setMerkleTree.js",
-    "flatten": "npx hardhat flatten ./contracts/NoAV1.sol > audit/NoAV1.sol",
-    "upgrade-proxy": "npx hardhat run scripts/upgrade.js",
-    "test": "npx hardhat test --network hardhat",
+    "test": "npm run compile && TRACK_GAS=true hardhat test",
+    "quick-test": "hardhat test",
+    "spdx": "hardhat prepend-spdx-license",
+    "size": "npm run compile && hardhat size-contracts",
+    "full-deploy-local": "hardhat full-deploy --network localhost",
+    "full-deploy-mumbai": "hardhat full-deploy --network mumbai",
+    "coverage": "npm run compile && hardhat coverage --temp temp-artifacts --testfiles test/emptyrun.coverage.ts && hardhat coverage --temp temp-artifacts --testfiles '!test/emptyrun.coverage.ts'",
+    "run-env": "npm i && tail -f /dev/null",
+    "hardhat": "hardhat",
+    "hardhat:kovan": "hardhat --network kovan",
+    "hardhat:tenderly-main": "hardhat --network tenderlyMain",
+    "hardhat:ropsten": "hardhat --network ropsten",
+    "hardhat:main": "hardhat --network main",
+    "hardhat:docker": "hardhat --network hardhatevm_docker",
+    "hardhat:mumbai": "hardhat --network mumbai",
+    "hardhat:matic": "hardhat --network matic",
+    "compile": "SKIP_LOAD=true hardhat clean && SKIP_LOAD=true hardhat compile",
+    "console:fork": "MAINNET_FORK=true hardhat console",
+    "format": "prettier --write .",
+    "lint": "eslint .",
     "graph-local-node-start": "cd ./docker && docker-compose up -d",
     "graph-local-node-stop": "cd ./docker &&  docker-compose down -v && docker-compose rm -v && sudo rm -rf data/ipfs data/postgres",
     "node-logs": "cd ./docker &&  docker-compose logs -f -t --tail=\"100\" hardhat-node",
@@ -32,21 +34,15 @@
     "deploy-local-subgraph-node": "cd ./subgraph && npm run deploy-local",
     "remove-local-subgraph-node": "cd ./subgraph && npm run remove-local"
   },
-  "keywords": [
-    "solidity",
-    "ethereum",
-    "smart",
-    "contracts",
-    "erc-3525",
-    "erc3525"
-  ],
-  "author": "Solv Protocol <>",
-  "bugs": {
-    "url": "https://github.com/MeitaVerse/showdao-protocol/issues"
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/MeitaVerse/derivative-nft-protocol"
   },
-  "homepage": "https://showdao.io/",
+  "bugs": {
+    "url": "https://github.com/MeitaVerse/derivative-nft-protocol/issues"
+  },
+  "homepage": "https://github.com/MeitaVerse/derivative-nft-protocol#readme",
   "devDependencies": {
-    "@nomicfoundation/hardhat-chai-matchers": "^1.0.3",
     "@nomicfoundation/hardhat-network-helpers": "^1.0.4",
     "@nomicfoundation/hardhat-toolbox": "^1.0.2",
     "@nomiclabs/hardhat-etherscan": "^3.1.3",
@@ -72,15 +68,70 @@
   },
   "dependencies": {
     "@graphprotocol/graph-cli": "^0.36.1",
-    "@graphprotocol/graph-ts": "^0.29.0",
-    "@graphprotocol/hardhat-graph": "https://github.com/graphprotocol/hardhat-graph",
-    "@nomiclabs/hardhat-ethers": "^2.2.1",
-    "@openzeppelin/contracts": "^4.7.3",
-    "@openzeppelin/contracts-upgradeable": "^4.7.3",
-    "@openzeppelin/hardhat-upgrades": "^1.21.0",
+    "@nomiclabs/hardhat-etherscan": "^3.1.2",
+    "@nomiclabs/hardhat-truffle5": "^2.0.7",
+    "@nomiclabs/hardhat-web3": "^2.0.0",
+    "@openzeppelin/test-helpers": "^0.5.16",
+    "@typechain/ethers-v5": "8.0.5",
+    "@typechain/hardhat": "3.0.0",
+    "@types/chai": "4.2.22",
+    "@types/mocha": "9.0.0",
+    "@types/node": "16.11.11",
+    "@typescript-eslint/eslint-plugin": "5.5.0",
+    "@typescript-eslint/parser": "5.5.0",
     "chai": "^4.3.7",
+    "defender-relay-client": "1.12.1",
+    "dotenv": "^16.0.1",
+    "eslint": "8.3.0",
+    "eslint-config-prettier": "8.3.0",
+    "eslint-plugin-prettier": "4.0.0",
+    "ethereum-waffle": "3.4.0",
+    "ethers": "^5.7.2",
+    "hardhat": "^2.12.3",
+    "hardhat-contract-sizer": "^2.6.1",
+    "hardhat-gas-reporter": "^1.0.9",
+    "hardhat-log-remover": "2.0.2",
+    "hardhat-spdx-license-identifier": "2.0.3",
+    "husky": "7.0.4",
     "keccak256": "^1.0.6",
     "matchstick-as": "^0.5.0",
-    "merkletreejs": "^0.2.32"
-  }
+    "merkletreejs": "^0.3.9",
+    "prettier": "2.5.0",
+    "prettier-plugin-solidity": "1.0.0-beta.19",
+    "solidity-coverage": "0.7.17",
+    "ts-generator": "0.1.1",
+    "ts-node": "^10.9.1",
+    "typechain": "6.0.5",
+    "typescript": "4.5.2"
+  },
+  "husky": {
+    "hooks": {
+      "pre-commit": "pretty-quick --staged --pattern 'contracts/**/*.sol' --pattern 'helpers/**/*.ts'  --pattern 'test/**/*.ts' --pattern 'tasks/**/*.ts'"
+    }
+  },
+  "dependencies": {
+    "@openzeppelin/contracts": "^4.8.0",
+    "@openzeppelin/contracts-upgradeable": "^4.8.0",
+    "@solvprotocol/erc-3525": "git+https://github.com/solv-finance/erc-3525.git"
+  },
+  "author": "Bitsoul",
+  "contributors": [
+    "fengduan",
+    "Terry",
+    "Sky Lee"
+  ],
+  "license": "MIT",
+  "keywords": [
+    "erc3525",
+    "erc721",
+    "protocol",
+    "metaverse",
+    "derivative",
+    "social",
+    "graph",
+    "solidity",
+    "evm",
+    "contracts",
+    "core"
+  ]
 }

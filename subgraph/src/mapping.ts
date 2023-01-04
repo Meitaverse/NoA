@@ -4,8 +4,8 @@ import {
     NoAV1,
     // OrganizerAdded,
     // OrganizerRemoved,
-    EventAdded,
-    EventToken,
+    ProjectAdded,
+    ProjectToken,
     BurnToken,
     // SetOrganizerMainnetWallet,
     // SetUserMainnetWallet
@@ -37,15 +37,15 @@ import {
 //     store.remove("Organizer", event.params.organizer.toHexString())
 // }
 
-export function handleEventAdded(event: EventAdded): void {
-    let eventIdString = event.params.eventId.toString()
+export function handleEventAdded(event: ProjectAdded): void {
+    let eventIdString = event.params.projectId.toString()
     const eventItem = EventItem.load(eventIdString) || new EventItem(eventIdString)
     if (eventItem) {
         eventItem.organizer =  event.params.organizer.toHexString()
-        eventItem.eventId = event.params.eventId
-        eventItem.eventName = event.params.eventName
-        eventItem.eventDescription = event.params.eventDescription
-        eventItem.eventImage = event.params.eventImage
+        eventItem.projectId = event.params.projectId
+        eventItem.name = event.params.name
+        eventItem.description = event.params.description
+        eventItem.image = event.params.image
         eventItem.mintMax = event.params.mintMax
         eventItem.save()
     }
@@ -62,7 +62,7 @@ export function handleEventAdded(event: EventAdded): void {
     
 }
 
-export function handleEventToken(event: EventToken): void {
+export function handleEventToken(event: ProjectToken): void {
     log.info("handleEventToken, event.address: {}", [event.address.toHexString()])
     let noaContract = NoAV1.bind(event.address)
    
@@ -79,12 +79,12 @@ export function handleEventToken(event: EventToken): void {
         ]
     )
 
-    let _idString = event.params.eventId.toString() + "-" + event.params.tokenId.toString()
+    let _idString = event.params.projectId.toString() + "-" + event.params.tokenId.toString()
     const token = Token.load(_idString) || new Token(_idString)
     // let tokenURI = ""
     // let slotURI = ""
     let tokenURI = noaContract.tokenURI(event.params.tokenId)
-    let slotURI = noaContract.slotURI(event.params.eventId)
+    let slotURI = noaContract.slotURI(event.params.projectId)
     log.info(
         "handleEventToken, tokenURI: {}, slotURI: {}",
         [
@@ -94,7 +94,7 @@ export function handleEventToken(event: EventToken): void {
       )
 
     if (token) {
-        token.eventId = event.params.eventId
+        token.projectId = event.params.projectId
         token.tokenId = event.params.tokenId
         token.tokenURI = tokenURI
         token.slotURI = slotURI
@@ -112,7 +112,7 @@ export function handleEventToken(event: EventToken): void {
 
         const history = History.load(_idString) || new History(_idString) 
         if (history) {
-            history.eventId = event.params.eventId
+            history.projectId = event.params.projectId
             history.token = _idString
             history.organizer = event.params.organizer.toHexString()
             history.owner = user_idString
@@ -123,7 +123,7 @@ export function handleEventToken(event: EventToken): void {
 }
 
 export function handleBurnToken(event: BurnToken): void { 
-    let _idString = event.params.eventId.toString() + "-" + event.params.tokenId.toString()
+    let _idString = event.params.projectId.toString() + "-" + event.params.tokenId.toString()
     store.remove("Token", _idString)
     store.remove("History", _idString)
 }
