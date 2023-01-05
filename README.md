@@ -3,6 +3,33 @@
 Description: 
    Basically this protocol can hold some erc3525 tokens and split or merge to a new one.
 
+
+### Setup
+
+Run  `yarn install` in the root directory
+
+## Unit Tests
+
+Run `yarn test` to run the unit tests
+
+
+## The Graph
+
+### Login AWS Server: 16.163.166.55
+Start docker-compose
+```
+
+$ yarn graph-local-node-start
+```
+
+### 查看docker 日志
+```
+$ yarn node-logs  
+
+$ yarn graph-node-logs
+
+```
+
 ## Accounts
 ```
 $ yarn hardhat accounts --network local 
@@ -41,17 +68,9 @@ Private Key: 0x2a871d0798f97d79848a013d4936a73bf4cc922c825d33c1cf7073dff6d409c6
 
 ```
 
-### Setup
-
-Run  `yarn install` in the root directory
-
-## Unit Tests
-
-Run `yarn test` to run the unit tests
-
 ## deploy
 ```
-$ yarn hardhat full-deploy
+$ yarn hardhat full-deploy --network local 
   	-- deployer:  0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266
 	-- governance:  0x70997970C51812dc3A010C7d01b50e0d17dc79C8
 	-- user:  0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC
@@ -101,23 +120,6 @@ $ yarn hardhat full-deploy
 	-- publishModule:  0x959922bE3CAee4b8Cd9a407cc3ac1C251C2007B1
 ```
 
-## The Graph
-
-### Login AWS Server: 16.163.166.55
-Start docker-compose
-```
-$ cd /home/ubuntu/developments/solidity/NoA.main
-
-$ yarn graph-local-node-start
-```
-
-### 查看docker 日志
-```
-$ yarn node-logs  
-
-$ yarn graph-node-logs
-
-```
 
 ### 部署Graph Node
 ```
