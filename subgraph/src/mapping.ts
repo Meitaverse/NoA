@@ -1,23 +1,58 @@
 import { log, Address, BigInt, Bytes, store, TypedMap } from "@graphprotocol/graph-ts";
 
 import {
-    NoAV1,
-    // OrganizerAdded,
-    // OrganizerRemoved,
-    ProjectAdded,
-    ProjectToken,
-    BurnToken,
-    // SetOrganizerMainnetWallet,
-    // SetUserMainnetWallet
-} from "../generated/bitsoul/DerivativeNFT"
+    // Manager,
+    ProfileCreated,
+} from "../generated/bitsoul/Events"
 
 import {
-    EventItem,
-    Organizer,
-    User,
-    History,
-    Token
+    Profile,
 } from "../generated/schema"
+
+export function handleProfileCreated(event: ProfileCreated): void {
+    log.info("handleProfileCreated, event.address: {}", [event.address.toHexString()])
+    /*
+    let manager = Manager.bind(event.address)
+   
+
+    // let noaContract = NoAV1.bind(Address.fromString("0x0165878A594ca255338adfa4d48449f69242Eb8F"));
+
+    let name = manager.name()
+    let symbol = manager.symbol()
+    log.info(
+        "handleEventToken, name:{},  symbol: {}",
+        [
+            name,
+            symbol
+        ]
+    )
+    */
+
+    let _idString = event.params.soulBoundTokenId.toString() + "-" + event.params.wallet.toString()
+    const profile = Profile.load(_idString) || new Profile(_idString)
+    // let tokenURI = ""
+    // let slotURI = ""
+    // let tokenURI = noaContract.tokenURI(event.params.tokenId)
+    // let slotURI = noaContract.slotURI(event.params.projectId)
+    // log.info(
+    //     "handleEventToken, tokenURI: {}, slotURI: {}",
+    //     [
+    //         tokenURI,
+    //         slotURI
+    //     ]
+    //   )
+
+    if (profile) {
+        profile.soulBoundTokenId = event.params.soulBoundTokenId
+        profile.creator = event.params.creator
+        profile.wallet = event.params.wallet
+        profile.nickName = event.params.nickName
+        profile.imageURI = event.params.imageURI
+        profile.timestamp = event.block.timestamp
+        profile.save()
+        
+    } 
+}
 
 
 // export function handleOrganizerAdded(event: OrganizerAdded): void {
@@ -36,7 +71,7 @@ import {
 // export function handleOrganizerRemoved(event: OrganizerRemoved): void {
 //     store.remove("Organizer", event.params.organizer.toHexString())
 // }
-
+/*
 export function handleEventAdded(event: ProjectAdded): void {
     let eventIdString = event.params.projectId.toString()
     const eventItem = EventItem.load(eventIdString) || new EventItem(eventIdString)
@@ -127,6 +162,7 @@ export function handleBurnToken(event: BurnToken): void {
     store.remove("Token", _idString)
     store.remove("History", _idString)
 }
+*/
 
 // export function handleSetOrganizerMainnetWallet(event: SetOrganizerMainnetWallet): void {
 //     let _idString =  event.params.organizer.toHexString()

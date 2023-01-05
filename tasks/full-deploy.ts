@@ -2,6 +2,8 @@ import '@nomiclabs/hardhat-ethers';
 import { hexlify, keccak256, RLP } from 'ethers/lib/utils';
 import fs from 'fs';
 import { task } from 'hardhat/config';
+// import { readFile, writeFile } from "fs/promises";
+import { exportAddress } from "./config";
 
 import {
     ERC1967Proxy__factory,

@@ -1,0 +1,1456 @@
+[
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "dNftV1_",
+          "type": "address"
+        },
+        {
+          "internalType": "address",
+          "name": "receiver_",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "nonpayable",
+      "type": "constructor"
+    },
+    {
+      "inputs": [],
+      "name": "CannotInitImplementation",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "CannotUpdateAfterMinted",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "CollectModuleNotWhitelisted",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "EmergencyAdminCannotUnpause",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "HubCreatorNotWhitelisted",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "InitParamsInvalid",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "Initialized",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "InsufficientDerivativeNFT",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "InvalidParameter",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "InvalidRoyaltyBasisPoints",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "NDPTNotSet",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "NotGovernance",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "NotGovernanceOrEmergencyAdmin",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "NotHubOwner",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "NotProfileOwnerOrDispatcher",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "NotSameHub",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "Paused",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "ProfileCreatorNotWhitelisted",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "ProjectExisted",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "PublishModuleNotWhitelisted",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "SignatureExpired",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "SignatureInvalid",
+      "type": "error"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "derivativeNFT_",
+          "type": "address"
+        },
+        {
+          "internalType": "uint64",
+          "name": "precision_",
+          "type": "uint64"
+        },
+        {
+          "internalType": "uint8",
+          "name": "feePayType_",
+          "type": "uint8"
+        },
+        {
+          "internalType": "uint8",
+          "name": "feeType_",
+          "type": "uint8"
+        },
+        {
+          "internalType": "uint128",
+          "name": "feeAmount_",
+          "type": "uint128"
+        },
+        {
+          "internalType": "uint16",
+          "name": "feeRate_",
+          "type": "uint16"
+        }
+      ],
+      "name": "addMarket",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "components": [
+            {
+              "internalType": "uint256",
+              "name": "publishId",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "ownershipSoulBoundTokenId",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256[]",
+              "name": "toSoulBoundTokenIds",
+              "type": "uint256[]"
+            },
+            {
+              "internalType": "uint256",
+              "name": "tokenId",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256[]",
+              "name": "values",
+              "type": "uint256[]"
+            }
+          ],
+          "internalType": "struct DataTypes.AirdropData",
+          "name": "airdropData",
+          "type": "tuple"
+        }
+      ],
+      "name": "airdrop",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "tokenId",
+          "type": "uint256"
+        }
+      ],
+      "name": "burnNDPT",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "tokenId",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "value",
+          "type": "uint256"
+        }
+      ],
+      "name": "burnNDPTValue",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "soulBoundTokenId",
+          "type": "uint256"
+        },
+        {
+          "internalType": "address",
+          "name": "buyer",
+          "type": "address"
+        },
+        {
+          "internalType": "uint24",
+          "name": "saleId",
+          "type": "uint24"
+        },
+        {
+          "internalType": "uint128",
+          "name": "units",
+          "type": "uint128"
+        }
+      ],
+      "name": "buyUnits",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "amount",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint128",
+          "name": "fee",
+          "type": "uint128"
+        }
+      ],
+      "stateMutability": "payable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "publishId",
+          "type": "uint256"
+        }
+      ],
+      "name": "calculateRoyalty",
+      "outputs": [
+        {
+          "internalType": "uint96",
+          "name": "",
+          "type": "uint96"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "components": [
+            {
+              "internalType": "uint256",
+              "name": "publishId",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "collectorSoulBoundTokenId",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "collectValue",
+              "type": "uint256"
+            },
+            {
+              "internalType": "bytes",
+              "name": "data",
+              "type": "bytes"
+            }
+          ],
+          "internalType": "struct DataTypes.CollectData",
+          "name": "collectData",
+          "type": "tuple"
+        }
+      ],
+      "name": "collect",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "components": [
+            {
+              "internalType": "uint256",
+              "name": "soulBoundTokenId",
+              "type": "uint256"
+            },
+            {
+              "internalType": "string",
+              "name": "name",
+              "type": "string"
+            },
+            {
+              "internalType": "string",
+              "name": "description",
+              "type": "string"
+            },
+            {
+              "internalType": "string",
+              "name": "imageURI",
+              "type": "string"
+            }
+          ],
+          "internalType": "struct DataTypes.HubData",
+          "name": "hub",
+          "type": "tuple"
+        }
+      ],
+      "name": "createHub",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "components": [
+            {
+              "internalType": "address",
+              "name": "wallet",
+              "type": "address"
+            },
+            {
+              "internalType": "string",
+              "name": "nickName",
+              "type": "string"
+            },
+            {
+              "internalType": "string",
+              "name": "imageURI",
+              "type": "string"
+            }
+          ],
+          "internalType": "struct DataTypes.CreateProfileData",
+          "name": "vars",
+          "type": "tuple"
+        }
+      ],
+      "name": "createProfile",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "components": [
+            {
+              "internalType": "uint256",
+              "name": "hubId",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "soulBoundTokenId",
+              "type": "uint256"
+            },
+            {
+              "internalType": "string",
+              "name": "name",
+              "type": "string"
+            },
+            {
+              "internalType": "string",
+              "name": "description",
+              "type": "string"
+            },
+            {
+              "internalType": "string",
+              "name": "image",
+              "type": "string"
+            },
+            {
+              "internalType": "string",
+              "name": "metadataURI",
+              "type": "string"
+            },
+            {
+              "internalType": "address",
+              "name": "descriptor",
+              "type": "address"
+            },
+            {
+              "internalType": "uint96",
+              "name": "defaultRoyaltyPoints",
+              "type": "uint96"
+            },
+            {
+              "internalType": "enum DataTypes.FeeShareType",
+              "name": "feeShareType",
+              "type": "uint8"
+            }
+          ],
+          "internalType": "struct DataTypes.ProjectData",
+          "name": "project",
+          "type": "tuple"
+        }
+      ],
+      "name": "createProject",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "projectId",
+          "type": "uint256"
+        }
+      ],
+      "name": "getDerivativeNFT",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "soulBoundToken",
+          "type": "uint256"
+        }
+      ],
+      "name": "getDispatcher",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "publishId",
+          "type": "uint256"
+        }
+      ],
+      "name": "getGenesisSoulBoundTokenIdByPublishId",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "getGlobalModule",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "getGovernance",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "hubId",
+          "type": "uint256"
+        }
+      ],
+      "name": "getHubInfo",
+      "outputs": [
+        {
+          "components": [
+            {
+              "internalType": "uint256",
+              "name": "soulBoundTokenId",
+              "type": "uint256"
+            },
+            {
+              "internalType": "string",
+              "name": "name",
+              "type": "string"
+            },
+            {
+              "internalType": "string",
+              "name": "description",
+              "type": "string"
+            },
+            {
+              "internalType": "string",
+              "name": "imageURI",
+              "type": "string"
+            }
+          ],
+          "internalType": "struct DataTypes.HubData",
+          "name": "",
+          "type": "tuple"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "projectId_",
+          "type": "uint256"
+        }
+      ],
+      "name": "getProjectInfo",
+      "outputs": [
+        {
+          "components": [
+            {
+              "internalType": "uint256",
+              "name": "hubId",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "soulBoundTokenId",
+              "type": "uint256"
+            },
+            {
+              "internalType": "string",
+              "name": "name",
+              "type": "string"
+            },
+            {
+              "internalType": "string",
+              "name": "description",
+              "type": "string"
+            },
+            {
+              "internalType": "string",
+              "name": "image",
+              "type": "string"
+            },
+            {
+              "internalType": "string",
+              "name": "metadataURI",
+              "type": "string"
+            },
+            {
+              "internalType": "address",
+              "name": "descriptor",
+              "type": "address"
+            },
+            {
+              "internalType": "uint96",
+              "name": "defaultRoyaltyPoints",
+              "type": "uint96"
+            },
+            {
+              "internalType": "enum DataTypes.FeeShareType",
+              "name": "feeShareType",
+              "type": "uint8"
+            }
+          ],
+          "internalType": "struct DataTypes.ProjectData",
+          "name": "",
+          "type": "tuple"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "tokenId_",
+          "type": "uint256"
+        }
+      ],
+      "name": "getPublicationByTokenId",
+      "outputs": [
+        {
+          "components": [
+            {
+              "internalType": "uint256",
+              "name": "soulBoundTokenId",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "hubId",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "projectId",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "salePrice",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "royaltyBasisPoints",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "amount",
+              "type": "uint256"
+            },
+            {
+              "internalType": "string",
+              "name": "name",
+              "type": "string"
+            },
+            {
+              "internalType": "string",
+              "name": "description",
+              "type": "string"
+            },
+            {
+              "internalType": "string[]",
+              "name": "materialURIs",
+              "type": "string[]"
+            },
+            {
+              "internalType": "uint256[]",
+              "name": "fromTokenIds",
+              "type": "uint256[]"
+            },
+            {
+              "internalType": "address",
+              "name": "collectModule",
+              "type": "address"
+            },
+            {
+              "internalType": "bytes",
+              "name": "collectModuleInitData",
+              "type": "bytes"
+            },
+            {
+              "internalType": "address",
+              "name": "publishModule",
+              "type": "address"
+            },
+            {
+              "internalType": "bytes",
+              "name": "publishModuleInitData",
+              "type": "bytes"
+            }
+          ],
+          "internalType": "struct DataTypes.Publication",
+          "name": "",
+          "type": "tuple"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "publishId_",
+          "type": "uint256"
+        }
+      ],
+      "name": "getPublishInfo",
+      "outputs": [
+        {
+          "components": [
+            {
+              "components": [
+                {
+                  "internalType": "uint256",
+                  "name": "soulBoundTokenId",
+                  "type": "uint256"
+                },
+                {
+                  "internalType": "uint256",
+                  "name": "hubId",
+                  "type": "uint256"
+                },
+                {
+                  "internalType": "uint256",
+                  "name": "projectId",
+                  "type": "uint256"
+                },
+                {
+                  "internalType": "uint256",
+                  "name": "salePrice",
+                  "type": "uint256"
+                },
+                {
+                  "internalType": "uint256",
+                  "name": "royaltyBasisPoints",
+                  "type": "uint256"
+                },
+                {
+                  "internalType": "uint256",
+                  "name": "amount",
+                  "type": "uint256"
+                },
+                {
+                  "internalType": "string",
+                  "name": "name",
+                  "type": "string"
+                },
+                {
+                  "internalType": "string",
+                  "name": "description",
+                  "type": "string"
+                },
+                {
+                  "internalType": "string[]",
+                  "name": "materialURIs",
+                  "type": "string[]"
+                },
+                {
+                  "internalType": "uint256[]",
+                  "name": "fromTokenIds",
+                  "type": "uint256[]"
+                },
+                {
+                  "internalType": "address",
+                  "name": "collectModule",
+                  "type": "address"
+                },
+                {
+                  "internalType": "bytes",
+                  "name": "collectModuleInitData",
+                  "type": "bytes"
+                },
+                {
+                  "internalType": "address",
+                  "name": "publishModule",
+                  "type": "address"
+                },
+                {
+                  "internalType": "bytes",
+                  "name": "publishModuleInitData",
+                  "type": "bytes"
+                }
+              ],
+              "internalType": "struct DataTypes.Publication",
+              "name": "publication",
+              "type": "tuple"
+            },
+            {
+              "internalType": "uint256",
+              "name": "previousPublishId",
+              "type": "uint256"
+            },
+            {
+              "internalType": "bool",
+              "name": "isMinted",
+              "type": "bool"
+            },
+            {
+              "internalType": "uint256",
+              "name": "tokenId",
+              "type": "uint256"
+            }
+          ],
+          "internalType": "struct DataTypes.PublishData",
+          "name": "",
+          "type": "tuple"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "getReceiver",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "getState",
+      "outputs": [
+        {
+          "internalType": "enum DataTypes.ProtocolState",
+          "name": "",
+          "type": "uint8"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "soulBoundTokenId",
+          "type": "uint256"
+        }
+      ],
+      "name": "getWalletBySoulBoundTokenId",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "governance",
+          "type": "address"
+        }
+      ],
+      "name": "initialize",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "tokenId",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "value",
+          "type": "uint256"
+        }
+      ],
+      "name": "mintNDPTValue",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "name",
+      "outputs": [
+        {
+          "internalType": "string",
+          "name": "",
+          "type": "string"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "components": [
+            {
+              "internalType": "uint256",
+              "name": "soulBoundTokenId",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "hubId",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "projectId",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "salePrice",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "royaltyBasisPoints",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "amount",
+              "type": "uint256"
+            },
+            {
+              "internalType": "string",
+              "name": "name",
+              "type": "string"
+            },
+            {
+              "internalType": "string",
+              "name": "description",
+              "type": "string"
+            },
+            {
+              "internalType": "string[]",
+              "name": "materialURIs",
+              "type": "string[]"
+            },
+            {
+              "internalType": "uint256[]",
+              "name": "fromTokenIds",
+              "type": "uint256[]"
+            },
+            {
+              "internalType": "address",
+              "name": "collectModule",
+              "type": "address"
+            },
+            {
+              "internalType": "bytes",
+              "name": "collectModuleInitData",
+              "type": "bytes"
+            },
+            {
+              "internalType": "address",
+              "name": "publishModule",
+              "type": "address"
+            },
+            {
+              "internalType": "bytes",
+              "name": "publishModuleInitData",
+              "type": "bytes"
+            }
+          ],
+          "internalType": "struct DataTypes.Publication",
+          "name": "publication",
+          "type": "tuple"
+        }
+      ],
+      "name": "prePublish",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "publishId",
+          "type": "uint256"
+        }
+      ],
+      "name": "publish",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "components": [
+            {
+              "internalType": "uint24",
+              "name": "saleId",
+              "type": "uint24"
+            },
+            {
+              "internalType": "uint256",
+              "name": "soulBoundTokenId",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "projectId",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "tokenId",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint32",
+              "name": "startTime",
+              "type": "uint32"
+            },
+            {
+              "internalType": "address",
+              "name": "seller",
+              "type": "address"
+            },
+            {
+              "internalType": "uint128",
+              "name": "price",
+              "type": "uint128"
+            },
+            {
+              "internalType": "enum DataTypes.PriceType",
+              "name": "priceType",
+              "type": "uint8"
+            },
+            {
+              "internalType": "uint256",
+              "name": "total",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint128",
+              "name": "units",
+              "type": "uint128"
+            },
+            {
+              "internalType": "uint128",
+              "name": "min",
+              "type": "uint128"
+            },
+            {
+              "internalType": "uint128",
+              "name": "max",
+              "type": "uint128"
+            },
+            {
+              "internalType": "address",
+              "name": "derivativeNFT",
+              "type": "address"
+            },
+            {
+              "internalType": "address",
+              "name": "currency",
+              "type": "address"
+            },
+            {
+              "internalType": "bool",
+              "name": "useAllowList",
+              "type": "bool"
+            },
+            {
+              "internalType": "bool",
+              "name": "isValid",
+              "type": "bool"
+            }
+          ],
+          "internalType": "struct DataTypes.Sale",
+          "name": "sale",
+          "type": "tuple"
+        }
+      ],
+      "name": "publishFixedPrice",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "derivativeNFT_",
+          "type": "address"
+        }
+      ],
+      "name": "removeMarket",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint24",
+          "name": "saleId_",
+          "type": "uint24"
+        }
+      ],
+      "name": "removeSale",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "components": [
+            {
+              "internalType": "uint256",
+              "name": "soulBoundTokenId",
+              "type": "uint256"
+            },
+            {
+              "internalType": "address",
+              "name": "dispatcher",
+              "type": "address"
+            },
+            {
+              "components": [
+                {
+                  "internalType": "uint8",
+                  "name": "v",
+                  "type": "uint8"
+                },
+                {
+                  "internalType": "bytes32",
+                  "name": "r",
+                  "type": "bytes32"
+                },
+                {
+                  "internalType": "bytes32",
+                  "name": "s",
+                  "type": "bytes32"
+                },
+                {
+                  "internalType": "uint256",
+                  "name": "deadline",
+                  "type": "uint256"
+                }
+              ],
+              "internalType": "struct DataTypes.EIP712Signature",
+              "name": "sig",
+              "type": "tuple"
+            }
+          ],
+          "internalType": "struct DataTypes.SetDispatcherWithSigData",
+          "name": "vars",
+          "type": "tuple"
+        }
+      ],
+      "name": "setDispatcherWithSig",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "newEmergencyAdmin",
+          "type": "address"
+        }
+      ],
+      "name": "setEmergencyAdmin",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "moduleGlobals",
+          "type": "address"
+        }
+      ],
+      "name": "setGlobalModule",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "newGovernance",
+          "type": "address"
+        }
+      ],
+      "name": "setGovernance",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "soulBoundTokenId",
+          "type": "uint256"
+        },
+        {
+          "internalType": "string",
+          "name": "imageURI",
+          "type": "string"
+        }
+      ],
+      "name": "setProfileImageURI",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "enum DataTypes.ProtocolState",
+          "name": "newState",
+          "type": "uint8"
+        }
+      ],
+      "name": "setState",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "name": "sigNonces",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "projectId",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "fromSoulBoundTokenId",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "toSoulBoundTokenId",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "tokenId",
+          "type": "uint256"
+        }
+      ],
+      "name": "transferDerivativeNFT",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "projectId",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "fromSoulBoundTokenId",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "toSoulBoundTokenId",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "tokenId",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "value",
+          "type": "uint256"
+        }
+      ],
+      "name": "transferValueDerivativeNFT",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "publishId",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "salePrice",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "royaltyBasisPoints",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "amount",
+          "type": "uint256"
+        },
+        {
+          "internalType": "string",
+          "name": "name",
+          "type": "string"
+        },
+        {
+          "internalType": "string",
+          "name": "description",
+          "type": "string"
+        },
+        {
+          "internalType": "string[]",
+          "name": "materialURIs",
+          "type": "string[]"
+        },
+        {
+          "internalType": "uint256[]",
+          "name": "fromTokenIds",
+          "type": "uint256[]"
+        }
+      ],
+      "name": "updatePublish",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "version",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "pure",
+      "type": "function"
+    }
+  ]

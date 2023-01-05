@@ -8,18 +8,20 @@ dataSources:
     name: bitsoul
     network: mainnet
     source:
-      address: "0xB7f8BC63BbcaD18155201308C8f3540b07f84F5e"
+      address: "0xa513E6E4b8f2a923D98304ec87F64353C4D5C853"
       abi: Events
       startBlock: 0
     mapping:
       kind: ethereum/events
-      apiVersion: 0.0.5
+      apiVersion: 0.0.6
       language: wasm/assemblyscript
       entities:
         - ProfileCreated
         # - ProjectToken
         # - BurnToken
       abis:
+        # - name: Manager
+        #   file: ./abis/Manager.json
         - name: Events
           file: ./abis/Events.json
       eventHandlers:

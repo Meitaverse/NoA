@@ -8,7 +8,7 @@
     "quick-test": "hardhat test",
     "spdx": "hardhat prepend-spdx-license",
     "size": "npm run compile && hardhat size-contracts",
-    "full-deploy-local": "hardhat full-deploy --network localhost",
+    "full-deploy-local": "hardhat full-deploy --network local",
     "full-deploy-mumbai": "hardhat full-deploy --network mumbai",
     "coverage": "npm run compile && hardhat coverage --temp temp-artifacts --testfiles test/emptyrun.coverage.ts && hardhat coverage --temp temp-artifacts --testfiles '!test/emptyrun.coverage.ts'",
     "run-env": "npm i && tail -f /dev/null",
@@ -42,6 +42,8 @@
   },
   "homepage": "https://github.com/MeitaVerse/derivative-nft-protocol#readme",
   "devDependencies": {
+    "@graphprotocol/graph-cli": "^0.37.1",
+    "@graphprotocol/hardhat-graph": "https://github.com/graphprotocol/hardhat-graph",    
     "@graphprotocol/graph-ts": "^0.29.1",
     "@nomicfoundation/hardhat-network-helpers": "^1.0.4",
     "@nomicfoundation/hardhat-toolbox": "^1.0.2",
