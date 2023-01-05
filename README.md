@@ -3,7 +3,27 @@
 Description: 
    Basically this protocol can hold some erc3525 tokens and split or merge to a new one.
 
-    
+## Accounts
+```
+Accounts
+========
+Account #0: 0xc783df8a850f42e7F7e57013759C285caa701eB6 (1000000 ETH)
+
+Account #1: 0xeAD9C93b79Ae7C1591b1FB5323BD777E86e150d4 (1000000 ETH)
+
+Account #2: 0xE5904695748fe4A84b40b3fc79De2277660BD1D3 (1000000 ETH)
+
+Account #3: 0x92561F28Ec438Ee9831D00D1D59fbDC981b762b2 (1000000 ETH)
+
+Account #4: 0x2fFd013AaA7B5a7DA93336C2251075202b33FB2B (1000000 ETH)
+
+Account #5: 0x9FC9C2DfBA3b6cF204C37a5F690619772b926e39 (1000000 ETH)
+
+Account #6: 0xaD9fbD38281F615e7DF3DeF2Aad18935a9e0fFeE (1000000 ETH)
+
+Account #7: 0x8BffC896D42F07776561A5814D6E4240950d6D3a (1000000 ETH)
+```
+
 ### Setup
 
 Run  `yarn install` in the root directory
@@ -15,7 +35,7 @@ Run `yarn test` to run the unit tests
 ## deploy
 ```
 $ yarn hardhat full-deploy
-  -- deployer:  0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266
+  	-- deployer:  0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266
 	-- governance:  0x70997970C51812dc3A010C7d01b50e0d17dc79C8
 	-- user:  0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC
 	-- userTwo:  0x90F79bf6EB2c4f870365E785982E1f101E93b906

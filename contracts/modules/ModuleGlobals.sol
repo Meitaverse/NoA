@@ -24,7 +24,7 @@ contract ModuleGlobals is IModuleGlobals, GlobalStorage {
     uint16 internal constant BPS_MAX = 10000;
 
     modifier onlyGov() {
-        if (msg.sender != _governance) revert Errors.NotGovernance();
+        _validateCallerIsGovernance();
         _;
     }
 
@@ -171,7 +171,6 @@ contract ModuleGlobals is IModuleGlobals, GlobalStorage {
         emit Events.ModuleGlobalsTreasuryFeeSet(prevTreasuryFee, newTreasuryFee, block.timestamp);
     }
 
-
     function setPublishRoyalty(uint256 publishRoyalty) external override onlyGov {
         _setPublishRoyalty(publishRoyalty);
     }
@@ -223,6 +222,10 @@ contract ModuleGlobals is IModuleGlobals, GlobalStorage {
 
     function isWhitelistTemplate(address template) external view returns (bool) {
         return _templateWhitelisted[template];
+    }
+    
+    function _validateCallerIsGovernance() internal view {
+        if (msg.sender != _governance) revert Errors.NotGovernance();
     }
 
 }

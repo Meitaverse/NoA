@@ -10,24 +10,7 @@ import {
  } from './addresses';
 
 import {
-  FeeCollectModule,
-  FeeCollectModule__factory,
-  PublishLogic__factory,
-  ModuleGlobals,
-  ModuleGlobals__factory,
-  TransparentUpgradeableProxy__factory,
-  BankTreasury,
-  BankTreasury__factory,
-  NFTDerivativeProtocolTokenV1,
-  NFTDerivativeProtocolTokenV1__factory,
-  Manager,
   Manager__factory,
-  Voucher,
-  Voucher__factory,
-  DerivativeMetadataDescriptor,
-  DerivativeMetadataDescriptor__factory,
-  Template,
-  Template__factory,
 } from '../typechain';
 
 import { deployContract, waitForTx , ProtocolState, Error} from './helpers/utils';

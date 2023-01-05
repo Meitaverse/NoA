@@ -167,8 +167,8 @@ before(async function () {
   deployer = accounts[0];
   user = accounts[1];
   userTwo = accounts[2];
-  userThree = accounts[4];
   governance = accounts[3];
+  userThree = accounts[4];
 
   deployerAddress = await deployer.getAddress();
   userAddress = await user.getAddress();

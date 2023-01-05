@@ -30,22 +30,25 @@ import {
   Template__factory,
 } from '../typechain';
 
+import { deployContract, waitForTx , ProtocolState, Error} from './helpers/utils';
+
 export let runtimeHRE: HardhatRuntimeEnvironment;
 
-task("manager-verify", "manager-verify function")
+task("create-profile", "create-profile function")
 // .addParam("manager", "address of manager")
 .setAction(async ({}: {}, hre) =>  {
   runtimeHRE = hre;
   const ethers = hre.ethers;
   const accounts = await ethers.getSigners();
   const deployer = accounts[0];
-  const governance = accounts[1];
+  const governance = accounts[1];  //治理合约地址
   const user = accounts[2];
   const userTwo = accounts[3];
   const userThree = accounts[4];
-  
+
   const userAddress = user.address;
   const userTwoAddress = userTwo.address;
+  const userThreeAddress = userThree.address;
 
   const managerImpl = await ethers.getContractAt("Manager", ManagerImpl_ADDRESS);
   const manager = Manager__factory.connect(Manager_ADDRESS, governance);
@@ -53,50 +56,35 @@ task("manager-verify", "manager-verify function")
   const ndp = await ethers.getContractAt("NFTDerivativeProtocolTokenV1", NDP_ADDRESS);
   const voucher = await ethers.getContractAt("Voucher", Voucher_ADDRESS);
   const moduleGlobals = await ethers.getContractAt("ModuleGlobals", ModuleGlobals_ADDRESS);
+  
+  console.log('\t-- deployer: ', deployer.address);
+  console.log('\t-- governance: ', governance.address);
+  console.log('\t-- user: ', user.address);
+  console.log('\t-- userTwo: ', userTwo.address);
+  console.log('\t-- userThree: ', userThree.address);
 
   console.log(
-    "---\t manager version: ", (await managerImpl.version()).toNumber()
+      "---\t ModuleGlobals governance address: ", await moduleGlobals.getGovernance()
     );
-  console.log(
-      "---\t manager governance address: ", await manager.getGovernance()
+  
+  // full-deploy had called.
+  //  await waitForTx( moduleGlobals.connect(governance).whitelistProfileCreator(user.address, true));
+
+    console.log(
+      "---\t moduleGlobals isWhitelistProfileCreator userAddress: ", await moduleGlobals.isWhitelistProfileCreator(userAddress)
     );
-  console.log(
-    "---\t ndp contract version: ", (await ndp.version()).toNumber()
-  );
-  console.log(
-    "---\t ndp getManager(): ", (await ndp.getManager())
-  );
-  console.log(
-    "---\t ndp getBankTreasury(): ", (await ndp.getBankTreasury())
-  );
+      
+    await waitForTx(
+        manager.connect(user).createProfile({
+          wallet: userAddress,
+          nickName: 'user1',
+          imageURI: 'https://ipfs.io/ipfs/QmVnu7JQVoDRqSgHBzraYp7Hy78HwJtLFi6nUFCowTGdzp/1.png',
+        })
+    );
 
-  console.log(
-    "---\t bankTreasury getManager(): ",(await bankTreasury.getManager())
-  );
-
-  console.log(
-    "---\t bankTreasury name: ", (await bankTreasury.name())
-  );
-
-  console.log(
-    "---\t bankTreasury getNDPT(): ", (await bankTreasury.getNDPT())
-  );
-
-  console.log(
-    "---\t moduleGlobals getGovernance(): ", await moduleGlobals.getGovernance()
-  );
-
-  console.log(
-    "---\t moduleGlobals tax: ", (await moduleGlobals.getPublishCurrencyTax()).toNumber()
-  );
-    
-
-  console.log(
-    "---\t voucher name: ", (await voucher.name())
-  );
-
-  console.log(
-    "---\t voucher symbol: ", (await voucher.symbol())
-  );
+    console.log(
+      "---\t soulBoundToken:2 address: ", await manager.getWalletBySoulBoundTokenId(2)
+    );
+  
 
 });

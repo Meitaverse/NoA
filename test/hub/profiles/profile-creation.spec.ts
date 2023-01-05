@@ -10,7 +10,8 @@ import {
     createHubReturningHubId,
     createProjectReturningProjectId,
     getTimestamp, 
-    waitForTx 
+    waitForTx,
+    matchEvent
 } from '../../helpers/utils';
 
 import {
@@ -31,7 +32,9 @@ import {
   userTwo,
   userTwoAddress,
   ndptContract,
-  metadataDescriptor
+  metadataDescriptor,
+  FIRST_PROFILE_ID,
+  governanceAddress
 } from '../../__setup.spec';
 
 
@@ -86,21 +89,28 @@ makeSuiteCleanRoom('Profile Creation', function () {
         context('Successful', function () {
 
             it('User should success to create a profile', async function () {
-                  
-                await expect(
-                    manager.connect(user).createProfile({
-                      wallet: userAddress,
-                      nickName: nickName,
-                      imageURI: MOCK_PROFILE_URI,
-                    })
-                  ).to.not.be.reverted;
-                // await  manager.connect(user).createProfile({
-                //   wallet: userAddress,
-                //   nickName: nickName,
-                //   imageURI: MOCK_PROFILE_URI,
-                // });
+              const tx =  manager.connect(user).createProfile({
+                          wallet: userAddress,
+                          nickName: nickName,
+                          imageURI: MOCK_PROFILE_URI,
+                        });
 
-              });
+              const receipt = await waitForTx(tx);
+
+              matchEvent(
+                receipt,
+                'ProfileCreated',
+                [
+                  SECOND_PROFILE_ID, 
+                  userAddress, 
+                  userAddress,
+                  nickName,
+                  MOCK_PROFILE_URI,
+                  await getTimestamp(),
+                ],
+              );
+
+            });
 
         });
     });

@@ -41,29 +41,28 @@ import {
     Template,
     Template__factory,
   } from '../typechain';
-
   import { deployContract, waitForTx , ProtocolState, Error} from './helpers/utils';
   import { ManagerLibraryAddresses } from '../typechain/factories/contracts/Manager__factory';
-
+  
   import { DataTypes } from '../typechain/contracts/modules/template/Template';
-
-   const TREASURY_FEE_BPS = 50;
-   const  RECEIVER_MAGIC_VALUE = '0x009ce20b';
-   const TreasuryFee = 50; 
-   const FIRST_PROFILE_ID = 1; //金库
-   const INITIAL_SUPPLY = 1000000;  //NDPT初始发行总量
-   export const VOUCHER_AMOUNT_LIMIT = 100;  //用户用NDP兑换Voucher的最低数量 
-   
-
-   const NDPT_NAME = 'NFT Derivative Protocol';
-   const NDPT_SYMBOL = 'NDP';
-   const NDPT_DECIMALS = 18;
-
-
-   const NUM_CONFIRMATIONS_REQUIRED = 3;
-   const PublishRoyaltyNDPT = 100;
-
-   let managerLibs: ManagerLibraryAddresses;
+  
+  const TREASURY_FEE_BPS = 50;
+  const  RECEIVER_MAGIC_VALUE = '0x009ce20b';
+  const TreasuryFee = 50; 
+  const FIRST_PROFILE_ID = 1; //金库
+  const INITIAL_SUPPLY = 1000000;  //NDPT初始发行总量
+  const VOUCHER_AMOUNT_LIMIT = 100;  //用户用NDP兑换Voucher的最低数量 
+  
+  
+  const NDPT_NAME = 'NFT Derivative Protocol';
+  const NDPT_SYMBOL = 'NDP';
+  const NDPT_DECIMALS = 18;
+  
+  
+  const NUM_CONFIRMATIONS_REQUIRED = 3;
+  const PublishRoyaltyNDPT = 100;
+  
+  let managerLibs: ManagerLibraryAddresses;
 
    task('full-deploy', 'deploys the entire NFT Derivative Protocol').setAction(async ({}, hre) => {
         // Note that the use of these signers is a placeholder and is not meant to be used in
@@ -166,14 +165,14 @@ import {
                 { nonce: deployerNonce++,}
             )
         );
-        console.log('\t-- managerImpl proxy: ', managerImpl.address);
+        console.log('\t-- managerImpl address: ', managerImpl.address);
 
         console.log('\n\t-- Deploying derivativeNFT Implementations --');
         await deployContract(
           new DerivativeNFTV1__factory(deployer).deploy(managerProxyAddress, { nonce: deployerNonce++ })
         );
 
-        console.log('\n\t-- Deploying Manager Proxy --');
+        console.log('\n\t-- Deploying Manager address --');
 
         let data = managerImpl.interface.encodeFunctionData('initialize', [
             governance.address
@@ -195,7 +194,6 @@ import {
 
         console.log('\t-- manager: ', manager.address);
     
-
         console.log('\n\t-- Deploying voucher --');
         const voucherImpl = await deployContract(
             new Voucher__factory(deployer).deploy({ nonce: deployerNonce++ })
@@ -286,7 +284,7 @@ import {
         );
         console.log('\t-- publishModule: ', publishModule.address);
 
-       
+
         await waitForTx(
             manager.connect(governance).setGlobalModule(moduleGlobals.address)
         );
