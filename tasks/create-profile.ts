@@ -64,14 +64,14 @@ task("create-profile", "create-profile function")
   console.log('\t-- userThree: ', userThree.address);
 
   console.log(
-      "---\t ModuleGlobals governance address: ", await moduleGlobals.getGovernance()
+      "\t--- ModuleGlobals governance address: ", await moduleGlobals.getGovernance()
     );
   
   // full-deploy had called.
   //  await waitForTx( moduleGlobals.connect(governance).whitelistProfileCreator(user.address, true));
 
     console.log(
-      "---\t moduleGlobals isWhitelistProfileCreator userAddress: ", await moduleGlobals.isWhitelistProfileCreator(userAddress)
+      "\n\t--- moduleGlobals isWhitelistProfileCreator userAddress: ", await moduleGlobals.isWhitelistProfileCreator(userAddress)
     );
       
     await waitForTx(
@@ -83,7 +83,7 @@ task("create-profile", "create-profile function")
     );
 
     console.log(
-      "---\t soulBoundToken:2 address: ", await manager.getWalletBySoulBoundTokenId(2)
+      "\n\t--- soulBoundToken:2 address: ", await manager.getWalletBySoulBoundTokenId(2)
     );
   
 
