@@ -66,7 +66,9 @@ import {
   
   let managerLibs: ManagerLibraryAddresses;
 
-   task('full-deploy', 'deploys the entire NFT Derivative Protocol').setAction(async ({}, hre) => {
+  // yarn full-deploy-local
+
+  task('full-deploy', 'deploys the entire NFT Derivative Protocol').setAction(async ({}, hre) => {
         // Note that the use of these signers is a placeholder and is not meant to be used in
         // production.
         const ethers = hre.ethers;
@@ -108,6 +110,7 @@ import {
             )
         );
         console.log('\t-- template: ', template.address);
+        await exportAddress(hre, template, 'Template');
 
         console.log('\n\t-- Deploying metadataDescriptor  --');
         const metadataDescriptor = await deployContract(
@@ -116,6 +119,7 @@ import {
             )
         );
         console.log('\t-- metadataDescriptor: ', metadataDescriptor.address);
+        await exportAddress(hre, metadataDescriptor, 'MetadataDescriptor');
 
         console.log('\n\t-- Deploying receiver  --');
         const receiverMock = await deployContract(
@@ -169,12 +173,15 @@ import {
         );
         console.log('\t-- managerImpl address: ', managerImpl.address);
 
+        await exportAddress(hre, managerImpl, 'ManagerImpl');
+
+
         console.log('\n\t-- Deploying derivativeNFT Implementations --');
         await deployContract(
           new DerivativeNFTV1__factory(deployer).deploy(managerProxyAddress, { nonce: deployerNonce++ })
         );
 
-        console.log('\n\t-- Deploying Manager address --');
+        console.log('\n\t-- Deploying Manager --');
 
         let data = managerImpl.interface.encodeFunctionData('initialize', [
             governance.address
@@ -189,12 +196,14 @@ import {
             )
         );
        
-        console.log('\t-- manager proxy: ', proxy.address);
+        console.log('\t-- manager proxy address: ', proxy.address);
+        await exportAddress(hre, proxy, 'Manager');
+
 
         // Connect the manager proxy to the Manager factory and the governance for ease of use.
         const manager = Manager__factory.connect(proxy.address, governance);
 
-        console.log('\t-- manager: ', manager.address);
+        // console.log('\t-- manager: ', manager.address);
     
         console.log('\n\t-- Deploying voucher --');
         const voucherImpl = await deployContract(
@@ -211,6 +220,7 @@ import {
         );
         const voucherContract = new Voucher__factory(deployer).attach(voucherProxy.address);
         console.log('\t-- voucherContract: ', voucherContract.address);
+        await exportAddress(hre, voucherContract, 'Voucher');
 
         console.log('\n\t-- Deploying NDP --');
         const ndptImpl = await deployContract(
@@ -230,6 +240,7 @@ import {
         );
         const ndptContract = new NFTDerivativeProtocolTokenV1__factory(deployer).attach(ndptProxy.address);
         console.log('\t-- ndptContract: ', ndptContract.address);
+        await exportAddress(hre, ndptContract, 'NDP');
 
         console.log('\n\t-- Deploying bank treasury --');
         const soulBoundTokenIdOfBankTreaury = 1;
@@ -251,6 +262,7 @@ import {
         );
         const bankTreasuryContract = new BankTreasury__factory(deployer).attach(bankTreasuryProxy.address);
         console.log('\t-- bankTreasuryContract: ', bankTreasuryContract.address);
+        await exportAddress(hre, bankTreasuryContract, 'BankTreasury');
 
         console.log('\n\t-- Deploying moduleGlobals --');
         const moduleGlobals = await deployContract(
@@ -265,6 +277,7 @@ import {
                 { nonce: deployerNonce++ })
         );
         console.log('\t-- moduleGlobals: ', moduleGlobals.address);
+        await exportAddress(hre, moduleGlobals, 'ModuleGlobals');
         
         // Modules
         console.log('\n\t-- Deploying feeCollectModule --');
@@ -275,17 +288,17 @@ import {
                 { nonce: deployerNonce++ })
         );
         console.log('\t-- feeCollectModule: ', feeCollectModule.address);
+        await exportAddress(hre, feeCollectModule, 'FeeCollectModule');
 
         console.log('\n\t-- Deploying publishModule --');
         const publishModule = await deployContract(
             new PublishModule__factory(deployer).deploy(
                 manager.address, 
                 moduleGlobals.address,
-                ndptContract.address,
                 { nonce: deployerNonce++ })
         );
         console.log('\t-- publishModule: ', publishModule.address);
-
+        await exportAddress(hre, publishModule, 'PublishModule');
 
         await waitForTx(
             manager.connect(governance).setGlobalModule(moduleGlobals.address)
@@ -305,6 +318,12 @@ import {
         await waitForTx( ndptContract.connect(deployer).whitelistContract(bankTreasuryContract.address, true));
         await waitForTx( ndptContract.connect(deployer).whitelistContract(voucherContract.address, true));
             
+        console.log('\n\t-- Add publishModule,feeCollectModule,template to moduleGlobals whitelists --');
+        await waitForTx( moduleGlobals.connect(governance).whitelistPublishModule(publishModule.address, true));
+        await waitForTx( moduleGlobals.connect(governance).whitelistCollectModule(feeCollectModule.address, true));
+        await waitForTx( moduleGlobals.connect(governance).whitelistTemplate(template.address, true));
+
+
         console.log('\n\t-- voucherContract set moduleGlobals address --');
         await waitForTx( voucherContract.connect(deployer).setGlobalModule(moduleGlobals.address));
         await waitForTx( voucherContract.connect(deployer).setUserAmountLimit(moduleGlobals.address));
@@ -319,5 +338,6 @@ import {
         await waitForTx( moduleGlobals.connect(governance).whitelistProfileCreator(user.address, true));
         await waitForTx( moduleGlobals.connect(governance).whitelistProfileCreator(userTwo.address, true));
         await waitForTx( moduleGlobals.connect(governance).whitelistProfileCreator(userThree.address, true));
+        
 
    });

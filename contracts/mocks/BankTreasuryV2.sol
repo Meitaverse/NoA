@@ -289,7 +289,7 @@ contract BankTreasuryV2 is
         address _ndpt = IModuleGlobals(MODULE_GLOBALS).getNDPT();
 
         IERC3525(_ndpt).transferFrom(_soulBoundTokenId, toSoulBoundTokenId, amount);
-        emit Events.WithdrawERC3525(_soulBoundTokenId, toSoulBoundTokenId, amount);
+        emit Events.WithdrawERC3525(_soulBoundTokenId, toSoulBoundTokenId, amount, block.timestamp);
 
     }
 

@@ -64,7 +64,8 @@ library PublishLogic {
         _publishIdByProjectData[publishId].publication.materialURIs = materialURIs;
         _publishIdByProjectData[publishId].publication.fromTokenIds = fromTokenIds;
 
-        emit Events.PublishUpdated(
+        //TODO publishModule.updatePublish
+        uint256  addedPublishTaxes = IPublishModule(_publishIdByProjectData[publishId].publication.publishModule).updatePublish(
             publishId,
             salePrice,
             royaltyBasisPoints,
@@ -72,11 +73,22 @@ library PublishLogic {
             name,
             description,
             materialURIs,
-            fromTokenIds,
-            block.timestamp
+            fromTokenIds
         );
 
-        
+        emit Events.PublishUpdated(
+            publishId,
+            _publishIdByProjectData[publishId].publication.soulBoundTokenId,
+            salePrice,
+            royaltyBasisPoints,
+            amount,
+            name,
+            description,
+            materialURIs,
+            fromTokenIds,
+            addedPublishTaxes,
+            block.timestamp
+        );
     }
 
     function createPublish(
@@ -91,7 +103,6 @@ library PublishLogic {
         if (derivativeNFT == address(0)) revert Errors.DerivativeNFTIsZero();
         if (publisher == address(0)) revert Errors.PublisherIsZero();
 
-
         uint256 newTokenId =  IDerivativeNFTV1(derivativeNFT).publish(
             publishId,
             publication,
@@ -100,7 +111,6 @@ library PublishLogic {
         
         //Avoids stack too deep
         {
-
             //save
             _pubByIdByProfile[publication.projectId][newTokenId].publishId = publishId;
             _pubByIdByProfile[publication.projectId][newTokenId].hubId = publication.hubId;
@@ -112,31 +122,31 @@ library PublishLogic {
             _pubByIdByProfile[publication.projectId][newTokenId].derivativeNFT = derivativeNFT;
             _pubByIdByProfile[publication.projectId][newTokenId].publishModule = publication.publishModule;
 
-            
-        }
+            _initCollectModule(
+                    publication.projectId,
+                    publishId,
+                    publication.soulBoundTokenId,
+                    newTokenId,
+                    publication.amount,
+                    publication.collectModule,
+                    publication.collectModuleInitData,
+                    _pubByIdByProfile
+            );
 
-        bytes memory collectModuleReturnData = _initCollectModule(
-                publication.projectId,
+            emit Events.PublishCreated(
                 publishId,
                 publication.soulBoundTokenId,
-                newTokenId,
-                publication.amount,
-                publication.collectModule,
-                publication.collectModuleInitData,
-                _pubByIdByProfile
-        );
-
-        emit Events.PublishCreated(
-                publication.soulBoundTokenId,
+                publication.hubId,
                 publication.projectId,
                 newTokenId,
                 publication.amount,
-                collectModuleReturnData, 
+                publication.collectModuleInitData,
                 block.timestamp
-            ); 
+            );
+        }
+       
         return newTokenId;
     }
-
 
     function _initCollectModule(
         uint256 projectId,
@@ -148,17 +158,16 @@ library PublishLogic {
         bytes memory collectModuleInitData,
         mapping(uint256 => mapping(uint256 => DataTypes.PublicationStruct))
             storage _pubByIdByProfile         
-    ) private returns (bytes memory) {
+    ) private {
          _pubByIdByProfile[projectId][newTokenId].collectModule = collectModule;
-
-        return
-            ICollectModule(collectModule).initializePublicationCollectModule(
+        
+        ICollectModule(collectModule).initializePublicationCollectModule(
                 publishId,
                 ownershipSoulBoundTokenId,
                 newTokenId,
                 amount,
                 collectModuleInitData 
-            );
+        );
     }
 
     //initial publishModule and chargeing a fee

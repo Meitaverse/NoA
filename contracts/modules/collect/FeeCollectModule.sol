@@ -56,7 +56,7 @@ contract FeeCollectModule is FeeModuleBase, ModuleBase, ICollectModule {
         uint256 tokenId,
         uint256 amount,
         bytes calldata data 
-    ) external override onlyManager returns (bytes memory) {
+    ) external override onlyManager{
         (uint256 genesisSoulBoundTokenId, uint16 genesisFee, uint256 salePrice, uint256 royaltyBasisPoints) = abi.decode(
             data,
             (uint256, uint16,  uint256, uint256)
@@ -78,8 +78,6 @@ contract FeeCollectModule is FeeModuleBase, ModuleBase, ICollectModule {
         _dataByPublicationByProfile[publishId].ownershipSoulBoundTokenId = ownershipSoulBoundTokenId;
         _dataByPublicationByProfile[publishId].genesisSoulBoundTokenId = genesisSoulBoundTokenId;
         _dataByPublicationByProfile[publishId].genesisFee = genesisFee;
-
-        return data;
     }
 
     /**

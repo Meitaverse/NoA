@@ -236,7 +236,6 @@ makeSuiteCleanRoom('Bank Treasury', function () {
         expect((await ndptContract.balanceOfNDPT(SECOND_PROFILE_ID)).toNumber()).to.eq(0);
         expect((await ndptContract.balanceOfNDPT(FIRST_PROFILE_ID)).toNumber()).to.eq(INITIAL_SUPPLY + 100);
        
-
       });
 
     

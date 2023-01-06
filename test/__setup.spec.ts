@@ -298,8 +298,7 @@ before(async function () {
 
   publishModule = await new PublishModule__factory(deployer).deploy(
     manager.address, 
-    moduleGlobals.address,
-    ndptContract.address,
+    moduleGlobals.address
   );
 
   multirecipientFeeCollectModule = await new MultirecipientFeeCollectModule__factory(deployer).deploy(

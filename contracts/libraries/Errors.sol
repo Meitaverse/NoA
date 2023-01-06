@@ -121,4 +121,5 @@ library Errors {
   error InvalidRecipientSplits();
 
   error AmountLimit();
+  error AmountOnlyIncrease();
 }

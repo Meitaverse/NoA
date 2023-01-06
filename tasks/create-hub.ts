@@ -28,11 +28,10 @@ import { deployContract, waitForTx , ProtocolState, Error} from './helpers/utils
 
 export let runtimeHRE: HardhatRuntimeEnvironment;
 
-// yarn hardhat create-profile --accountid 2 --network local
 
-task("create-profile", "create-profile function")
-.addParam("accountid", "account id to collect ,from 2 to 4")
-.setAction(async ({accountid}: {accountid : number}, hre) =>  {
+// yarn hardhat create-hub --network local
+task("create-hub", "create-hub function")
+.setAction(async ({}: {}, hre) =>  {
   runtimeHRE = hre;
   const ethers = hre.ethers;
   const accounts = await ethers.getSigners();
@@ -41,7 +40,6 @@ task("create-profile", "create-profile function")
   const user = accounts[2];
   const userTwo = accounts[3];
   const userThree = accounts[4];
-
 
   const userAddress = user.address;
   const userTwoAddress = userTwo.address;
@@ -60,31 +58,41 @@ task("create-profile", "create-profile function")
   console.log('\t-- userTwo: ', userTwo.address);
   console.log('\t-- userThree: ', userThree.address);
 
-  let profileCreator = accounts[accountid];
-  console.log('\t-- profileCreator: ', profileCreator.address);
-
   console.log(
       "\t--- ModuleGlobals governance address: ", await moduleGlobals.getGovernance()
     );
   
-  // full-deploy had called.
-  //  await waitForTx( moduleGlobals.connect(governance).whitelistProfileCreator(user.address, true));
+   // permit user to create a hub
+   const SECOND_PROFILE_ID =2;
+   await waitForTx( moduleGlobals.connect(governance).whitelistHubCreator(SECOND_PROFILE_ID, true));
 
     console.log(
-      "\n\t--- moduleGlobals isWhitelistProfileCreator address: ", await moduleGlobals.isWhitelistProfileCreator(profileCreator.address)
+      "\n\t--- moduleGlobals whitelistHubCreator set true for user: ", userAddress
     );
       
     await waitForTx(
-        manager.connect(profileCreator).createProfile({
-          wallet: profileCreator.address,
-          nickName: 'user' + `${accountid}`,
-          imageURI: 'https://ipfs.io/ipfs/QmVnu7JQVoDRqSgHBzraYp7Hy78HwJtLFi6nUFCowTGdzp/' + `${accountid}` + '.png',
+        manager.connect(user).createHub({
+          soulBoundTokenId: SECOND_PROFILE_ID,
+          name: "bitsoul",
+          description: "Hub for bitsoul",
+          imageURI: "https://ipfs.io/ipfs/QmVnu7JQVoDRqSgHBzraYp7Hy78HwJtLFi6nUFCowTGdzp/11.png",
         })
     );
 
+    let hubInfo = await manager.connect(user).getHubInfo(1);
+
     console.log(
-      "\n\t--- soulBoundToken address: ", await manager.connect(user).getWalletBySoulBoundTokenId(accountid)
+      "\n\t--- hub info - soulBoundTokenId:  ", hubInfo.soulBoundTokenId.toNumber()
     );
-  
+    console.log(
+      "\t--- hub info - name:  ", hubInfo.name
+    );
+    console.log(
+      "\t--- hub info - description:  ", hubInfo.description
+    );
+    console.log(
+      "\t--- hub info - imageURI:  ", hubInfo.imageURI
+    );
+
 
 });

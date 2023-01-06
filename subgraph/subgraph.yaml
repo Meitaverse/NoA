@@ -5,7 +5,31 @@ schema:
   file: ./schema.graphql
 dataSources:
   - kind: ethereum/contract
-    name: bitsoul
+    name: NDP
+    network: mainnet
+    source:
+      address: "0xB7f8BC63BbcaD18155201308C8f3540b07f84F5e"
+      abi: Events
+      startBlock: 0
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.6
+      language: wasm/assemblyscript
+      entities:
+        - ProfileCreated
+        # - MintNDPTValue
+      abis:
+        - name: NDP
+          file: ./abis/NDP.json
+        - name: Events
+          file: ./abis/Events.json
+      eventHandlers:
+        - event: ProfileCreated(indexed uint256,indexed address,indexed address,string,string,uint256)
+          handler: handleProfileCreated
+      file: ./src/ndp-mapping.ts
+  
+  - kind: ethereum/contract
+    name: Manager
     network: mainnet
     source:
       address: "0xa513E6E4b8f2a923D98304ec87F64353C4D5C853"
@@ -16,20 +40,99 @@ dataSources:
       apiVersion: 0.0.6
       language: wasm/assemblyscript
       entities:
-        - ProfileCreated
-        # - ProjectToken
-        # - BurnToken
+        - TransferDerivativeNFT
       abis:
         # - name: Manager
         #   file: ./abis/Manager.json
         - name: Events
           file: ./abis/Events.json
       eventHandlers:
-        - event: ProfileCreated(indexed uint256,indexed address,indexed address,string,string,uint256)
-          handler: handleProfileCreated
-        # - event: ProjectToken(uint256,uint256,address,address) 
-        #   handler: handleEventToken
-        # - event: BurnToken(uint256,uint256,address)
-        #   handler: handleBurnToken
-      file: ./src/mapping.ts
+        - event: TransferDerivativeNFT(uint256,uint256,uint256,uint256,uint256)
+          handler: handleTransferDerivativeNFT
+      file: ./src/manager-mapping.ts
   
+  - kind: ethereum/contract
+    name: BankTreasury
+    network: mainnet
+    source:
+      address: "0x0DCd1Bf9A1b36cE34237eEaFef220932846BCD82"
+      abi: Events
+      startBlock: 0
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.6
+      language: wasm/assemblyscript
+      entities:
+        - WithdrawERC3525
+      abis:
+        - name: Events
+          file: ./abis/Events.json
+      eventHandlers:
+        - event: WithdrawERC3525(indexed uint256,indexed uint256,uint256,uint256)
+          handler: handleWithdrawERC3525
+      file: ./src/manager-mapping.ts
+  
+  - kind: ethereum/contract
+    name: Voucher
+    network: mainnet
+    source:
+      address: "0x8A791620dd6260079BF849Dc5567aDC3F2FdC318"
+      abi: Events
+      startBlock: 0
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.6
+      language: wasm/assemblyscript
+      entities:
+        - MintNFTVoucher
+      abis:
+        - name: Events
+          file: ./abis/Events.json
+      eventHandlers:
+        - event: MintNFTVoucher(uint256,address,uint8,uint256,uint256,uint256)
+          handler: handleMintNFTVoucher
+      file: ./src/voucher-mapping.ts
+
+  - kind: ethereum/contract
+    name: ModuleGlobals
+    network: mainnet
+    source:
+      address: "0x9A676e781A523b5d0C0e43731313A708CB607508"
+      abi: Events
+      startBlock: 0
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.6
+      language: wasm/assemblyscript
+      entities:
+        - ProfileCreatorWhitelisted
+      abis:
+        - name: Events
+          file: ./abis/Events.json
+      eventHandlers:
+        - event: ProfileCreatorWhitelisted(indexed address,indexed bool,uint256)
+          handler: handleProfileCreatorWhitelisted
+      file: ./src/moduleGlobals-mapping.ts
+
+  - kind: ethereum/contract
+    name: FeeCollectModule
+    network: mainnet
+    source:
+      address: "0x0B306BF915C4d645ff596e518fAf3F9669b97016"
+      abi: Events
+      startBlock: 0
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.6
+      language: wasm/assemblyscript
+      entities:
+        - FeesForCollect
+      abis:
+        - name: Events
+          file: ./abis/Events.json
+      eventHandlers:
+        - event: FeesForCollect(uint256,uint256,uint256,uint256,uint256)
+          handler: handleFeesForCollect
+      file: ./src/feeCollectModule-mapping.ts
+
+

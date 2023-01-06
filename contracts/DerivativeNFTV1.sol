@@ -215,7 +215,6 @@ contract DerivativeNFTV1 is
 
         _mint(publisher, newTokenId, slot, publication.amount);
         
-
         emit Events.MintDerivativeNFT(publishId, publisher, slot, publication.amount, block.timestamp);
         return newTokenId;
     }

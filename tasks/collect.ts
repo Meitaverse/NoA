@@ -1,7 +1,10 @@
 import { task } from "hardhat/config";
 import { HardhatRuntimeEnvironment } from 'hardhat/types';
+import { parseEther } from '@ethersproject/units';
 
 import {
+  DerivativeNFTV1,
+  DerivativeNFTV1__factory,
   FeeCollectModule,
   FeeCollectModule__factory,
   PublishLogic__factory,
@@ -20,6 +23,7 @@ import {
   DerivativeMetadataDescriptor__factory,
   Template,
   Template__factory,
+  PublishModule__factory,
 } from '../typechain';
 
 import { loadContract } from "./config";
@@ -28,11 +32,12 @@ import { deployContract, waitForTx , ProtocolState, Error} from './helpers/utils
 
 export let runtimeHRE: HardhatRuntimeEnvironment;
 
-// yarn hardhat create-profile --accountid 2 --network local
+// yarn hardhat collect --collectorid 3 --nftid 1 --network local
 
-task("create-profile", "create-profile function")
-.addParam("accountid", "account id to collect ,from 2 to 4")
-.setAction(async ({accountid}: {accountid : number}, hre) =>  {
+task("collect", "collect a dNFT function")
+.addParam("collectorid", "soul bound token id ")
+.addParam("nftid", "derivative nft id to collect")
+.setAction(async ({collectorid, nftid}: {collectorid:number, nftid: number}, hre) =>  {
   runtimeHRE = hre;
   const ethers = hre.ethers;
   const accounts = await ethers.getSigners();
@@ -41,7 +46,6 @@ task("create-profile", "create-profile function")
   const user = accounts[2];
   const userTwo = accounts[3];
   const userThree = accounts[4];
-
 
   const userAddress = user.address;
   const userTwoAddress = userTwo.address;
@@ -53,6 +57,9 @@ task("create-profile", "create-profile function")
   const ndp = await loadContract(hre, NFTDerivativeProtocolTokenV1__factory, "NDP");
   const voucher = await loadContract(hre, Voucher__factory, "Voucher");
   const moduleGlobals = await loadContract(hre, ModuleGlobals__factory, "ModuleGlobals");
+  const feeCollectModule = await loadContract(hre, FeeCollectModule__factory, "FeeCollectModule");
+  const publishModule = await loadContract(hre, PublishModule__factory, "PublishModule");
+  const template = await loadContract(hre, Template__factory, "Template");
 
   console.log('\t-- deployer: ', deployer.address);
   console.log('\t-- governance: ', governance.address);
@@ -60,31 +67,46 @@ task("create-profile", "create-profile function")
   console.log('\t-- userTwo: ', userTwo.address);
   console.log('\t-- userThree: ', userThree.address);
 
-  let profileCreator = accounts[accountid];
-  console.log('\t-- profileCreator: ', profileCreator.address);
-
   console.log(
       "\t--- ModuleGlobals governance address: ", await moduleGlobals.getGovernance()
     );
-  
-  // full-deploy had called.
-  //  await waitForTx( moduleGlobals.connect(governance).whitelistProfileCreator(user.address, true));
+
+    let collector = accounts[collectorid];
+    console.log('\n\t-- collector: ', collector.address);
+    let balance =(await ndp.balanceOfNDPT(collectorid)).toNumber();
+    if (balance == 0) {
+      //mint 1000Value to user
+      await manager.connect(governance).mintNDPTValue(collectorid, 1000);
+    }
+    console.log('\t--- balance of collector: ', (await ndp.balanceOfNDPT(collectorid)).toNumber());
+
+
+    const FIRST_PROJECT_ID =1; 
+    const FIRST_PUBLISH_ID =1; 
+   
 
     console.log(
-      "\n\t--- moduleGlobals isWhitelistProfileCreator address: ", await moduleGlobals.isWhitelistProfileCreator(profileCreator.address)
+      "\n\t--- Collet  ..."
+    );
+
+    await waitForTx(
+      manager.connect(collector).collect({
+        publishId: FIRST_PUBLISH_ID,
+        collectorSoulBoundTokenId: collectorid,
+        collectValue: 1,
+        data: [],
+      })
+    );
+
+    let derivativeNFT: DerivativeNFTV1;
+    derivativeNFT = DerivativeNFTV1__factory.connect(
+      await manager.connect(collector).getDerivativeNFT(FIRST_PROJECT_ID),
+      user
     );
       
-    await waitForTx(
-        manager.connect(profileCreator).createProfile({
-          wallet: profileCreator.address,
-          nickName: 'user' + `${accountid}`,
-          imageURI: 'https://ipfs.io/ipfs/QmVnu7JQVoDRqSgHBzraYp7Hy78HwJtLFi6nUFCowTGdzp/' + `${accountid}` + '.png',
-        })
-    );
+    console.log('\n\t--- ownerOf nftid : ', await derivativeNFT.ownerOf(nftid));
+    console.log('\t--- balanceOf nftid : ', (await derivativeNFT["balanceOf(uint256)"](nftid)).toNumber());
+    
 
-    console.log(
-      "\n\t--- soulBoundToken address: ", await manager.connect(user).getWalletBySoulBoundTokenId(accountid)
-    );
-  
 
 });

@@ -27,6 +27,31 @@ interface IPublishModule {
         DataTypes.Publication calldata publication
     ) external returns(uint256);
     
+
+    /**
+     * @notice update publish data. This can only be called by the manager.
+     *         If amount is large than old amount, should tranfer value to bank treasury
+     * @param publishId The publish ID.
+     * @param salePrice The new sale price
+     * @param royaltyBasisPoints The royalty basis points
+     * @param amount The new amount, only increase
+     * @param name The new name
+     * @param description The new description
+     * @param materialURIs The new materialURIs
+     * @param fromTokenIds The new fromTokenIds
+     *
+     */ 
+    function updatePublish(
+        uint256 publishId,
+        uint256 salePrice,
+        uint256 royaltyBasisPoints,
+        uint256 amount,
+        string memory name,
+        string memory description,
+        string[] memory materialURIs,
+        uint256[] memory fromTokenIds
+    ) external returns(uint256);
+
     function getPublicationTemplate(
         uint256 publishId
     ) external view returns (uint256, string memory);

@@ -306,11 +306,13 @@ library Events {
     );
 
     event PublishCreated(
+        uint256 publishId,
         uint256 soulBoundTokenId,
+        uint256 hubId,
         uint256 projectId,
         uint256 newTokenId,
-        uint256 value,
-        bytes collectModuleReturnData,
+        uint256 amount,
+        bytes collectModuleInitData,
         uint256 timestamp
     );
 
@@ -406,7 +408,13 @@ library Events {
     event RevokeConfirmation(address indexed owner, uint256 indexed txIndex);
     event ExecuteTransaction(address indexed owner, uint256 indexed txIndex, address to, uint256 value);
     event ExecuteTransactionERC3525(address indexed owner, uint256 indexed txIndex, uint256 indexed fromTokenId, uint256 toTokenId, uint256 value);
-    event WithdrawERC3525(uint256 indexed fromTokenId, uint256 indexed toTokenId, uint256 value);
+    
+    event WithdrawERC3525(
+        uint256 indexed fromTokenId, 
+        uint256 indexed toTokenId, 
+        uint256 value,
+        uint256 timestamp
+        );
 
 
     /**
@@ -457,6 +465,7 @@ library Events {
    
     event PublishUpdated(
         uint256 publishId,
+        uint256 soulBoundTokenId,
         uint256 salePrice,
         uint256 royaltyBasisPoints,
         uint256 amount,
@@ -464,9 +473,11 @@ library Events {
         string description,
         string[] materialURIs,
         uint256[] fromTokenIds,
-         uint256 timestamp
+        uint256 addedPublishTaxes,
+        uint256 timestamp
     );
-   
+
+
     
     // Signals frozen metadata to OpenSea; emitted in minting functions
     event PermanentURI(string _value, uint256 indexed _id);
@@ -508,7 +519,7 @@ library Events {
         uint256 timestamp
     );
 
-    event  FeesForCollect (
+    event FeesForCollect (
         uint256 collectorSoulBoundTokenId,
         uint256 publishId, 
         uint256 treasuryAmount, 

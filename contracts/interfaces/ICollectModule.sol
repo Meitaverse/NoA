@@ -18,8 +18,6 @@ interface ICollectModule {
      * @param amount amount of the associated publication's dNFT publication .
      * @param data Arbitrary data __passed from the user!__ to be decoded.
      *
-     * @return bytes An abi encoded byte array encapsulating the execution's state changes. This will be emitted by the
-     * manager alongside the collect module's address and should be consumed by front ends.
      */
     function initializePublicationCollectModule(
         uint256 publishId,
@@ -27,7 +25,7 @@ interface ICollectModule {
         uint256 tokenId,
         uint256 amount,
         bytes calldata data
-    ) external returns (bytes memory);
+    ) external;
 
     /**
      * @notice Processes a collect action for a given publication, this can only be called by the manager.

@@ -10,7 +10,7 @@ import "@openzeppelin/contracts-upgradeable/access/AccessControlUpgradeable.sol"
 import "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
-// import "@solvprotocol/erc-3525/contracts/IERC3525.sol";
+
 import {INFTDerivativeProtocolTokenV1} from "./interfaces/INFTDerivativeProtocolTokenV1.sol";
 import {IERC20Upgradeable} from "@openzeppelin/contracts-upgradeable/token/ERC20/IERC20Upgradeable.sol";
 import {SafeERC20Upgradeable} from "@openzeppelin/contracts-upgradeable/token/ERC20/utils/SafeERC20Upgradeable.sol";
@@ -24,7 +24,6 @@ import "./libraries/EthAddressLib.sol";
 import "./storage/VoucherStorage.sol";
 import {IModuleGlobals} from "./interfaces/IModuleGlobals.sol";
 import {IManager} from "./interfaces/IManager.sol";
-
 import {IBankTreasury} from './interfaces/IBankTreasury.sol';
 
 /**
@@ -167,7 +166,6 @@ contract Voucher is
         }  else {
             revert Errors.AmountLimitNotSet(); 
         }
-
     }
 
     function generateVoucher(

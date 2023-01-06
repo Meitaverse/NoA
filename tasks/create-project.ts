@@ -28,11 +28,11 @@ import { deployContract, waitForTx , ProtocolState, Error} from './helpers/utils
 
 export let runtimeHRE: HardhatRuntimeEnvironment;
 
-// yarn hardhat create-profile --accountid 2 --network local
 
-task("create-profile", "create-profile function")
-.addParam("accountid", "account id to collect ,from 2 to 4")
-.setAction(async ({accountid}: {accountid : number}, hre) =>  {
+// yarn hardhat create-project --network local
+
+task("create-project", "create-project function")
+.setAction(async ({}: {}, hre) =>  {
   runtimeHRE = hre;
   const ethers = hre.ethers;
   const accounts = await ethers.getSigners();
@@ -41,7 +41,6 @@ task("create-profile", "create-profile function")
   const user = accounts[2];
   const userTwo = accounts[3];
   const userThree = accounts[4];
-
 
   const userAddress = user.address;
   const userTwoAddress = userTwo.address;
@@ -53,6 +52,7 @@ task("create-profile", "create-profile function")
   const ndp = await loadContract(hre, NFTDerivativeProtocolTokenV1__factory, "NDP");
   const voucher = await loadContract(hre, Voucher__factory, "Voucher");
   const moduleGlobals = await loadContract(hre, ModuleGlobals__factory, "ModuleGlobals");
+  const metadataDescriptor = await loadContract(hre, DerivativeMetadataDescriptor__factory, "MetadataDescriptor");
 
   console.log('\t-- deployer: ', deployer.address);
   console.log('\t-- governance: ', governance.address);
@@ -60,31 +60,52 @@ task("create-profile", "create-profile function")
   console.log('\t-- userTwo: ', userTwo.address);
   console.log('\t-- userThree: ', userThree.address);
 
-  let profileCreator = accounts[accountid];
-  console.log('\t-- profileCreator: ', profileCreator.address);
-
   console.log(
       "\t--- ModuleGlobals governance address: ", await moduleGlobals.getGovernance()
     );
   
-  // full-deploy had called.
-  //  await waitForTx( moduleGlobals.connect(governance).whitelistProfileCreator(user.address, true));
-
-    console.log(
-      "\n\t--- moduleGlobals isWhitelistProfileCreator address: ", await moduleGlobals.isWhitelistProfileCreator(profileCreator.address)
-    );
-      
+    const SECOND_PROFILE_ID =2; 
+    const FIRST_HUB_ID =1; 
     await waitForTx(
-        manager.connect(profileCreator).createProfile({
-          wallet: profileCreator.address,
-          nickName: 'user' + `${accountid}`,
-          imageURI: 'https://ipfs.io/ipfs/QmVnu7JQVoDRqSgHBzraYp7Hy78HwJtLFi6nUFCowTGdzp/' + `${accountid}` + '.png',
+        manager.connect(user).createProject({
+          soulBoundTokenId: SECOND_PROFILE_ID,
+          hubId: FIRST_HUB_ID,
+          name: "bitsoul",
+          description: "Hub for bitsoul",
+          image: "image",
+          metadataURI: "metadataURI",
+          descriptor: metadataDescriptor.address,
+          defaultRoyaltyPoints: 0,
+          feeShareType: 0,  
         })
     );
 
+    let projectInfo = await manager.connect(user).getProjectInfo(1);
     console.log(
-      "\n\t--- soulBoundToken address: ", await manager.connect(user).getWalletBySoulBoundTokenId(accountid)
+      "\n\t--- projectInfo info - hubId: ", projectInfo.hubId.toNumber()
     );
-  
-
+    console.log(
+      "\t--- projectInfo info - soulBoundTokenId: ", projectInfo.soulBoundTokenId.toNumber()
+    );
+    console.log(
+      "\t--- projectInfo info - name: ", projectInfo.name
+    );
+    console.log(
+      "\t--- projectInfo info - description: ", projectInfo.description
+    );
+    console.log(
+      "\t--- projectInfo info - image: ", projectInfo.image
+    );
+    console.log(
+      "\t--- projectInfo info - metadataURI: ", projectInfo.metadataURI
+    );
+    console.log(
+      "\t--- projectInfo info - descriptor: ", projectInfo.descriptor
+    );
+    console.log(
+      "\t--- projectInfo info - defaultRoyaltyPoints: ", projectInfo.defaultRoyaltyPoints.toNumber()
+    );
+    console.log(
+      "\t--- projectInfo info - feeShareType: ", projectInfo.feeShareType
+    );
 });

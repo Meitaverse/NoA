@@ -5,10 +5,11 @@ pragma solidity ^0.8.13;
 
 import {IPublishModule} from "../../interfaces/IPublishModule.sol";
 import {Errors} from "../../libraries/Errors.sol";
-import {Events} from '../../libraries/Events.sol';
+import {Events} from "../../libraries/Events.sol";
 import {FeeModuleBase} from "../FeeModuleBase.sol";
 import {DataTypes} from '../../libraries/DataTypes.sol';
 import {ModuleBase} from "../ModuleBase.sol";
+import {IBankTreasury} from '../../interfaces/IBankTreasury.sol';
 import {IERC20Upgradeable} from "@openzeppelin/contracts-upgradeable/token/ERC20/IERC20Upgradeable.sol";
 // import {SafeERC20Upgradeable} from "@openzeppelin/contracts-upgradeable/token/ERC20/utils/SafeERC20Upgradeable.sol";
 import {IERC3525} from "@solvprotocol/erc-3525/contracts/IERC3525.sol";
@@ -39,14 +40,10 @@ contract PublishModule is FeeModuleBase, IPublishModule, ModuleBase {
     using StringConvertor for uint256;
     using StringConvertor for bytes;
 
-    address internal _NDPT;
-
     //publishId => PublishData
     mapping(uint256 => PublishData) internal _dataPublishdNFTByProject;
 
-    constructor(address manager, address moduleGlobals, address ndpt) FeeModuleBase(moduleGlobals) ModuleBase(manager) {
-        _NDPT = ndpt;
-    }
+    constructor(address manager, address moduleGlobals) FeeModuleBase(moduleGlobals) ModuleBase(manager) {}
 
     /**
      * @notice Initializes data for a given publication being published. This can only be called by the manager.
@@ -79,16 +76,50 @@ contract PublishModule is FeeModuleBase, IPublishModule, ModuleBase {
             if (publication.amount >1) publishTaxes = (publication.amount - 1) * _publishCurrencyTax();
             
             if ( publishTaxes > 0){
-                INFTDerivativeProtocolTokenV1(_NDPT).transferValue(publication.soulBoundTokenId, treasuryOfSoulBoundTokenId, publishTaxes);
+                INFTDerivativeProtocolTokenV1(_ndpt()).transferValue(publication.soulBoundTokenId, treasuryOfSoulBoundTokenId, publishTaxes);
             } 
             
             _dataPublishdNFTByProject[publishId].publication = publication;
             _dataPublishdNFTByProject[publishId].previousPublishId = previousPublishId;
 
             return publishTaxes;
-
         }
+    }
 
+    function updatePublish(
+        uint256 publishId,
+        uint256 salePrice,
+        uint256 royaltyBasisPoints,
+        uint256 amount,
+        string memory name,
+        string memory description,
+        string[] memory materialURIs,
+        uint256[] memory fromTokenIds
+    ) external override onlyManager returns(uint256) {
+        if (publishId == 0) revert Errors.InitParamsInvalid();
+        if (amount < _dataPublishdNFTByProject[publishId].publication.amount) revert Errors.AmountOnlyIncrease();
+        
+        if (amount > _dataPublishdNFTByProject[publishId].publication.amount) {
+            uint256 addedPublishTaxes = (amount - _dataPublishdNFTByProject[publishId].publication.amount) * _publishCurrencyTax();
+            
+            if ( addedPublishTaxes > 0){
+                (address treasury, ) = _treasuryData();
+                uint256 treasuryOfSoulBoundTokenId = IBankTreasury(treasury).getSoulBoundTokenId();
+                INFTDerivativeProtocolTokenV1(_ndpt()).transferValue(_dataPublishdNFTByProject[publishId].publication.soulBoundTokenId, treasuryOfSoulBoundTokenId, addedPublishTaxes);
+
+            } 
+
+            _dataPublishdNFTByProject[publishId].publication.salePrice = salePrice;
+            _dataPublishdNFTByProject[publishId].publication.royaltyBasisPoints = royaltyBasisPoints;
+            _dataPublishdNFTByProject[publishId].publication.amount = amount;
+            _dataPublishdNFTByProject[publishId].publication.name = name;
+            _dataPublishdNFTByProject[publishId].publication.description = description;
+            _dataPublishdNFTByProject[publishId].publication.materialURIs = materialURIs;
+            _dataPublishdNFTByProject[publishId].publication.fromTokenIds = fromTokenIds;
+
+            return addedPublishTaxes;
+        }
+            
     }
 
     /**

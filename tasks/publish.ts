@@ -1,0 +1,211 @@
+import { task } from "hardhat/config";
+import { HardhatRuntimeEnvironment } from 'hardhat/types';
+import { parseEther } from '@ethersproject/units';
+
+import {
+  DerivativeNFTV1,
+  DerivativeNFTV1__factory,
+  FeeCollectModule,
+  FeeCollectModule__factory,
+  PublishLogic__factory,
+  ModuleGlobals,
+  ModuleGlobals__factory,
+  TransparentUpgradeableProxy__factory,
+  BankTreasury,
+  BankTreasury__factory,
+  NFTDerivativeProtocolTokenV1,
+  NFTDerivativeProtocolTokenV1__factory,
+  Manager,
+  Manager__factory,
+  Voucher,
+  Voucher__factory,
+  DerivativeMetadataDescriptor,
+  DerivativeMetadataDescriptor__factory,
+  Template,
+  Template__factory,
+  PublishModule__factory,
+} from '../typechain';
+
+import { loadContract } from "./config";
+
+import { deployContract, waitForTx , ProtocolState, Error} from './helpers/utils';
+
+export let runtimeHRE: HardhatRuntimeEnvironment;
+
+// yarn hardhat publish --projectid 1 --network local
+
+task("publish", "publish function")
+.addParam("projectid", "project id to publish")
+.setAction(async ({projectid}: {projectid: number}, hre) =>  {
+  runtimeHRE = hre;
+  const ethers = hre.ethers;
+  const accounts = await ethers.getSigners();
+  const deployer = accounts[0];
+  const governance = accounts[1];  //治理合约地址
+  const user = accounts[2];
+  const userTwo = accounts[3];
+  const userThree = accounts[4];
+
+  const userAddress = user.address;
+  const userTwoAddress = userTwo.address;
+  const userThreeAddress = userThree.address;
+
+  const managerImpl = await loadContract(hre, Manager__factory, "ManagerImpl");
+  const manager = await loadContract(hre, Manager__factory, "Manager");
+  const bankTreasury = await loadContract(hre, BankTreasury__factory, "BankTreasury");
+  const ndp = await loadContract(hre, NFTDerivativeProtocolTokenV1__factory, "NDP");
+  const voucher = await loadContract(hre, Voucher__factory, "Voucher");
+  const moduleGlobals = await loadContract(hre, ModuleGlobals__factory, "ModuleGlobals");
+  const feeCollectModule = await loadContract(hre, FeeCollectModule__factory, "FeeCollectModule");
+  const publishModule = await loadContract(hre, PublishModule__factory, "PublishModule");
+  const template = await loadContract(hre, Template__factory, "Template");
+
+  console.log('\t-- deployer: ', deployer.address);
+  console.log('\t-- governance: ', governance.address);
+  console.log('\t-- user: ', user.address);
+  console.log('\t-- userTwo: ', userTwo.address);
+  console.log('\t-- userThree: ', userThree.address);
+
+  console.log(
+      "\t--- ModuleGlobals governance address: ", await moduleGlobals.getGovernance()
+    );
+  
+    let abiCoder = ethers.utils.defaultAbiCoder;
+    const SECOND_PROFILE_ID =2; 
+    const FIRST_HUB_ID =1; 
+    // const FIRST_PROJECT_ID =1; 
+    const DEFAULT_COLLECT_PRICE = 10; // parseEther('10');
+    const GENESIS_FEE_BPS = 100;
+    const DEFAULT_TEMPLATE_NUMBER = 1;
+
+    const collectModuleInitData = abiCoder.encode(
+      ['uint256', 'uint16', 'uint256', 'uint256'],
+      [SECOND_PROFILE_ID, GENESIS_FEE_BPS, DEFAULT_COLLECT_PRICE, 50]
+    );
+
+    const publishModuleinitData = abiCoder.encode(
+        ['address', 'uint256'],
+        [template.address, DEFAULT_TEMPLATE_NUMBER],
+    );
+    const FIRST_PROFILE_ID =1;
+    let balance_bank =(await ndp.balanceOfNDPT(FIRST_PROFILE_ID)).toNumber();
+    console.log('\n\t--- balance of bank : ', balance_bank);
+
+ 
+    let balance =(await ndp.balanceOfNDPT(SECOND_PROFILE_ID)).toNumber();
+    if (balance == 0) {
+      //mint 1000Value to user
+      await manager.connect(governance).mintNDPTValue(SECOND_PROFILE_ID, 1000);
+    }
+    console.log('\t--- balance of user: ', (await ndp.balanceOfNDPT(SECOND_PROFILE_ID)).toNumber());
+
+    await waitForTx(
+      manager.connect(user).prePublish({
+        soulBoundTokenId: SECOND_PROFILE_ID,
+        hubId: FIRST_HUB_ID,
+        projectId: projectid,
+        amount: 11,
+        salePrice: DEFAULT_COLLECT_PRICE,
+        royaltyBasisPoints: 50,
+        name: "Dollar",
+        description: "Hand draw",
+        materialURIs: [],
+        fromTokenIds: [],
+        collectModule: feeCollectModule.address,
+        collectModuleInitData: collectModuleInitData,
+        publishModule: publishModule.address,
+        publishModuleInitData: publishModuleinitData,
+      })
+    );
+
+
+    const FIRST_PUBLISH_ID = 1;
+    let publishInfo = await manager.connect(user).getPublishInfo(FIRST_PUBLISH_ID);
+
+    console.log(
+      "\n\t--- soulBoundTokenId: ", publishInfo.publication.soulBoundTokenId.toNumber()
+    );
+    console.log(
+      "\t--- hubId: ", publishInfo.publication.hubId.toNumber()
+    );
+    console.log(
+      "\t--- projectId: ", publishInfo.publication.projectId.toNumber()
+    );
+    console.log(
+      "\t--- amount: ", publishInfo.publication.amount.toNumber()
+    );
+    console.log(
+      "\t--- name: ", publishInfo.publication.name
+    );
+    console.log(
+      "\t--- description: ", publishInfo.publication.description
+    );
+    console.log(
+      "\t--- salePrice: ", publishInfo.publication.salePrice.toNumber()
+    );
+    console.log(
+      "\t--- royaltyBasisPoints: ", publishInfo.publication.royaltyBasisPoints.toNumber()
+    );
+
+    //updatePublish
+/*
+    await waitForTx(
+      manager.connect(user).updatePublish(
+        FIRST_PUBLISH_ID,
+        DEFAULT_COLLECT_PRICE + 10,
+        50 + 50,
+        11,
+        "USA Dollar",
+        "Hand draw USD",
+        [],
+        [],
+      )
+    );
+    console.log(
+      "\n\t--- After update publish..."
+    );
+
+    publishInfo = await manager.connect(user).getPublishInfo(FIRST_PUBLISH_ID);
+    console.log(
+      "\n\t--- salePrice: ", publishInfo.publication.salePrice
+    );
+    console.log(
+      "\t--- royaltyBasisPoints: ", publishInfo.publication.royaltyBasisPoints
+    );
+    console.log(
+      "\t--- amount: ", publishInfo.publication.amount
+    );
+    console.log(
+      "\t--- name: ", publishInfo.publication.name
+    );
+    console.log(
+      "\t--- description: ", publishInfo.publication.description
+    );
+*/
+    console.log(
+      "\n\t--- Publish  ..."
+    );
+
+    await waitForTx(
+      manager.connect(user).publish(
+        FIRST_PUBLISH_ID,
+      )
+    );
+
+
+    balance_bank =(await ndp.balanceOfNDPT(FIRST_PROFILE_ID)).toNumber();
+    console.log('\n\t--- balance of bank : ', balance_bank);
+
+    let balance_left =(await ndp.balanceOfNDPT(SECOND_PROFILE_ID)).toNumber();
+    console.log('\t--- balance of user after publish : ', balance_left);
+    
+    let derivativeNFT: DerivativeNFTV1;
+    derivativeNFT = DerivativeNFTV1__factory.connect(
+      await manager.connect(user).getDerivativeNFT(projectid),
+      user
+      );
+      
+    const FIRST_DNFT_TOKEN_ID = 1;
+    console.log('\n\t--- ownerOf FIRST_DNFT_TOKEN_ID : ', await derivativeNFT.ownerOf(FIRST_DNFT_TOKEN_ID));
+    console.log('\t--- balanceOf FIRST_DNFT_TOKEN_ID : ', (await derivativeNFT["balanceOf(uint256)"](FIRST_DNFT_TOKEN_ID)).toNumber());
+});

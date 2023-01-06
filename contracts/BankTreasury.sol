@@ -334,7 +334,7 @@ contract BankTreasury is
     {
         address _ndpt = IModuleGlobals(MODULE_GLOBALS).getNDPT();
         INFTDerivativeProtocolTokenV1(_ndpt).transferValue(_soulBoundTokenId, toSoulBoundTokenId, amount);
-        emit Events.WithdrawERC3525(_soulBoundTokenId, toSoulBoundTokenId, amount);
+        emit Events.WithdrawERC3525(_soulBoundTokenId, toSoulBoundTokenId, amount, block.timestamp);
     }
 
     function calculateAmountEther(uint256 ethAmount) external view returns(uint256) {

@@ -249,6 +249,7 @@ contract Manager is
     ) external override whenNotPaused {  
         if (publishId == 0) revert Errors.InvalidParameter();
         if (amount == 0) revert Errors.InvalidParameter();
+        if (_publishIdByProjectData[publishId].publication.amount < amount) revert Errors.AmountOnlyIncrease();
 
         _validateCallerIsSoulBoundTokenOwnerOrDispathcher(_publishIdByProjectData[publishId].publication.soulBoundTokenId);
 
@@ -360,7 +361,6 @@ contract Manager is
             _tokenIdByPublishId,
             _publishIdByProjectData
         );
-
     }
 
     function transferDerivativeNFT(

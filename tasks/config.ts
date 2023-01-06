@@ -40,16 +40,22 @@ import {
     Template,
     Template__factory,
 } from "../typechain";
+import { metadataDescriptors } from "../typechain/contracts";
 
 export const DEFAULT_CONFIG_PATH = "./deployments/networks.json";
 export const DEFAULT_LOCALHOST_CONFIG_PATH =
   "./deployments/networks.localhost.json";
 
 export type ContractName =
+  | "ManagerImpl"
   | "Manager"
   | "NDP"
   | "BankTreasury"
   | "Voucher"
+  | "FeeCollectModule"
+  | "PublishModule"
+  | "Template"
+  | "MetadataDescriptor"
   | "ModuleGlobals";
 
 export type DAOContract =
@@ -57,6 +63,8 @@ export type DAOContract =
   | NFTDerivativeProtocolTokenV1
   | BankTreasury
   | Voucher
+  | Template
+  | DerivativeMetadataDescriptor
   | ModuleGlobals;
 
 export type NetworkConfig = {
@@ -122,6 +130,10 @@ type ContractFactory =
   | typeof NFTDerivativeProtocolTokenV1__factory
   | typeof BankTreasury__factory
   | typeof Voucher__factory
+  | typeof FeeCollectModule__factory
+  | typeof PublishModule__factory
+  | typeof Template__factory
+  | typeof DerivativeMetadataDescriptor__factory
   | typeof ModuleGlobals__factory;
 
 export async function loadContract<T extends ContractFactory>(
@@ -179,6 +191,10 @@ export async function loadContractByName(
       return BankTreasury__factory.connect(address, deployer);
     case "Voucher":
       return Voucher__factory.connect(address, deployer);
+    case "Template":
+      return Template__factory.connect(address, deployer);
+    case "MetadataDescriptor":
+      return DerivativeMetadataDescriptor__factory.connect(address, deployer);
     case "ModuleGlobals":
       return ModuleGlobals__factory.connect(address, deployer);
     default:

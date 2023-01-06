@@ -84,12 +84,12 @@ $ yarn create-local-subgraph-node && yarn deploy-local-subgraph-node
 Deployed to http://localhost:8000/subgraphs/name/NoA/MySubgraph/graphql
 
 Subgraph endpoints:
-Queries (HTTP):     http://16.163.166.55:8000/subgraphs/name/NoA/MySubgraph
+Queries (HTTP):     http://localhost:8000/subgraphs/name/NoA/MySubgraph
 ```
 
 ### 查询所有Profile
 ```
-query{
+query {
   profiles(first:100){
     id,
     soulBoundTokenId,
@@ -99,18 +99,20 @@ query{
     imageURI,
     timestamp
   }
-}
-
+}	
 ```
 
-### 查询所有event
+### 查询所有collect
 ```
-{
-  eventItems(first: 100) {
+query {
+  feesForCollectHistories(first: 100) {
     id
-    projectId
-    name
-    description
+    collectorSoulBoundTokenId
+    publishId
+    treasuryAmount
+    genesisAmount
+    adjustedAmount
+    timestamp
   }
 }
 ```

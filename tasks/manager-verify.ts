@@ -1,13 +1,5 @@
 import { task } from "hardhat/config";
 import { HardhatRuntimeEnvironment } from 'hardhat/types';
-import { 
-  ManagerImpl_ADDRESS, 
-  Manager_ADDRESS, 
-  Bank_Treasury_ADDRESS, 
-  NDP_ADDRESS,
-  Voucher_ADDRESS,
-  ModuleGlobals_ADDRESS,
- } from './addresses';
 
 import {
   FeeCollectModule,
@@ -30,10 +22,11 @@ import {
   Template__factory,
 } from '../typechain';
 
+import { loadContract } from "./config";
+
 export let runtimeHRE: HardhatRuntimeEnvironment;
 
 task("manager-verify", "manager-verify function")
-// .addParam("manager", "address of manager")
 .setAction(async ({}: {}, hre) =>  {
   runtimeHRE = hre;
   const ethers = hre.ethers;
@@ -47,18 +40,18 @@ task("manager-verify", "manager-verify function")
   const userAddress = user.address;
   const userTwoAddress = userTwo.address;
 
-  const managerImpl = await ethers.getContractAt("Manager", ManagerImpl_ADDRESS);
-  const manager = Manager__factory.connect(Manager_ADDRESS, governance);
-  const bankTreasury = await ethers.getContractAt("BankTreasury", Bank_Treasury_ADDRESS);
-  const ndp = await ethers.getContractAt("NFTDerivativeProtocolTokenV1", NDP_ADDRESS);
-  const voucher = await ethers.getContractAt("Voucher", Voucher_ADDRESS);
-  const moduleGlobals = await ethers.getContractAt("ModuleGlobals", ModuleGlobals_ADDRESS);
+  const managerImpl = await loadContract(hre, Manager__factory, "ManagerImpl");
+  const manager = await loadContract(hre, Manager__factory, "Manager");
+  const bankTreasury = await loadContract(hre, BankTreasury__factory, "BankTreasury");
+  const ndp = await loadContract(hre, NFTDerivativeProtocolTokenV1__factory, "NDP");
+  const voucher = await loadContract(hre, Voucher__factory, "Voucher");
+  const moduleGlobals = await loadContract(hre, ModuleGlobals__factory, "ModuleGlobals");
 
   console.log(
     "---\t manager version: ", (await managerImpl.version()).toNumber()
     );
   console.log(
-      "---\t manager governance address: ", await manager.getGovernance()
+      "---\t manager governance address: ", await manager.connect(user).getGovernance()
     );
   console.log(
     "---\t ndp contract version: ", (await ndp.version()).toNumber()

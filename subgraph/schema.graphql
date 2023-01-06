@@ -8,3 +8,52 @@ type Profile @entity {
   imageURI: String!
   timestamp: BigInt!
 }
+
+# Derivative NFT transfer history
+type DerivativeNFTTransferHistory @entity {
+  id: ID!
+  fromSoulBoundTokenId: BigInt!
+  toSoulBoundTokenId: BigInt!
+  projectId: BigInt!
+  tokenId: BigInt!
+  timestamp: BigInt!
+}
+
+# Bank Treasury WithdrawERC3525 history 
+type WithdrawERC3525History @entity {
+  id: ID!
+  fromTokenId: BigInt!
+  toTokenId: BigInt!
+  value: BigInt!
+  timestamp: BigInt!
+}
+
+# Voucher NFT
+type NFTVoucherHistory @entity {
+  id: ID!
+  soulBoundTokenId: BigInt!
+  account: Bytes!
+  vouchType: Int!
+  tokenId: BigInt!
+  ndptValue: BigInt!
+  generateTimestamp: BigInt!
+}
+
+# ModuleGlobals
+type ProfileCreatorWhitelistedHistory @entity {
+  id: ID!
+  profileCreator: Bytes!
+  whitelisted: Boolean!
+  timestamp: BigInt!
+}
+
+# FeeCollectModule
+type FeesForCollectHistory @entity {
+  id: ID!
+  collectorSoulBoundTokenId: BigInt!
+  publishId: BigInt!
+  treasuryAmount: BigInt!
+  genesisAmount: BigInt!
+  adjustedAmount: BigInt!
+  timestamp: BigInt!
+}

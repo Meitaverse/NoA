@@ -1952,6 +1952,10 @@ export class WithdrawERC3525__Params {
   get value(): BigInt {
     return this._event.parameters[2].value.toBigInt();
   }
+
+  get timestamp(): BigInt {
+    return this._event.parameters[3].value.toBigInt();
+  }
 }
 
 export class Events extends ethereum.SmartContract {

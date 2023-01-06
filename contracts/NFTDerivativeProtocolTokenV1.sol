@@ -31,6 +31,16 @@ contract NFTDerivativeProtocolTokenV1 is
     UUPSUpgradeable
 {
     using SafeMathUpgradeable for uint256;
+
+    //== events ===/
+    // event ProfileCreated(
+    //     uint256 indexed soulBoundTokenId,
+    //     address indexed creator,
+    //     address indexed wallet,
+    //     string nickName,
+    //     string imageURI,
+    //     uint256 timestamp
+    // );
     
     uint256 internal constant VERSION = 1;
     

@@ -96,3 +96,401 @@ export class Profile extends Entity {
     this.set("timestamp", Value.fromBigInt(value));
   }
 }
+
+export class DerivativeNFTTransferHistory extends Entity {
+  constructor(id: string) {
+    super();
+    this.set("id", Value.fromString(id));
+  }
+
+  save(): void {
+    let id = this.get("id");
+    assert(
+      id != null,
+      "Cannot save DerivativeNFTTransferHistory entity without an ID"
+    );
+    if (id) {
+      assert(
+        id.kind == ValueKind.STRING,
+        `Entities of type DerivativeNFTTransferHistory must have an ID of type String but the id '${id.displayData()}' is of type ${id.displayKind()}`
+      );
+      store.set("DerivativeNFTTransferHistory", id.toString(), this);
+    }
+  }
+
+  static load(id: string): DerivativeNFTTransferHistory | null {
+    return changetype<DerivativeNFTTransferHistory | null>(
+      store.get("DerivativeNFTTransferHistory", id)
+    );
+  }
+
+  get id(): string {
+    let value = this.get("id");
+    return value!.toString();
+  }
+
+  set id(value: string) {
+    this.set("id", Value.fromString(value));
+  }
+
+  get fromSoulBoundTokenId(): BigInt {
+    let value = this.get("fromSoulBoundTokenId");
+    return value!.toBigInt();
+  }
+
+  set fromSoulBoundTokenId(value: BigInt) {
+    this.set("fromSoulBoundTokenId", Value.fromBigInt(value));
+  }
+
+  get toSoulBoundTokenId(): BigInt {
+    let value = this.get("toSoulBoundTokenId");
+    return value!.toBigInt();
+  }
+
+  set toSoulBoundTokenId(value: BigInt) {
+    this.set("toSoulBoundTokenId", Value.fromBigInt(value));
+  }
+
+  get projectId(): BigInt {
+    let value = this.get("projectId");
+    return value!.toBigInt();
+  }
+
+  set projectId(value: BigInt) {
+    this.set("projectId", Value.fromBigInt(value));
+  }
+
+  get tokenId(): BigInt {
+    let value = this.get("tokenId");
+    return value!.toBigInt();
+  }
+
+  set tokenId(value: BigInt) {
+    this.set("tokenId", Value.fromBigInt(value));
+  }
+
+  get timestamp(): BigInt {
+    let value = this.get("timestamp");
+    return value!.toBigInt();
+  }
+
+  set timestamp(value: BigInt) {
+    this.set("timestamp", Value.fromBigInt(value));
+  }
+}
+
+export class WithdrawERC3525History extends Entity {
+  constructor(id: string) {
+    super();
+    this.set("id", Value.fromString(id));
+  }
+
+  save(): void {
+    let id = this.get("id");
+    assert(
+      id != null,
+      "Cannot save WithdrawERC3525History entity without an ID"
+    );
+    if (id) {
+      assert(
+        id.kind == ValueKind.STRING,
+        `Entities of type WithdrawERC3525History must have an ID of type String but the id '${id.displayData()}' is of type ${id.displayKind()}`
+      );
+      store.set("WithdrawERC3525History", id.toString(), this);
+    }
+  }
+
+  static load(id: string): WithdrawERC3525History | null {
+    return changetype<WithdrawERC3525History | null>(
+      store.get("WithdrawERC3525History", id)
+    );
+  }
+
+  get id(): string {
+    let value = this.get("id");
+    return value!.toString();
+  }
+
+  set id(value: string) {
+    this.set("id", Value.fromString(value));
+  }
+
+  get fromTokenId(): BigInt {
+    let value = this.get("fromTokenId");
+    return value!.toBigInt();
+  }
+
+  set fromTokenId(value: BigInt) {
+    this.set("fromTokenId", Value.fromBigInt(value));
+  }
+
+  get toTokenId(): BigInt {
+    let value = this.get("toTokenId");
+    return value!.toBigInt();
+  }
+
+  set toTokenId(value: BigInt) {
+    this.set("toTokenId", Value.fromBigInt(value));
+  }
+
+  get value(): BigInt {
+    let value = this.get("value");
+    return value!.toBigInt();
+  }
+
+  set value(value: BigInt) {
+    this.set("value", Value.fromBigInt(value));
+  }
+
+  get timestamp(): BigInt {
+    let value = this.get("timestamp");
+    return value!.toBigInt();
+  }
+
+  set timestamp(value: BigInt) {
+    this.set("timestamp", Value.fromBigInt(value));
+  }
+}
+
+export class NFTVoucherHistory extends Entity {
+  constructor(id: string) {
+    super();
+    this.set("id", Value.fromString(id));
+  }
+
+  save(): void {
+    let id = this.get("id");
+    assert(id != null, "Cannot save NFTVoucherHistory entity without an ID");
+    if (id) {
+      assert(
+        id.kind == ValueKind.STRING,
+        `Entities of type NFTVoucherHistory must have an ID of type String but the id '${id.displayData()}' is of type ${id.displayKind()}`
+      );
+      store.set("NFTVoucherHistory", id.toString(), this);
+    }
+  }
+
+  static load(id: string): NFTVoucherHistory | null {
+    return changetype<NFTVoucherHistory | null>(
+      store.get("NFTVoucherHistory", id)
+    );
+  }
+
+  get id(): string {
+    let value = this.get("id");
+    return value!.toString();
+  }
+
+  set id(value: string) {
+    this.set("id", Value.fromString(value));
+  }
+
+  get soulBoundTokenId(): BigInt {
+    let value = this.get("soulBoundTokenId");
+    return value!.toBigInt();
+  }
+
+  set soulBoundTokenId(value: BigInt) {
+    this.set("soulBoundTokenId", Value.fromBigInt(value));
+  }
+
+  get account(): Bytes {
+    let value = this.get("account");
+    return value!.toBytes();
+  }
+
+  set account(value: Bytes) {
+    this.set("account", Value.fromBytes(value));
+  }
+
+  get vouchType(): i32 {
+    let value = this.get("vouchType");
+    return value!.toI32();
+  }
+
+  set vouchType(value: i32) {
+    this.set("vouchType", Value.fromI32(value));
+  }
+
+  get tokenId(): BigInt {
+    let value = this.get("tokenId");
+    return value!.toBigInt();
+  }
+
+  set tokenId(value: BigInt) {
+    this.set("tokenId", Value.fromBigInt(value));
+  }
+
+  get ndptValue(): BigInt {
+    let value = this.get("ndptValue");
+    return value!.toBigInt();
+  }
+
+  set ndptValue(value: BigInt) {
+    this.set("ndptValue", Value.fromBigInt(value));
+  }
+
+  get generateTimestamp(): BigInt {
+    let value = this.get("generateTimestamp");
+    return value!.toBigInt();
+  }
+
+  set generateTimestamp(value: BigInt) {
+    this.set("generateTimestamp", Value.fromBigInt(value));
+  }
+}
+
+export class ProfileCreatorWhitelistedHistory extends Entity {
+  constructor(id: string) {
+    super();
+    this.set("id", Value.fromString(id));
+  }
+
+  save(): void {
+    let id = this.get("id");
+    assert(
+      id != null,
+      "Cannot save ProfileCreatorWhitelistedHistory entity without an ID"
+    );
+    if (id) {
+      assert(
+        id.kind == ValueKind.STRING,
+        `Entities of type ProfileCreatorWhitelistedHistory must have an ID of type String but the id '${id.displayData()}' is of type ${id.displayKind()}`
+      );
+      store.set("ProfileCreatorWhitelistedHistory", id.toString(), this);
+    }
+  }
+
+  static load(id: string): ProfileCreatorWhitelistedHistory | null {
+    return changetype<ProfileCreatorWhitelistedHistory | null>(
+      store.get("ProfileCreatorWhitelistedHistory", id)
+    );
+  }
+
+  get id(): string {
+    let value = this.get("id");
+    return value!.toString();
+  }
+
+  set id(value: string) {
+    this.set("id", Value.fromString(value));
+  }
+
+  get profileCreator(): Bytes {
+    let value = this.get("profileCreator");
+    return value!.toBytes();
+  }
+
+  set profileCreator(value: Bytes) {
+    this.set("profileCreator", Value.fromBytes(value));
+  }
+
+  get whitelisted(): boolean {
+    let value = this.get("whitelisted");
+    return value!.toBoolean();
+  }
+
+  set whitelisted(value: boolean) {
+    this.set("whitelisted", Value.fromBoolean(value));
+  }
+
+  get timestamp(): BigInt {
+    let value = this.get("timestamp");
+    return value!.toBigInt();
+  }
+
+  set timestamp(value: BigInt) {
+    this.set("timestamp", Value.fromBigInt(value));
+  }
+}
+
+export class FeesForCollectHistory extends Entity {
+  constructor(id: string) {
+    super();
+    this.set("id", Value.fromString(id));
+  }
+
+  save(): void {
+    let id = this.get("id");
+    assert(
+      id != null,
+      "Cannot save FeesForCollectHistory entity without an ID"
+    );
+    if (id) {
+      assert(
+        id.kind == ValueKind.STRING,
+        `Entities of type FeesForCollectHistory must have an ID of type String but the id '${id.displayData()}' is of type ${id.displayKind()}`
+      );
+      store.set("FeesForCollectHistory", id.toString(), this);
+    }
+  }
+
+  static load(id: string): FeesForCollectHistory | null {
+    return changetype<FeesForCollectHistory | null>(
+      store.get("FeesForCollectHistory", id)
+    );
+  }
+
+  get id(): string {
+    let value = this.get("id");
+    return value!.toString();
+  }
+
+  set id(value: string) {
+    this.set("id", Value.fromString(value));
+  }
+
+  get collectorSoulBoundTokenId(): BigInt {
+    let value = this.get("collectorSoulBoundTokenId");
+    return value!.toBigInt();
+  }
+
+  set collectorSoulBoundTokenId(value: BigInt) {
+    this.set("collectorSoulBoundTokenId", Value.fromBigInt(value));
+  }
+
+  get publishId(): BigInt {
+    let value = this.get("publishId");
+    return value!.toBigInt();
+  }
+
+  set publishId(value: BigInt) {
+    this.set("publishId", Value.fromBigInt(value));
+  }
+
+  get treasuryAmount(): BigInt {
+    let value = this.get("treasuryAmount");
+    return value!.toBigInt();
+  }
+
+  set treasuryAmount(value: BigInt) {
+    this.set("treasuryAmount", Value.fromBigInt(value));
+  }
+
+  get genesisAmount(): BigInt {
+    let value = this.get("genesisAmount");
+    return value!.toBigInt();
+  }
+
+  set genesisAmount(value: BigInt) {
+    this.set("genesisAmount", Value.fromBigInt(value));
+  }
+
+  get adjustedAmount(): BigInt {
+    let value = this.get("adjustedAmount");
+    return value!.toBigInt();
+  }
+
+  set adjustedAmount(value: BigInt) {
+    this.set("adjustedAmount", Value.fromBigInt(value));
+  }
+
+  get timestamp(): BigInt {
+    let value = this.get("timestamp");
+    return value!.toBigInt();
+  }
+
+  set timestamp(value: BigInt) {
+    this.set("timestamp", Value.fromBigInt(value));
+  }
+}

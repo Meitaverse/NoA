@@ -86,7 +86,7 @@ contract MultirecipientFeeCollectModule is BaseFeeCollectModule {
         uint256 tokenId,
         uint256 amount,
         bytes calldata data        
-    ) external override onlyManager returns (bytes memory) {
+    ) external override onlyManager {
         MultirecipientFeeCollectModuleInitData memory initData = abi.decode(
             data,
             (MultirecipientFeeCollectModuleInitData)
@@ -109,7 +109,6 @@ contract MultirecipientFeeCollectModule is BaseFeeCollectModule {
         if (ownershipSoulBoundTokenId == 0) revert Errors.InitParamsInvalid();
         _validateAndStoreRoyaltyPoints(initData.royaltyPoints, baseInitData.projectId);
         _storeBasePublicationCollectParameters(baseInitData.projectId, baseInitData);
-        return data;
     }
 
     /**
