@@ -57,8 +57,8 @@ contract ManagerV2 is IManagerV2, DerivativeNFTMultiState, MockManagerV2Storage,
     }
 
 
-    function mintNDPTValue(uint256 tokenId, uint256 value) external whenNotPaused onlyGov {
-        INFTDerivativeProtocolTokenV1(NDPT).mintValue(tokenId, value);
+    function mintNDPTValue(uint256 soulBoundTokenId, uint256 value) external whenNotPaused onlyGov {
+        INFTDerivativeProtocolTokenV1(NDPT).mintValue(soulBoundTokenId, value);
     }
 
 

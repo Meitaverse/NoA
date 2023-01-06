@@ -32,12 +32,13 @@ import { deployContract, waitForTx , ProtocolState, Error} from './helpers/utils
 
 export let runtimeHRE: HardhatRuntimeEnvironment;
 
-// yarn hardhat collect --collectorid 3 --nftid 1 --network local
+// yarn hardhat airdrop --ownerid 2 --receiverid 3 --nftid 1 --network local
 
-task("collect", "collect a dNFT function")
-.addParam("collectorid", "soul bound token id ")
+task("airdrop", "airdrop array of dNFTs to many users function")
+.addParam("ownerid", "owner soul bound token id ")
+.addParam("receiverid", "soul bound token id ")
 .addParam("nftid", "derivative nft id to collect")
-.setAction(async ({collectorid, nftid}: {collectorid:number, nftid: number}, hre) =>  {
+.setAction(async ({ownerid, receiverid, nftid}: {ownerid:number, receiverid:number, nftid: number}, hre) =>  {
   runtimeHRE = hre;
   const ethers = hre.ethers;
   const accounts = await ethers.getSigners();
@@ -71,35 +72,39 @@ task("collect", "collect a dNFT function")
       "\t--- ModuleGlobals governance address: ", await moduleGlobals.getGovernance()
     );
 
-    let collector = accounts[collectorid];
-    console.log('\n\t-- collector: ', collector.address);
-    let balance =(await ndp.balanceOfNDPT(collectorid)).toNumber();
+    let owner = accounts[ownerid];
+    console.log('\n\t-- owner: ', owner.address);
+
+    let receiver = accounts[receiverid];
+    console.log('\n\t-- receiver: ', receiver.address);
+    let balance =(await ndp.balanceOfNDPT(receiverid)).toNumber();
     if (balance == 0) {
       //mint 1000Value to user
-      await manager.connect(governance).mintNDPTValue(collectorid, 1000);
+      await manager.connect(governance).mintNDPTValue(receiverid, 1000);
     }
-    console.log('\t--- balance of collector: ', (await ndp.balanceOfNDPT(collectorid)).toNumber());
+    console.log('\t--- balance of receiver: ', (await ndp.balanceOfNDPT(receiverid)).toNumber());
 
 
     const FIRST_PROJECT_ID =1; 
     const FIRST_PUBLISH_ID =1; 
    
     console.log(
-      "\n\t--- Collet  ..."
+      "\n\t--- Airdrop  ..."
     );
 
     await waitForTx(
-      manager.connect(collector).collect({
+      manager.connect(receiver).airdrop({
         publishId: FIRST_PUBLISH_ID,
-        collectorSoulBoundTokenId: collectorid,
-        collectValue: 1,
-        data: [],
+        ownershipSoulBoundTokenId: ownerid,
+        toSoulBoundTokenIds: [receiverid],
+        tokenId: nftid,
+        values: [1],
       })
     );
 
     let derivativeNFT: DerivativeNFTV1;
     derivativeNFT = DerivativeNFTV1__factory.connect(
-      await manager.connect(collector).getDerivativeNFT(FIRST_PROJECT_ID),
+      await manager.connect(receiver).getDerivativeNFT(FIRST_PROJECT_ID),
       user
     );
       

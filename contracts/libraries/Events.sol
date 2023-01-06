@@ -115,7 +115,6 @@ library Events {
         uint256 timestamp
     );
 
-
     event ModuleGlobalsPublishRoyaltySet(
         uint256 indexed prevPublishRoyalty,
         uint256 indexed newPublishRoyalty,
@@ -135,7 +134,6 @@ library Events {
         uint256 timestamp
     );
 
-
     /**
      * @notice Emitted when a module inheriting from the `FeeModuleBase` is constructed.
      *
@@ -151,7 +149,6 @@ library Events {
      * @param timestamp The current block timestamp.
      */
     event ModuleBaseConstructed(address indexed manager, uint256 timestamp);
-
 
     /**
      * @notice Emitted when the ModuleGlobals governance address is set.
@@ -231,47 +228,28 @@ library Events {
         uint256 timestamp
     );
 
-    /**
-     * @notice Emitted when Manager call to mint of NDPT Tokens.
-     *         only can mint to banktreasury contract
-     * 
-     * @param mintTo The address of MintTo
-     * @param slot The slot of  NDPT
-     * @param value The value of mint NDPT
-     * @param timestamp The current block timestamp.
-     */
-    event MintNDPT(
-        address mintTo, uint256 slot, uint256 value,
+    event BurnNDPT(
+        uint256 tokenId, 
         uint256 timestamp
     );
 
-    event MintDerivativeNFT(
-        uint256 publishId,
-        address mintTo, uint256 slot, uint256 value,
+    event BurnNDPTValue(
+        uint256 tokenId, 
+        uint256 value, 
         uint256 timestamp
     );
-
-    event SplitDerivativeNFT(
-        uint256 publishId,
-        uint256 fromTokenId, uint256 toTokenId,  uint256 value,
-        uint256 timestamp
-    );
-
-    event BurnNDPT(uint256 tokenId, uint256 timestamp);
-
-    event BurnNDPTValue(uint256 tokenId, uint256 value, uint256 timestamp);
 
     /**
      * @dev Emitted when Manager call to mintValue of NDPT Tokens.
-     * @param tokenId The token id of NDPT
+     * @param soulBoundTokenId The token id of NDPT
      * @param value The value of mint NDPT
      * @param timestamp The current block timestamp.
      */
     event MintNDPTValue(
-        uint256 tokenId,uint256 value,
+        uint256 soulBoundTokenId,
+        uint256 value,
         uint256 timestamp
     );
-
 
     /**
      * @dev Emitted when a profile's URI is set.
@@ -280,8 +258,11 @@ library Events {
      * @param imageURI The URI set for the given profile.
      * @param timestamp The current block timestamp.
      */
-    event ProfileImageURISet(uint256 indexed soulBoundTokenId, string imageURI, uint256 timestamp);
-
+    event ProfileImageURISet(
+        uint256 indexed soulBoundTokenId, 
+        string imageURI, 
+        uint256 timestamp
+    );
 
     event DerivativeNFTCollected(
         uint256 projectId,
@@ -298,8 +279,8 @@ library Events {
         uint256 projectId,
         address derivativeNFT,
         uint256 fromSoulBoundTokenId,
-        address operator,
         uint256 tokenId,
+        uint256[] toSoulBoundTokenIds,
         uint256[] values,
         uint256[] newTokenIds,
         uint256 timestamp
@@ -477,8 +458,6 @@ library Events {
         uint256 timestamp
     );
 
-
-    
     // Signals frozen metadata to OpenSea; emitted in minting functions
     event PermanentURI(string _value, uint256 indexed _id);
 

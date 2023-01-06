@@ -17,6 +17,11 @@
     },
     {
       "inputs": [],
+      "name": "AmountOnlyIncrease",
+      "type": "error"
+    },
+    {
+      "inputs": [],
       "name": "CannotInitImplementation",
       "type": "error"
     },
@@ -932,7 +937,7 @@
       "inputs": [
         {
           "internalType": "uint256",
-          "name": "tokenId",
+          "name": "soulBoundTokenId",
           "type": "uint256"
         },
         {

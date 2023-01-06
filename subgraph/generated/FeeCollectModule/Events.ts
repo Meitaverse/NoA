@@ -273,12 +273,12 @@ export class DerivativeNFTAirdroped__Params {
     return this._event.parameters[2].value.toBigInt();
   }
 
-  get operator(): Address {
-    return this._event.parameters[3].value.toAddress();
+  get tokenId(): BigInt {
+    return this._event.parameters[3].value.toBigInt();
   }
 
-  get tokenId(): BigInt {
-    return this._event.parameters[4].value.toBigInt();
+  get toSoulBoundTokenIds(): Array<BigInt> {
+    return this._event.parameters[4].value.toBigIntArray();
   }
 
   get values(): Array<BigInt> {
@@ -762,70 +762,6 @@ export class HubCreatorWhitelisted__Params {
   }
 }
 
-export class MintDerivativeNFT extends ethereum.Event {
-  get params(): MintDerivativeNFT__Params {
-    return new MintDerivativeNFT__Params(this);
-  }
-}
-
-export class MintDerivativeNFT__Params {
-  _event: MintDerivativeNFT;
-
-  constructor(event: MintDerivativeNFT) {
-    this._event = event;
-  }
-
-  get publishId(): BigInt {
-    return this._event.parameters[0].value.toBigInt();
-  }
-
-  get mintTo(): Address {
-    return this._event.parameters[1].value.toAddress();
-  }
-
-  get slot(): BigInt {
-    return this._event.parameters[2].value.toBigInt();
-  }
-
-  get value(): BigInt {
-    return this._event.parameters[3].value.toBigInt();
-  }
-
-  get timestamp(): BigInt {
-    return this._event.parameters[4].value.toBigInt();
-  }
-}
-
-export class MintNDPT extends ethereum.Event {
-  get params(): MintNDPT__Params {
-    return new MintNDPT__Params(this);
-  }
-}
-
-export class MintNDPT__Params {
-  _event: MintNDPT;
-
-  constructor(event: MintNDPT) {
-    this._event = event;
-  }
-
-  get mintTo(): Address {
-    return this._event.parameters[0].value.toAddress();
-  }
-
-  get slot(): BigInt {
-    return this._event.parameters[1].value.toBigInt();
-  }
-
-  get value(): BigInt {
-    return this._event.parameters[2].value.toBigInt();
-  }
-
-  get timestamp(): BigInt {
-    return this._event.parameters[3].value.toBigInt();
-  }
-}
-
 export class MintNDPTValue extends ethereum.Event {
   get params(): MintNDPTValue__Params {
     return new MintNDPTValue__Params(this);
@@ -839,7 +775,7 @@ export class MintNDPTValue__Params {
     this._event = event;
   }
 
-  get tokenId(): BigInt {
+  get soulBoundTokenId(): BigInt {
     return this._event.parameters[0].value.toBigInt();
   }
 
@@ -1219,28 +1155,36 @@ export class PublishCreated__Params {
     this._event = event;
   }
 
-  get soulBoundTokenId(): BigInt {
+  get publishId(): BigInt {
     return this._event.parameters[0].value.toBigInt();
   }
 
-  get projectId(): BigInt {
+  get soulBoundTokenId(): BigInt {
     return this._event.parameters[1].value.toBigInt();
   }
 
-  get newTokenId(): BigInt {
+  get hubId(): BigInt {
     return this._event.parameters[2].value.toBigInt();
   }
 
-  get value(): BigInt {
+  get projectId(): BigInt {
     return this._event.parameters[3].value.toBigInt();
   }
 
-  get collectModuleReturnData(): Bytes {
-    return this._event.parameters[4].value.toBytes();
+  get newTokenId(): BigInt {
+    return this._event.parameters[4].value.toBigInt();
+  }
+
+  get amount(): BigInt {
+    return this._event.parameters[5].value.toBigInt();
+  }
+
+  get collectModuleInitData(): Bytes {
+    return this._event.parameters[6].value.toBytes();
   }
 
   get timestamp(): BigInt {
-    return this._event.parameters[5].value.toBigInt();
+    return this._event.parameters[7].value.toBigInt();
   }
 }
 
@@ -1439,36 +1383,44 @@ export class PublishUpdated__Params {
     return this._event.parameters[0].value.toBigInt();
   }
 
-  get salePrice(): BigInt {
+  get soulBoundTokenId(): BigInt {
     return this._event.parameters[1].value.toBigInt();
   }
 
-  get royaltyBasisPoints(): BigInt {
+  get salePrice(): BigInt {
     return this._event.parameters[2].value.toBigInt();
   }
 
-  get amount(): BigInt {
+  get royaltyBasisPoints(): BigInt {
     return this._event.parameters[3].value.toBigInt();
   }
 
-  get name(): string {
-    return this._event.parameters[4].value.toString();
+  get amount(): BigInt {
+    return this._event.parameters[4].value.toBigInt();
   }
 
-  get description(): string {
+  get name(): string {
     return this._event.parameters[5].value.toString();
   }
 
+  get description(): string {
+    return this._event.parameters[6].value.toString();
+  }
+
   get materialURIs(): Array<string> {
-    return this._event.parameters[6].value.toStringArray();
+    return this._event.parameters[7].value.toStringArray();
   }
 
   get fromTokenIds(): Array<BigInt> {
-    return this._event.parameters[7].value.toBigIntArray();
+    return this._event.parameters[8].value.toBigIntArray();
+  }
+
+  get addedPublishTaxes(): BigInt {
+    return this._event.parameters[9].value.toBigInt();
   }
 
   get timestamp(): BigInt {
-    return this._event.parameters[8].value.toBigInt();
+    return this._event.parameters[10].value.toBigInt();
   }
 }
 
@@ -1637,40 +1589,6 @@ export class SetUserAmountLimit__Params {
 
   get endTimestamp(): BigInt {
     return this._event.parameters[2].value.toBigInt();
-  }
-}
-
-export class SplitDerivativeNFT extends ethereum.Event {
-  get params(): SplitDerivativeNFT__Params {
-    return new SplitDerivativeNFT__Params(this);
-  }
-}
-
-export class SplitDerivativeNFT__Params {
-  _event: SplitDerivativeNFT;
-
-  constructor(event: SplitDerivativeNFT) {
-    this._event = event;
-  }
-
-  get publishId(): BigInt {
-    return this._event.parameters[0].value.toBigInt();
-  }
-
-  get fromTokenId(): BigInt {
-    return this._event.parameters[1].value.toBigInt();
-  }
-
-  get toTokenId(): BigInt {
-    return this._event.parameters[2].value.toBigInt();
-  }
-
-  get value(): BigInt {
-    return this._event.parameters[3].value.toBigInt();
-  }
-
-  get timestamp(): BigInt {
-    return this._event.parameters[4].value.toBigInt();
   }
 }
 

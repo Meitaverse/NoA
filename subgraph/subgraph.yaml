@@ -17,7 +17,7 @@ dataSources:
       language: wasm/assemblyscript
       entities:
         - ProfileCreated
-        # - MintNDPTValue
+        - MintNDPTValue
       abis:
         - name: NDP
           file: ./abis/NDP.json
@@ -26,8 +26,10 @@ dataSources:
       eventHandlers:
         - event: ProfileCreated(indexed uint256,indexed address,indexed address,string,string,uint256)
           handler: handleProfileCreated
+        - event: MintNDPTValue(uint256,uint256,uint256)
+          handler: handleMintNDPTValue
       file: ./src/ndp-mapping.ts
-  
+
   - kind: ethereum/contract
     name: Manager
     network: mainnet
@@ -41,6 +43,11 @@ dataSources:
       language: wasm/assemblyscript
       entities:
         - TransferDerivativeNFT
+        - TransferValueDerivativeNFT
+        - HubCreated
+        - PublishPrepared
+        - PublishCreated
+        - DerivativeNFTCollected
       abis:
         # - name: Manager
         #   file: ./abis/Manager.json
@@ -49,8 +56,18 @@ dataSources:
       eventHandlers:
         - event: TransferDerivativeNFT(uint256,uint256,uint256,uint256,uint256)
           handler: handleTransferDerivativeNFT
+        - event: TransferValueDerivativeNFT(uint256,uint256,uint256,uint256,uint256,uint256,uint256)
+          handler: handleTransferValueDerivativeNFT
+        - event: HubCreated(indexed uint256,indexed address,indexed uint256,string,string,string,uint256)
+          handler: handleHubCreated
+        - event: PublishPrepared((uint256,uint256,uint256,uint256,uint256,uint256,string,string,string[],uint256[],address,bytes,address,bytes),uint256,uint256,uint256,uint256)
+          handler: handlePublishPrepared
+        - event: PublishCreated(uint256,uint256,uint256,uint256,uint256,uint256,bytes,uint256)
+          handler: handlePublishCreated
+        - event: DerivativeNFTCollected(uint256,address,uint256,uint256,uint256,uint256,uint256,uint256)
+          handler: handleDerivativeNFTCollected
       file: ./src/manager-mapping.ts
-  
+
   - kind: ethereum/contract
     name: BankTreasury
     network: mainnet

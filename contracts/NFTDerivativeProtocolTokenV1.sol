@@ -163,11 +163,11 @@ contract NFTDerivativeProtocolTokenV1 is
     }
 
     function mintValue(
-        uint256 tokenId, 
+        uint256 soulBoundTokenId, 
         uint256 value
     ) external payable whenNotPaused onlyManager {
-        ERC3525Upgradeable._mintValue(tokenId, value);
-        emit Events.MintNDPTValue(tokenId, value, block.timestamp);
+        ERC3525Upgradeable._mintValue(soulBoundTokenId, value);
+        emit Events.MintNDPTValue(soulBoundTokenId, value, block.timestamp);
     }
 
     function balanceOfNDPT(uint256 tokenId) external view override returns (uint256) {

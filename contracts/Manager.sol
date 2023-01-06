@@ -82,9 +82,9 @@ contract Manager is
         return _RECEIVER;
     }
 
-    function mintNDPTValue(uint256 tokenId, uint256 value) external whenNotPaused onlyGov {
+    function mintNDPTValue(uint256 soulBoundTokenId, uint256 value) external whenNotPaused onlyGov {
         address _ndpt = IModuleGlobals(MODULE_GLOBALS).getNDPT();
-        INFTDerivativeProtocolTokenV1(_ndpt).mintValue(tokenId, value);
+        INFTDerivativeProtocolTokenV1(_ndpt).mintValue(soulBoundTokenId, value);
     }
 
     function burnNDPT(uint256 tokenId) external whenNotPaused onlyGov {

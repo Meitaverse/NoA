@@ -74,29 +74,14 @@ interface INFTDerivativeProtocolTokenV2  {
 
 
     /**
-     * @notice Mint to a address spec tokenId.
-     *  Only admin can execute.
-     *
-     * @param mintTo to address 
-     * @param slot is the lost of tokenId
-     * @param value is the value of tokenId
-     */
-    function mint(
-        address mintTo,
-        uint256 slot,
-        uint256 value
-    ) external payable returns(uint256 tokenId);
-  
-  
-    /**
      * @notice Mint value to a tokenId.
      *  Only admin can execute.
      *
-     * @param tokenId is the tokenId of ERC3525 Token
+     * @param soulBoundTokenId is the soulBoundTokenId of ERC3525 Token
      * @param value is the value of tokenId
      */
     function mintValue(
-        uint256 tokenId,
+        uint256 soulBoundTokenId,
         uint256 value
     ) external payable;
 

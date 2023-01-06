@@ -215,7 +215,6 @@ contract DerivativeNFTV1 is
 
         _mint(publisher, newTokenId, slot, publication.amount);
         
-        emit Events.MintDerivativeNFT(publishId, publisher, slot, publication.amount, block.timestamp);
         return newTokenId;
     }
 
@@ -224,16 +223,13 @@ contract DerivativeNFTV1 is
         uint256 fromTokenId_, 
         address to_,
         uint256 value_
-    ) external returns(uint256) {
+    ) external whenNotPaused onlyManager returns(uint256) {
         uint256 newTokenId = ERC3525Upgradeable._createDerivedTokenId(fromTokenId_);
       
         _tokenIdToPublishId[newTokenId] = publishId_;
         _mint(to_, newTokenId, ERC3525Upgradeable.slotOf(fromTokenId_), 0);
 
         ERC3525Upgradeable._transferValue(fromTokenId_, newTokenId, value_);
-
-
-        emit Events.SplitDerivativeNFT(publishId_, fromTokenId_, newTokenId, value_, block.timestamp);
 
         return newTokenId;
     }
@@ -242,7 +238,7 @@ contract DerivativeNFTV1 is
         address spender,
         uint256 tokenId,
         DataTypes.EIP712Signature calldata sig
-    ) external override {
+    ) external override whenNotPaused {
         if (spender == address(0)) revert Errors.ZeroSpender();
         address owner = ownerOf(tokenId);
         unchecked {
@@ -270,7 +266,7 @@ contract DerivativeNFTV1 is
         uint256 tokenId,
         uint256 value,
         DataTypes.EIP712Signature calldata sig
-    ) external override {
+    ) external override whenNotPaused {
         if (spender == address(0)) revert Errors.ZeroSpender();
         
         address owner = ownerOf(tokenId);
@@ -301,7 +297,7 @@ contract DerivativeNFTV1 is
         address operator,
         bool approved,
         DataTypes.EIP712Signature calldata sig
-    ) external override {
+    ) external override whenNotPaused {
         if (operator == address(0)) revert Errors.ZeroSpender();
         unchecked {
             _validateRecoveredAddress(
@@ -338,6 +334,7 @@ contract DerivativeNFTV1 is
         public
         virtual
         override
+        whenNotPaused
     {
         address owner = ownerOf(tokenId);
         unchecked {
@@ -500,7 +497,7 @@ contract DerivativeNFTV1 is
      * @param royaltyBasisPoints The royalty percentage meassured in basis points. Each basis point
      *                           represents 0.01%.
      */
-    function setRoyalty(uint96 royaltyBasisPoints) external onlyManager {
+    function setRoyalty(uint96 royaltyBasisPoints) external whenNotPaused onlyManager {
         if (IERC3525(_NDPT).ownerOf(_soulBoundTokenId) == msg.sender) {
             if (royaltyBasisPoints > _BASIS_POINTS) {
                 revert Errors.InvalidParameter();

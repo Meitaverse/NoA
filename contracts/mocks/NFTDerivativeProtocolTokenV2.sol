@@ -122,24 +122,14 @@ contract NFTDerivativeProtocolTokenV2 is
         return tokenId_;
     }
 
-    function mint(
-        address mintTo, 
-        uint256 slot, 
-        uint256 value
-    ) external payable whenNotPaused onlyManager returns(uint256 tokenId){
-        tokenId =  ERC3525Upgradeable._mint(mintTo, slot, value);
-        emit Events.MintNDPT(mintTo, slot, value, block.timestamp);
-        return tokenId;
-    }
     
     function mintValue(
-        uint256 tokenId, 
+        uint256 soulBoundTokenId, 
         uint256 value
     ) external payable whenNotPaused onlyManager {
         if (value == 0) revert Errors.AmountIsZero();
-        ERC3525Upgradeable._mintValue(tokenId, value);
-        emit Events.MintNDPTValue(tokenId, value, block.timestamp);
-
+        ERC3525Upgradeable._mintValue(soulBoundTokenId, value);
+        emit Events.MintNDPTValue(soulBoundTokenId, value, block.timestamp);
     }
 
     function burn(uint256 tokenId) external whenNotPaused onlyManager{

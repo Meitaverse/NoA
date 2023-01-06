@@ -6,7 +6,12 @@ import {
 } from "../generated/NDP/NDP"
 
 import {
+    MintNDPTValue,
+} from "../generated/NDP/Events"
+
+import {
     Profile,
+    MintNDPValueHistory,
 } from "../generated/schema"
 
 export function handleProfileCreated(event: ProfileCreated): void {
@@ -23,6 +28,21 @@ export function handleProfileCreated(event: ProfileCreated): void {
         profile.imageURI = event.params.imageURI
         profile.timestamp = event.params.timestamp
         profile.save()
+        
+    } 
+}
+
+export function handleMintNDPTValue(event: MintNDPTValue): void {
+    log.info("handleMintNDPTValue, event.address: {}", [event.address.toHexString()])
+
+    let _idString = event.params.soulBoundTokenId.toString() + "-" + event.params.timestamp.toString()
+    const history = MintNDPValueHistory.load(_idString) || new MintNDPValueHistory(_idString)
+
+    if (history) {
+        history.soulBoundTokenId = event.params.soulBoundTokenId
+        history.value = event.params.value
+        history.timestamp = event.params.timestamp
+        history.save()
         
     } 
 }

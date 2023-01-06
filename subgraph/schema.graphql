@@ -9,7 +9,79 @@ type Profile @entity {
   timestamp: BigInt!
 }
 
-# Derivative NFT transfer history
+
+
+# mint NDPValue history    
+type MintNDPValueHistory @entity {
+  id: ID!
+  soulBoundTokenId: BigInt!
+  value: BigInt!
+  timestamp: BigInt!
+}    
+
+# Hub
+type Hub @entity {
+  id: ID!
+  soulBoundTokenId: BigInt!
+  creator: Bytes!
+  hubId: BigInt!
+  name: String!
+  description: String!
+  imageURI: String!
+  timestamp: BigInt!
+}
+
+# publication
+type Publication @entity {
+  id: ID!
+  soulBoundTokenId: BigInt!
+  hubId: BigInt!
+  projectId: BigInt!
+  salePrice: BigInt!
+  royaltyBasisPoints: BigInt!
+  amount: BigInt!
+  name: String!
+  description: String!
+  materialURIs: [String!]
+  fromTokenIds: [BigInt!]
+  collectModule: Bytes!
+  collectModuleInitData: Bytes!
+  publishModule: Bytes!
+  publishModuleInitData: Bytes!
+  publishId: BigInt!
+  previousPublishId: BigInt!
+  publishTaxAmount: BigInt!
+  timestamp: BigInt!
+}
+
+
+# Publish Created history
+type PublishCreatedHistory @entity {
+  id: ID!
+  publishId: BigInt!
+  soulBoundTokenId: BigInt!
+  hubId: BigInt!
+  projectId: BigInt!
+  newTokenId: BigInt!
+  amount: BigInt!
+  collectModuleInitData: Bytes!
+  timestamp: BigInt!
+}
+
+# DerivativeNFT Collected history
+type DerivativeNFTCollectedHistory @entity {
+  id: ID!
+  projectId: BigInt!
+  derivativeNFT: Bytes!
+  fromSoulBoundTokenId: BigInt!
+  toSoulBoundTokenId: BigInt!
+  tokenId: BigInt!
+  value: BigInt!
+  newTokenId: BigInt!
+  timestamp: BigInt!
+}
+
+# Derivative NFT transfer token history
 type DerivativeNFTTransferHistory @entity {
   id: ID!
   fromSoulBoundTokenId: BigInt!
@@ -18,6 +90,19 @@ type DerivativeNFTTransferHistory @entity {
   tokenId: BigInt!
   timestamp: BigInt!
 }
+
+# Derivative NFT transfer value history
+type DerivativeNFTTransferValueHistory @entity {
+  id: ID!
+  fromSoulBoundTokenId: BigInt!
+  toSoulBoundTokenId: BigInt!
+  projectId: BigInt!
+  tokenId: BigInt!
+  value: BigInt!
+  newTokenId: BigInt!
+  timestamp: BigInt!
+}
+
 
 # Bank Treasury WithdrawERC3525 history 
 type WithdrawERC3525History @entity {

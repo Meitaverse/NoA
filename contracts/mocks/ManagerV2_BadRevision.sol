@@ -68,8 +68,8 @@ contract ManagerV2_BadRevision is
     }
 
 
-    function mintNDPTValue(uint256 tokenId, uint256 value) external whenNotPaused onlyGov {
-        INFTDerivativeProtocolTokenV1(NDPT).mintValue(tokenId, value);
+    function mintNDPTValue(uint256 soulBoundTokenId, uint256 value) external whenNotPaused onlyGov {
+        INFTDerivativeProtocolTokenV1(NDPT).mintValue(soulBoundTokenId, value);
     }
 
     function burnNDPT(uint256 tokenId) external whenNotPaused onlyGov {

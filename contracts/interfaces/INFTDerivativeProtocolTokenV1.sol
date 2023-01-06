@@ -90,14 +90,14 @@ interface INFTDerivativeProtocolTokenV1  {
     function svgLogo() external view returns (string memory);
 
     /**
-     * @notice Mint value to a tokenId.
+     * @notice Mint value to a soulBoundTokenId.
      *  Only admin can execute.
      *
-     * @param tokenId is the tokenId of ERC3525 Token
+     * @param soulBoundTokenId is the soulBoundTokenId of ERC3525 Token
      * @param value is the value of tokenId
      */
     function mintValue(
-        uint256 tokenId,
+        uint256 soulBoundTokenId,
         uint256 value
     ) external payable;
 

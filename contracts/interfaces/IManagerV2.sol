@@ -36,16 +36,16 @@ interface IManagerV2 {
    function setState(DataTypes.ProtocolState newState) external;
 
     function mintNDPTValue(
-        uint256 tokenId, 
+        uint256 soulBoundTokenId, 
         uint256 value
     ) external;
 
    function burnNDPT(
-        uint256 tokenId
+        uint256 soulBoundTokenId
    )external;
 
     function burnNDPTValue(
-        uint256 tokenId,
+        uint256 soulBoundTokenId,
         uint256 value
     ) external;
 
