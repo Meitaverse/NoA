@@ -289,7 +289,7 @@ library PublishLogic {
         emit Events.DerivativeNFTAirdroped(
             _publishIdByProjectData[airdropData.publishId].publication.projectId,
             derivativeNFT,
-            // airdropData.ownershipSoulBoundTokenId,
+            airdropData.ownershipSoulBoundTokenId,
             airdropData.tokenId,
             airdropData.toSoulBoundTokenIds,
             airdropData.values,

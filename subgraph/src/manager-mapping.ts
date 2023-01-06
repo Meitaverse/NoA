@@ -159,7 +159,7 @@ export function handleDerivativeNFTAirdroped(event: DerivativeNFTAirdroped): voi
     if (history) {
         history.projectId = event.params.projectId
         history.derivativeNFT = event.params.derivativeNFT
-        // history.fromSoulBoundTokenId = event.params.fromSoulBoundTokenId
+        history.fromSoulBoundTokenId = event.params.fromSoulBoundTokenId
         history.tokenId = event.params.tokenId
         history.toSoulBoundTokenIds = event.params.toSoulBoundTokenIds
         history.values = event.params.values

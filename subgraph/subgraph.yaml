@@ -49,6 +49,7 @@ dataSources:
         - PublishCreated
         - DerivativeNFTDeployed
         - DerivativeNFTCollected
+        - DerivativeNFTAirdroped
       abis:
         # - name: Manager
         #   file: ./abis/Manager.json
@@ -69,7 +70,7 @@ dataSources:
           handler: handleDerivativeNFTDeployed
         - event: DerivativeNFTCollected(uint256,address,uint256,uint256,uint256,uint256,uint256,uint256)
           handler: handleDerivativeNFTCollected
-        - event: DerivativeNFTAirdroped(uint256,address,uint256,uint256[],uint256[],uint256[],uint256)
+        - event: DerivativeNFTAirdroped(uint256,address,uint256,uint256,uint256[],uint256[],uint256[],uint256)
           handler: handleDerivativeNFTAirdroped
       file: ./src/manager-mapping.ts
 

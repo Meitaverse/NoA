@@ -200,7 +200,7 @@ query {
     projectId
     derivativeNFT
     fromSoulBoundTokenId
-    tokenId:
+    tokenId
     toSoulBoundTokenIds
     values
     newTokenIds

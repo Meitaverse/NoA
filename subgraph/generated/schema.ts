@@ -1285,6 +1285,15 @@ export class DerivativeNFTAirdropedHistory extends Entity {
     this.set("derivativeNFT", Value.fromBytes(value));
   }
 
+  get fromSoulBoundTokenId(): BigInt {
+    let value = this.get("fromSoulBoundTokenId");
+    return value!.toBigInt();
+  }
+
+  set fromSoulBoundTokenId(value: BigInt) {
+    this.set("fromSoulBoundTokenId", Value.fromBigInt(value));
+  }
+
   get tokenId(): BigInt {
     let value = this.get("tokenId");
     return value!.toBigInt();
