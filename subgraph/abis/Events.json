@@ -248,12 +248,6 @@
         {
           "indexed": false,
           "internalType": "uint256",
-          "name": "fromSoulBoundTokenId",
-          "type": "uint256"
-        },
-        {
-          "indexed": false,
-          "internalType": "uint256",
           "name": "tokenId",
           "type": "uint256"
         },

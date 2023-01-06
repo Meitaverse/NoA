@@ -156,7 +156,7 @@ type DerivativeNFTAirdropedHistory @entity {
   id: ID!
   projectId: BigInt!
   derivativeNFT: Bytes!
-  fromSoulBoundTokenId: BigInt!
+  # fromSoulBoundTokenId: BigInt!
   tokenId: BigInt!
   toSoulBoundTokenIds: [BigInt!]!
   values: [BigInt!]!

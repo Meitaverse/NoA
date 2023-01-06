@@ -278,7 +278,7 @@ library Events {
     event DerivativeNFTAirdroped(
         uint256 projectId,
         address derivativeNFT,
-        uint256 fromSoulBoundTokenId,
+        // uint256 fromSoulBoundTokenId,
         uint256 tokenId,
         uint256[] toSoulBoundTokenIds,
         uint256[] values,

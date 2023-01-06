@@ -78,7 +78,7 @@ task("airdrop", "airdrop array of dNFTs to many users function")
     const FIRST_PUBLISH_ID =1; 
    
     console.log(
-      "\n\t--- Airdrop  ..."
+      "\n\t--- Airdrop to [userTwo(3), userThree(4)] ..."
     );
 
     await waitForTx(
