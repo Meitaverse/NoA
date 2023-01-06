@@ -356,38 +356,22 @@ export class Publication extends Entity {
     this.set("description", Value.fromString(value));
   }
 
-  get materialURIs(): Array<string> | null {
+  get materialURIs(): Array<string> {
     let value = this.get("materialURIs");
-    if (!value || value.kind == ValueKind.NULL) {
-      return null;
-    } else {
-      return value.toStringArray();
-    }
+    return value!.toStringArray();
   }
 
-  set materialURIs(value: Array<string> | null) {
-    if (!value) {
-      this.unset("materialURIs");
-    } else {
-      this.set("materialURIs", Value.fromStringArray(<Array<string>>value));
-    }
+  set materialURIs(value: Array<string>) {
+    this.set("materialURIs", Value.fromStringArray(value));
   }
 
-  get fromTokenIds(): Array<BigInt> | null {
+  get fromTokenIds(): Array<BigInt> {
     let value = this.get("fromTokenIds");
-    if (!value || value.kind == ValueKind.NULL) {
-      return null;
-    } else {
-      return value.toBigIntArray();
-    }
+    return value!.toBigIntArray();
   }
 
-  set fromTokenIds(value: Array<BigInt> | null) {
-    if (!value) {
-      this.unset("fromTokenIds");
-    } else {
-      this.set("fromTokenIds", Value.fromBigIntArray(<Array<BigInt>>value));
-    }
+  set fromTokenIds(value: Array<BigInt>) {
+    this.set("fromTokenIds", Value.fromBigIntArray(value));
   }
 
   get collectModule(): Bytes {
@@ -451,6 +435,74 @@ export class Publication extends Entity {
 
   set publishTaxAmount(value: BigInt) {
     this.set("publishTaxAmount", Value.fromBigInt(value));
+  }
+
+  get timestamp(): BigInt {
+    let value = this.get("timestamp");
+    return value!.toBigInt();
+  }
+
+  set timestamp(value: BigInt) {
+    this.set("timestamp", Value.fromBigInt(value));
+  }
+}
+
+export class Project extends Entity {
+  constructor(id: string) {
+    super();
+    this.set("id", Value.fromString(id));
+  }
+
+  save(): void {
+    let id = this.get("id");
+    assert(id != null, "Cannot save Project entity without an ID");
+    if (id) {
+      assert(
+        id.kind == ValueKind.STRING,
+        `Entities of type Project must have an ID of type String but the id '${id.displayData()}' is of type ${id.displayKind()}`
+      );
+      store.set("Project", id.toString(), this);
+    }
+  }
+
+  static load(id: string): Project | null {
+    return changetype<Project | null>(store.get("Project", id));
+  }
+
+  get id(): string {
+    let value = this.get("id");
+    return value!.toString();
+  }
+
+  set id(value: string) {
+    this.set("id", Value.fromString(value));
+  }
+
+  get projectId(): BigInt {
+    let value = this.get("projectId");
+    return value!.toBigInt();
+  }
+
+  set projectId(value: BigInt) {
+    this.set("projectId", Value.fromBigInt(value));
+  }
+
+  get soulBoundTokenId(): BigInt {
+    let value = this.get("soulBoundTokenId");
+    return value!.toBigInt();
+  }
+
+  set soulBoundTokenId(value: BigInt) {
+    this.set("soulBoundTokenId", Value.fromBigInt(value));
+  }
+
+  get derivativeNFT(): Bytes {
+    let value = this.get("derivativeNFT");
+    return value!.toBytes();
+  }
+
+  set derivativeNFT(value: Bytes) {
+    this.set("derivativeNFT", Value.fromBytes(value));
   }
 
   get timestamp(): BigInt {
@@ -1167,6 +1219,115 @@ export class FeesForCollectHistory extends Entity {
 
   set adjustedAmount(value: BigInt) {
     this.set("adjustedAmount", Value.fromBigInt(value));
+  }
+
+  get timestamp(): BigInt {
+    let value = this.get("timestamp");
+    return value!.toBigInt();
+  }
+
+  set timestamp(value: BigInt) {
+    this.set("timestamp", Value.fromBigInt(value));
+  }
+}
+
+export class DerivativeNFTAirdropedHistory extends Entity {
+  constructor(id: string) {
+    super();
+    this.set("id", Value.fromString(id));
+  }
+
+  save(): void {
+    let id = this.get("id");
+    assert(
+      id != null,
+      "Cannot save DerivativeNFTAirdropedHistory entity without an ID"
+    );
+    if (id) {
+      assert(
+        id.kind == ValueKind.STRING,
+        `Entities of type DerivativeNFTAirdropedHistory must have an ID of type String but the id '${id.displayData()}' is of type ${id.displayKind()}`
+      );
+      store.set("DerivativeNFTAirdropedHistory", id.toString(), this);
+    }
+  }
+
+  static load(id: string): DerivativeNFTAirdropedHistory | null {
+    return changetype<DerivativeNFTAirdropedHistory | null>(
+      store.get("DerivativeNFTAirdropedHistory", id)
+    );
+  }
+
+  get id(): string {
+    let value = this.get("id");
+    return value!.toString();
+  }
+
+  set id(value: string) {
+    this.set("id", Value.fromString(value));
+  }
+
+  get projectId(): BigInt {
+    let value = this.get("projectId");
+    return value!.toBigInt();
+  }
+
+  set projectId(value: BigInt) {
+    this.set("projectId", Value.fromBigInt(value));
+  }
+
+  get derivativeNFT(): Bytes {
+    let value = this.get("derivativeNFT");
+    return value!.toBytes();
+  }
+
+  set derivativeNFT(value: Bytes) {
+    this.set("derivativeNFT", Value.fromBytes(value));
+  }
+
+  get fromSoulBoundTokenId(): BigInt {
+    let value = this.get("fromSoulBoundTokenId");
+    return value!.toBigInt();
+  }
+
+  set fromSoulBoundTokenId(value: BigInt) {
+    this.set("fromSoulBoundTokenId", Value.fromBigInt(value));
+  }
+
+  get tokenId(): BigInt {
+    let value = this.get("tokenId");
+    return value!.toBigInt();
+  }
+
+  set tokenId(value: BigInt) {
+    this.set("tokenId", Value.fromBigInt(value));
+  }
+
+  get toSoulBoundTokenIds(): Array<BigInt> {
+    let value = this.get("toSoulBoundTokenIds");
+    return value!.toBigIntArray();
+  }
+
+  set toSoulBoundTokenIds(value: Array<BigInt>) {
+    this.set("toSoulBoundTokenIds", Value.fromBigIntArray(value));
+  }
+
+  get values(): Array<BigInt> {
+    let value = this.get("values");
+    return value!.toBigIntArray();
+  }
+
+  set values(value: Array<BigInt>) {
+    this.set("values", Value.fromBigIntArray(value));
+  }
+
+  get newTokenIds(): Array<BigInt> {
+    let value = this.get("newTokenIds");
+    return value!.toBigIntArray();
+  }
+
+  set newTokenIds(value: Array<BigInt>) {
+    this.set("newTokenIds", Value.fromBigIntArray(value));
   }
 
   get timestamp(): BigInt {

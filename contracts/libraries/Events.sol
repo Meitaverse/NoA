@@ -375,7 +375,11 @@ library Events {
 
     //BankTreasury
 
-    event Deposit(address indexed sender, uint256 amount, uint256 balance);
+    event Deposit(
+        address indexed sender, 
+        uint256 amount, 
+        uint256 balance
+    );
 
     event SubmitTransaction(
         address indexed owner,
@@ -395,7 +399,7 @@ library Events {
         uint256 indexed toTokenId, 
         uint256 value,
         uint256 timestamp
-        );
+    );
 
 
     /**

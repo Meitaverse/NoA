@@ -8,6 +8,8 @@ import {
     PublishPrepared,
     PublishCreated,
     DerivativeNFTCollected,
+    DerivativeNFTDeployed,
+    DerivativeNFTAirdroped,
 } from "../generated/Manager/Events"
 
 import {
@@ -17,6 +19,8 @@ import {
     Publication,
     PublishCreatedHistory,
     DerivativeNFTCollectedHistory,
+    Project,
+    DerivativeNFTAirdropedHistory,
 } from "../generated/schema"
 
 export function handleTransferDerivativeNFT(event: TransferDerivativeNFT): void {
@@ -97,6 +101,20 @@ export function handlePublishPrepared(event: PublishPrepared): void {
 
 }
 
+export function handleDerivativeNFTDeployed(event: DerivativeNFTDeployed): void {
+    log.info("handleDerivativeNFTDeployed, event.address: {}", [event.address.toHexString()])
+
+    let _idString = event.params.soulBoundTokenId.toString() + "-" +  event.params.projectId.toString()
+    const project = Project.load(_idString) || new Project(_idString)
+    if (project) {
+        project.soulBoundTokenId = event.params.soulBoundTokenId
+        project.projectId = event.params.projectId
+        project.derivativeNFT = event.params.derivativeNFT
+        project.timestamp = event.block.timestamp
+        project.save()
+    } 
+}
+
 export function handlePublishCreated(event: PublishCreated): void {
     log.info("handlePublishCreated, event.address: {}", [event.address.toHexString()])
 
@@ -118,7 +136,7 @@ export function handlePublishCreated(event: PublishCreated): void {
 export function handleDerivativeNFTCollected(event: DerivativeNFTCollected): void {
     log.info("handleDerivativeNFTCollected, event.address: {}", [event.address.toHexString()])
 
-    let _idString = event.params.projectId.toString() + "-" + event.params.tokenId  .toString() + "-" + event.params.timestamp.toString()
+    let _idString = event.params.projectId.toString() + "-" + event.params.tokenId.toString() + "-" + event.params.timestamp.toString()
     const history = DerivativeNFTCollectedHistory.load(_idString) || new DerivativeNFTCollectedHistory(_idString)
     if (history) {
         history.projectId = event.params.projectId
@@ -131,6 +149,23 @@ export function handleDerivativeNFTCollected(event: DerivativeNFTCollected): voi
         history.timestamp = event.params.timestamp
         history.save()
     } 
+}
 
+export function handleDerivativeNFTAirdroped(event: DerivativeNFTAirdroped): void {
+    log.info("handleDerivativeNFTAirdroped, event.address: {}", [event.address.toHexString()])
+
+    let _idString = event.params.projectId.toString() + "-" + event.params.tokenId.toString() + "-" + event.params.timestamp.toString()
+    const history = DerivativeNFTAirdropedHistory.load(_idString) || new DerivativeNFTAirdropedHistory(_idString)
+    if (history) {
+        history.projectId = event.params.projectId
+        history.derivativeNFT = event.params.derivativeNFT
+        history.fromSoulBoundTokenId = event.params.fromSoulBoundTokenId
+        history.tokenId = event.params.tokenId
+        history.toSoulBoundTokenIds = event.params.toSoulBoundTokenIds
+        history.values = event.params.values
+        history.newTokenIds = event.params.newTokenIds
+        history.timestamp = event.params.timestamp
+        history.save()
+    } 
 }
 

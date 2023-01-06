@@ -42,8 +42,8 @@ type Publication @entity {
   amount: BigInt!
   name: String!
   description: String!
-  materialURIs: [String!]
-  fromTokenIds: [BigInt!]
+  materialURIs: [String!]!
+  fromTokenIds: [BigInt!]!
   collectModule: Bytes!
   collectModuleInitData: Bytes!
   publishModule: Bytes!
@@ -54,6 +54,14 @@ type Publication @entity {
   timestamp: BigInt!
 }
 
+#  Project and Derivative NFT contract
+type Project @entity {
+  id: ID!
+  projectId: BigInt!
+  soulBoundTokenId: BigInt!
+  derivativeNFT: Bytes!
+  timestamp: BigInt!
+}
 
 # Publish Created history
 type PublishCreatedHistory @entity {
@@ -140,5 +148,18 @@ type FeesForCollectHistory @entity {
   treasuryAmount: BigInt!
   genesisAmount: BigInt!
   adjustedAmount: BigInt!
+  timestamp: BigInt!
+}
+
+# Airdrop history
+type DerivativeNFTAirdropedHistory @entity {
+  id: ID!
+  projectId: BigInt!
+  derivativeNFT: Bytes!
+  fromSoulBoundTokenId: BigInt!
+  tokenId: BigInt!
+  toSoulBoundTokenIds: [BigInt!]!
+  values: [BigInt!]!
+  newTokenIds: [BigInt!]!
   timestamp: BigInt!
 }

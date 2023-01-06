@@ -116,7 +116,13 @@ library InteractionLogic {
             feeShareType_
         );
 
-        emit Events.DerivativeNFTDeployed(projectId, soulBoundTokenId, derivativeNFT, block.timestamp);
+        emit Events.DerivativeNFTDeployed(
+            projectId, 
+            soulBoundTokenId, 
+            derivativeNFT, 
+            block.timestamp
+        );
+        
         return derivativeNFT;
     } 
     

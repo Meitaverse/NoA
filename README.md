@@ -87,6 +87,19 @@ Subgraph endpoints:
 Queries (HTTP):     http://localhost:8000/subgraphs/name/NoA/MySubgraph
 ```
 
+
+### 查询设置注册白名单历史
+```
+query {
+  profileCreatorWhitelistedHistories(first: 100) {
+    id
+    profileCreator
+    whitelisted
+    timestamp
+  }
+}
+```
+
 ### 查询所有Profile
 ```
 query {
@@ -100,21 +113,6 @@ query {
     timestamp
   }
 }	
-```
-
-### 查询所有collect
-```
-query {
-  feesForCollectHistories(first: 100) {
-    id
-    collectorSoulBoundTokenId
-    publishId
-    treasuryAmount
-    genesisAmount
-    adjustedAmount
-    timestamp
-  }
-}
 ```
 
 ### 查询所有Hub
@@ -133,6 +131,84 @@ query{
 }
 
 ```
+
+### 查询所有Projdct
+```
+query{
+  projects(first:100){
+    id,
+    projectId,
+    soulBoundTokenId,
+    derivativeNFT,
+    timestamp
+  }
+}
+
+```
+### 查询所有Publish历史
+```
+query{
+  publishCreatedHistories(first:100){
+    id,
+    publishId,
+    soulBoundTokenId,
+    hubId,
+    projectId,
+    newTokenId,
+    amount,
+    collectModuleInitData,
+    timestamp
+  }
+}
+
+```
+
+
+### 查询所有NDP value铸造历史
+```
+query {
+  mintNDPValueHistories(first: 100) {
+    id
+    soulBoundTokenId
+    value
+    timestamp
+  }
+}
+```
+
+
+### 查询所有collect
+```
+query {
+  feesForCollectHistories(first: 100) {
+    id
+    collectorSoulBoundTokenId
+    publishId
+    treasuryAmount
+    genesisAmount
+    adjustedAmount
+    timestamp
+  }
+}
+```
+
+### 查询所有airdrop histories
+```
+query {
+  derivativeNFTAirdropedHistories(first: 100) {
+    id
+    projectId
+    derivativeNFT
+    fromSoulBoundTokenId
+    tokenId:
+    toSoulBoundTokenIds
+    values
+    newTokenIds
+    timestamp
+  }
+}
+```
+
 
 ## 获取合约大小
 ```

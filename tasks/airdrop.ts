@@ -32,13 +32,11 @@ import { deployContract, waitForTx , ProtocolState, Error} from './helpers/utils
 
 export let runtimeHRE: HardhatRuntimeEnvironment;
 
-// yarn hardhat airdrop --ownerid 2 --receiverid 3 --nftid 1 --network local
+// yarn hardhat airdrop --nftid 1 --network local
 
 task("airdrop", "airdrop array of dNFTs to many users function")
-.addParam("ownerid", "owner soul bound token id ")
-.addParam("receiverid", "soul bound token id ")
 .addParam("nftid", "derivative nft id to collect")
-.setAction(async ({ownerid, receiverid, nftid}: {ownerid:number, receiverid:number, nftid: number}, hre) =>  {
+.setAction(async ({nftid}: {nftid: number}, hre) =>  {
   runtimeHRE = hre;
   const ethers = hre.ethers;
   const accounts = await ethers.getSigners();
@@ -71,18 +69,9 @@ task("airdrop", "airdrop array of dNFTs to many users function")
   console.log(
       "\t--- ModuleGlobals governance address: ", await moduleGlobals.getGovernance()
     );
-
-    let owner = accounts[ownerid];
+    let ownerid = 2;
+    let owner = user;
     console.log('\n\t-- owner: ', owner.address);
-
-    let receiver = accounts[receiverid];
-    console.log('\n\t-- receiver: ', receiver.address);
-    let balance =(await ndp.balanceOfNDPT(receiverid)).toNumber();
-    if (balance == 0) {
-      //mint 1000Value to user
-      await manager.connect(governance).mintNDPTValue(receiverid, 1000);
-    }
-    console.log('\t--- balance of receiver: ', (await ndp.balanceOfNDPT(receiverid)).toNumber());
 
 
     const FIRST_PROJECT_ID =1; 
@@ -93,22 +82,30 @@ task("airdrop", "airdrop array of dNFTs to many users function")
     );
 
     await waitForTx(
-      manager.connect(receiver).airdrop({
+      manager.connect(owner).airdrop({
         publishId: FIRST_PUBLISH_ID,
         ownershipSoulBoundTokenId: ownerid,
-        toSoulBoundTokenIds: [receiverid],
+        toSoulBoundTokenIds: [3, 4], //userTwo, userThree
         tokenId: nftid,
-        values: [1],
+        values: [1, 1],
       })
     );
+    
 
     let derivativeNFT: DerivativeNFTV1;
     derivativeNFT = DerivativeNFTV1__factory.connect(
-      await manager.connect(receiver).getDerivativeNFT(FIRST_PROJECT_ID),
+      await manager.connect(userTwo).getDerivativeNFT(FIRST_PROJECT_ID),
       user
     );
       
-    console.log('\n\t--- ownerOf nftid : ', await derivativeNFT.ownerOf(nftid));
-    console.log('\t--- balanceOf nftid : ', (await derivativeNFT["balanceOf(uint256)"](nftid)).toNumber());
+    console.log('\n\t--- ownerOf nftid(1) : ', await derivativeNFT.ownerOf(nftid));
+    console.log('\t--- balanceOf nftid(1): ', (await derivativeNFT["balanceOf(uint256)"](nftid)).toNumber());
+    
+      
+    console.log('\n\t--- ownerOf nftid(2) : ', await derivativeNFT.ownerOf(2));
+    console.log('\t--- balanceOf nftid(2): ', (await derivativeNFT["balanceOf(uint256)"](2)).toNumber());
+    
+    console.log('\n\t--- ownerOf nftid(3) : ', await derivativeNFT.ownerOf(3));
+    console.log('\t--- balanceOf nftid(3): ', (await derivativeNFT["balanceOf(uint256)"](3)).toNumber());
     
 });

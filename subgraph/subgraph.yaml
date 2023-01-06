@@ -47,6 +47,7 @@ dataSources:
         - HubCreated
         - PublishPrepared
         - PublishCreated
+        - DerivativeNFTDeployed
         - DerivativeNFTCollected
       abis:
         # - name: Manager
@@ -64,8 +65,12 @@ dataSources:
           handler: handlePublishPrepared
         - event: PublishCreated(uint256,uint256,uint256,uint256,uint256,uint256,bytes,uint256)
           handler: handlePublishCreated
+        - event: DerivativeNFTDeployed(indexed uint256,indexed uint256,address,uint256)
+          handler: handleDerivativeNFTDeployed
         - event: DerivativeNFTCollected(uint256,address,uint256,uint256,uint256,uint256,uint256,uint256)
           handler: handleDerivativeNFTCollected
+        - event: DerivativeNFTAirdroped(uint256,address,uint256,uint256,uint256[],uint256[],uint256[],uint256)
+          handler: handleDerivativeNFTAirdroped
       file: ./src/manager-mapping.ts
 
   - kind: ethereum/contract
