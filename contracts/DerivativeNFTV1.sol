@@ -327,7 +327,7 @@ contract DerivativeNFTV1 is
         }
         ERC3525Upgradeable._burn(tokenId_);
         _resetTokenRoyalty(tokenId_);
-        emit Events.BurnToken(slot, tokenId_, msg.sender);
+        emit Events.BurnToken(slot, tokenId_, msg.sender, block.timestamp);
     }
 
     function burnWithSig(uint256 tokenId, DataTypes.EIP712Signature calldata sig)
@@ -353,8 +353,11 @@ contract DerivativeNFTV1 is
                 sig
             );
         }
+        uint256 slot = slotOf(tokenId);
         ERC3525Upgradeable._burn(tokenId);
         _resetTokenRoyalty(tokenId);
+        
+        emit Events.BurnTokenWithSig(slot, tokenId, owner, block.timestamp);
     }
 
     function getSlotDetail(uint256 slot_) external view returns (DataTypes.SlotDetail memory) {
@@ -487,7 +490,6 @@ contract DerivativeNFTV1 is
             revert Errors.ApproveToOwner();
         }
         _slotApprovals[owner_][slot_][operator_] = approved_;
-        emit Events.ApprovalForSlot(owner_, slot_, operator_, approved_);
     }
 
     /**

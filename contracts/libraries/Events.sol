@@ -24,7 +24,41 @@ library Events {
         string imageURI,
         uint256 timestamp
     );
+    
+    /**
+     * @dev Emitted when a publish is created.
+     *
+     * @param publishId The newly created project's ID.
+     * @param soulBoundTokenId The newly created profile's token ID.
+     * @param hubId The hub ID.
+     * @param projectId The project ID.
+     * @param newTokenId The new token id .
+     * @param amount The amount of the token.
+     * @param collectModuleInitData The data include some variables.
+     * @param timestamp The current block timestamp.
+     */
+    event PublishCreated(
+        uint256 publishId,
+        uint256 soulBoundTokenId,
+        uint256 hubId,
+        uint256 projectId,
+        uint256 newTokenId,
+        uint256 amount,
+        bytes collectModuleInitData,
+        uint256 timestamp
+    );
 
+    /**
+     * @dev Emitted when a hub is created.
+     *
+     * @param soulBoundTokenId The newly created profile's token ID.
+     * @param creator The profile creator, who created the token with the given profile ID.
+     * @param hubId The hub ID.
+     * @param name The name set for the hub.
+     * @param description The description set for the hub.
+     * @param imageURI The image uri set for the profile.
+     * @param timestamp The current block timestamp.
+     */
     event HubCreated(
         uint256 indexed soulBoundTokenId,
         address indexed creator,
@@ -35,10 +69,34 @@ library Events {
         uint256 timestamp
     );
 
+    /**
+     * @dev Emitted when a dNFT is burned.
+     *
+     * @param projectId The newly created profile's token ID.
+     * @param tokenId The profile creator, who created the token with the given profile ID.
+     * @param owner The image uri set for the profile.
+     * @param timestamp The current block timestamp.
+     */
     event BurnToken(
         uint256 projectId, 
         uint256 tokenId, 
-        address owner
+        address owner,
+        uint256 timestamp
+    );
+
+    /**
+     * @dev Emitted when a dNFT is burned with sig.
+     *
+     * @param projectId The newly created profile's token ID.
+     * @param tokenId The profile creator, who created the token with the given profile ID.
+     * @param owner The image uri set for the profile.
+     * @param timestamp The current block timestamp.
+     */
+    event BurnTokenWithSig(
+        uint256 projectId, 
+        uint256 tokenId, 
+        address owner,
+        uint256 timestamp
     );
 
     /**
@@ -48,18 +106,27 @@ library Events {
      * @param dispatcher The dispatcher set for the given profile.
      * @param timestamp The current block timestamp.
      */
-    event DispatcherSet(uint256 indexed soulBoundTokenId, address indexed dispatcher, uint256 timestamp);
+    event DispatcherSet(
+        uint256 indexed soulBoundTokenId, 
+        address indexed dispatcher, 
+        uint256 timestamp
+    );
 
 
-  /**
+    /**
      * @dev MUST emits when an operator is approved or disapproved to manage all of `_owner`'s
      *  tokens with the same slot.
-     * @param _owner The address whose tokens are approved
-     * @param _slot The slot to approve, all of `_owner`'s tokens with this slot are approved
-     * @param _operator The operator being approved or disapproved
-     * @param _approved Identify if `_operator` is approved or disapproved
+     * @param owner The address whose tokens are approved
+     * @param slot The slot to approve, all of `_owner`'s tokens with this slot are approved
+     * @param operator The operator being approved or disapproved
+     * @param approved Identify if `_operator` is approved or disapproved
      */
-    event ApprovalForSlot(address indexed _owner, uint256 indexed _slot, address indexed _operator, bool _approved);
+    event ApprovalForSlot(
+        address indexed owner, 
+        uint256 indexed slot, 
+        address indexed operator, 
+        bool approved
+    );
 
     /**
      * @dev Emitted when the hub state is set.
@@ -76,11 +143,59 @@ library Events {
         uint256 timestamp
     );
 
-    //Receiver
-    event ERC3525Received(address operator, uint256 fromTokenId, uint256 toTokenId, uint256 value, bytes data, uint256 gas);
-    event ReceiverReceived(address operator, uint256 fromTokenId, uint256 toTokenId, uint256 value, bytes data, uint256 gas);
+    /**
+     * @dev Emitted when the bank treasury receive ERC3525 tokens
+     *
+     * @param operator The operator who called by.
+     * @param fromTokenId The from token id
+     * @param toTokenId The to token id
+     * @param value The value of token
+     * @param data The data extend
+     * @param gas The gas left
+     */    
+    event ERC3525Received(
+        address operator, 
+        uint256 fromTokenId, 
+        uint256 toTokenId, 
+        uint256 value, 
+        bytes data, 
+        uint256 gas
+    );
 
-    event BankTreasuryCreated(uint256 indexed soulBoundTokenId, uint256 timestamp);
+    //Receiver
+    /**
+     * @dev Emitted when the Receiver contract receive ERC3525 tokens
+     *
+     * @param operator The operator who called by.
+     * @param fromTokenId The from token id
+     * @param toTokenId The to token id
+     * @param value The value of token
+     * @param data The data extend
+     * @param gas The gas left
+     */      
+    event ReceiverReceived(
+        address operator, 
+        uint256 fromTokenId, 
+        uint256 toTokenId, 
+        uint256 value, 
+        bytes data, 
+        uint256 gas
+    );
+
+    /**
+     * @dev Emitted when NDP contract the bank treasury is set
+     *
+     * @param soulBoundTokenId The bank treasury token id, default is 1
+     * @param bankTrerasury The address of bank treasury
+     * @param initialSupply The initial supply
+     * @param timestamp The block timestamp
+     */  
+    event BankTreasurySet(
+        uint256 indexed soulBoundTokenId, 
+        address indexed bankTrerasury, 
+        uint256 indexed initialSupply, 
+        uint256 timestamp
+    );
     
     // Module-Specific
 
@@ -172,7 +287,7 @@ library Events {
      * @param newGovernance The new governance address set.
      * @param timestamp The current block timestamp.
      */
-    event GovernanceSet(
+    event ManagerGovernanceSet(
         address indexed caller,
         address indexed prevGovernance,
         address indexed newGovernance,
@@ -229,12 +344,12 @@ library Events {
     );
 
     event BurnNDPT(
-        uint256 tokenId, 
+        uint256 soulBoundTokenId, 
         uint256 timestamp
     );
 
     event BurnNDPTValue(
-        uint256 tokenId, 
+        uint256 soulBoundTokenId, 
         uint256 value, 
         uint256 timestamp
     );
@@ -286,16 +401,6 @@ library Events {
         uint256 timestamp
     );
 
-    event PublishCreated(
-        uint256 publishId,
-        uint256 soulBoundTokenId,
-        uint256 hubId,
-        uint256 projectId,
-        uint256 newTokenId,
-        uint256 amount,
-        bytes collectModuleInitData,
-        uint256 timestamp
-    );
 
     event TransferDerivativeNFT(
         uint256 fromSoulBoundTokenId,
@@ -389,10 +494,30 @@ library Events {
         bytes data
     );    
 
-    event ConfirmTransaction(address indexed owner, uint256 indexed txIndex);
-    event RevokeConfirmation(address indexed owner, uint256 indexed txIndex);
-    event ExecuteTransaction(address indexed owner, uint256 indexed txIndex, address to, uint256 value);
-    event ExecuteTransactionERC3525(address indexed owner, uint256 indexed txIndex, uint256 indexed fromTokenId, uint256 toTokenId, uint256 value);
+    event ConfirmTransaction(
+        address indexed owner, 
+        uint256 indexed txIndex
+    );
+
+    event RevokeConfirmation(
+        address indexed owner, 
+        uint256 indexed txIndex
+    );
+
+    event ExecuteTransaction(
+        address indexed owner, 
+        uint256 indexed txIndex, 
+        address to, 
+        uint256 value
+    );
+
+    event ExecuteTransactionERC3525(
+        address indexed owner, 
+        uint256 indexed txIndex, 
+        uint256 indexed fromTokenId, 
+        uint256 toTokenId, 
+        uint256 value
+    );
     
     event WithdrawERC3525(
         uint256 indexed fromTokenId, 
@@ -400,7 +525,6 @@ library Events {
         uint256 value,
         uint256 timestamp
     );
-
 
     /**
      * @dev Emitted when a collect module is added to or removed from the whitelist.
@@ -509,6 +633,6 @@ library Events {
         uint256 genesisAmount,
         uint256 adjustedAmount
     );
-    
+
 }
 

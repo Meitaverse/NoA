@@ -32,16 +32,6 @@ contract NFTDerivativeProtocolTokenV1 is
 {
     using SafeMathUpgradeable for uint256;
 
-    //== events ===/
-    // event ProfileCreated(
-    //     uint256 indexed soulBoundTokenId,
-    //     address indexed creator,
-    //     address indexed wallet,
-    //     string nickName,
-    //     string imageURI,
-    //     uint256 timestamp
-    // );
-    
     uint256 internal constant VERSION = 1;
     
     bytes32 public constant PAUSER_ROLE = keccak256("PAUSER_ROLE");
@@ -153,7 +143,7 @@ contract NFTDerivativeProtocolTokenV1 is
         emit Events.ProfileCreated(
             tokenId_,
             creator,
-            vars.wallet,
+            vars.wallet,    
             vars.nickName,
             vars.imageURI,
             block.timestamp
@@ -293,7 +283,12 @@ contract NFTDerivativeProtocolTokenV1 is
             imageURI: "", //TODO
             locked: true
         });
-        emit Events.BankTreasuryCreated(tokenId_, block.timestamp);
+        
+        emit Events.BankTreasurySet(
+            tokenId_, 
+            bankTreasury,
+            initialSupply,
+            block.timestamp);
     }
     
     function getBankTreasury() external view returns(address) {

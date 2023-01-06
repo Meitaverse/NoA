@@ -39,6 +39,7 @@ import {
     DerivativeMetadataDescriptor__factory,
     Template,
     Template__factory,
+
 } from "../typechain";
 import { metadataDescriptors } from "../typechain/contracts";
 
@@ -56,6 +57,7 @@ export type ContractName =
   | "PublishModule"
   | "Template"
   | "MetadataDescriptor"
+  | "Receiver"
   | "ModuleGlobals";
 
 export type DAOContract =
@@ -65,6 +67,7 @@ export type DAOContract =
   | Voucher
   | Template
   | DerivativeMetadataDescriptor
+  | ERC3525ReceiverMock
   | ModuleGlobals;
 
 export type NetworkConfig = {
@@ -134,6 +137,7 @@ type ContractFactory =
   | typeof PublishModule__factory
   | typeof Template__factory
   | typeof DerivativeMetadataDescriptor__factory
+  | typeof ERC3525ReceiverMock__factory
   | typeof ModuleGlobals__factory;
 
 export async function loadContract<T extends ContractFactory>(
@@ -195,6 +199,8 @@ export async function loadContractByName(
       return Template__factory.connect(address, deployer);
     case "MetadataDescriptor":
       return DerivativeMetadataDescriptor__factory.connect(address, deployer);
+    case "Receiver":
+      return ERC3525ReceiverMock__factory.connect(address, deployer);
     case "ModuleGlobals":
       return ModuleGlobals__factory.connect(address, deployer);
     default:

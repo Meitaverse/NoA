@@ -16,18 +16,33 @@ dataSources:
       apiVersion: 0.0.6
       language: wasm/assemblyscript
       entities:
+        - BankTreasurySet
         - ProfileCreated
         - MintNDPTValue
+        - BurnNDPT
+        - BurnNDPTValue
+        - ProfileImageURISet
+        - ApprovalForSlot
       abis:
         - name: NDP
           file: ./abis/NDP.json
         - name: Events
           file: ./abis/Events.json
       eventHandlers:
+        - event: BankTreasurySet(indexed uint256,indexed address,indexed uint256,uint256)
+          handler: handleBankTreasurySet
         - event: ProfileCreated(indexed uint256,indexed address,indexed address,string,string,uint256)
           handler: handleProfileCreated
         - event: MintNDPTValue(uint256,uint256,uint256)
           handler: handleMintNDPTValue
+        - event: BurnNDPT(uint256,uint256)
+          handler: handleBurnNDPT
+        - event: BurnNDPTValue(uint256,uint256,uint256)
+          handler: handleBurnNDPTValue
+        - event: ProfileImageURISet(indexed uint256,string,uint256)
+          handler: handleProfileImageURISet
+        - event: ApprovalForSlot(indexed address,indexed uint256,indexed address,bool)
+          handler: handleApprovalForSlot
       file: ./src/ndp-mapping.ts
 
   - kind: ethereum/contract
@@ -42,6 +57,7 @@ dataSources:
       apiVersion: 0.0.6
       language: wasm/assemblyscript
       entities:
+        - EmergencyAdminSet
         - TransferDerivativeNFT
         - TransferValueDerivativeNFT
         - HubCreated
@@ -50,12 +66,14 @@ dataSources:
         - DerivativeNFTDeployed
         - DerivativeNFTCollected
         - DerivativeNFTAirdroped
+        - DispatcherSet
+        - StateSet
       abis:
-        # - name: Manager
-        #   file: ./abis/Manager.json
         - name: Events
           file: ./abis/Events.json
       eventHandlers:
+        - event: EmergencyAdminSet(indexed address,indexed address,indexed address,uint256)
+          handler: handleEmergencyAdminSet
         - event: TransferDerivativeNFT(uint256,uint256,uint256,uint256,uint256)
           handler: handleTransferDerivativeNFT
         - event: TransferValueDerivativeNFT(uint256,uint256,uint256,uint256,uint256,uint256,uint256)
@@ -72,6 +90,10 @@ dataSources:
           handler: handleDerivativeNFTCollected
         - event: DerivativeNFTAirdroped(uint256,address,uint256,uint256,uint256[],uint256[],uint256[],uint256)
           handler: handleDerivativeNFTAirdroped
+        - event:  DispatcherSet(indexed uint256,indexed address,uint256)
+          handler: handleDispatcherSet
+        - event:  StateSet(indexed address,indexed uint8,indexed uint8,uint256)
+          handler: handleStateSet
       file: ./src/manager-mapping.ts
 
   - kind: ethereum/contract
@@ -86,13 +108,13 @@ dataSources:
       apiVersion: 0.0.6
       language: wasm/assemblyscript
       entities:
-        - WithdrawERC3525
+        - ERC3525Received
       abis:
         - name: Events
           file: ./abis/Events.json
       eventHandlers:
-        - event: WithdrawERC3525(indexed uint256,indexed uint256,uint256,uint256)
-          handler: handleWithdrawERC3525
+        - event: ERC3525Received(address,uint256,uint256,uint256,bytes,uint256)
+          handler: handleERC3525Received
       file: ./src/manager-mapping.ts
   
   - kind: ethereum/contract
@@ -129,12 +151,45 @@ dataSources:
       language: wasm/assemblyscript
       entities:
         - ProfileCreatorWhitelisted
+        - HubCreatorWhitelisted
+        - ModuleGlobalsTreasurySet
+        - ModuleGlobalsVoucherSet
+        - ModuleGlobalsManagerSet
+        - ModuleGlobalsNDPTSet
+        - ModuleGlobalsPublishRoyaltySet
+        - ModuleGlobalsTreasuryFeeSet
+        - ModuleGlobalsGovernanceSet
+        - CollectModuleWhitelisted
+        - PublishModuleWhitelisted
+        - TemplateWhitelisted
       abis:
         - name: Events
           file: ./abis/Events.json
       eventHandlers:
         - event: ProfileCreatorWhitelisted(indexed address,indexed bool,uint256)
           handler: handleProfileCreatorWhitelisted
+        - event: HubCreatorWhitelisted(indexed uint256,indexed bool,uint256)
+          handler: handleHubCreatorWhitelisted
+        - event: ModuleGlobalsTreasurySet(indexed address,indexed address,uint256)
+          handler: handleModuleGlobalsTreasurySet
+        - event: ModuleGlobalsVoucherSet(indexed address,indexed address,uint256)
+          handler: handleModuleGlobalsVoucherSet
+        - event: ModuleGlobalsManagerSet(indexed address,indexed address,uint256)
+          handler: handleModuleGlobalsManagerSet
+        - event: ModuleGlobalsNDPTSet(indexed address,indexed address,uint256)
+          handler: handleModuleGlobalsNDPTSet
+        - event: ModuleGlobalsPublishRoyaltySet(indexed uint256,indexed uint256,uint256)
+          handler: handleModuleGlobalsPublishRoyaltySet
+        - event: ModuleGlobalsTreasuryFeeSet(indexed uint16,indexed uint16,uint256)
+          handler: handleModuleGlobalsTreasuryFeeSet
+        - event: ModuleGlobalsGovernanceSet(indexed address,indexed address,uint256)
+          handler: handleModuleGlobalsGovernanceSet
+        - event: CollectModuleWhitelisted(indexed address,indexed bool,uint256)
+          handler: handleCollectModuleWhitelisted
+        - event: PublishModuleWhitelisted(indexed address,indexed bool,uint256)
+          handler: handlePublishModuleWhitelisted
+        - event: TemplateWhitelisted(indexed address,indexed bool,uint256)
+          handler: handleTemplateWhitelisted
       file: ./src/moduleGlobals-mapping.ts
 
   - kind: ethereum/contract
@@ -158,4 +213,23 @@ dataSources:
           handler: handleFeesForCollect
       file: ./src/feeCollectModule-mapping.ts
 
-
+  - kind: ethereum/contract
+    name: Receiver
+    network: mainnet
+    source:
+      address: "0x9fE46736679d2D9a65F0992F2272dE9f3c7fa6e0"
+      abi: Events
+      startBlock: 0
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.6
+      language: wasm/assemblyscript
+      entities:
+        - ReceiverReceived
+      abis:
+        - name: Events
+          file: ./abis/Events.json
+      eventHandlers:
+        - event: ReceiverReceived(address,uint256,uint256,uint256,bytes,uint256)
+          handler: handleReceiverReceived
+      file: ./src/receiver-mapping.ts

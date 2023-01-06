@@ -9,8 +9,6 @@ type Profile @entity {
   timestamp: BigInt!
 }
 
-
-
 # mint NDPValue history    
 type MintNDPValueHistory @entity {
   id: ID!
@@ -18,6 +16,32 @@ type MintNDPValueHistory @entity {
   value: BigInt!
   timestamp: BigInt!
 }    
+
+    
+    
+# burn NDP history    
+type BurnNDPTHistory @entity {
+  id: ID!
+  soulBoundTokenId: BigInt!
+  timestamp: BigInt!
+}    
+
+# burn NDP value history    
+type BurnNDPTValueHistory @entity {
+  id: ID!
+  soulBoundTokenId: BigInt!
+  value: BigInt!
+  timestamp: BigInt!
+}    
+
+# Profile ImageURI Set history    
+type ProfileImageURISetHistory @entity {
+  id: ID!
+  soulBoundTokenId: BigInt!
+  imageURI: String!
+  timestamp: BigInt!
+}    
+
 
 # Hub
 type Hub @entity {
@@ -161,5 +185,160 @@ type DerivativeNFTAirdropedHistory @entity {
   toSoulBoundTokenIds: [BigInt!]!
   values: [BigInt!]!
   newTokenIds: [BigInt!]!
+  timestamp: BigInt!
+}
+
+# Receiver history
+type ReceiverReceivedHistory @entity {
+  id: ID!
+  operator: Bytes!
+  fromTokenId: BigInt!
+  toTokenId: BigInt!
+  value: BigInt!
+  data: Bytes
+  gas: BigInt!
+}
+
+# DispatcherSet history
+type DispatcherSetHistory @entity {
+  id: ID!
+  soulBoundTokenId: BigInt!
+  dispatcher: Bytes!
+  timestamp: BigInt!
+}
+
+# ApprovalForSlot history
+type ApprovalForSlotHistory @entity {
+  id: ID!
+  owner: Bytes!
+  slot: BigInt!
+  operator: Bytes!
+  approved: Boolean!
+  timestamp: BigInt!
+}
+
+# StateSet history
+type StateSetHistory @entity {
+  id: ID!
+  caller: Bytes!
+  prevState: Int!
+  newState: Int!
+  timestamp: BigInt!
+}
+
+# Bank treasury ERC3525Received history
+type ERC3525ReceivedHistory @entity {
+  id: ID!
+  operator: Bytes!
+  fromTokenId: BigInt!
+  toTokenId: BigInt!
+  value: BigInt!
+  data: Bytes!
+  gas: BigInt!
+}
+
+# NDP contract BankTreasurySet history
+type BankTreasurySetHistory @entity {
+  id: ID!
+  soulBoundTokenId: BigInt!
+  bankTrerasury: Bytes!
+  initialSupply: BigInt!
+  timestamp: BigInt!
+}
+
+# Manager contract EmergencyAdminSet history
+type EmergencyAdminSetHistory @entity {
+  id: ID!
+  caller: Bytes!
+  oldEmergencyAdmin: Bytes!
+  newEmergencyAdmin: Bytes!
+  timestamp: BigInt!
+}
+
+# ModuleGlbals hub creator set whitelist history
+type HubCreatorWhitelistedHistory @entity {
+  id: ID!
+  soulBoundTokenId: BigInt!
+  whitelisted: Boolean!
+  timestamp: BigInt!
+}
+
+# ModuleGlbals Treasury Set history
+type ModuleGlobalsTreasurySetHistory @entity {
+  id: ID!
+  prevTreasury: Bytes!
+  newTreasury: Bytes!
+  timestamp: BigInt!
+}
+
+# ModuleGlbals Voucher Set history
+type ModuleGlobalsVoucherSetHistory @entity {
+  id: ID!
+  prevVoucher: Bytes!
+  newVoucher: Bytes!
+  timestamp: BigInt!
+}
+
+# ModuleGlbals Manager Set history
+type ModuleGlobalsManagerSetHistory @entity {
+  id: ID!
+  prevManager: Bytes!
+  newManager: Bytes!
+  timestamp: BigInt!
+}
+
+# ModuleGlbals NDPT Set history
+type ModuleGlobalsNDPTSetHistory @entity {
+  id: ID!
+  prevNDPT: Bytes!
+  newNDPT: Bytes!
+  timestamp: BigInt!
+}
+
+# ModuleGlbals PublishRoyalty Set history
+type ModuleGlobalsPublishRoyaltySetHistory @entity {
+  id: ID!
+  prevPublishRoyalty: BigInt!
+  newPublishRoyalty: BigInt!
+  timestamp: BigInt!
+}
+
+# ModuleGlbals Treasury Fee Set history
+type ModuleGlobalsTreasuryFeeSetHistory @entity {
+  id: ID!
+  prevTreasuryFee: Int!
+  newTreasuryFee: Int!
+  timestamp: BigInt!
+}
+
+# ModuleGlbals Governance Set history
+type ModuleGlobalsGovernanceSetHistory @entity {
+  id: ID!
+  prevGovernance: Bytes!
+  newGovernance: Bytes!
+  timestamp: BigInt!
+}
+
+# CollectModule Whitelisted history
+type CollectModuleWhitelistedHistory @entity {
+  id: ID!
+  collectModule: Bytes!
+  whitelisted: Boolean!
+  timestamp: BigInt!
+}
+
+# PublishModule Whitelisted history
+type PublishModuleWhitelistedHistory @entity {
+  id: ID!
+  publishModule: Bytes!
+  whitelisted: Boolean!
+  timestamp: BigInt!
+}
+
+# Template Whitelisted history
+type TemplateWhitelistedHistory @entity {
+  id: ID!
+  template: Bytes!
+  whitelisted: Boolean!
   timestamp: BigInt!
 }

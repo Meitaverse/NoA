@@ -1,6 +1,7 @@
 import { log, Address, BigInt, Bytes, store, TypedMap } from "@graphprotocol/graph-ts";
 
 import {
+    EmergencyAdminSet,
     TransferDerivativeNFT,
     TransferValueDerivativeNFT,
     HubCreated,
@@ -10,9 +11,12 @@ import {
     DerivativeNFTCollected,
     DerivativeNFTDeployed,
     DerivativeNFTAirdroped,
+    DispatcherSet,
+    StateSet
 } from "../generated/Manager/Events"
 
 import {
+    EmergencyAdminSetHistory,
     DerivativeNFTTransferHistory,
     DerivativeNFTTransferValueHistory,
     Hub,
@@ -21,8 +25,25 @@ import {
     DerivativeNFTCollectedHistory,
     Project,
     DerivativeNFTAirdropedHistory,
+    DispatcherSetHistory,
+    StateSetHistory,
+    
 } from "../generated/schema"
 
+export function handleEmergencyAdminSet(event: EmergencyAdminSet): void {
+    log.info("handleEmergencyAdminSet, event.address: {}", [event.address.toHexString()])
+
+    let _idString = event.params.caller.toHexString() + "-" +  event.params.timestamp.toString()
+    const history = EmergencyAdminSetHistory.load(_idString) || new EmergencyAdminSetHistory(_idString)
+    if (history) {
+        history.caller = event.params.caller
+        history.oldEmergencyAdmin = event.params.oldEmergencyAdmin
+        history.newEmergencyAdmin = event.params.newEmergencyAdmin
+        history.timestamp = event.block.timestamp
+        history.save()
+    } 
+
+}
 export function handleTransferDerivativeNFT(event: TransferDerivativeNFT): void {
     log.info("handleTransferDerivativeNFT, event.address: {}", [event.address.toHexString()])
 
@@ -169,3 +190,30 @@ export function handleDerivativeNFTAirdroped(event: DerivativeNFTAirdroped): voi
     } 
 }
 
+
+export function handleDispatcherSet(event: DispatcherSet): void {
+    log.info("handleDispatcherSet, event.address: {}", [event.address.toHexString()])
+
+    let _idString = event.params.soulBoundTokenId.toString() + "-" + event.params.timestamp.toString()
+    const history = DispatcherSetHistory.load(_idString) || new DispatcherSetHistory(_idString)
+    if (history) {
+        history.soulBoundTokenId = event.params.soulBoundTokenId
+        history.dispatcher = event.params.dispatcher
+        history.timestamp = event.params.timestamp
+        history.save()
+    } 
+}
+
+export function handleStateSet(event: StateSet): void {
+    log.info("handleStateSet, event.address: {}", [event.address.toHexString()])
+
+    let _idString = event.params.caller.toHexString() + "-" + event.params.timestamp.toString()
+    const history = StateSetHistory.load(_idString) || new StateSetHistory(_idString)
+    if (history) {
+        history.caller = event.params.caller
+        history.prevState = event.params.prevState
+        history.newState = event.params.newState
+        history.timestamp = event.params.timestamp
+        history.save()
+    } 
+}

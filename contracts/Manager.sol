@@ -592,7 +592,7 @@ contract Manager is
         address prevGovernance = _governance;
         _governance = newGovernance;
 
-        emit Events.GovernanceSet(msg.sender, prevGovernance, newGovernance, block.timestamp);
+        emit Events.ManagerGovernanceSet(msg.sender, prevGovernance, newGovernance, block.timestamp);
     }
 
     function _generateNextSaleId() internal returns (uint24) {

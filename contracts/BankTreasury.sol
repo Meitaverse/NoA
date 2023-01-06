@@ -174,7 +174,9 @@ contract BankTreasury is
         emit Events.Deposit(msg.sender, msg.value, address(this).balance);
     }
 
-    fallback() external payable {}
+    fallback() external payable {
+        // revert();
+    }
 
     function supportsInterface(
         bytes4 interfaceId
@@ -185,7 +187,7 @@ contract BankTreasury is
             interfaceId == type(IERC3525Receiver).interfaceId ||
             super.supportsInterface(interfaceId);
     }
-
+    
     function onERC3525Received(
         address operator,
         uint256 fromTokenId,
@@ -388,6 +390,8 @@ contract BankTreasury is
         if (msg.value < _exchangePrice.mul(amount)) revert Errors.PaymentError();
         address _ndpt = IModuleGlobals(MODULE_GLOBALS).getNDPT();
         INFTDerivativeProtocolTokenV1(_ndpt).transferValue(_soulBoundTokenId, soulBoundTokenId, amount);
+
+         //TODO event
     }
 
     function exchangeEthByNDPT(
@@ -438,6 +442,8 @@ contract BankTreasury is
         (bool success, ) = _to.call{value: ethAmount}("");
         if (!success) revert Errors.TxFailed();
 
+         //TODO event
+
     }
 
     function exchangeVoucher(
@@ -460,6 +466,8 @@ contract BankTreasury is
 
        INFTDerivativeProtocolTokenV1(_ndpt).transferValue(_soulBoundTokenId, soulBoundTokenId, voucherData.ndptValue);
        IVoucher(_voucher).useVoucher(msg.sender, voucherId, soulBoundTokenId); 
+
+       //TODO event
 
     }
     

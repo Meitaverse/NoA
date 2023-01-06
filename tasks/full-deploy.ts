@@ -129,7 +129,8 @@ import {
               { nonce: deployerNonce++ }
             )
         );
-        console.log('\t-- receiverMock: ', receiverMock.address);
+        console.log('\t-- Receiver: ', receiverMock.address);
+        await exportAddress(hre, receiverMock, 'Receiver');
     
         console.log('\n\t-- Deploying interactionLogic  --');
         const interactionLogic = await deployContract(

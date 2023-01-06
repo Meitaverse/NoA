@@ -61,33 +61,33 @@ export class ApprovalForSlot__Params {
     this._event = event;
   }
 
-  get _owner(): Address {
+  get owner(): Address {
     return this._event.parameters[0].value.toAddress();
   }
 
-  get _slot(): BigInt {
+  get slot(): BigInt {
     return this._event.parameters[1].value.toBigInt();
   }
 
-  get _operator(): Address {
+  get operator(): Address {
     return this._event.parameters[2].value.toAddress();
   }
 
-  get _approved(): boolean {
+  get approved(): boolean {
     return this._event.parameters[3].value.toBoolean();
   }
 }
 
-export class BankTreasuryCreated extends ethereum.Event {
-  get params(): BankTreasuryCreated__Params {
-    return new BankTreasuryCreated__Params(this);
+export class BankTreasurySet extends ethereum.Event {
+  get params(): BankTreasurySet__Params {
+    return new BankTreasurySet__Params(this);
   }
 }
 
-export class BankTreasuryCreated__Params {
-  _event: BankTreasuryCreated;
+export class BankTreasurySet__Params {
+  _event: BankTreasurySet;
 
-  constructor(event: BankTreasuryCreated) {
+  constructor(event: BankTreasurySet) {
     this._event = event;
   }
 
@@ -95,8 +95,16 @@ export class BankTreasuryCreated__Params {
     return this._event.parameters[0].value.toBigInt();
   }
 
+  get bankTrerasury(): Address {
+    return this._event.parameters[1].value.toAddress();
+  }
+
+  get initialSupply(): BigInt {
+    return this._event.parameters[2].value.toBigInt();
+  }
+
   get timestamp(): BigInt {
-    return this._event.parameters[1].value.toBigInt();
+    return this._event.parameters[3].value.toBigInt();
   }
 }
 
@@ -113,7 +121,7 @@ export class BurnNDPT__Params {
     this._event = event;
   }
 
-  get tokenId(): BigInt {
+  get soulBoundTokenId(): BigInt {
     return this._event.parameters[0].value.toBigInt();
   }
 
@@ -135,7 +143,7 @@ export class BurnNDPTValue__Params {
     this._event = event;
   }
 
-  get tokenId(): BigInt {
+  get soulBoundTokenId(): BigInt {
     return this._event.parameters[0].value.toBigInt();
   }
 
@@ -171,6 +179,40 @@ export class BurnToken__Params {
 
   get owner(): Address {
     return this._event.parameters[2].value.toAddress();
+  }
+
+  get timestamp(): BigInt {
+    return this._event.parameters[3].value.toBigInt();
+  }
+}
+
+export class BurnTokenWithSig extends ethereum.Event {
+  get params(): BurnTokenWithSig__Params {
+    return new BurnTokenWithSig__Params(this);
+  }
+}
+
+export class BurnTokenWithSig__Params {
+  _event: BurnTokenWithSig;
+
+  constructor(event: BurnTokenWithSig) {
+    this._event = event;
+  }
+
+  get projectId(): BigInt {
+    return this._event.parameters[0].value.toBigInt();
+  }
+
+  get tokenId(): BigInt {
+    return this._event.parameters[1].value.toBigInt();
+  }
+
+  get owner(): Address {
+    return this._event.parameters[2].value.toAddress();
+  }
+
+  get timestamp(): BigInt {
+    return this._event.parameters[3].value.toBigInt();
   }
 }
 
@@ -664,36 +706,6 @@ export class GenerateVoucher__Params {
   }
 }
 
-export class GovernanceSet extends ethereum.Event {
-  get params(): GovernanceSet__Params {
-    return new GovernanceSet__Params(this);
-  }
-}
-
-export class GovernanceSet__Params {
-  _event: GovernanceSet;
-
-  constructor(event: GovernanceSet) {
-    this._event = event;
-  }
-
-  get caller(): Address {
-    return this._event.parameters[0].value.toAddress();
-  }
-
-  get prevGovernance(): Address {
-    return this._event.parameters[1].value.toAddress();
-  }
-
-  get newGovernance(): Address {
-    return this._event.parameters[2].value.toAddress();
-  }
-
-  get timestamp(): BigInt {
-    return this._event.parameters[3].value.toBigInt();
-  }
-}
-
 export class HubCreated extends ethereum.Event {
   get params(): HubCreated__Params {
     return new HubCreated__Params(this);
@@ -759,6 +771,36 @@ export class HubCreatorWhitelisted__Params {
 
   get timestamp(): BigInt {
     return this._event.parameters[2].value.toBigInt();
+  }
+}
+
+export class ManagerGovernanceSet extends ethereum.Event {
+  get params(): ManagerGovernanceSet__Params {
+    return new ManagerGovernanceSet__Params(this);
+  }
+}
+
+export class ManagerGovernanceSet__Params {
+  _event: ManagerGovernanceSet;
+
+  constructor(event: ManagerGovernanceSet) {
+    this._event = event;
+  }
+
+  get caller(): Address {
+    return this._event.parameters[0].value.toAddress();
+  }
+
+  get prevGovernance(): Address {
+    return this._event.parameters[1].value.toAddress();
+  }
+
+  get newGovernance(): Address {
+    return this._event.parameters[2].value.toAddress();
+  }
+
+  get timestamp(): BigInt {
+    return this._event.parameters[3].value.toBigInt();
   }
 }
 
