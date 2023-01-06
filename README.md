@@ -117,23 +117,18 @@ query {
 }
 ```
 
-### 查询所有NoA
+### 查询所有Hub
 ```
 query{
-  tokens(first:100){
+  hubs(first:100){
     id,
-    projectId,
-    tokenId,
-    tokenURI,
-    slotURI,
-    owner,
-    organizer {
-      id
-    },
-    history {
-      id
-    },
-    createdAtTimestamp
+    soulBoundTokenId,
+    creator,
+    hubId,
+    name,
+    description,
+    imageURI,
+    timestamp
   }
 }
 
