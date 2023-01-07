@@ -84,7 +84,7 @@ contract FeeCollectModule is FeeModuleBase, ModuleBase, ICollectModule {
      * @dev Processes a collect by:
      *  1.  will pay royalty to ownershipSoulBoundTokenId
      *  2. Charging a fee
-     *  3. TODO: pay to genesis publisher
+     *  3. Pay to genesis publisher
      */
     function processCollect(
         uint256 ownershipSoulBoundTokenId,
@@ -160,12 +160,12 @@ contract FeeCollectModule is FeeModuleBase, ModuleBase, ICollectModule {
         {
             uint256 adjustedAmount = payValue.sub(treasuryAmount).sub(genesisAmount);
             if ( adjustedAmount > 0) 
-                INFTDerivativeProtocolTokenV1(_ndpt()).transferValue(collectorSoulBoundTokenId, ownershipSoulBoundTokenId, adjustedAmount);
+                INFTDerivativeProtocolTokenV1(_sbt()).transferValue(collectorSoulBoundTokenId, ownershipSoulBoundTokenId, adjustedAmount);
             
             uint256 treasuryOfSoulBoundTokenId = IBankTreasury(treasury).getSoulBoundTokenId();
             
-            if (treasuryAmount > 0) INFTDerivativeProtocolTokenV1(_ndpt()).transferValue(collectorSoulBoundTokenId, treasuryOfSoulBoundTokenId, treasuryAmount);
-            if (genesisSoulBoundTokenId >0 && genesisAmount > 0) INFTDerivativeProtocolTokenV1(_ndpt()).transferValue(collectorSoulBoundTokenId, genesisSoulBoundTokenId, genesisAmount);
+            if (treasuryAmount > 0) INFTDerivativeProtocolTokenV1(_sbt()).transferValue(collectorSoulBoundTokenId, treasuryOfSoulBoundTokenId, treasuryAmount);
+            if (genesisSoulBoundTokenId >0 && genesisAmount > 0) INFTDerivativeProtocolTokenV1(_sbt()).transferValue(collectorSoulBoundTokenId, genesisSoulBoundTokenId, genesisAmount);
            
             emit Events.FeesForCollect(
                 collectorSoulBoundTokenId,

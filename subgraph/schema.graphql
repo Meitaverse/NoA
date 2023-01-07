@@ -19,14 +19,14 @@ type MintNDPValueHistory @entity {
 
     
     
-# burn NDP history    
+# burn SBT history    
 type BurnNDPTHistory @entity {
   id: ID!
   soulBoundTokenId: BigInt!
   timestamp: BigInt!
 }    
 
-# burn NDP value history    
+# burn SBT value history    
 type BurnNDPTValueHistory @entity {
   id: ID!
   soulBoundTokenId: BigInt!

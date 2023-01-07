@@ -45,7 +45,7 @@ import {
   user,
   userTwo,
   userTwoAddress,
-  ndptContract,
+  sbtContract,
   metadataDescriptor,
   publishModule,
   feeCollectModule,
@@ -83,7 +83,7 @@ makeSuiteCleanRoom('Fee Collect Module', function () {
       expect(await manager.getWalletBySoulBoundTokenId(SECOND_PROFILE_ID)).to.eq(userAddress);
        
       //mint some Values to user
-      await manager.connect(governance).mintNDPTValue(SECOND_PROFILE_ID, parseEther('10'));
+      await manager.connect(governance).mintSBTValue(SECOND_PROFILE_ID, parseEther('10'));
 
       const tokenId = await manager.connect(userTwo).callStatic.createProfile({ 
             wallet: userTwoAddress,
@@ -101,8 +101,8 @@ makeSuiteCleanRoom('Fee Collect Module', function () {
       expect(await manager.getWalletBySoulBoundTokenId(THIRD_PROFILE_ID)).to.eq(userTwoAddress);
 
       //mint some Values to userTwo
-      await manager.connect(governance).mintNDPTValue(THIRD_PROFILE_ID, parseEther('10'));
-      // expect((await ndptContract.balanceOfNDPT(THIRD_PROFILE_ID)).toNumber()).to.eq(parseEther('10'));
+      await manager.connect(governance).mintSBTValue(THIRD_PROFILE_ID, parseEther('10'));
+      // expect((await sbtContract.balanceOfSBT(THIRD_PROFILE_ID)).toNumber()).to.eq(parseEther('10'));
         
 
       expect(

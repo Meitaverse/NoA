@@ -17,7 +17,7 @@ import "@openzeppelin/contracts/utils/Counters.sol";
 abstract contract GlobalStorage {
 
     address internal _manager;
-    address internal _ndpt; 
+    address internal _sbt; 
     address internal _governance;
     address internal _treasury;
     address internal _voucher;

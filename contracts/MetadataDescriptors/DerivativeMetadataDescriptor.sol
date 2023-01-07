@@ -11,6 +11,8 @@ import {IERC3525MetadataDescriptor} from "@solvprotocol/erc-3525/contracts/perip
 import {StringConvertor} from "../utils/StringConvertor.sol";
 import "../interfaces/IDerivativeNFTV1.sol";
 import {DataTypes} from '../libraries/DataTypes.sol';
+import {IModuleGlobals} from "../interfaces/IModuleGlobals.sol";
+import {IManager} from "../interfaces/IManager.sol";
 
 interface IERC20 {
   function decimals() external view returns (uint8);
@@ -19,9 +21,14 @@ interface IERC20 {
 contract DerivativeMetadataDescriptor is IERC3525MetadataDescriptor {
   using StringConvertor for uint256;
   using StringConvertor for bytes;
+  address public immutable  MODULE_GLOBALS;
+
+  constructor(address moduleGlobals) {
+    MODULE_GLOBALS = moduleGlobals;
+  }
 
   function constructContractURI() external view override returns (string memory) {
-    // IDerivativeNFTV1 dao = IDerivativeNFTV1(msg.sender);
+    DataTypes.ProjectData memory projectData_ = _projectData();
     return 
       string(
         abi.encodePacked(
@@ -32,9 +39,9 @@ contract DerivativeMetadataDescriptor is IERC3525MetadataDescriptor {
               '{"name":"', 
               IERC3525Metadata(msg.sender).name(),
               '","description":"',
-              _contractDescription(),
+              projectData_.description,
               '","image":"',
-              _contractImage(),
+              projectData_.image,
               '","valueDecimals":"', 
               uint256(IERC3525Metadata(msg.sender).valueDecimals()).toString(),
               '"}'
@@ -46,6 +53,7 @@ contract DerivativeMetadataDescriptor is IERC3525MetadataDescriptor {
   }
 
   function constructSlotURI(uint256 slot_) external view override returns (string memory) {
+     DataTypes.SlotDetail memory slotDetail = _slotDetail(slot_);
     return
       string(
         abi.encodePacked(
@@ -54,17 +62,19 @@ contract DerivativeMetadataDescriptor is IERC3525MetadataDescriptor {
           Base64Upgradeable.encode(
             abi.encodePacked(
               '{"name":"', 
-              _slotName(slot_),
+              slotDetail.publication.name,
               '","description":"',
-              _slotDescription(slot_),
-              // '","image":"',
-              // _slotImage(slot_),
-              '","event_id":',
-              slot_.toString(),
-              '","event_metadata_uri":',
-              _sloteventMetadataURI(slot_),
-              '","properties":',
-              _slotProperties(slot_),
+              slotDetail.publication.description,
+              '","soulBoundTokenId":',
+              slotDetail.publication.soulBoundTokenId.toString(),
+              '","projectId":',
+              slotDetail.publication.projectId.toString(),
+              '","salePrice":',
+              slotDetail.publication.salePrice.toString(),
+              '","royaltyBasisPoints":',
+              slotDetail.publication.royaltyBasisPoints.toString(),
+              '","amount":',
+              slotDetail.publication.amount.toString(),
               '}'
             )
           )
@@ -74,6 +84,8 @@ contract DerivativeMetadataDescriptor is IERC3525MetadataDescriptor {
   }
 
   function constructTokenURI(uint256 tokenId_) external view override returns (string memory) {
+    DataTypes.ProjectData memory projectData_ = _projectData();
+    
     return 
       string(
         abi.encodePacked(
@@ -82,11 +94,11 @@ contract DerivativeMetadataDescriptor is IERC3525MetadataDescriptor {
             abi.encodePacked(
               /* solhint-disable */
               '{"name":"',
-              _tokenName(tokenId_),
+              _tokenName(projectData_.name, tokenId_),
               '","description":"',
-              _tokenDescription(tokenId_),
-            //  '","image":"',
-            //   _tokenImage(tokenId_),
+              projectData_.description,
+             '","image":"',
+              projectData_.image, 
               '","balance":"',
               IERC3525(msg.sender).balanceOf(tokenId_).toString(),
               '","slot":"',
@@ -101,29 +113,20 @@ contract DerivativeMetadataDescriptor is IERC3525MetadataDescriptor {
       );
   }
 
-  function _slotName(uint256 slot_) internal view returns (string memory) {
+  function _slotDetail(uint256 slot_) internal view returns (DataTypes.SlotDetail memory) {
     DataTypes.SlotDetail memory slotDetail = IDerivativeNFTV1(msg.sender).getSlotDetail(slot_);
-    return slotDetail.publication.name;
-    // return "TODO";
+    return slotDetail;
   }
 
   function _slotDescription(uint256 slot_) internal view returns (string memory) {
     DataTypes.SlotDetail memory slotDetail = IDerivativeNFTV1(msg.sender).getSlotDetail(slot_);
     return slotDetail.publication.description;
-    //  return "TODO";
   }
 
-  // function _slotImage(uint256 slot_) internal view returns (string memory) {
-  //   DataTypes.SlotDetail memory slotDetail = IDerivativeNFTV1(msg.sender).getSlotDetail(slot_);
-
-  //   return string(slotDetail.image);
-  // }
-
-  function _sloteventMetadataURI(uint256 slot_) internal view returns (string memory) {
+  function _sloteventMetadataURI(uint256 slot_) internal view returns (string[] memory) {
     DataTypes.SlotDetail memory slotDetail = IDerivativeNFTV1(msg.sender).getSlotDetail(slot_);
 
-    // return string(slotDetail.publication.materialURIs);
-    return string("TODO");
+    return slotDetail.publication.materialURIs;
   }
 
    /**
@@ -138,64 +141,43 @@ contract DerivativeMetadataDescriptor is IERC3525MetadataDescriptor {
             
   }
 
-  function _tokenName(uint256 tokenId_) internal view returns (string memory) {
-    uint256 slot = IERC3525(msg.sender).slotOf(tokenId_);
+  function _tokenName(string memory name, uint256 tokenId_) internal pure returns (string memory) {
     // solhint-disable-next-line
     return 
       string(
         abi.encodePacked(
-          _slotName(slot), 
+          name, 
           " #", tokenId_.toString()
         )
       );
   }
 
-  function _tokenDescription(uint256 tokenId_) internal view returns (string memory) {
-    uint256 slot = IERC3525(msg.sender).slotOf(tokenId_);
-    DataTypes.SlotDetail memory sd = IDerivativeNFTV1(msg.sender).getSlotDetail(slot);
-    // return sd.publication.description;
-     return "TODO";
-  }
-
-  // function _tokenImage(uint256 tokenId_) internal view returns (string memory) {
-  //   uint256 slot = IERC3525(msg.sender).slotOf(tokenId_);
-  //   DataTypes.SlotDetail memory sd = IDerivativeNFTV1(msg.sender).getSlotDetail(slot);
-  //   return sd.image;
-  // }
 
   function _tokenProperties(uint256 tokenId_) internal view returns (string memory) {
     
-    uint256 slot = IERC3525(msg.sender).slotOf(tokenId_);
-    DataTypes.SlotDetail memory slotDetail = IDerivativeNFTV1(msg.sender).getSlotDetail(slot);
-    DataTypes.ProjectData memory project_ = IDerivativeNFTV1(msg.sender).getProjectInfo(slotDetail.projectId);
-    uint256 totalSupply = ERC3525Upgradeable(msg.sender).totalSupply();
-    
+    uint256 value = IERC3525(msg.sender).balanceOf(tokenId_);
     return 
       string(
         abi.encodePacked(
           /* solhint-disable */
-          '{"name":"',
-            //  slotDetail.publication.name,
-            "TODO",
-             '","description":"',
-            //  slotDetail.publication.description,
-             "TODO",
-             '","image":"',
-             project_.image,
-             '","totalSupply":"',
-              totalSupply,
+          '{"value":"',
+              value.toString(), 
           '"}'
           /* solhint-enable */
         )
       );
   }
 
-  function _contractDescription() internal pure returns (string memory) {
-    return "http://bitsoul.me";
-  }
+  //return project image
+  function _projectData() internal view returns (DataTypes.ProjectData memory) {
 
-  function _contractImage() internal pure returns (bytes memory) {
-    return "http://bitsoul.me/logo.png";
+    address _manager = IModuleGlobals(MODULE_GLOBALS).getManager();
+
+    uint256 projectId = IManager(_manager).getProjectIdByContract(msg.sender);
+
+    DataTypes.ProjectData memory projectData_ = IManager(_manager).getProjectInfo(projectId);
+
+    return projectData_;
   }
 
 }

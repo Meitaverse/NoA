@@ -29,7 +29,7 @@ import {
   derivativeNFTV1Impl,
   receiverMock,
   governanceAddress,
-  ndptContract,
+  sbtContract,
 } from '../__setup.spec';
 
 export let mockManagerV2Impl: ManagerV2;

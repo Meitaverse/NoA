@@ -21,8 +21,8 @@ import {
   managerLibs,
   manager,
   managerImpl,
-  NDPT_NAME,
-  NDPT_SYMBOL,
+  SBT_NAME,
+  SBT_SYMBOL,
   makeSuiteCleanRoom,
   moduleGlobals,
   TREASURY_FEE_BPS,
@@ -30,9 +30,9 @@ import {
   userAddress,
   receiverMock,
   derivativeNFTV1Impl,
-  ndptContract,
+  sbtContract,
   bankTreasuryContract,
-  PublishRoyaltyNDPT,
+  PublishRoyaltySBT,
   voucherContract
   
 } from '../__setup.spec';
@@ -149,17 +149,17 @@ makeSuiteCleanRoom('deployment validation', () => {
     await expect(
       new ModuleGlobals__factory(deployer).deploy(
         ZERO_ADDRESS, 
-        ndptContract.address,
+        sbtContract.address,
         governanceAddress,
         bankTreasuryContract.address, 
         voucherContract.address,
         TREASURY_FEE_BPS,
-        PublishRoyaltyNDPT
+        PublishRoyaltySBT
       )
     ).to.be.revertedWith(ERRORS.INIT_PARAMS_INVALID);
   });
 
-  it('Should fail to deploy module globals with zero address NDPT', async function () {
+  it('Should fail to deploy module globals with zero address SBT', async function () {
     await expect(
       new ModuleGlobals__factory(deployer).deploy(
         manager.address, 
@@ -168,7 +168,7 @@ makeSuiteCleanRoom('deployment validation', () => {
         bankTreasuryContract.address, 
         voucherContract.address,
         TREASURY_FEE_BPS,
-        PublishRoyaltyNDPT
+        PublishRoyaltySBT
       )
     ).to.be.revertedWith(ERRORS.INIT_PARAMS_INVALID);
   });
@@ -177,12 +177,12 @@ makeSuiteCleanRoom('deployment validation', () => {
     await expect(
       new ModuleGlobals__factory(deployer).deploy(
         manager.address,
-        ndptContract.address,
+        sbtContract.address,
         ZERO_ADDRESS, 
         bankTreasuryContract.address, 
         voucherContract.address,
         TREASURY_FEE_BPS,
-        PublishRoyaltyNDPT
+        PublishRoyaltySBT
       )
     ).to.be.revertedWith(ERRORS.INIT_PARAMS_INVALID);
   });
@@ -191,12 +191,12 @@ makeSuiteCleanRoom('deployment validation', () => {
     await expect(
       new ModuleGlobals__factory(deployer).deploy(
         manager.address,
-        ndptContract.address,
+        sbtContract.address,
         governanceAddress, 
         ZERO_ADDRESS, 
         voucherContract.address,
         TREASURY_FEE_BPS,
-        PublishRoyaltyNDPT
+        PublishRoyaltySBT
         )
       ).to.be.revertedWith(ERRORS.INIT_PARAMS_INVALID);
   });
@@ -205,12 +205,12 @@ makeSuiteCleanRoom('deployment validation', () => {
     await expect(
       new ModuleGlobals__factory(deployer).deploy(
         manager.address,
-        ndptContract.address,
+        sbtContract.address,
         governanceAddress, 
         bankTreasuryContract.address, 
         ZERO_ADDRESS, 
         TREASURY_FEE_BPS,
-        PublishRoyaltyNDPT
+        PublishRoyaltySBT
         )
       ).to.be.revertedWith(ERRORS.INIT_PARAMS_INVALID);
   });
@@ -219,12 +219,12 @@ makeSuiteCleanRoom('deployment validation', () => {
       await expect(
         new ModuleGlobals__factory(deployer).deploy(
           manager.address,
-          ndptContract.address,
+          sbtContract.address,
           governanceAddress, 
           bankTreasuryContract.address, 
           voucherContract.address,
           5001,
-          PublishRoyaltyNDPT
+          PublishRoyaltySBT
           )
         ).to.be.revertedWith(ERRORS.INIT_PARAMS_INVALID);
   });
@@ -234,36 +234,36 @@ makeSuiteCleanRoom('deployment validation', () => {
     await expect(
       new ModuleGlobals__factory(deployer).deploy(
         manager.address,
-        ndptContract.address,
+        sbtContract.address,
         governanceAddress, 
         bankTreasuryContract.address,  
         voucherContract.address,
         BPS_MAX,
-        PublishRoyaltyNDPT
+        PublishRoyaltySBT
         )
     ).to.be.revertedWith(ERRORS.INIT_PARAMS_INVALID);
 
     await expect(
       new ModuleGlobals__factory(deployer).deploy(
         manager.address,
-        ndptContract.address,
+        sbtContract.address,
         governanceAddress, 
         bankTreasuryContract.address, 
         voucherContract.address,
         BPS_MAX + 1,
-        PublishRoyaltyNDPT
+        PublishRoyaltySBT
         )
     ).to.be.revertedWith(ERRORS.INIT_PARAMS_INVALID);
   });
 
   
-  it('Validates NDPT name & symbol &Owner', async function () {
-    const name = await ndptContract.name();
-    const symbol = await ndptContract.symbol();
-    const decimals = await ndptContract.valueDecimals();
+  it('Validates SBT name & symbol &Owner', async function () {
+    const name = await sbtContract.name();
+    const symbol = await sbtContract.symbol();
+    const decimals = await sbtContract.valueDecimals();
 
-    expect(name).to.eq(NDPT_NAME);
-    expect(symbol).to.eq(NDPT_SYMBOL);
+    expect(name).to.eq(SBT_NAME);
+    expect(symbol).to.eq(SBT_SYMBOL);
     expect(decimals).to.eq(18);
   });
   

@@ -17,16 +17,18 @@ library Errors {
   error NotTransferValueAuthorised();
   error NotSameSlot();
   error AmountLimitNotSet();
-  error AmountNDPIsZero();
+  error AmountSBTIsZero();
   error NotSameOwnerOfBothTokenId();
   error TokenExisted(uint256 tokenId);
   error NotProfileOwner();
+  error ToIsNotSoulBoundToken();
   error NotProfileOwnerOrDispatcher();
   error ZeroAddress();
   error EventNotExists();
   error ProjectExisted();
   error TokenIsClaimed();
   error PublicationIsExisted();
+  error MaxSupplyExceeded();
   error MaxExceeded();
   error ApproveToOwner();
   error ComboLengthNotEnough();
@@ -76,16 +78,16 @@ library Errors {
   error FollowModuleNotWhitelisted();
   error PublishModuleNotWhitelisted();
   error TemplateNotWhitelisted();
-  error PublishWithZeroNDPT();
+  error PublishWithZeroSBT();
   error NotSameHub();
   error InsufficientAllowance();
   error InsufficientDerivativeNFT();
   error DerivativeNFTIsZero();
   error PublisherIsZero();
   error ManagerIsZero();
-  error InsufficientNDPT();
+  error InsufficientSBT();
   error CannotUpdateAfterMinted();
-  error NDPTNotSet();
+  error SBTNotSet();
 
   // Module Errors
   error InitParamsInvalid();

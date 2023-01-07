@@ -60,7 +60,7 @@ contract DerivativeNFTV1 is
     // solhint-disable-next-line var-name-mixedcase
     address public immutable MANAGER;
     // solhint-disable-next-line var-name-mixedcase
-    address internal _NDPT;
+    address internal _SBT;
     // solhint-disable-next-line var-name-mixedcase
     address internal _BANKTREASURY;
 
@@ -112,7 +112,7 @@ contract DerivativeNFTV1 is
     }
 
     function initialize(
-        address ndpt, 
+        address sbt, 
         address bankTreasury,
         string memory name_,
         string memory symbol_,
@@ -126,8 +126,8 @@ contract DerivativeNFTV1 is
         if (_initialized) revert Errors.Initialized();
         _initialized = true;
         
-        if (ndpt == address(0)) revert Errors.InitParamsInvalid();
-        _NDPT = ndpt;
+        if (sbt == address(0)) revert Errors.InitParamsInvalid();
+        _SBT = sbt;
         if (bankTreasury == address(0)) revert Errors.InitParamsInvalid();
         _BANKTREASURY = bankTreasury;
 
@@ -203,9 +203,8 @@ contract DerivativeNFTV1 is
         uint256 slot = _generateNextSlotId(); //auto increase
 
         _slotDetails[slot] = DataTypes.SlotDetail({
-            soulBoundTokenId: publication.soulBoundTokenId,
             publication: publication,
-            projectId:  _projectId,
+            // projectId:  _projectId,
             timestamp: block.timestamp 
         });
 
@@ -364,10 +363,6 @@ contract DerivativeNFTV1 is
         return _slotDetails[slot_];
     }
 
-    function getProjectInfo(uint256 projectId_) external view returns (DataTypes.ProjectData memory) {
-        return IManager(MANAGER).getProjectInfo(projectId_);
-    }
-
     function transferValue(
         uint256 fromTokenId_,
         uint256 toTokenId_,
@@ -385,7 +380,11 @@ contract DerivativeNFTV1 is
         uint256 fromTokenId_,
         address to_,
         uint256 value_
-    ) public payable virtual override whenNotPaused onlyManager returns (uint256) {
+    ) public payable virtual override whenNotPaused returns (uint256) { //onlyManager
+        //to_ must a valid SBT Id
+        uint256 _toSoulBoundTokenId = IManager(MANAGER).getSoulBoundTokenIdByWallet(to_);
+        if (_toSoulBoundTokenId == 0 ) revert Errors.ToIsNotSoulBoundToken();
+
         uint256 newTokenId = super.transferFrom(fromTokenId_, to_, value_);
       
         //set royalty
@@ -411,8 +410,7 @@ contract DerivativeNFTV1 is
         uint256 fromTokenId_,
         uint256 toTokenId_,
         uint256 value_
-    ) public payable virtual override whenNotPaused onlyManager { 
-      //
+    ) public payable virtual override whenNotPaused  { //onlyManager
       super.transferFrom(fromTokenId_, toTokenId_, value_);
     }
 
@@ -420,7 +418,10 @@ contract DerivativeNFTV1 is
         address from_,
         address to_,
         uint256 tokenId_
-    ) public payable virtual override  whenNotPaused onlyManager { //
+    ) public payable virtual override  whenNotPaused  { //onlyManager
+        //to_ must a valid SBT wallet who had create profile
+        uint256 _toSoulBoundTokenId = IManager(MANAGER).getSoulBoundTokenIdByWallet(to_);
+        if (_toSoulBoundTokenId == 0 ) revert Errors.ToIsNotSoulBoundToken();
         super.transferFrom(from_, to_, tokenId_);
     }
 
@@ -429,17 +430,21 @@ contract DerivativeNFTV1 is
         address to_,
         uint256 tokenId_,
         bytes memory data_
-    ) public payable virtual override  whenNotPaused onlyManager { 
-        //
-        super.safeTransferFrom(from_, to_, tokenId_,data_);
+    ) public payable virtual override  whenNotPaused  { //onlyManager
+        //to_ must a valid SBT Id
+        uint256 _toSoulBoundTokenId = IManager(MANAGER).getSoulBoundTokenIdByWallet(to_);
+        if (_toSoulBoundTokenId == 0 ) revert Errors.ToIsNotSoulBoundToken();
+        super.safeTransferFrom(from_, to_, tokenId_, data_);
     }
 
     function safeTransferFrom(
         address from_,
         address to_,
         uint256 tokenId_
-    ) public payable virtual override  whenNotPaused onlyManager{ 
-        //
+    ) public payable virtual override  whenNotPaused {  //onlyManager
+        //to_ must a valid SBT Id
+        uint256 _toSoulBoundTokenId = IManager(MANAGER).getSoulBoundTokenIdByWallet(to_);
+        if (_toSoulBoundTokenId == 0 ) revert Errors.ToIsNotSoulBoundToken();
        super.safeTransferFrom(from_, to_, tokenId_, "");
     }
 
@@ -500,7 +505,7 @@ contract DerivativeNFTV1 is
      *                           represents 0.01%.
      */
     function setRoyalty(uint96 royaltyBasisPoints) external whenNotPaused onlyManager {
-        if (IERC3525(_NDPT).ownerOf(_soulBoundTokenId) == msg.sender) {
+        if (IERC3525(_SBT).ownerOf(_soulBoundTokenId) == msg.sender) {
             if (royaltyBasisPoints > _BASIS_POINTS) {
                 revert Errors.InvalidParameter();
             } else {
@@ -600,7 +605,7 @@ contract DerivativeNFTV1 is
     }
 
     function _validateCallerIsSoulBoundTokenOwner(uint256 soulBoundTokenId_) internal view {
-        if (IERC3525(_NDPT).ownerOf(soulBoundTokenId_) != msg.sender) revert Errors.NotProfileOwner();
+        if (IERC3525(_SBT).ownerOf(soulBoundTokenId_) != msg.sender) revert Errors.NotProfileOwner();
     }
 
     function _generateNextSlotId() internal returns (uint256) {

@@ -54,7 +54,7 @@ task("collect", "collect a dNFT function")
   const managerImpl = await loadContract(hre, Manager__factory, "ManagerImpl");
   const manager = await loadContract(hre, Manager__factory, "Manager");
   const bankTreasury = await loadContract(hre, BankTreasury__factory, "BankTreasury");
-  const ndp = await loadContract(hre, NFTDerivativeProtocolTokenV1__factory, "NDP");
+  const sbt = await loadContract(hre, NFTDerivativeProtocolTokenV1__factory, "SBT");
   const voucher = await loadContract(hre, Voucher__factory, "Voucher");
   const moduleGlobals = await loadContract(hre, ModuleGlobals__factory, "ModuleGlobals");
   const feeCollectModule = await loadContract(hre, FeeCollectModule__factory, "FeeCollectModule");
@@ -73,12 +73,12 @@ task("collect", "collect a dNFT function")
 
     let collector = accounts[collectorid];
     console.log('\n\t-- collector: ', collector.address);
-    let balance =(await ndp.balanceOfNDPT(collectorid)).toNumber();
+    let balance =(await sbt.balanceOfSBT(collectorid)).toNumber();
     if (balance == 0) {
       //mint 1000Value to user
-      await manager.connect(governance).mintNDPTValue(collectorid, 1000);
+      await manager.connect(governance).mintSBTValue(collectorid, 1000);
     }
-    console.log('\t--- balance of collector: ', (await ndp.balanceOfNDPT(collectorid)).toNumber());
+    console.log('\t--- balance of collector: ', (await sbt.balanceOfSBT(collectorid)).toNumber());
 
 
     const FIRST_PROJECT_ID =1; 

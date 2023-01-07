@@ -49,7 +49,7 @@ interface INFTDerivativeProtocolTokenV1  {
         bool _approved
     ) external payable;
 
-    function balanceOfNDPT(uint256 tokenId) external view returns (uint256);
+    function balanceOfSBT(uint256 tokenId) external view returns (uint256);
 
     /**
      * @notice Query if `_operator` is authorized to manage all of `_owner`'s tokens with the

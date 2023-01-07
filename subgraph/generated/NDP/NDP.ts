@@ -412,7 +412,7 @@ export class Upgraded__Params {
   }
 }
 
-export class NDP__createProfileInputVarsStruct extends ethereum.Tuple {
+export class SBT__createProfileInputVarsStruct extends ethereum.Tuple {
   get wallet(): Address {
     return this[0].toAddress();
   }
@@ -426,9 +426,9 @@ export class NDP__createProfileInputVarsStruct extends ethereum.Tuple {
   }
 }
 
-export class NDP extends ethereum.SmartContract {
-  static bind(address: Address): NDP {
-    return new NDP("NDP", address);
+export class SBT extends ethereum.SmartContract {
+  static bind(address: Address): SBT {
+    return new SBT("SBT", address);
   }
 
   DEFAULT_ADMIN_ROLE(): Bytes {
@@ -558,20 +558,20 @@ export class NDP extends ethereum.SmartContract {
     return ethereum.CallResult.fromValue(value[0].toBigInt());
   }
 
-  balanceOfNDPT(tokenId: BigInt): BigInt {
+  balanceOfSBT(tokenId: BigInt): BigInt {
     let result = super.call(
-      "balanceOfNDPT",
-      "balanceOfNDPT(uint256):(uint256)",
+      "balanceOfSBT",
+      "balanceOfSBT(uint256):(uint256)",
       [ethereum.Value.fromUnsignedBigInt(tokenId)]
     );
 
     return result[0].toBigInt();
   }
 
-  try_balanceOfNDPT(tokenId: BigInt): ethereum.CallResult<BigInt> {
+  try_balanceOfSBT(tokenId: BigInt): ethereum.CallResult<BigInt> {
     let result = super.tryCall(
-      "balanceOfNDPT",
-      "balanceOfNDPT(uint256):(uint256)",
+      "balanceOfSBT",
+      "balanceOfSBT(uint256):(uint256)",
       [ethereum.Value.fromUnsignedBigInt(tokenId)]
     );
     if (result.reverted) {
@@ -598,7 +598,7 @@ export class NDP extends ethereum.SmartContract {
 
   createProfile(
     creator: Address,
-    vars: NDP__createProfileInputVarsStruct
+    vars: SBT__createProfileInputVarsStruct
   ): BigInt {
     let result = super.call(
       "createProfile",
@@ -611,7 +611,7 @@ export class NDP extends ethereum.SmartContract {
 
   try_createProfile(
     creator: Address,
-    vars: NDP__createProfileInputVarsStruct
+    vars: SBT__createProfileInputVarsStruct
   ): ethereum.CallResult<BigInt> {
     let result = super.tryCall(
       "createProfile",

@@ -24,9 +24,9 @@ import {
   deployerAddress,
   SECOND_PROFILE_ID,
   manager,
-  NDPT_NAME,
-  NDPT_SYMBOL,
-  NDPT_DECIMALS,
+  SBT_NAME,
+  SBT_SYMBOL,
+  SBT_DECIMALS,
   makeSuiteCleanRoom,
   MOCK_FOLLOW_NFT_URI,
   MOCK_PROFILE_HANDLE,
@@ -38,40 +38,40 @@ import {
   governance,
   derivativeNFTV1Impl,
   governanceAddress,
-  ndptImpl,
-  ndptContract,
+  sbtImpl,
+  sbtContract,
   bankTreasuryContract,
   bankTreasuryImpl,
   
 } from '../__setup.spec';
 
 export let mockManagerV2Impl: ManagerV2;
-export let ndptImplV2: NFTDerivativeProtocolTokenV2;
+export let sbtImplV2: NFTDerivativeProtocolTokenV2;
 export let bankTreasuryImplV2: BankTreasuryV2;
 
 makeSuiteCleanRoom('UUPS ability', function () {
   describe("Deployment", () => {
     it("Proxy state", async () => {
-      // ndptContract.connect(governance).
-      const name = await ndptContract.name();
-      const symbol = await ndptContract.symbol();
-      const decimals = await ndptContract.valueDecimals();
+      // sbtContract.connect(governance).
+      const name = await sbtContract.name();
+      const symbol = await sbtContract.symbol();
+      const decimals = await sbtContract.valueDecimals();
       expect([
-        await ndptContract.name(),
-        await ndptContract.symbol(),
-        await ndptContract.valueDecimals(),
+        await sbtContract.name(),
+        await sbtContract.symbol(),
+        await sbtContract.valueDecimals(),
       ]).to.deep.eq([
-        NDPT_NAME,
-        NDPT_SYMBOL,
+        SBT_NAME,
+        SBT_SYMBOL,
         18,
       ]);
     });
 
-    it("Attempt to initialize the original NDPT contract should revert", async () => {
+    it("Attempt to initialize the original SBT contract should revert", async () => {
       await expect(
-        ndptContract.connect(user).initialize(
-          NDPT_NAME, 
-          NDPT_SYMBOL, 
+        sbtContract.connect(user).initialize(
+          SBT_NAME, 
+          SBT_SYMBOL, 
           8,
           governanceAddress)
         ).to.be.revertedWith(ERRORS.UUPSINITIALIZED);
@@ -79,12 +79,12 @@ makeSuiteCleanRoom('UUPS ability', function () {
 
     describe("#upgrade", () => {
       beforeEach(async () => {
-        ndptImplV2 = await new NFTDerivativeProtocolTokenV2__factory(deployer).deploy();
+        sbtImplV2 = await new NFTDerivativeProtocolTokenV2__factory(deployer).deploy();
         bankTreasuryImplV2 = await new BankTreasuryV2__factory(deployer).deploy();
       });
       it("Authorize check", async () => {
         await expect(
-          ndptContract.connect(user).upgradeTo(ndptImplV2.address)
+          sbtContract.connect(user).upgradeTo(sbtImplV2.address)
         ).to.revertedWith(ERRORS.UNAUTHORIZED);
       });
 
@@ -103,23 +103,23 @@ makeSuiteCleanRoom('UUPS ability', function () {
       
 
       it("Successful upgrade NFTDerivativeProtocolToken, version should from 1 upgrade to 2, and signer is set to user address", async () => {
-        expect(await ndptContract.version()).to.eq(1);
-        const managerV1Address = (await ndptContract.getManager()).toUpperCase();
+        expect(await sbtContract.version()).to.eq(1);
+        const managerV1Address = (await sbtContract.getManager()).toUpperCase();
         
-        const data = ndptImplV2.interface.encodeFunctionData("setSigner", [
+        const data = sbtImplV2.interface.encodeFunctionData("setSigner", [
           userAddress,
         ]);
         
-        await ndptContract
+        await sbtContract
           .connect(deployer)
-          .upgradeToAndCall(ndptImplV2.address, data);
+          .upgradeToAndCall(sbtImplV2.address, data);
 
-        const v2 = new NFTDerivativeProtocolTokenV2__factory(deployer).attach(ndptContract.address);
+        const v2 = new NFTDerivativeProtocolTokenV2__factory(deployer).attach(sbtContract.address);
          expect(await v2.version()).to.eq(2);
          expect(await v2.getSigner()).to.eq(userAddress);
         //  console.log("v2.MANAGER: ", (await v2.getManager()).toUpperCase());
          expect((await v2.getManager()).toUpperCase()).to.eq(managerV1Address.toUpperCase());
-         expect((await ndptContract.getBankTreasury()).toUpperCase()).to.eq(bankTreasuryContract.address.toUpperCase());
+         expect((await sbtContract.getBankTreasury()).toUpperCase()).to.eq(bankTreasuryContract.address.toUpperCase());
       });
       
     });

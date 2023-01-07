@@ -20,12 +20,6 @@ interface IManager {
        address governance_
     ) external;
    
-//   function setGovernance(address newGovernance) external;
-    
-//   function setNDPT(address ndpt) external;
-
-//   function setTreasury(address treasury) external;
-
   function getGlobalModule() external returns(address);
 
   function getGovernance() external returns(address);
@@ -48,8 +42,6 @@ interface IManager {
      */
     function getDispatcher(uint256 soulBoundToken) external view returns (address);
 
-
-
   /**
    * @notice Sets the emergency admin, which is a permissioned role able to set the protocol state. This function
    * can only be called by the governance address.
@@ -70,16 +62,16 @@ interface IManager {
    */
    function setState(DataTypes.ProtocolState newState) external;
  
-    function mintNDPTValue(
+    function mintSBTValue(
         uint256 soulBoundTokenId, 
         uint256 value
     ) external;
 
-   function burnNDPT(
+   function burnSBT(
         uint256 soulBoundTokenId
    )external;
 
-    function burnNDPTValue(
+    function burnSBTValue(
         uint256 soulBoundTokenId,
         uint256 value
     ) external;
@@ -112,6 +104,7 @@ interface IManager {
 
     function getReceiver() external view returns (address);
 
+    function getProjectIdByContract(address contract_) external view returns (uint256);
 
    
     function createHub(
@@ -141,6 +134,8 @@ interface IManager {
     function getPublicationByTokenId(uint256 tokenId_) external view returns (DataTypes.Publication memory);
     
     function getWalletBySoulBoundTokenId(uint256 soulBoundTokenId) external view returns(address);
+
+    function getSoulBoundTokenIdByWallet(address wallet) external view returns(uint256);
 
     function prePublish(
         DataTypes.Publication memory publication

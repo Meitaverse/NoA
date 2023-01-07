@@ -101,7 +101,7 @@ contract Voucher is
     
     function mintNFT(
         uint256 soulBoundTokenId,
-        uint256 amountNDP,
+        uint256 amountSBT,
         address account
     ) 
         external returns(uint256)
@@ -114,33 +114,33 @@ contract Voucher is
             return 0;
         }
 
-        if (amountNDP == 0)  {
-            revert Errors.AmountNDPIsZero();
+        if (amountSBT == 0)  {
+            revert Errors.AmountSBTIsZero();
             return 0;
         }
         
         if (_userAmountLimit > 0 ){
-            if (amountNDP < _userAmountLimit) {
+            if (amountSBT < _userAmountLimit) {
                 revert Errors.AmountLimit();
             } else {
             uint256 _tokenId = _generateNextVoucherId();
 
-            address _ndpt =  IModuleGlobals(MODULE_GLOBALS).getNDPT();
+            address _sbt =  IModuleGlobals(MODULE_GLOBALS).getSBT();
             address _bankTreasury = IModuleGlobals(MODULE_GLOBALS).getTreasury();
 
             uint256 treasuryOfSoulBoundTokenId = IBankTreasury(_bankTreasury).getSoulBoundTokenId();
             if (treasuryOfSoulBoundTokenId == 0)  revert Errors.Unauthorized();
             
             //not need to approve this contract first 
-            INFTDerivativeProtocolTokenV1(_ndpt).transferValue(soulBoundTokenId, treasuryOfSoulBoundTokenId, amountNDP);
+            INFTDerivativeProtocolTokenV1(_sbt).transferValue(soulBoundTokenId, treasuryOfSoulBoundTokenId, amountSBT);
 
-            _mint(account, _tokenId, amountNDP, "");
+            _mint(account, _tokenId, amountSBT, "");
 
             _vouchers[_tokenId] = DataTypes.VoucherData({
                 vouchType: DataTypes.VoucherParValueType.ZEROPOINT,
                 tokenId: _tokenId,
                 etherValue: 0,
-                ndptValue: amountNDP,
+                sbtValue: amountSBT,
                 generateTimestamp: block.timestamp,
                 endTimestamp: 0, 
                 isUsed: false,
@@ -153,7 +153,7 @@ contract Voucher is
                 account,
                 DataTypes.VoucherParValueType.ZEROPOINT,
                 _tokenId,
-                amountNDP,
+                amountSBT,
                 block.timestamp
             );
 
@@ -209,7 +209,7 @@ contract Voucher is
             vouchType: voucherType,
             tokenId: _tokenId,
             etherValue: etherValue,
-            ndptValue: amount,
+            sbtValue: amount,
             generateTimestamp: block.timestamp,
             endTimestamp: block.timestamp + EXPIRED_SECONDS, 
             isUsed: false,

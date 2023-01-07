@@ -60,7 +60,7 @@ abstract contract MockManagerV2Storage {
     mapping(bytes32 => uint256) internal _projectNameHashByEventId; //用于判断project name是否重复
     mapping(uint256 => DataTypes.ProjectData) internal _projectInfoByProjectId;
     mapping(uint256 => address) internal _derivativeNFTByProjectId;
-    mapping(uint256 => address) internal _walletBySoulBoundTokenId;
+    mapping(uint256 => address) internal _soulBoundTokenIdToWallet;
     mapping(uint256 => address) internal _dispatcherByProfile;
     mapping(uint256 => mapping(uint256 => DataTypes.PublicationStruct)) internal _pubByIdByProfile;
     mapping(uint256 => uint256) internal _genesisPublishIdByProjectId;
@@ -71,7 +71,7 @@ abstract contract MockManagerV2Storage {
     //tokenId => publishId
     mapping(uint256 => uint256) internal _tokenIdByPublishId;
 
-    address public  NDPT;
+    address public  SBT;
     address public  TREASURY;
     address public MODULE_GLOBALS;
 

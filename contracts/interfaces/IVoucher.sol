@@ -15,13 +15,13 @@ interface IVoucher {
      * @notice mint a ERC1155 NFT and transfer value to bank treasury,
      * 
      * @param soulBoundTokenId The soulBoundToken Id of current caller
-     * @param amountNDP The amount of NDP
+     * @param amountSBT The amount of SBT
      * @param account The account to received 
      *
      */
     function mintNFT(
         uint256 soulBoundTokenId,
-        uint256 amountNDP,
+        uint256 amountSBT,
         address account
     ) external;
 

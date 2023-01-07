@@ -5,7 +5,7 @@ import {
   helper,
   manager,
   metadataDescriptor,
-  NDPT_NAME,
+  SBT_NAME,
   testWallet,
   user,
   userTwo,

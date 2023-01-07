@@ -31,7 +31,7 @@ import {
   user,
   userTwo,
   userTwoAddress,
-  ndptContract,
+  sbtContract,
   metadataDescriptor,
   FIRST_PROFILE_ID,
   governanceAddress
@@ -135,8 +135,8 @@ makeSuiteCleanRoom('Profile Creation', function () {
 
     
             timestamp = await getTimestamp();
-            owner = await ndptContract.ownerOf(SECOND_PROFILE_ID);
-            totalSupply = await ndptContract.totalSupply();
+            owner = await sbtContract.ownerOf(SECOND_PROFILE_ID);
+            totalSupply = await sbtContract.totalSupply();
             expect(owner).to.eq(userAddress);
             expect(totalSupply).to.eq(SECOND_PROFILE_ID); //1-is bankTreasury
 
@@ -159,8 +159,8 @@ makeSuiteCleanRoom('Profile Creation', function () {
             // ).to.eq(secondProfileId + 1);
     
             // timestamp = await getTimestamp();
-            // owner = await ndptContract.ownerOf(secondProfileId + 1);
-            // totalSupply = await ndptContract.totalSupply();
+            // owner = await sbtContract.ownerOf(secondProfileId + 1);
+            // totalSupply = await sbtContract.totalSupply();
             // expect(owner).to.eq(userTwoAddress);
             // expect(totalSupply).to.eq(secondProfileId + 2);
         });

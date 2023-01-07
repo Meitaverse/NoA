@@ -43,7 +43,7 @@ task("manager-verify", "manager-verify function")
   const managerImpl = await loadContract(hre, Manager__factory, "ManagerImpl");
   const manager = await loadContract(hre, Manager__factory, "Manager");
   const bankTreasury = await loadContract(hre, BankTreasury__factory, "BankTreasury");
-  const ndp = await loadContract(hre, NFTDerivativeProtocolTokenV1__factory, "NDP");
+  const sbt = await loadContract(hre, NFTDerivativeProtocolTokenV1__factory, "SBT");
   const voucher = await loadContract(hre, Voucher__factory, "Voucher");
   const moduleGlobals = await loadContract(hre, ModuleGlobals__factory, "ModuleGlobals");
 
@@ -54,13 +54,13 @@ task("manager-verify", "manager-verify function")
       "---\t manager governance address: ", await manager.connect(user).getGovernance()
     );
   console.log(
-    "---\t ndp contract version: ", (await ndp.version()).toNumber()
+    "---\t sbt contract version: ", (await sbt.version()).toNumber()
   );
   console.log(
-    "---\t ndp getManager(): ", (await ndp.getManager())
+    "---\t sbt getManager(): ", (await sbt.getManager())
   );
   console.log(
-    "---\t ndp getBankTreasury(): ", (await ndp.getBankTreasury())
+    "---\t sbt getBankTreasury(): ", (await sbt.getBankTreasury())
   );
 
   console.log(
@@ -72,7 +72,7 @@ task("manager-verify", "manager-verify function")
   );
 
   console.log(
-    "---\t bankTreasury getNDPT(): ", (await bankTreasury.getNDPT())
+    "---\t bankTreasury getSBT(): ", (await bankTreasury.getSBT())
   );
 
   console.log(

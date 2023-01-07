@@ -53,7 +53,7 @@ task("publish", "publish function")
   const managerImpl = await loadContract(hre, Manager__factory, "ManagerImpl");
   const manager = await loadContract(hre, Manager__factory, "Manager");
   const bankTreasury = await loadContract(hre, BankTreasury__factory, "BankTreasury");
-  const ndp = await loadContract(hre, NFTDerivativeProtocolTokenV1__factory, "NDP");
+  const sbt = await loadContract(hre, NFTDerivativeProtocolTokenV1__factory, "SBT");
   const voucher = await loadContract(hre, Voucher__factory, "Voucher");
   const moduleGlobals = await loadContract(hre, ModuleGlobals__factory, "ModuleGlobals");
   const feeCollectModule = await loadContract(hre, FeeCollectModule__factory, "FeeCollectModule");
@@ -88,16 +88,16 @@ task("publish", "publish function")
         [template.address, DEFAULT_TEMPLATE_NUMBER],
     );
     const FIRST_PROFILE_ID =1;
-    let balance_bank =(await ndp.balanceOfNDPT(FIRST_PROFILE_ID)).toNumber();
+    let balance_bank =(await sbt.balanceOfSBT(FIRST_PROFILE_ID)).toNumber();
     console.log('\n\t--- balance of bank : ', balance_bank);
 
  
-    let balance =(await ndp.balanceOfNDPT(SECOND_PROFILE_ID)).toNumber();
+    let balance =(await sbt.balanceOfSBT(SECOND_PROFILE_ID)).toNumber();
     if (balance == 0) {
       //mint 1000Value to user
-      await manager.connect(governance).mintNDPTValue(SECOND_PROFILE_ID, 1000);
+      await manager.connect(governance).mintSBTValue(SECOND_PROFILE_ID, 1000);
     }
-    console.log('\t--- balance of user: ', (await ndp.balanceOfNDPT(SECOND_PROFILE_ID)).toNumber());
+    console.log('\t--- balance of user: ', (await sbt.balanceOfSBT(SECOND_PROFILE_ID)).toNumber());
 
     await waitForTx(
       manager.connect(user).prePublish({
@@ -193,10 +193,10 @@ task("publish", "publish function")
     );
 
 
-    balance_bank =(await ndp.balanceOfNDPT(FIRST_PROFILE_ID)).toNumber();
+    balance_bank =(await sbt.balanceOfSBT(FIRST_PROFILE_ID)).toNumber();
     console.log('\n\t--- balance of bank : ', balance_bank);
 
-    let balance_left =(await ndp.balanceOfNDPT(SECOND_PROFILE_ID)).toNumber();
+    let balance_left =(await sbt.balanceOfSBT(SECOND_PROFILE_ID)).toNumber();
     console.log('\t--- balance of user after publish : ', balance_left);
     
     let derivativeNFT: DerivativeNFTV1;

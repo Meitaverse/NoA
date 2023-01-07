@@ -2,21 +2,21 @@ import { log, Address, BigInt, Bytes, store, TypedMap } from "@graphprotocol/gra
 
 import {
     ProfileCreated,
-    MintNDPTValue,
+    MintSBTValue,
     BankTreasurySet,
     ApprovalForSlot,
-    BurnNDPT,
-    BurnNDPTValue,
+    BurnSBT,
+    BurnSBTValue,
     ProfileImageURISet
-} from "../generated/NDP/Events"
+} from "../generated/SBT/Events"
 
 import {
     Profile,
-    MintNDPValueHistory,
+    MintSBTValueHistory,
     ApprovalForSlotHistory,
     BankTreasurySetHistory,
-    BurnNDPTHistory,
-    BurnNDPTValueHistory,
+    BurnSBTHistory,
+    BurnSBTValueHistory,
     ProfileImageURISetHistory,
 } from "../generated/schema"
 
@@ -53,11 +53,11 @@ export function handleProfileCreated(event: ProfileCreated): void {
     } 
 }
 
-export function handleMintNDPTValue(event: MintNDPTValue): void {
-    log.info("handleMintNDPTValue, event.address: {}", [event.address.toHexString()])
+export function handleMintSBTValue(event: MintSBTValue): void {
+    log.info("handleMintSBTValue, event.address: {}", [event.address.toHexString()])
 
     let _idString = event.params.soulBoundTokenId.toString() + "-" + event.params.timestamp.toString()
-    const history = MintNDPValueHistory.load(_idString) || new MintNDPValueHistory(_idString)
+    const history = MintSBTValueHistory.load(_idString) || new MintSBTValueHistory(_idString)
 
     if (history) {
         history.soulBoundTokenId = event.params.soulBoundTokenId
@@ -84,11 +84,11 @@ export function handleApprovalForSlot(event: ApprovalForSlot): void {
 }
 
 
-export function handleBurnNDPT(event: BurnNDPT): void {
-    log.info("handleBurnNDPT, event.address: {}", [event.address.toHexString()])
+export function handleBurnSBT(event: BurnSBT): void {
+    log.info("handleBurnSBT, event.address: {}", [event.address.toHexString()])
 
     let _idString = event.params.soulBoundTokenId.toString() + "-" + event.params.timestamp.toString()
-    const history = BurnNDPTHistory.load(_idString) || new BurnNDPTHistory(_idString)
+    const history = BurnSBTHistory.load(_idString) || new BurnSBTHistory(_idString)
 
     if (history) {
         history.soulBoundTokenId = event.params.soulBoundTokenId
@@ -98,11 +98,11 @@ export function handleBurnNDPT(event: BurnNDPT): void {
     } 
 }
 
-export function handleBurnNDPTValue(event: BurnNDPTValue): void {
-    log.info("handleBurnNDPTValue, event.address: {}", [event.address.toHexString()])
+export function handleBurnSBTValue(event: BurnSBTValue): void {
+    log.info("handleBurnSBTValue, event.address: {}", [event.address.toHexString()])
 
     let _idString = event.params.soulBoundTokenId.toString() + "-" + event.params.timestamp.toString()
-    const history = BurnNDPTValueHistory.load(_idString) || new BurnNDPTValueHistory(_idString)
+    const history = BurnSBTValueHistory.load(_idString) || new BurnSBTValueHistory(_idString)
 
     if (history) {
         history.soulBoundTokenId = event.params.soulBoundTokenId

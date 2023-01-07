@@ -64,7 +64,6 @@ library PublishLogic {
         _publishIdByProjectData[publishId].publication.materialURIs = materialURIs;
         _publishIdByProjectData[publishId].publication.fromTokenIds = fromTokenIds;
 
-        //TODO publishModule.updatePublish
         uint256  addedPublishTaxes = IPublishModule(_publishIdByProjectData[publishId].publication.publishModule).updatePublish(
             publishId,
             salePrice,
@@ -252,7 +251,7 @@ library PublishLogic {
     function airdrop(
         address derivativeNFT, 
         DataTypes.AirdropData memory airdropData,
-        mapping(uint256 => address) storage _walletBySoulBoundTokenId,
+        mapping(uint256 => address) storage _soulBoundTokenIdToWallet,
         mapping(uint256 => uint256) storage _tokenIdByPublishId,
         mapping(uint256 => DataTypes.PublishData) storage _publishIdByProjectData
     ) external {
@@ -270,7 +269,7 @@ library PublishLogic {
           
         uint256[] memory newTokenIds = new uint256[](airdropData.toSoulBoundTokenIds.length);
         for (uint256 i = 0; i < airdropData.toSoulBoundTokenIds.length; ) {
-            address toWallet = _walletBySoulBoundTokenId[airdropData.toSoulBoundTokenIds[i]];
+            address toWallet = _soulBoundTokenIdToWallet[airdropData.toSoulBoundTokenIds[i]];
             if (toWallet == address(0)) revert Errors.ToWalletIsZero();
             uint256 newTokenId = IDerivativeNFTV1(derivativeNFT).split(
                 _tokenIdByPublishId[airdropData.tokenId],

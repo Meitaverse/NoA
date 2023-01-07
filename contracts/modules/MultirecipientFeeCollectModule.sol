@@ -163,7 +163,7 @@ contract MultirecipientFeeCollectModule is BaseFeeCollectModule {
         for (uint256 i = 0; i < len; ) {
             royaltyAmount = (saleprice * royaltyPoints[i]) / BPS_MAX;
             if (royaltyAmount != 0 && royaltyPoints[i] !=0 )
-                INFTDerivativeProtocolTokenV1(_ndpt()).transferValue(
+                INFTDerivativeProtocolTokenV1(_sbt()).transferValue(
                     collectorSoulBoundTokenId, 
                     recipients[i],
                     royaltyAmount);
@@ -253,7 +253,7 @@ contract MultirecipientFeeCollectModule is BaseFeeCollectModule {
         uint16[MAX_RECIPIENTS] calldata newRoyaltyPoints
     ) external {
         BaseProfilePublicationData memory baseData = getBasePublicationData(projectId);
-        if (IERC3525(_ndpt()).ownerOf(baseData.ownershipSoulBoundTokenId) == msg.sender ) {
+        if (IERC3525(_sbt()).ownerOf(baseData.ownershipSoulBoundTokenId) == msg.sender ) {
             revert Errors.Unauthorized();
         }
 

@@ -50,7 +50,7 @@ export const DEFAULT_LOCALHOST_CONFIG_PATH =
 export type ContractName =
   | "ManagerImpl"
   | "Manager"
-  | "NDP"
+  | "SBT"
   | "BankTreasury"
   | "Voucher"
   | "FeeCollectModule"
@@ -189,7 +189,7 @@ export async function loadContractByName(
   switch (name) {
     case "Manager":
       return Manager__factory.connect(address, deployer);
-    case "NDP":
+    case "SBT":
       return NFTDerivativeProtocolTokenV1__factory.connect(address, deployer);
     case "BankTreasury":
       return BankTreasury__factory.connect(address, deployer);

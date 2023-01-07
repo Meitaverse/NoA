@@ -32,7 +32,7 @@ contract ModuleGlobals is IModuleGlobals, GlobalStorage {
      * @notice Initializes the governance, treasury and treasury fee amounts.
      *
      * @param manager The manager address
-     * @param ndpt The ndpt address
+     * @param sbt The sbt address
      * @param governance The governance address which has additional control over setting certain parameters.
      * @param treasury The treasury address to direct fees to.
      * @param voucher The voucher(ERC1155) address 
@@ -42,7 +42,7 @@ contract ModuleGlobals is IModuleGlobals, GlobalStorage {
      */
     constructor(
         address manager,
-        address ndpt,
+        address sbt,
         address governance,
         address treasury,
         address voucher,
@@ -50,7 +50,7 @@ contract ModuleGlobals is IModuleGlobals, GlobalStorage {
         uint256 publishRoyalty
     ) {
         _setManager(manager);
-        _setNDPT(ndpt);
+        _setSBT(sbt);
         _setGovernance(governance);
         _setTreasury(treasury);
         _setVoucher(voucher);
@@ -62,8 +62,8 @@ contract ModuleGlobals is IModuleGlobals, GlobalStorage {
         _setManager(newManager);
     }
 
-    function setNDPT(address newNDPT) external override onlyGov {
-        _setNDPT(newNDPT);
+    function setSBT(address newSBT) external override onlyGov {
+        _setSBT(newSBT);
     }
 
     /// @inheritdoc IModuleGlobals
@@ -105,8 +105,8 @@ contract ModuleGlobals is IModuleGlobals, GlobalStorage {
     }
 
     /// @inheritdoc IModuleGlobals
-    function getNDPT() external view override returns (address) {
-        return _ndpt;
+    function getSBT() external view override returns (address) {
+        return _sbt;
     }
 
     /// @inheritdoc IModuleGlobals
@@ -151,16 +151,16 @@ contract ModuleGlobals is IModuleGlobals, GlobalStorage {
         emit Events.ModuleGlobalsManagerSet(prevManager, newManager, block.timestamp);
     }
 
-    function _setNDPT(address newNDPT) internal {
-        if (newNDPT == address(0)) revert Errors.InitParamsInvalid();
-        address prevNDPT = _ndpt;
-        _ndpt = newNDPT;
-        emit Events.ModuleGlobalsNDPTSet(prevNDPT, newNDPT, block.timestamp);
+    function _setSBT(address newSBT) internal {
+        if (newSBT == address(0)) revert Errors.InitParamsInvalid();
+        address prevSBT = _sbt;
+        _sbt = newSBT;
+        emit Events.ModuleGlobalsSBTSet(prevSBT, newSBT, block.timestamp);
     }
 
     function _setPublishRoyalty(uint256 publishRoyalty) internal {
-        uint256 prevPublishRoyalty = _publishCurrencyTaxes[_ndpt];
-        _publishCurrencyTaxes[_ndpt] = publishRoyalty;
+        uint256 prevPublishRoyalty = _publishCurrencyTaxes[_sbt];
+        _publishCurrencyTaxes[_sbt] = publishRoyalty;
         emit Events.ModuleGlobalsPublishRoyaltySet(prevPublishRoyalty, publishRoyalty, block.timestamp);
     }
 
@@ -176,7 +176,7 @@ contract ModuleGlobals is IModuleGlobals, GlobalStorage {
     }
 
     function getPublishCurrencyTax() external view override returns (uint256) {
-        return _publishCurrencyTaxes[_ndpt];
+        return _publishCurrencyTaxes[_sbt];
     }
 
     function whitelistProfileCreator(address profileCreator, bool whitelist) external override onlyGov {

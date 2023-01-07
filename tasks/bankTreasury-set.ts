@@ -35,7 +35,7 @@ task("bankTreasury-set", "bankTreasury-set function")
   );
 
   console.log(
-    "\t--- bankTreasury getNDPT(): ", (await bankTreasury.getNDPT())
+    "\t--- bankTreasury getSBT(): ", (await bankTreasury.getSBT())
     );
     
 });

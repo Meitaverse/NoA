@@ -68,23 +68,23 @@ contract ManagerV2_BadRevision is
     }
 
 
-    function mintNDPTValue(uint256 soulBoundTokenId, uint256 value) external whenNotPaused onlyGov {
-        INFTDerivativeProtocolTokenV1(NDPT).mintValue(soulBoundTokenId, value);
+    function mintSBTValue(uint256 soulBoundTokenId, uint256 value) external whenNotPaused onlyGov {
+        INFTDerivativeProtocolTokenV1(SBT).mintValue(soulBoundTokenId, value);
     }
 
-    function burnNDPT(uint256 tokenId) external whenNotPaused onlyGov {
-        INFTDerivativeProtocolTokenV1(NDPT).burn(tokenId);
+    function burnSBT(uint256 tokenId) external whenNotPaused onlyGov {
+        INFTDerivativeProtocolTokenV1(SBT).burn(tokenId);
     }
 
-    function burnNDPTValue(uint256 tokenId, uint256 value) external whenNotPaused onlyGov {
-        INFTDerivativeProtocolTokenV1(NDPT).burnValue(tokenId, value);
+    function burnSBTValue(uint256 tokenId, uint256 value) external whenNotPaused onlyGov {
+        INFTDerivativeProtocolTokenV1(SBT).burnValue(tokenId, value);
     }
 
     function createProfile(
         DataTypes.CreateProfileData calldata vars
     ) external returns (uint256) {
         if (!IModuleGlobals(MODULE_GLOBALS).isWhitelistProfileCreator(vars.wallet)) revert Errors.ProfileCreatorNotWhitelisted();
-        uint256 soulBoundTokenId = INFTDerivativeProtocolTokenV1(NDPT).createProfile(msg.sender, vars);
+        uint256 soulBoundTokenId = INFTDerivativeProtocolTokenV1(SBT).createProfile(msg.sender, vars);
         return soulBoundTokenId;
     }
 
@@ -114,7 +114,7 @@ contract ManagerV2_BadRevision is
         _projectNameHashByEventId[keccak256(bytes(project.name))] = projectId;
         address derivativeNFT = InteractionLogic.createProject(
             _DNFT_IMPL,
-            NDPT,
+            SBT,
             TREASURY,
             projectId,
             project,

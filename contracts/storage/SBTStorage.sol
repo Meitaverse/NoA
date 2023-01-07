@@ -4,10 +4,14 @@ pragma solidity ^0.8.13;
 import "../libraries/DataTypes.sol";
 
 contract SBTStorage  {
+    uint256 internal total_supply; 
     string internal _svgLogo;
 
     // slot => slotDetail
     mapping(uint256 => DataTypes.SoulBoundTokenDetail) internal _sbtDetails;
+
+    // wallet address => tokenId
+    mapping(address => uint256) internal _walletToSBTId;
 
     // solhint-disable-next-line var-name-mixedcase
     address internal _MANAGER;

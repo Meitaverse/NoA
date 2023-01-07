@@ -61,5 +61,5 @@ export const ERRORS = {
   NOT_OWNER_VOUCHER: 'NotOwnerVoucher()',
   Template_Not_in_Whitelisted: 'TemplateNotWhitelisted()',
   Amount_Limit: 'AmountLimit()',
-  AmountNDP_Is_Zero: 'AmountNDPIsZero()',
+  AmountSBT_Is_Zero: 'AmountSBTIsZero()',
 };

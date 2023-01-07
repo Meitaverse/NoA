@@ -108,16 +108,16 @@ export class BankTreasurySet__Params {
   }
 }
 
-export class BurnNDPT extends ethereum.Event {
-  get params(): BurnNDPT__Params {
-    return new BurnNDPT__Params(this);
+export class BurnSBT extends ethereum.Event {
+  get params(): BurnSBT__Params {
+    return new BurnSBT__Params(this);
   }
 }
 
-export class BurnNDPT__Params {
-  _event: BurnNDPT;
+export class BurnSBT__Params {
+  _event: BurnSBT;
 
-  constructor(event: BurnNDPT) {
+  constructor(event: BurnSBT) {
     this._event = event;
   }
 
@@ -130,16 +130,16 @@ export class BurnNDPT__Params {
   }
 }
 
-export class BurnNDPTValue extends ethereum.Event {
-  get params(): BurnNDPTValue__Params {
-    return new BurnNDPTValue__Params(this);
+export class BurnSBTValue extends ethereum.Event {
+  get params(): BurnSBTValue__Params {
+    return new BurnSBTValue__Params(this);
   }
 }
 
-export class BurnNDPTValue__Params {
-  _event: BurnNDPTValue;
+export class BurnSBTValue__Params {
+  _event: BurnSBTValue;
 
-  constructor(event: BurnNDPTValue) {
+  constructor(event: BurnSBTValue) {
     this._event = event;
   }
 
@@ -693,7 +693,7 @@ export class GenerateVoucher__Params {
     return this._event.parameters[2].value.toBigInt();
   }
 
-  get ndptValue(): BigInt {
+  get sbtValue(): BigInt {
     return this._event.parameters[3].value.toBigInt();
   }
 
@@ -804,16 +804,16 @@ export class ManagerGovernanceSet__Params {
   }
 }
 
-export class MintNDPTValue extends ethereum.Event {
-  get params(): MintNDPTValue__Params {
-    return new MintNDPTValue__Params(this);
+export class MintSBTValue extends ethereum.Event {
+  get params(): MintSBTValue__Params {
+    return new MintSBTValue__Params(this);
   }
 }
 
-export class MintNDPTValue__Params {
-  _event: MintNDPTValue;
+export class MintSBTValue__Params {
+  _event: MintSBTValue;
 
-  constructor(event: MintNDPTValue) {
+  constructor(event: MintSBTValue) {
     this._event = event;
   }
 
@@ -859,7 +859,7 @@ export class MintNFTVoucher__Params {
     return this._event.parameters[3].value.toBigInt();
   }
 
-  get ndptValue(): BigInt {
+  get sbtValue(): BigInt {
     return this._event.parameters[4].value.toBigInt();
   }
 
@@ -942,24 +942,24 @@ export class ModuleGlobalsManagerSet__Params {
   }
 }
 
-export class ModuleGlobalsNDPTSet extends ethereum.Event {
-  get params(): ModuleGlobalsNDPTSet__Params {
-    return new ModuleGlobalsNDPTSet__Params(this);
+export class ModuleGlobalsSBTSet extends ethereum.Event {
+  get params(): ModuleGlobalsSBTSet__Params {
+    return new ModuleGlobalsSBTSet__Params(this);
   }
 }
 
-export class ModuleGlobalsNDPTSet__Params {
-  _event: ModuleGlobalsNDPTSet;
+export class ModuleGlobalsSBTSet__Params {
+  _event: ModuleGlobalsSBTSet;
 
-  constructor(event: ModuleGlobalsNDPTSet) {
+  constructor(event: ModuleGlobalsSBTSet) {
     this._event = event;
   }
 
-  get prevNDPT(): Address {
+  get prevSBT(): Address {
     return this._event.parameters[0].value.toAddress();
   }
 
-  get newNDPT(): Address {
+  get newSBT(): Address {
     return this._event.parameters[1].value.toAddress();
   }
 

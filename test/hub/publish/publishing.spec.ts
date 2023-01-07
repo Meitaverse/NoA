@@ -38,7 +38,7 @@ import {
   user,
   userTwo,
   userTwoAddress,
-  ndptContract,
+  sbtContract,
   metadataDescriptor,
   publishModule,
   feeCollectModule,
@@ -116,7 +116,7 @@ makeSuiteCleanRoom('Publishing', function () {
             );
 
             //mint 100Value to user
-            await manager.connect(governance).mintNDPTValue(SECOND_PROFILE_ID, 100);
+            await manager.connect(governance).mintSBTValue(SECOND_PROFILE_ID, 100);
 
             await expect(
                  manager.connect(user).prePublish({
@@ -146,7 +146,7 @@ makeSuiteCleanRoom('Publishing', function () {
             expect(publishInfo.publication.description).to.eq("Hand draw");
 
             //balanceOf is still 100 value
-            expect((await ndptContract.balanceOfNDPT(SECOND_PROFILE_ID)).toNumber()).to.eq(100);
+            expect((await sbtContract.balanceOfSBT(SECOND_PROFILE_ID)).toNumber()).to.eq(100);
 
         });
 
@@ -162,9 +162,9 @@ makeSuiteCleanRoom('Publishing', function () {
             );
 
             //mint 100Value to user
-            await manager.connect(governance).mintNDPTValue(SECOND_PROFILE_ID, 100);
+            await manager.connect(governance).mintSBTValue(SECOND_PROFILE_ID, 100);
             
-            expect((await ndptContract.balanceOfNDPT(SECOND_PROFILE_ID)).toNumber()).to.eq(100);
+            expect((await sbtContract.balanceOfSBT(SECOND_PROFILE_ID)).toNumber()).to.eq(100);
 
             await expect(
                  manager.connect(user).prePublish({
@@ -185,7 +185,7 @@ makeSuiteCleanRoom('Publishing', function () {
                 })
             ).to.not.be.reverted;
 
-            expect((await ndptContract.balanceOfNDPT(SECOND_PROFILE_ID)).toNumber()).to.eq(0);
+            expect((await sbtContract.balanceOfSBT(SECOND_PROFILE_ID)).toNumber()).to.eq(0);
 
         });
 
@@ -201,9 +201,9 @@ makeSuiteCleanRoom('Publishing', function () {
             );
             
             //mint 100Value to user
-            await manager.connect(governance).mintNDPTValue(SECOND_PROFILE_ID, 100);
+            await manager.connect(governance).mintSBTValue(SECOND_PROFILE_ID, 100);
 
-            expect((await ndptContract.balanceOfNDPT(SECOND_PROFILE_ID)).toNumber()).to.eq(100);
+            expect((await sbtContract.balanceOfSBT(SECOND_PROFILE_ID)).toNumber()).to.eq(100);
 
             await expect(
                 manager.connect(user).prePublish({
@@ -242,7 +242,7 @@ makeSuiteCleanRoom('Publishing', function () {
 
             //ownerOf
             
-            expect((await ndptContract.balanceOfNDPT(SECOND_PROFILE_ID)).toNumber()).to.eq(100);
+            expect((await sbtContract.balanceOfSBT(SECOND_PROFILE_ID)).toNumber()).to.eq(100);
 
         });
         
@@ -258,9 +258,9 @@ makeSuiteCleanRoom('Publishing', function () {
             );
             
             //mint 100Value to user
-            await manager.connect(governance).mintNDPTValue(SECOND_PROFILE_ID, 100);
+            await manager.connect(governance).mintSBTValue(SECOND_PROFILE_ID, 100);
 
-            expect((await ndptContract.balanceOfNDPT(SECOND_PROFILE_ID)).toNumber()).to.eq(100);
+            expect((await sbtContract.balanceOfSBT(SECOND_PROFILE_ID)).toNumber()).to.eq(100);
             
             await expect(
                 moduleGlobals.connect(governance).whitelistTemplate(template.address, false)

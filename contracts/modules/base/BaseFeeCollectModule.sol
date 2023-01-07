@@ -181,7 +181,7 @@ abstract contract BaseFeeCollectModule is
         uint256 treasuryAmount = (payFees * treasuryFee) / BPS_MAX;
         uint256 treasuryOfSoulBoundTokenId = IBankTreasury(treasury).getSoulBoundTokenId();
         if (treasuryAmount > 0) 
-            INFTDerivativeProtocolTokenV1(_ndpt()).transferValue(
+            INFTDerivativeProtocolTokenV1(_sbt()).transferValue(
                 collectorSoulBoundTokenId, 
                 treasuryOfSoulBoundTokenId, 
                 treasuryAmount);
@@ -216,7 +216,7 @@ abstract contract BaseFeeCollectModule is
         uint16[] memory royaltyPoints = _dataByPublicationByProfile[projectId].royaltyPoints;
         
         if (salePrice > 0){
-            INFTDerivativeProtocolTokenV1(_ndpt()).transferValue(collectorSoulBoundTokenId, recipientSoulBoundTokenId, salePrice);
+            INFTDerivativeProtocolTokenV1(_sbt()).transferValue(collectorSoulBoundTokenId, recipientSoulBoundTokenId, salePrice);
 
         }
         */

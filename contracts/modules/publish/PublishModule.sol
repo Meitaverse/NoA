@@ -76,7 +76,7 @@ contract PublishModule is FeeModuleBase, IPublishModule, ModuleBase {
             if (publication.amount >1) publishTaxes = (publication.amount - 1) * _publishCurrencyTax();
             
             if ( publishTaxes > 0){
-                INFTDerivativeProtocolTokenV1(_ndpt()).transferValue(publication.soulBoundTokenId, treasuryOfSoulBoundTokenId, publishTaxes);
+                INFTDerivativeProtocolTokenV1(_sbt()).transferValue(publication.soulBoundTokenId, treasuryOfSoulBoundTokenId, publishTaxes);
             } 
             
             _dataPublishdNFTByProject[publishId].publication = publication;
@@ -105,7 +105,7 @@ contract PublishModule is FeeModuleBase, IPublishModule, ModuleBase {
             if ( addedPublishTaxes > 0){
                 (address treasury, ) = _treasuryData();
                 uint256 treasuryOfSoulBoundTokenId = IBankTreasury(treasury).getSoulBoundTokenId();
-                INFTDerivativeProtocolTokenV1(_ndpt()).transferValue(_dataPublishdNFTByProject[publishId].publication.soulBoundTokenId, treasuryOfSoulBoundTokenId, addedPublishTaxes);
+                INFTDerivativeProtocolTokenV1(_sbt()).transferValue(_dataPublishdNFTByProject[publishId].publication.soulBoundTokenId, treasuryOfSoulBoundTokenId, addedPublishTaxes);
 
             } 
 

@@ -48,7 +48,7 @@ task("create-hub", "create-hub function")
   const managerImpl = await loadContract(hre, Manager__factory, "ManagerImpl");
   const manager = await loadContract(hre, Manager__factory, "Manager");
   const bankTreasury = await loadContract(hre, BankTreasury__factory, "BankTreasury");
-  const ndp = await loadContract(hre, NFTDerivativeProtocolTokenV1__factory, "NDP");
+  const sbt = await loadContract(hre, NFTDerivativeProtocolTokenV1__factory, "SBT");
   const voucher = await loadContract(hre, Voucher__factory, "Voucher");
   const moduleGlobals = await loadContract(hre, ModuleGlobals__factory, "ModuleGlobals");
 

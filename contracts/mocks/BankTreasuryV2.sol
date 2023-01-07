@@ -48,14 +48,14 @@ contract BankTreasuryV2 is
 
     bytes32 internal constant EIP712_REVISION_HASH = keccak256("1");
 
-    bytes32 internal constant EXCHANGE_NDPT_BY_ETHER_TYPEHASH =
+    bytes32 internal constant EXCHANGE_SBT_BY_ETHER_TYPEHASH =
         keccak256(
-            "ExchangeNDPTByEth(address exchangeWallet,uint256 soulBoundTokenId,uint256 amount,uint256 nonce,uint256 deadline)"
+            "ExchangeSBTByEth(address exchangeWallet,uint256 soulBoundTokenId,uint256 amount,uint256 nonce,uint256 deadline)"
         );
 
-    bytes32 internal constant EXCHANGE_ETHER_BY_NDPT_TYPEHASH =
+    bytes32 internal constant EXCHANGE_ETHER_BY_SBT_TYPEHASH =
         keccak256(
-            "ExchangeyEthByNDPT(address to,uint256 soulBoundTokenId,uint256 ndptamount,uint256 nonce,uint256 deadline)"
+            "ExchangeyEthBySBT(address to,uint256 soulBoundTokenId,uint256 sbtamount,uint256 nonce,uint256 deadline)"
         );
 
     bytes32 public constant PAUSER_ROLE = keccak256("PAUSER_ROLE");
@@ -114,9 +114,9 @@ contract BankTreasuryV2 is
         return _voucher;
     }
 
-    function getNDPT() external view returns (address) {
-        address _ndpt = IModuleGlobals(MODULE_GLOBALS).getNDPT();
-        return _ndpt;
+    function getSBT() external view returns (address) {
+        address _sbt = IModuleGlobals(MODULE_GLOBALS).getSBT();
+        return _sbt;
     }
 
     function pause() public onlyRole(PAUSER_ROLE) {
@@ -286,9 +286,9 @@ contract BankTreasuryV2 is
         uint256 toSoulBoundTokenId,
         uint256 amount
     ) external whenNotPaused {
-        address _ndpt = IModuleGlobals(MODULE_GLOBALS).getNDPT();
+        address _sbt = IModuleGlobals(MODULE_GLOBALS).getSBT();
 
-        IERC3525(_ndpt).transferFrom(_soulBoundTokenId, toSoulBoundTokenId, amount);
+        IERC3525(_sbt).transferFrom(_soulBoundTokenId, toSoulBoundTokenId, amount);
         emit Events.WithdrawERC3525(_soulBoundTokenId, toSoulBoundTokenId, amount, block.timestamp);
 
     }
@@ -298,13 +298,13 @@ contract BankTreasuryV2 is
         return ethAmount.div(_exchangePrice);
     }
 
-    function calculateAmountNDPT(uint256 ndptAmount) external view returns (uint256) {
+    function calculateAmountSBT(uint256 sbtAmount) external view returns (uint256) {
         if (_exchangePrice == 0) revert Errors.ExchangePriceIsZero();
-        return ndptAmount.mul(_exchangePrice);
+        return sbtAmount.mul(_exchangePrice);
     }
 
 
-    function exchangeNDPTByEth(
+    function exchangeSBTByEth(
         uint256 soulBoundTokenId,
         uint256 amount,
         DataTypes.EIP712Signature calldata sig
@@ -317,7 +317,7 @@ contract BankTreasuryV2 is
                 _calculateDigest(
                     keccak256(
                         abi.encode(
-                            EXCHANGE_NDPT_BY_ETHER_TYPEHASH,
+                            EXCHANGE_SBT_BY_ETHER_TYPEHASH,
                             exchangeWallet,
                             soulBoundTokenId,
                             amount,
@@ -331,20 +331,20 @@ contract BankTreasuryV2 is
             );
         }
         
-        address _ndpt = IModuleGlobals(MODULE_GLOBALS).getNDPT();
+        address _sbt = IModuleGlobals(MODULE_GLOBALS).getSBT();
 
-        INFTDerivativeProtocolTokenV1(_ndpt).transferValue(_soulBoundTokenId, soulBoundTokenId, amount);
+        INFTDerivativeProtocolTokenV1(_sbt).transferValue(_soulBoundTokenId, soulBoundTokenId, amount);
     }
 
 
 
-    function exchangeEthByNDPT(
+    function exchangeEthBySBT(
         uint256 soulBoundTokenId,
-        uint256 ndptAmount,
+        uint256 sbtAmount,
         DataTypes.EIP712Signature calldata sig
     ) external payable whenNotPaused {
         if (_exchangePrice == 0) revert Errors.ExchangePriceIsZero();
-        if (ndptAmount == 0) revert Errors.AmountIsZero();
+        if (sbtAmount == 0) revert Errors.AmountIsZero();
         if (soulBoundTokenId == 0) revert Errors.SoulBoundTokenIdNotExists();
 
         address payable _to = payable(msg.sender);
@@ -353,10 +353,10 @@ contract BankTreasuryV2 is
                 _calculateDigest(
                     keccak256(
                         abi.encode(
-                            EXCHANGE_ETHER_BY_NDPT_TYPEHASH,
+                            EXCHANGE_ETHER_BY_SBT_TYPEHASH,
                             _to,
                             soulBoundTokenId,
-                            ndptAmount,
+                            sbtAmount,
                             sigNonces[_to]++,
                             sig.deadline
                         )
@@ -366,12 +366,12 @@ contract BankTreasuryV2 is
                 sig
             );
         }
-        address _ndpt = IModuleGlobals(MODULE_GLOBALS).getNDPT();
-        INFTDerivativeProtocolTokenV1(_ndpt).transferValue(soulBoundTokenId, _soulBoundTokenId, ndptAmount);
+        address _sbt = IModuleGlobals(MODULE_GLOBALS).getSBT();
+        INFTDerivativeProtocolTokenV1(_sbt).transferValue(soulBoundTokenId, _soulBoundTokenId, sbtAmount);
 
 
         //transfer eth to msg.sender
-        uint256 ethAmount = ndptAmount.mul(_exchangePrice);
+        uint256 ethAmount = sbtAmount.mul(_exchangePrice);
 
         (bool success, ) = _to.call{value: ethAmount}("");
         if (!success) revert Errors.TxFailed();

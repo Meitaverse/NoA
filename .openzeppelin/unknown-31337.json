@@ -5318,7 +5318,7 @@
             "src": "contracts/BankTreasury.sol:62"
           },
           {
-            "label": "_NDPT",
+            "label": "_SBT",
             "offset": 0,
             "slot": "305",
             "type": "t_address",

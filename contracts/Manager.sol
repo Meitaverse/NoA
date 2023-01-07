@@ -40,7 +40,7 @@ contract Manager is
     mapping(address => uint256) public sigNonces;
     address internal immutable  _DNFT_IMPL;
     address internal immutable  _RECEIVER;
-    
+
     string public name;
 
     /**
@@ -65,6 +65,7 @@ contract Manager is
         
         _DNFT_IMPL = dNftV1_;
         _RECEIVER = receiver_;
+        
        
     }
 
@@ -82,31 +83,38 @@ contract Manager is
         return _RECEIVER;
     }
 
-    function mintNDPTValue(uint256 soulBoundTokenId, uint256 value) external whenNotPaused onlyGov {
-        address _ndpt = IModuleGlobals(MODULE_GLOBALS).getNDPT();
-        INFTDerivativeProtocolTokenV1(_ndpt).mintValue(soulBoundTokenId, value);
+    function getProjectIdByContract(address contract_) external view returns (uint256) {
+        return _projectIdToderivativeNFT[contract_];
+    }
+    
+    function mintSBTValue(uint256 soulBoundTokenId, uint256 value) external whenNotPaused onlyGov {
+        address _sbt = IModuleGlobals(MODULE_GLOBALS).getSBT();
+        
+
+        INFTDerivativeProtocolTokenV1(_sbt).mintValue(soulBoundTokenId, value);
     }
 
-    function burnNDPT(uint256 tokenId) external whenNotPaused onlyGov {
-        address _ndpt = IModuleGlobals(MODULE_GLOBALS).getNDPT();
-        INFTDerivativeProtocolTokenV1(_ndpt).burn(tokenId);
+    function burnSBT(uint256 tokenId) external whenNotPaused onlyGov {
+        address _sbt = IModuleGlobals(MODULE_GLOBALS).getSBT();
+        INFTDerivativeProtocolTokenV1(_sbt).burn(tokenId);
     }
 
-    function burnNDPTValue(uint256 tokenId, uint256 value) external whenNotPaused onlyGov {
-         address _ndpt = IModuleGlobals(MODULE_GLOBALS).getNDPT();
-        INFTDerivativeProtocolTokenV1(_ndpt).burnValue(tokenId, value);
+    function burnSBTValue(uint256 tokenId, uint256 value) external whenNotPaused onlyGov {
+        address _sbt = IModuleGlobals(MODULE_GLOBALS).getSBT();
+        INFTDerivativeProtocolTokenV1(_sbt).burnValue(tokenId, value);
     }
 
     function createProfile(
         DataTypes.CreateProfileData calldata vars
     ) external whenNotPaused returns (uint256) {
-        address _ndpt = IModuleGlobals(MODULE_GLOBALS).getNDPT();
+        address _sbt = IModuleGlobals(MODULE_GLOBALS).getSBT();
         if (!IModuleGlobals(MODULE_GLOBALS).isWhitelistProfileCreator(vars.wallet)) revert Errors.ProfileCreatorNotWhitelisted();
-        if (_ndpt == address(0)) revert Errors.NDPTNotSet();
+        if (_sbt == address(0)) revert Errors.SBTNotSet();
 
-        uint256 soulBoundTokenId = INFTDerivativeProtocolTokenV1(_ndpt).createProfile(msg.sender, vars);
+        uint256 soulBoundTokenId = INFTDerivativeProtocolTokenV1(_sbt).createProfile(msg.sender, vars);
 
-        _walletBySoulBoundTokenId[soulBoundTokenId] = vars.wallet;
+        _soulBoundTokenIdToWallet[soulBoundTokenId] = vars.wallet;
+        _walletToSoulBoundTokenId[vars.wallet] = soulBoundTokenId;
 
         return soulBoundTokenId;
     }
@@ -144,7 +152,7 @@ contract Manager is
         _projectNameHashByEventId[keccak256(bytes(project.name))] = projectId;
         InteractionLogic.createProject(
             _DNFT_IMPL,
-            IModuleGlobals(MODULE_GLOBALS).getNDPT(),
+            IModuleGlobals(MODULE_GLOBALS).getSBT(),
             IModuleGlobals(MODULE_GLOBALS).getTreasury(),
             projectId,
             project,
@@ -294,7 +302,7 @@ contract Manager is
         } else {
 
             _validateCallerIsSoulBoundTokenOwnerOrDispathcher(_publishIdByProjectData[publishId].publication.soulBoundTokenId);
-            address publisher = _walletBySoulBoundTokenId[_publishIdByProjectData[publishId].publication.soulBoundTokenId];
+            address publisher = _soulBoundTokenIdToWallet[_publishIdByProjectData[publishId].publication.soulBoundTokenId];
             address derivativeNFT = _derivativeNFTByProjectId[_publishIdByProjectData[publishId].publication.projectId];
             if (_publishIdByProjectData[publishId].publication.amount == 0) revert Errors.InitParamsInvalid();
             
@@ -331,7 +339,7 @@ contract Manager is
         uint256 newTokenId = IDerivativeNFTV1(derivativeNFT).split(
             collectData.publishId, 
             _publishIdByProjectData[collectData.publishId].tokenId, 
-            _walletBySoulBoundTokenId[collectData.collectorSoulBoundTokenId],
+            _soulBoundTokenIdToWallet[collectData.collectorSoulBoundTokenId],
             collectData.collectValue
         );
 
@@ -357,7 +365,7 @@ contract Manager is
         PublishLogic.airdrop(
             derivativeNFT, 
             airdropData,
-            _walletBySoulBoundTokenId,
+            _soulBoundTokenIdToWallet,
             _tokenIdByPublishId,
             _publishIdByProjectData
         );
@@ -373,10 +381,10 @@ contract Manager is
         address derivativeNFT = _derivativeNFTByProjectId[projectId];
         if (derivativeNFT == address(0)) revert Errors.InvalidParameter();
 
-        address fromWallet = _walletBySoulBoundTokenId[fromSoulBoundTokenId];
+        address fromWallet = _soulBoundTokenIdToWallet[fromSoulBoundTokenId];
         if (fromWallet == address(0)) revert Errors.InvalidParameter();
 
-        address toWallet = _walletBySoulBoundTokenId[toSoulBoundTokenId];
+        address toWallet = _soulBoundTokenIdToWallet[toSoulBoundTokenId];
         if (toWallet == address(0)) revert Errors.InvalidParameter();
 
         //must approve manager before
@@ -402,7 +410,7 @@ contract Manager is
         address derivativeNFT = _derivativeNFTByProjectId[projectId];
         if (derivativeNFT == address(0)) revert Errors.InvalidParameter();
 
-        address toWallet = _walletBySoulBoundTokenId[toSoulBoundTokenId];
+        address toWallet = _soulBoundTokenIdToWallet[toSoulBoundTokenId];
         if (toWallet == address(0)) revert Errors.InvalidParameter();
 
         //must approve manager before
@@ -424,21 +432,21 @@ contract Manager is
         whenNotPaused
     {
         _validateCallerIsSoulBoundTokenOwnerOrDispathcher(soulBoundTokenId);
-        INFTDerivativeProtocolTokenV1(IModuleGlobals(MODULE_GLOBALS).getNDPT()).setProfileImageURI(soulBoundTokenId, imageURI);
+        INFTDerivativeProtocolTokenV1(IModuleGlobals(MODULE_GLOBALS).getSBT()).setProfileImageURI(soulBoundTokenId, imageURI);
     }
 
 //market
 
-    function publishFixedPrice(DataTypes.Sale memory sale) external whenNotPaused onlyGov {
+    function publishFixedPrice(DataTypes.Sale memory sale) external whenNotPaused  {
+        //TODO onlyGov
         uint24 saleId = _generateNextSaleId();
         _derivativeNFTSales[sale.derivativeNFT].add(saleId);
-        //TODO
         PriceManager.setFixedPrice(saleId, sale.price);
         InteractionLogic.publishFixedPrice(sale, markets, sales);
     }
 
-
-    function removeSale(uint24 saleId_) external whenNotPaused onlyGov {
+    function removeSale(uint24 saleId_) external whenNotPaused  {
+        //TODO onlyGov
         InteractionLogic.removeSale(saleId_, sales);
     }
 
@@ -494,7 +502,11 @@ contract Manager is
     }
 
     function getWalletBySoulBoundTokenId(uint256 soulBoundTokenId) external view returns(address) {
-        return _walletBySoulBoundTokenId[soulBoundTokenId];
+        return _soulBoundTokenIdToWallet[soulBoundTokenId];
+    }
+
+    function getSoulBoundTokenIdByWallet(address wallet) external view returns(uint256) {
+        return _walletToSoulBoundTokenId[wallet];
     }
 
     /// ***********************
@@ -528,7 +540,7 @@ contract Manager is
     function setGlobalModule(address moduleGlobals) external onlyGov {
         if (moduleGlobals == address(0)) revert Errors.InitParamsInvalid();
         MODULE_GLOBALS = moduleGlobals;
-        _walletBySoulBoundTokenId[1] = IModuleGlobals(MODULE_GLOBALS).getTreasury();
+        _soulBoundTokenIdToWallet[1] = IModuleGlobals(MODULE_GLOBALS).getTreasury();
     }
 
     function getGlobalModule() external view returns(address) {
@@ -544,8 +556,8 @@ contract Manager is
         override
         whenNotPaused
     {
-        address _ndpt = IModuleGlobals(MODULE_GLOBALS).getNDPT();
-        address owner = IERC3525(_ndpt).ownerOf(vars.soulBoundTokenId);
+        address _sbt = IModuleGlobals(MODULE_GLOBALS).getSBT();
+        address owner = IERC3525(_sbt).ownerOf(vars.soulBoundTokenId);
         unchecked {
             _validateRecoveredAddress(
                 _calculateDigest(
@@ -568,8 +580,8 @@ contract Manager is
 
     //--- internal  ---//
     function  _validateCallerIsSoulBoundTokenOwnerOrDispathcher(uint256 soulBoundTokenId_) internal view {
-         address _ndpt = IModuleGlobals(MODULE_GLOBALS).getNDPT();
-         if (IERC3525(_ndpt).ownerOf(soulBoundTokenId_) == msg.sender || _dispatcherByProfile[soulBoundTokenId_] == msg.sender) {
+         address _sbt = IModuleGlobals(MODULE_GLOBALS).getSBT();
+         if (IERC3525(_sbt).ownerOf(soulBoundTokenId_) == msg.sender || _dispatcherByProfile[soulBoundTokenId_] == msg.sender) {
             return;
          }
          revert Errors.NotProfileOwnerOrDispatcher();

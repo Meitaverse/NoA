@@ -7,8 +7,6 @@ import { exportAddress } from "./config";
 
 import {
     ERC1967Proxy__factory,
-    Currency,
-    Currency__factory,
     Events,
     Events__factory,
     PublishModule,
@@ -52,17 +50,17 @@ import {
   const  RECEIVER_MAGIC_VALUE = '0x009ce20b';
   const TreasuryFee = 50; 
   const FIRST_PROFILE_ID = 1; //金库
-  const INITIAL_SUPPLY = 1000000;  //NDPT初始发行总量
-  const VOUCHER_AMOUNT_LIMIT = 100;  //用户用NDP兑换Voucher的最低数量 
+  const INITIAL_SUPPLY = 1000000;  //SBT初始发行总量
+  const VOUCHER_AMOUNT_LIMIT = 100;  //用户用SBT兑换Voucher的最低数量 
   
   
-  const NDPT_NAME = 'NFT Derivative Protocol';
-  const NDPT_SYMBOL = 'NDP';
-  const NDPT_DECIMALS = 18;
+  const SBT_NAME = 'NFT Derivative Protocol';
+  const SBT_SYMBOL = 'SBT';
+  const SBT_DECIMALS = 18;
   
   
   const NUM_CONFIRMATIONS_REQUIRED = 3;
-  const PublishRoyaltyNDPT = 100;
+  const PublishRoyaltySBT = 100;
   
   let managerLibs: ManagerLibraryAddresses;
 
@@ -112,14 +110,6 @@ import {
         console.log('\t-- template: ', template.address);
         await exportAddress(hre, template, 'Template');
 
-        console.log('\n\t-- Deploying metadataDescriptor  --');
-        const metadataDescriptor = await deployContract(
-            new DerivativeMetadataDescriptor__factory(deployer).deploy(
-              { nonce: deployerNonce++ }
-            )
-        );
-        console.log('\t-- metadataDescriptor: ', metadataDescriptor.address);
-        await exportAddress(hre, metadataDescriptor, 'MetadataDescriptor');
 
         console.log('\n\t-- Deploying receiver  --');
         const receiverMock = await deployContract(
@@ -223,25 +213,25 @@ import {
         console.log('\t-- voucherContract: ', voucherContract.address);
         await exportAddress(hre, voucherContract, 'Voucher');
 
-        console.log('\n\t-- Deploying NDP --');
-        const ndptImpl = await deployContract(
+        console.log('\n\t-- Deploying SBT --');
+        const sbtImpl = await deployContract(
             new NFTDerivativeProtocolTokenV1__factory(deployer).deploy({ nonce: deployerNonce++ })
         );
 
-        let initializeNDPTData = ndptImpl.interface.encodeFunctionData("initialize", [
-            NDPT_NAME, 
-            NDPT_SYMBOL, 
-            NDPT_DECIMALS,
+        let initializeSBTData = sbtImpl.interface.encodeFunctionData("initialize", [
+            SBT_NAME, 
+            SBT_SYMBOL, 
+            SBT_DECIMALS,
             manager.address,
         ]);
-        const ndptProxy = await new ERC1967Proxy__factory(deployer).deploy(
-            ndptImpl.address,
-            initializeNDPTData,
+        const sbtProxy = await new ERC1967Proxy__factory(deployer).deploy(
+            sbtImpl.address,
+            initializeSBTData,
             { nonce: deployerNonce++ }
         );
-        const ndptContract = new NFTDerivativeProtocolTokenV1__factory(deployer).attach(ndptProxy.address);
-        console.log('\t-- ndptContract: ', ndptContract.address);
-        await exportAddress(hre, ndptContract, 'NDP');
+        const sbtContract = new NFTDerivativeProtocolTokenV1__factory(deployer).attach(sbtProxy.address);
+        console.log('\t-- sbtContract: ', sbtContract.address);
+        await exportAddress(hre, sbtContract, 'SBT');
 
         console.log('\n\t-- Deploying bank treasury --');
         const soulBoundTokenIdOfBankTreaury = 1;
@@ -269,17 +259,27 @@ import {
         const moduleGlobals = await deployContract(
             new ModuleGlobals__factory(deployer).deploy(
                 manager.address,
-                ndptContract.address,
+                sbtContract.address,
                 governance.address,
                 bankTreasuryContract.address,
                 voucherContract.address,
                 TREASURY_FEE_BPS,
-                PublishRoyaltyNDPT,
+                PublishRoyaltySBT,
                 { nonce: deployerNonce++ })
         );
         console.log('\t-- moduleGlobals: ', moduleGlobals.address);
         await exportAddress(hre, moduleGlobals, 'ModuleGlobals');
         
+        console.log('\n\t-- Deploying metadataDescriptor  --');
+        const metadataDescriptor = await deployContract(
+            new DerivativeMetadataDescriptor__factory(deployer).deploy(
+                moduleGlobals.address,
+              { nonce: deployerNonce++ }
+            )
+        );
+        console.log('\t-- metadataDescriptor: ', metadataDescriptor.address);
+        await exportAddress(hre, metadataDescriptor, 'MetadataDescriptor');
+
         // Modules
         console.log('\n\t-- Deploying feeCollectModule --');
         const feeCollectModule = await deployContract(
@@ -305,19 +305,19 @@ import {
             manager.connect(governance).setGlobalModule(moduleGlobals.address)
         );
   
-        console.log('\n\t-- ndptContract set bankTreasuryContract address and INITIAL SUPPLY --');
-        await waitForTx(ndptContract.connect(deployer).setBankTreasury(
+        console.log('\n\t-- sbtContract set bankTreasuryContract address and INITIAL SUPPLY --');
+        await waitForTx(sbtContract.connect(deployer).setBankTreasury(
             bankTreasuryContract.address, 
             INITIAL_SUPPLY
         ));
-        let balance =  await ndptContract.balanceOfNDPT(FIRST_PROFILE_ID)
+        let balance =  await sbtContract.balanceOfSBT(FIRST_PROFILE_ID)
         console.log('\t-- INITIAL SUPPLY of the first soul bound token id:', balance.toNumber());
         
-        console.log('\n\t-- Whitelisting ndptContract Contract address --');
-        await waitForTx( ndptContract.connect(deployer).whitelistContract(publishModule.address, true));
-        await waitForTx( ndptContract.connect(deployer).whitelistContract(feeCollectModule.address, true));
-        await waitForTx( ndptContract.connect(deployer).whitelistContract(bankTreasuryContract.address, true));
-        await waitForTx( ndptContract.connect(deployer).whitelistContract(voucherContract.address, true));
+        console.log('\n\t-- Whitelisting sbtContract Contract address --');
+        await waitForTx( sbtContract.connect(deployer).whitelistContract(publishModule.address, true));
+        await waitForTx( sbtContract.connect(deployer).whitelistContract(feeCollectModule.address, true));
+        await waitForTx( sbtContract.connect(deployer).whitelistContract(bankTreasuryContract.address, true));
+        await waitForTx( sbtContract.connect(deployer).whitelistContract(voucherContract.address, true));
             
         console.log('\n\t-- Add publishModule,feeCollectModule,template to moduleGlobals whitelists --');
         await waitForTx( moduleGlobals.connect(governance).whitelistPublishModule(publishModule.address, true));

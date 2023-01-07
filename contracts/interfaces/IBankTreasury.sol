@@ -45,21 +45,17 @@ interface IBankTreasury {
     ) external;
     
 
-    function exchangeNDPTByEth(
+    function exchangeSBTByEth(
         uint256 soulBoundTokenId, 
         uint256 amount,
         DataTypes.EIP712Signature calldata sign
     ) external payable ;
 
-     function exchangeEthByNDPT(
+     function exchangeEthBySBT(
         uint256 soulBoundTokenId,
-        uint256 ndptAmount,
+        uint256 sbtAmount,
         DataTypes.EIP712Signature calldata sign        
     ) external payable;
-
-    //TODO
-    // function stake() external;
-    // function redeem() external;
 
     function getSigners() external view returns (address[] memory);
 
@@ -71,13 +67,13 @@ interface IBankTreasury {
 
     function getSoulBoundTokenId() external view returns (uint256);
 
-    function getNDPT() external view returns(address);
+    function getSBT() external view returns(address);
 
     function getVoucher() external view returns(address);
 
      function calculateAmountEther(uint256 ethAmount) external view returns(uint256);
 
-    function calculateAmountNDPT(uint256 ndptAmount) external view returns(uint256);
+    function calculateAmountSBT(uint256 sbtAmount) external view returns(uint256);
 
 
     /**

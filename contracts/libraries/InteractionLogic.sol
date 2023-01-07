@@ -142,8 +142,6 @@ library InteractionLogic {
         // DataTypes.PriceType priceType_ = DataTypes.PriceType.FIXED;
 
         require(markets[sale.derivativeNFT].isValid, "unsupported derivativeNFT");
-        //TODO
-        // require(currencies[currency_] || currency_ == IUnderlyingContainer(icToken_).underlying(), "unsupported currency");
         if (sale.max > 0) {
             require(sale.min <= sale.max, "min > max");
         }

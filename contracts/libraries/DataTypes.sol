@@ -75,7 +75,7 @@ library DataTypes {
     
     /**
      * @notice Properties of the Publication, using with publish 
-     * @param soulBoundTokenId id of NDPT
+     * @param soulBoundTokenId id of SBT
      * @param hubId id of hub
      * @param projectId id of project
      * @param salePrice price for sale
@@ -100,7 +100,7 @@ library DataTypes {
         string name;
         string description;
         string[] materialURIs;
-        uint256[] fromTokenIds;
+        uint256[] fromTokenIds; 
         address collectModule;
         bytes collectModuleInitData;
         address publishModule;
@@ -138,9 +138,7 @@ library DataTypes {
      * @notice Properties of the slot, which determine the value of slot.
      */
     struct SlotDetail {
-        uint256 soulBoundTokenId;
         Publication publication;
-        uint256 projectId;
         uint256 timestamp; //minted timestamp
     }
 
@@ -281,7 +279,7 @@ library DataTypes {
         VoucherParValueType vouchType;
         uint256 tokenId;
         uint256 etherValue;
-        uint256 ndptValue;
+        uint256 sbtValue;
         uint256 generateTimestamp;
         uint256 endTimestamp;
         bool isUsed;

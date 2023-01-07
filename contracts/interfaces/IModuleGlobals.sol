@@ -18,7 +18,7 @@ interface IModuleGlobals {
     function setGovernance(address newGovernance) external;
     
     function setManager(address newManager) external;
-    function setNDPT(address newNDPT) external;
+    function setSBT(address newSBT) external;
 
     /**
      * @notice Sets the treasury address. This function can only be called by governance.
@@ -73,11 +73,11 @@ interface IModuleGlobals {
     function getVoucher() external view  returns (address);
 
     /**
-     * @notice Returns the NDPT address.
+     * @notice Returns the SBT address.
      *
      * @return address The treasury address.
      */
-    function getNDPT() external view returns (address);
+    function getSBT() external view returns (address);
     
     /**
      * @notice Returns the treasury fee.

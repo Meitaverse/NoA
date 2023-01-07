@@ -183,7 +183,7 @@ library Events {
     );
 
     /**
-     * @dev Emitted when NDP contract the bank treasury is set
+     * @dev Emitted when SBT contract the bank treasury is set
      *
      * @param soulBoundTokenId The bank treasury token id, default is 1
      * @param bankTrerasury The address of bank treasury
@@ -224,9 +224,9 @@ library Events {
         uint256 timestamp
     );
     
-    event ModuleGlobalsNDPTSet(
-        address indexed prevNDPT,
-        address indexed newNDPT,
+    event ModuleGlobalsSBTSet(
+        address indexed prevSBT,
+        address indexed newSBT,
         uint256 timestamp
     );
 
@@ -343,24 +343,24 @@ library Events {
         uint256 timestamp
     );
 
-    event BurnNDPT(
+    event BurnSBT(
         uint256 soulBoundTokenId, 
         uint256 timestamp
     );
 
-    event BurnNDPTValue(
+    event BurnSBTValue(
         uint256 soulBoundTokenId, 
         uint256 value, 
         uint256 timestamp
     );
 
     /**
-     * @dev Emitted when Manager call to mintValue of NDPT Tokens.
-     * @param soulBoundTokenId The token id of NDPT
-     * @param value The value of mint NDPT
+     * @dev Emitted when Manager call to mintValue of SBT Tokens.
+     * @param soulBoundTokenId The token id of SBT
+     * @param value The value of mint SBT
      * @param timestamp The current block timestamp.
      */
-    event MintNDPTValue(
+    event MintSBTValue(
         uint256 soulBoundTokenId,
         uint256 value,
         uint256 timestamp
@@ -593,7 +593,7 @@ library Events {
         DataTypes.VoucherParValueType vouchType,
         uint256 tokenId,
         uint256 etherValue,
-        uint256 ndptValue,
+        uint256 sbtValue,
         uint256 generateTimestamp,
         uint256 endTimestamp
     );
@@ -603,7 +603,7 @@ library Events {
         address account,
         DataTypes.VoucherParValueType vouchType,
         uint256 tokenId,
-        uint256 ndptValue,
+        uint256 sbtValue,
         uint256 generateTimestamp
     );
 

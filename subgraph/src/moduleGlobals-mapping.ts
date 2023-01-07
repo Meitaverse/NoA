@@ -6,7 +6,7 @@ import {
     ModuleGlobalsTreasurySet,
     ModuleGlobalsVoucherSet,
     ModuleGlobalsManagerSet,
-    ModuleGlobalsNDPTSet,
+    ModuleGlobalsSBTSet,
     ModuleGlobalsPublishRoyaltySet,
     ModuleGlobalsTreasuryFeeSet,
     ModuleGlobalsGovernanceSet,
@@ -21,7 +21,7 @@ import {
     ModuleGlobalsTreasurySetHistory,
     ModuleGlobalsVoucherSetHistory,
     ModuleGlobalsManagerSetHistory,
-    ModuleGlobalsNDPTSetHistory,
+    ModuleGlobalsSBTSetHistory,
     ModuleGlobalsPublishRoyaltySetHistory,
     ModuleGlobalsTreasuryFeeSetHistory,
     ModuleGlobalsGovernanceSetHistory,
@@ -104,15 +104,15 @@ export function handleModuleGlobalsManagerSet(event: ModuleGlobalsManagerSet): v
 }
     
 
-export function handleModuleGlobalsNDPTSet(event: ModuleGlobalsNDPTSet): void {
-    log.info("handleModuleGlobalsNDPTSet, event.address: {}", [event.address.toHexString()])
+export function handleModuleGlobalsSBTSet(event: ModuleGlobalsSBTSet): void {
+    log.info("handleModuleGlobalsSBTSet, event.address: {}", [event.address.toHexString()])
 
-    let _idString = event.params.newNDPT.toHexString() + "-" +  event.params.timestamp.toString()
-    const history = ModuleGlobalsNDPTSetHistory.load(_idString) || new ModuleGlobalsNDPTSetHistory(_idString)
+    let _idString = event.params.newSBT.toHexString() + "-" +  event.params.timestamp.toString()
+    const history = ModuleGlobalsSBTSetHistory.load(_idString) || new ModuleGlobalsSBTSetHistory(_idString)
 
     if (history) {
-        history.prevNDPT = event.params.prevNDPT
-        history.newNDPT = event.params.newNDPT
+        history.prevSBT = event.params.prevSBT
+        history.newSBT = event.params.newSBT
         history.timestamp = event.params.timestamp
         history.save()
     } 

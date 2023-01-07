@@ -19,7 +19,7 @@ export function handleMintNFTVoucher(event: MintNFTVoucher): void {
         history.account = event.params.account
         history.vouchType = event.params.vouchType
         history.tokenId = event.params.tokenId
-        history.ndptValue = event.params.ndptValue
+        history.sbtValue = event.params.sbtValue
         history.generateTimestamp = event.params.generateTimestamp
         history.save()
         

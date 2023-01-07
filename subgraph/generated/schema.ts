@@ -97,7 +97,7 @@ export class Profile extends Entity {
   }
 }
 
-export class MintNDPValueHistory extends Entity {
+export class MintSBTValueHistory extends Entity {
   constructor(id: string) {
     super();
     this.set("id", Value.fromString(id));
@@ -105,19 +105,19 @@ export class MintNDPValueHistory extends Entity {
 
   save(): void {
     let id = this.get("id");
-    assert(id != null, "Cannot save MintNDPValueHistory entity without an ID");
+    assert(id != null, "Cannot save MintSBTValueHistory entity without an ID");
     if (id) {
       assert(
         id.kind == ValueKind.STRING,
-        `Entities of type MintNDPValueHistory must have an ID of type String but the id '${id.displayData()}' is of type ${id.displayKind()}`
+        `Entities of type MintSBTValueHistory must have an ID of type String but the id '${id.displayData()}' is of type ${id.displayKind()}`
       );
-      store.set("MintNDPValueHistory", id.toString(), this);
+      store.set("MintSBTValueHistory", id.toString(), this);
     }
   }
 
-  static load(id: string): MintNDPValueHistory | null {
-    return changetype<MintNDPValueHistory | null>(
-      store.get("MintNDPValueHistory", id)
+  static load(id: string): MintSBTValueHistory | null {
+    return changetype<MintSBTValueHistory | null>(
+      store.get("MintSBTValueHistory", id)
     );
   }
 
@@ -158,7 +158,7 @@ export class MintNDPValueHistory extends Entity {
   }
 }
 
-export class BurnNDPTHistory extends Entity {
+export class BurnSBTHistory extends Entity {
   constructor(id: string) {
     super();
     this.set("id", Value.fromString(id));
@@ -166,18 +166,18 @@ export class BurnNDPTHistory extends Entity {
 
   save(): void {
     let id = this.get("id");
-    assert(id != null, "Cannot save BurnNDPTHistory entity without an ID");
+    assert(id != null, "Cannot save BurnSBTHistory entity without an ID");
     if (id) {
       assert(
         id.kind == ValueKind.STRING,
-        `Entities of type BurnNDPTHistory must have an ID of type String but the id '${id.displayData()}' is of type ${id.displayKind()}`
+        `Entities of type BurnSBTHistory must have an ID of type String but the id '${id.displayData()}' is of type ${id.displayKind()}`
       );
-      store.set("BurnNDPTHistory", id.toString(), this);
+      store.set("BurnSBTHistory", id.toString(), this);
     }
   }
 
-  static load(id: string): BurnNDPTHistory | null {
-    return changetype<BurnNDPTHistory | null>(store.get("BurnNDPTHistory", id));
+  static load(id: string): BurnSBTHistory | null {
+    return changetype<BurnSBTHistory | null>(store.get("BurnSBTHistory", id));
   }
 
   get id(): string {
@@ -208,7 +208,7 @@ export class BurnNDPTHistory extends Entity {
   }
 }
 
-export class BurnNDPTValueHistory extends Entity {
+export class BurnSBTValueHistory extends Entity {
   constructor(id: string) {
     super();
     this.set("id", Value.fromString(id));
@@ -216,19 +216,19 @@ export class BurnNDPTValueHistory extends Entity {
 
   save(): void {
     let id = this.get("id");
-    assert(id != null, "Cannot save BurnNDPTValueHistory entity without an ID");
+    assert(id != null, "Cannot save BurnSBTValueHistory entity without an ID");
     if (id) {
       assert(
         id.kind == ValueKind.STRING,
-        `Entities of type BurnNDPTValueHistory must have an ID of type String but the id '${id.displayData()}' is of type ${id.displayKind()}`
+        `Entities of type BurnSBTValueHistory must have an ID of type String but the id '${id.displayData()}' is of type ${id.displayKind()}`
       );
-      store.set("BurnNDPTValueHistory", id.toString(), this);
+      store.set("BurnSBTValueHistory", id.toString(), this);
     }
   }
 
-  static load(id: string): BurnNDPTValueHistory | null {
-    return changetype<BurnNDPTValueHistory | null>(
-      store.get("BurnNDPTValueHistory", id)
+  static load(id: string): BurnSBTValueHistory | null {
+    return changetype<BurnSBTValueHistory | null>(
+      store.get("BurnSBTValueHistory", id)
     );
   }
 
@@ -1232,13 +1232,13 @@ export class NFTVoucherHistory extends Entity {
     this.set("tokenId", Value.fromBigInt(value));
   }
 
-  get ndptValue(): BigInt {
-    let value = this.get("ndptValue");
+  get sbtValue(): BigInt {
+    let value = this.get("sbtValue");
     return value!.toBigInt();
   }
 
-  set ndptValue(value: BigInt) {
-    this.set("ndptValue", Value.fromBigInt(value));
+  set sbtValue(value: BigInt) {
+    this.set("sbtValue", Value.fromBigInt(value));
   }
 
   get generateTimestamp(): BigInt {
@@ -2318,7 +2318,7 @@ export class ModuleGlobalsManagerSetHistory extends Entity {
   }
 }
 
-export class ModuleGlobalsNDPTSetHistory extends Entity {
+export class ModuleGlobalsSBTSetHistory extends Entity {
   constructor(id: string) {
     super();
     this.set("id", Value.fromString(id));
@@ -2328,20 +2328,20 @@ export class ModuleGlobalsNDPTSetHistory extends Entity {
     let id = this.get("id");
     assert(
       id != null,
-      "Cannot save ModuleGlobalsNDPTSetHistory entity without an ID"
+      "Cannot save ModuleGlobalsSBTSetHistory entity without an ID"
     );
     if (id) {
       assert(
         id.kind == ValueKind.STRING,
-        `Entities of type ModuleGlobalsNDPTSetHistory must have an ID of type String but the id '${id.displayData()}' is of type ${id.displayKind()}`
+        `Entities of type ModuleGlobalsSBTSetHistory must have an ID of type String but the id '${id.displayData()}' is of type ${id.displayKind()}`
       );
-      store.set("ModuleGlobalsNDPTSetHistory", id.toString(), this);
+      store.set("ModuleGlobalsSBTSetHistory", id.toString(), this);
     }
   }
 
-  static load(id: string): ModuleGlobalsNDPTSetHistory | null {
-    return changetype<ModuleGlobalsNDPTSetHistory | null>(
-      store.get("ModuleGlobalsNDPTSetHistory", id)
+  static load(id: string): ModuleGlobalsSBTSetHistory | null {
+    return changetype<ModuleGlobalsSBTSetHistory | null>(
+      store.get("ModuleGlobalsSBTSetHistory", id)
     );
   }
 
@@ -2354,22 +2354,22 @@ export class ModuleGlobalsNDPTSetHistory extends Entity {
     this.set("id", Value.fromString(value));
   }
 
-  get prevNDPT(): Bytes {
-    let value = this.get("prevNDPT");
+  get prevSBT(): Bytes {
+    let value = this.get("prevSBT");
     return value!.toBytes();
   }
 
-  set prevNDPT(value: Bytes) {
-    this.set("prevNDPT", Value.fromBytes(value));
+  set prevSBT(value: Bytes) {
+    this.set("prevSBT", Value.fromBytes(value));
   }
 
-  get newNDPT(): Bytes {
-    let value = this.get("newNDPT");
+  get newSBT(): Bytes {
+    let value = this.get("newSBT");
     return value!.toBytes();
   }
 
-  set newNDPT(value: Bytes) {
-    this.set("newNDPT", Value.fromBytes(value));
+  set newSBT(value: Bytes) {
+    this.set("newSBT", Value.fromBytes(value));
   }
 
   get timestamp(): BigInt {

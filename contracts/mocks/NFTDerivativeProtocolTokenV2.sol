@@ -129,18 +129,18 @@ contract NFTDerivativeProtocolTokenV2 is
     ) external payable whenNotPaused onlyManager {
         if (value == 0) revert Errors.AmountIsZero();
         ERC3525Upgradeable._mintValue(soulBoundTokenId, value);
-        emit Events.MintNDPTValue(soulBoundTokenId, value, block.timestamp);
+        emit Events.MintSBTValue(soulBoundTokenId, value, block.timestamp);
     }
 
     function burn(uint256 tokenId) external whenNotPaused onlyManager{
         ERC3525Upgradeable._burn(tokenId);
-         emit Events.BurnNDPT(tokenId, block.timestamp);
+         emit Events.BurnSBT(tokenId, block.timestamp);
     }
 
     function burnValue(uint256 tokenId, uint256 value) external whenNotPaused onlyManager {
         require(_isApprovedOrOwner(_msgSender(), tokenId), "ERC3525: caller is not token owner nor approved");
         ERC3525Upgradeable._burnValue(tokenId, value);
-        emit Events.BurnNDPTValue(tokenId, value, block.timestamp);
+        emit Events.BurnSBTValue(tokenId, value, block.timestamp);
     }
 
     //-----approval functions----//

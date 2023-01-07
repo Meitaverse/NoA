@@ -70,12 +70,12 @@ export const NUM_CONFIRMATIONS_REQUIRED = 3;
 export const CURRENCY_MINT_AMOUNT = parseEther('100');
 export const BPS_MAX = 10000;
 export const TREASURY_FEE_BPS = 50;
-export const PublishRoyaltyNDPT = 100;
+export const PublishRoyaltySBT = 100;
 export const GENESIS_FEE_BPS = 100; //genesis Fee
 export const MAX_PROFILE_IMAGE_URI_LENGTH = 6000;
-export const NDPT_NAME = 'NFT Derivative Protocol Token';
-export const NDPT_SYMBOL = 'NDPT';
-export const NDPT_DECIMALS = 18;
+export const SBT_NAME = 'NFT Derivative Protocol Token';
+export const SBT_SYMBOL = 'SBT';
+export const SBT_DECIMALS = 18;
 export const MOCK_PROFILE_HANDLE = 'plant1ghost.eth';
 export const LENS_PERIPHERY_NAME = 'LensPeriphery';
 export const FIRST_PROFILE_ID = 1; //金库
@@ -97,8 +97,8 @@ export const MOCK_FOLLOW_NFT_URI =
 export const  RECEIVER_MAGIC_VALUE = '0x009ce20b';
 export const TreasuryFee = 50; 
 
-export const INITIAL_SUPPLY = 1000000;  //NDPT初始发行总量
-export const VOUCHER_AMOUNT_LIMIT = 100;  //用户用NDP兑换Voucher的最低数量 
+export const INITIAL_SUPPLY = 1000000;  //SBT初始发行总量
+export const VOUCHER_AMOUNT_LIMIT = 100;  //用户用SBT兑换Voucher的最低数量 
 
 export const DEFAULT_COLLECT_PRICE = parseEther('10');
 export const DEFAULT_TEMPLATE_NUMBER = 1;
@@ -129,8 +129,8 @@ export let helper: Helper;
 export let receiverMock: ERC3525ReceiverMock
 export let bankTreasuryImpl: BankTreasury
 export let bankTreasuryContract: BankTreasury
-export let ndptImpl: NFTDerivativeProtocolTokenV1;
-export let ndptContract: NFTDerivativeProtocolTokenV1;
+export let sbtImpl: NFTDerivativeProtocolTokenV1;
+export let sbtContract: NFTDerivativeProtocolTokenV1;
 export let derivativeNFTV1Impl: DerivativeNFTV1;
 export let metadataDescriptor: DerivativeMetadataDescriptor;
 
@@ -198,7 +198,6 @@ before(async function () {
   // Currency
   currency = await new Currency__factory(deployer).deploy();
 
-  metadataDescriptor = await new DerivativeMetadataDescriptor__factory(deployer).deploy();
 
   receiverMock = await new ERC3525ReceiverMock__factory(deployer).deploy(RECEIVER_MAGIC_VALUE, Error.None);
 
@@ -252,18 +251,18 @@ before(async function () {
   );
   voucherContract = new Voucher__factory(deployer).attach(voucherProxy.address);
 
-  ndptImpl = await new NFTDerivativeProtocolTokenV1__factory(deployer).deploy();
-  let initializeNDPTData = ndptImpl.interface.encodeFunctionData("initialize", [
-      NDPT_NAME, 
-      NDPT_SYMBOL, 
-      NDPT_DECIMALS,
+  sbtImpl = await new NFTDerivativeProtocolTokenV1__factory(deployer).deploy();
+  let initializeSBTData = sbtImpl.interface.encodeFunctionData("initialize", [
+      SBT_NAME, 
+      SBT_SYMBOL, 
+      SBT_DECIMALS,
       manager.address,
   ]);
-  const ndptProxy = await new ERC1967Proxy__factory(deployer).deploy(
-    ndptImpl.address,
-    initializeNDPTData
+  const sbtProxy = await new ERC1967Proxy__factory(deployer).deploy(
+    sbtImpl.address,
+    initializeSBTData
   );
-  ndptContract = new NFTDerivativeProtocolTokenV1__factory(deployer).attach(ndptProxy.address);
+  sbtContract = new NFTDerivativeProtocolTokenV1__factory(deployer).attach(sbtProxy.address);
 
   const soulBoundTokenIdOfBankTreaury = FIRST_PROFILE_ID;
   bankTreasuryImpl = await new BankTreasury__factory(deployer).deploy( );
@@ -282,12 +281,12 @@ before(async function () {
 
   moduleGlobals = await new ModuleGlobals__factory(deployer).deploy(
     manager.address,
-    ndptContract.address,
+    sbtContract.address,
     governanceAddress,
     bankTreasuryContract.address,
     voucherContract.address,
     TREASURY_FEE_BPS,
-    PublishRoyaltyNDPT
+    PublishRoyaltySBT
   );
   
   // Modules
@@ -306,8 +305,14 @@ before(async function () {
     moduleGlobals.address
   );
 
+    //descriptor
+  metadataDescriptor = await new DerivativeMetadataDescriptor__factory(deployer).deploy(
+    moduleGlobals.address
+  );
+
+
   expect(bankTreasuryContract).to.not.be.undefined;
-  expect(ndptContract).to.not.be.undefined;
+  expect(sbtContract).to.not.be.undefined;
   expect(receiverMock).to.not.be.undefined;
   expect(derivativeNFTV1Impl).to.not.be.undefined;
   expect(manager).to.not.be.undefined;
@@ -330,7 +335,7 @@ before(async function () {
     moduleGlobals.connect(governance).whitelistTemplate(template.address, true)
   ).to.not.be.reverted;    
 
-  expect((await moduleGlobals.getNDPT()).toUpperCase()).to.eq(ndptContract.address.toUpperCase());
+  expect((await moduleGlobals.getSBT()).toUpperCase()).to.eq(sbtContract.address.toUpperCase());
 
   //manager set moduleGlobals
   await manager.connect(governance).setGlobalModule(moduleGlobals.address);
@@ -339,16 +344,16 @@ before(async function () {
   await bankTreasuryContract.connect(governance).setGlobalModule(moduleGlobals.address);
   console.log('bankTreasuryContract setGlobalModule ok ');
   
-  await expect(ndptContract.connect(deployer).setBankTreasury(
+  await expect(sbtContract.connect(deployer).setBankTreasury(
     bankTreasuryContract.address, 
     INITIAL_SUPPLY
   )).to.not.be.reverted;
   
-  await expect(ndptContract.connect(deployer).whitelistContract(publishModule.address, true)).to.not.be.reverted;
-  await expect(ndptContract.connect(deployer).whitelistContract(feeCollectModule.address, true)).to.not.be.reverted;
-  await expect(ndptContract.connect(deployer).whitelistContract(multirecipientFeeCollectModule.address, true)).to.not.be.reverted;
-  await expect(ndptContract.connect(deployer).whitelistContract(bankTreasuryContract.address, true)).to.not.be.reverted;
-  await expect(ndptContract.connect(deployer).whitelistContract(voucherContract.address, true)).to.not.be.reverted;
+  await expect(sbtContract.connect(deployer).whitelistContract(publishModule.address, true)).to.not.be.reverted;
+  await expect(sbtContract.connect(deployer).whitelistContract(feeCollectModule.address, true)).to.not.be.reverted;
+  await expect(sbtContract.connect(deployer).whitelistContract(multirecipientFeeCollectModule.address, true)).to.not.be.reverted;
+  await expect(sbtContract.connect(deployer).whitelistContract(bankTreasuryContract.address, true)).to.not.be.reverted;
+  await expect(sbtContract.connect(deployer).whitelistContract(voucherContract.address, true)).to.not.be.reverted;
 
   await expect(voucherContract.connect(deployer).setGlobalModule(moduleGlobals.address)).to.not.be.reverted;
   console.log('voucherContract setGlobalModule ok ');
@@ -381,18 +386,18 @@ before(async function () {
 
   expect((await derivativeNFTV1Impl.MANAGER()).toUpperCase()).to.eq(manager.address.toUpperCase());
 
-  expect((await ndptContract.version()).toNumber()).to.eq(1);
-  expect((await ndptContract.getManager()).toUpperCase()).to.eq(manager.address.toUpperCase());
-  console.log('ndptContract getManager ok ');
+  expect((await sbtContract.version()).toNumber()).to.eq(1);
+  expect((await sbtContract.getManager()).toUpperCase()).to.eq(manager.address.toUpperCase());
+  console.log('sbtContract getManager ok ');
 
-  expect((await ndptContract.getBankTreasury()).toUpperCase()).to.eq(bankTreasuryContract.address.toUpperCase());
+  expect((await sbtContract.getBankTreasury()).toUpperCase()).to.eq(bankTreasuryContract.address.toUpperCase());
   
   expect((await bankTreasuryContract.getManager()).toUpperCase()).to.eq(manager.address.toUpperCase());
   console.log('bankTreasuryContract getManager ok ');
 
-  expect((await bankTreasuryContract.getNDPT()).toUpperCase()).to.eq(ndptContract.address.toUpperCase());
+  expect((await bankTreasuryContract.getSBT()).toUpperCase()).to.eq(sbtContract.address.toUpperCase());
   
-  expect((await moduleGlobals.getPublishCurrencyTax())).to.eq(PublishRoyaltyNDPT);
+  expect((await moduleGlobals.getPublishCurrencyTax())).to.eq(PublishRoyaltySBT);
 
   // Event library deployment is only needed for testing and is not reproduced in the live environment
   eventsLib = await new Events__factory(deployer).deploy();
