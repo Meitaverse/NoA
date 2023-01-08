@@ -10,6 +10,7 @@ import "@openzeppelin/contracts-upgradeable/access/AccessControlUpgradeable.sol"
 import "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
+import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 
 import {INFTDerivativeProtocolTokenV1} from "./interfaces/INFTDerivativeProtocolTokenV1.sol";
 import {IERC20Upgradeable} from "@openzeppelin/contracts-upgradeable/token/ERC20/IERC20Upgradeable.sol";
@@ -33,6 +34,7 @@ import {IBankTreasury} from './interfaces/IBankTreasury.sol';
  */
 contract Voucher is
     Initializable,
+    ReentrancyGuard,
     VoucherStorage,
     ERC1155Upgradeable,
     PausableUpgradeable,
@@ -104,7 +106,8 @@ contract Voucher is
         uint256 amountSBT,
         address account
     ) 
-        external returns(uint256)
+        external 
+        returns(uint256)
     {
         // only called by owner of soulBoundTokenId
         address _manager = IModuleGlobals(MODULE_GLOBALS).getManager();
@@ -173,6 +176,8 @@ contract Voucher is
         address account
     ) 
         external
+        nonReentrant
+        whenNotPaused
         onlyOwner
     {
         uint256 _tokenId = _generateNextVoucherId();
@@ -251,6 +256,8 @@ contract Voucher is
         address account
     ) 
         external
+        nonReentrant
+        whenNotPaused  
         onlyOwner
     {
         uint256[] memory _ids = new uint256[](voucherTypes.length);
@@ -275,7 +282,10 @@ contract Voucher is
     }
 
     function useVoucher(address account, uint256 tokenId, uint256 soulBoundTokenId) 
-        external onlyBankTreasury 
+        external 
+        nonReentrant
+        whenNotPaused  
+        onlyBankTreasury 
     {
         if (balanceOf(account, tokenId) == 0) {
             revert Errors.NotOwnerVoucher();
@@ -292,7 +302,12 @@ contract Voucher is
         address owner,
         uint256 id,
         uint256 value
-    ) external onlyOwner {
+    ) 
+        external 
+        nonReentrant
+        whenNotPaused  
+        onlyOwner 
+    {
         _burn(owner, id, value);
         _vouchers[id].isUsed = true;
     }
@@ -301,7 +316,12 @@ contract Voucher is
         address owner,
         uint256[] memory ids,
         uint256[] memory values
-    ) external onlyOwner {
+    ) 
+        external
+        nonReentrant
+        whenNotPaused  
+        onlyOwner 
+    {
         _burnBatch(owner, ids, values);
         for (uint256 i = 0; i < ids.length; i++) {
             _vouchers[ids[i]].isUsed = true;
@@ -364,11 +384,21 @@ contract Voucher is
     * @dev Will update the base URL of token's URI
     * @param _newBaseMetadataURI New base URL of token's URI
     */
-    function setURIPrefix(string memory _newBaseMetadataURI) public onlyOwner{
+    function setURIPrefix(string memory _newBaseMetadataURI) 
+        public 
+        nonReentrant
+        whenNotPaused  
+        onlyOwner
+    {
         _setURIPrefix(_newBaseMetadataURI);
     }
 
-    function setGlobalModule(address moduleGlobals) external onlyOwner {
+    function setGlobalModule(address moduleGlobals) 
+        external 
+        nonReentrant
+        whenNotPaused  
+        onlyOwner 
+    {
         if (moduleGlobals == address(0)) revert Errors.InitParamsInvalid();
         MODULE_GLOBALS = moduleGlobals;
     }
@@ -377,7 +407,12 @@ contract Voucher is
         _uriBase = _newBaseMetadataURI;
     }
 
-    function setTokenUri(uint256 tokenId_, string memory uri_) external onlyOwner {
+    function setTokenUri(uint256 tokenId_, string memory uri_) 
+        external 
+        nonReentrant
+        whenNotPaused  
+        onlyOwner 
+    {
         if(bytes(_uris[tokenId_]).length > 0)  revert Errors.UpdateURITwice();
         _uris[tokenId_] = uri_;
     }

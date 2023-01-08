@@ -6,12 +6,21 @@ import "@openzeppelin/contracts/governance/extensions/GovernorSettings.sol";
 import "@openzeppelin/contracts/governance/extensions/GovernorCountingSimple.sol";
 import "@openzeppelin/contracts/governance/extensions/GovernorVotesQuorumFraction.sol";
 import "@openzeppelin/contracts/governance/extensions/GovernorTimelockControl.sol";
+import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 
 // 治理者合约：治理者合约决定了法定人数所需的投票数量/百分比(例如，如果法定人数是4%，
 // 那么只有4%的选民需要投票支持提案通过)，投票期限，即投票持续多长时间，投票延迟，
 // 即提案创建后多长时间允许成员更改他们拥有的代币数量。治理合约还提供创建提案、
 // 投票和执行提案的功能。
-contract GovernorContract is Governor, GovernorSettings, GovernorCountingSimple, GovernorVotes, GovernorVotesQuorumFraction, GovernorTimelockControl {
+contract GovernorContract is 
+    ReentrancyGuard,
+    Governor, 
+    GovernorSettings, 
+    GovernorCountingSimple, 
+    GovernorVotes, 
+    GovernorVotesQuorumFraction, 
+    GovernorTimelockControl 
+{
     constructor(IVotes _token, TimelockController _timelock,uint256 _quorumPercentage,
     uint256 _votingPeriod, //投票时段
     uint256 _votingDelay)  //投票延迟
@@ -72,6 +81,7 @@ contract GovernorContract is Governor, GovernorSettings, GovernorCountingSimple,
 
     function propose(address[] memory targets, uint256[] memory values, bytes[] memory calldatas, string memory description)
         public
+        nonReentrant
         override(Governor, IGovernor)
         returns (uint256)
     {

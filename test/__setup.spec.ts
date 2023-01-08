@@ -44,7 +44,9 @@ import {
   Template,
   Template__factory,
   MultirecipientFeeCollectModule,
-  MultirecipientFeeCollectModule__factory
+  MultirecipientFeeCollectModule__factory,
+  MarketPlace,
+  MarketPlace__factory,
 } from '../typechain';
 
 import { ManagerLibraryAddresses } from '../typechain/factories/contracts/Manager__factory';
@@ -129,6 +131,8 @@ export let helper: Helper;
 export let receiverMock: ERC3525ReceiverMock
 export let bankTreasuryImpl: BankTreasury
 export let bankTreasuryContract: BankTreasury
+export let marketPlaceImpl: MarketPlace
+export let marketPlaceContract: MarketPlace
 export let sbtImpl: NFTDerivativeProtocolTokenV1;
 export let sbtContract: NFTDerivativeProtocolTokenV1;
 export let derivativeNFTV1Impl: DerivativeNFTV1;
@@ -278,6 +282,18 @@ before(async function () {
     initializeData
   );
   bankTreasuryContract = new BankTreasury__factory(deployer).attach(bankTreasuryProxy.address);
+  
+  //market place
+  marketPlaceImpl = await new MarketPlace__factory(deployer).deploy( );
+  let marketPlaceData = marketPlaceImpl.interface.encodeFunctionData("initialize", [
+    governanceAddress,
+  ]);
+
+  const marketPlaceProxy = await new ERC1967Proxy__factory(deployer).deploy(
+    marketPlaceImpl.address,
+    marketPlaceData
+  );
+  marketPlaceContract = new MarketPlace__factory(deployer).attach(marketPlaceProxy.address);
 
   moduleGlobals = await new ModuleGlobals__factory(deployer).deploy(
     manager.address,
@@ -305,13 +321,14 @@ before(async function () {
     moduleGlobals.address
   );
 
-    //descriptor
+  //descriptor
   metadataDescriptor = await new DerivativeMetadataDescriptor__factory(deployer).deploy(
     moduleGlobals.address
   );
 
 
   expect(bankTreasuryContract).to.not.be.undefined;
+  expect(marketPlaceContract).to.not.be.undefined;
   expect(sbtContract).to.not.be.undefined;
   expect(receiverMock).to.not.be.undefined;
   expect(derivativeNFTV1Impl).to.not.be.undefined;
@@ -343,6 +360,9 @@ before(async function () {
 
   await bankTreasuryContract.connect(governance).setGlobalModule(moduleGlobals.address);
   console.log('bankTreasuryContract setGlobalModule ok ');
+  
+  await marketPlaceContract.connect(governance).setGlobalModule(moduleGlobals.address);
+  console.log('marketPlaceContract setGlobalModule ok ');
   
   await expect(sbtContract.connect(deployer).setBankTreasury(
     bankTreasuryContract.address, 

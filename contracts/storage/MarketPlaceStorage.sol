@@ -27,7 +27,7 @@ abstract contract MarketPlaceStorage {
 
     //derivativeNFT => saleId
     mapping(address => EnumerableSetUpgradeable.UintSet) internal _derivativeNFTSales;
-    mapping(address => EnumerableSetUpgradeable.AddressSet) internal _allowAddresses;
+    // mapping(address => EnumerableSetUpgradeable.AddressSet) internal _allowAddresses;
 
     // --- market place --- //
 
@@ -39,7 +39,5 @@ abstract contract MarketPlaceStorage {
     
     // records of user purchased units from an order
     mapping(uint24 => mapping(address => uint128)) internal saleRecords;
-
-
 
 }

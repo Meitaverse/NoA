@@ -1202,7 +1202,7 @@
           "type": "tuple"
         }
       ],
-      "name": "publishFixedPrice",
+      "name": "publishSale",
       "outputs": [],
       "stateMutability": "nonpayable",
       "type": "function"

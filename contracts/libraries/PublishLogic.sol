@@ -24,7 +24,7 @@ library PublishLogic {
         uint256 publishId,
         uint256 previousPublishId,
         uint256 treasuryOfSoulBoundTokenId,
-        mapping(uint256 => DataTypes.PublishData) storage _publishIdByProjectData
+        mapping(uint256 => DataTypes.PublishData) storage _projectDataByPublishId
     ) external {
         
         uint256 publishTaxAmount = _initPublishModule(
@@ -32,7 +32,7 @@ library PublishLogic {
             previousPublishId,
             treasuryOfSoulBoundTokenId,
             publication,
-            _publishIdByProjectData
+            _projectDataByPublishId
         );
  
         emit Events.PublishPrepared(
@@ -53,18 +53,18 @@ library PublishLogic {
         string memory description,
         string[] memory materialURIs,
         uint256[] memory fromTokenIds,
-        mapping(uint256 => DataTypes.PublishData) storage _publishIdByProjectData
+        mapping(uint256 => DataTypes.PublishData) storage _projectDataByPublishId
     )external {
 
-        _publishIdByProjectData[publishId].publication.salePrice = salePrice;
-        _publishIdByProjectData[publishId].publication.royaltyBasisPoints = royaltyBasisPoints;
-        _publishIdByProjectData[publishId].publication.amount = amount;
-        _publishIdByProjectData[publishId].publication.name = name;
-        _publishIdByProjectData[publishId].publication.description = description;
-        _publishIdByProjectData[publishId].publication.materialURIs = materialURIs;
-        _publishIdByProjectData[publishId].publication.fromTokenIds = fromTokenIds;
+        _projectDataByPublishId[publishId].publication.salePrice = salePrice;
+        _projectDataByPublishId[publishId].publication.royaltyBasisPoints = royaltyBasisPoints;
+        _projectDataByPublishId[publishId].publication.amount = amount;
+        _projectDataByPublishId[publishId].publication.name = name;
+        _projectDataByPublishId[publishId].publication.description = description;
+        _projectDataByPublishId[publishId].publication.materialURIs = materialURIs;
+        _projectDataByPublishId[publishId].publication.fromTokenIds = fromTokenIds;
 
-        uint256  addedPublishTaxes = IPublishModule(_publishIdByProjectData[publishId].publication.publishModule).updatePublish(
+        uint256  addedPublishTaxes = IPublishModule(_projectDataByPublishId[publishId].publication.publishModule).updatePublish(
             publishId,
             salePrice,
             royaltyBasisPoints,
@@ -77,7 +77,7 @@ library PublishLogic {
 
         emit Events.PublishUpdated(
             publishId,
-            _publishIdByProjectData[publishId].publication.soulBoundTokenId,
+            _projectDataByPublishId[publishId].publication.soulBoundTokenId,
             salePrice,
             royaltyBasisPoints,
             amount,
@@ -175,15 +175,15 @@ library PublishLogic {
         uint256 previousPublishId,
         uint256 treasuryOfSoulBoundTokenId,
         DataTypes.Publication memory publication,
-        mapping(uint256 => DataTypes.PublishData) storage _publishIdByProjectData
+        mapping(uint256 => DataTypes.PublishData) storage _projectDataByPublishId
     ) private  returns(uint256) {
         
-        if (_publishIdByProjectData[publishId].previousPublishId == 0) _publishIdByProjectData[publishId].previousPublishId = publishId;
+        if (_projectDataByPublishId[publishId].previousPublishId == 0) _projectDataByPublishId[publishId].previousPublishId = publishId;
       
-        _publishIdByProjectData[publishId].publication = publication;
-        _publishIdByProjectData[publishId].previousPublishId = previousPublishId;
-        _publishIdByProjectData[publishId].isMinted = false;
-        _publishIdByProjectData[publishId].tokenId = 0;
+        _projectDataByPublishId[publishId].publication = publication;
+        _projectDataByPublishId[publishId].previousPublishId = previousPublishId;
+        _projectDataByPublishId[publishId].isMinted = false;
+        _projectDataByPublishId[publishId].tokenId = 0;
         
         return IPublishModule(publication.publishModule).initializePublishModule(
             publishId,
@@ -202,7 +202,7 @@ library PublishLogic {
      * @param newTokenId The new tokenId after collected
      * @param derivativeNFT The dNFT contract
      * @param _pubByIdByProfile The collect Data struct
-     * @param _publishIdByProjectData The collect Data struct
+     * @param _projectDataByPublishId The collect Data struct
      */
     function collectDerivativeNFT(
         DataTypes.CollectData calldata collectData,
@@ -211,7 +211,7 @@ library PublishLogic {
         address derivativeNFT,
         mapping(uint256 => mapping(uint256 => DataTypes.PublicationStruct))
             storage _pubByIdByProfile,
-        mapping(uint256 => DataTypes.PublishData) storage _publishIdByProjectData
+        mapping(uint256 => DataTypes.PublishData) storage _projectDataByPublishId
     ) external {
         if (collectData.publishId == 0) revert Errors.InitParamsInvalid();
         if (collectData.collectorSoulBoundTokenId == 0) revert Errors.InitParamsInvalid();
@@ -220,12 +220,12 @@ library PublishLogic {
         if ( derivativeNFT== address(0)) 
             revert Errors.DerivativeNFTIsZero();
 
-        uint256 projectId = _publishIdByProjectData[collectData.publishId].publication.projectId;
+        uint256 projectId = _projectDataByPublishId[collectData.publishId].publication.projectId;
 
         //新生成的tokenId也需要用collectModule来处理
         _pubByIdByProfile[projectId][newTokenId].collectModule = _pubByIdByProfile[projectId][tokenId].collectModule;
 
-        uint256 ownershipSoulBoundTokenId = _publishIdByProjectData[collectData.publishId].publication.soulBoundTokenId;
+        uint256 ownershipSoulBoundTokenId = _projectDataByPublishId[collectData.publishId].publication.soulBoundTokenId;
 
         //后续调用processCollect进行处理，此机制能扩展出联动合约调用
         ICollectModule(_pubByIdByProfile[projectId][tokenId].collectModule).processCollect(
@@ -253,7 +253,7 @@ library PublishLogic {
         DataTypes.AirdropData memory airdropData,
         mapping(uint256 => address) storage _soulBoundTokenIdToWallet,
         mapping(uint256 => uint256) storage _tokenIdByPublishId,
-        mapping(uint256 => DataTypes.PublishData) storage _publishIdByProjectData
+        mapping(uint256 => DataTypes.PublishData) storage _projectDataByPublishId
     ) external {
         if (derivativeNFT == address(0)) revert Errors.InvalidParameter();
         
@@ -286,7 +286,7 @@ library PublishLogic {
         } 
 
         emit Events.DerivativeNFTAirdroped(
-            _publishIdByProjectData[airdropData.publishId].publication.projectId,
+            _projectDataByPublishId[airdropData.publishId].publication.projectId,
             derivativeNFT,
             airdropData.ownershipSoulBoundTokenId,
             airdropData.tokenId,

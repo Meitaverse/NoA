@@ -5,6 +5,8 @@ import "@openzeppelin/contracts-upgradeable/utils/cryptography/ECDSAUpgradeable.
 import "@openzeppelin/contracts-upgradeable/utils/structs/EnumerableSetUpgradeable.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
 import "@solvprotocol/erc-3525/contracts/IERC3525.sol";
+import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
+
 import {IERC3525Metadata} from "@solvprotocol/erc-3525/contracts/extensions/IERC3525Metadata.sol";
 import {IDerivativeNFTV1} from "./interfaces/IDerivativeNFTV1.sol";
 import "./interfaces/INFTDerivativeProtocolTokenV1.sol";
@@ -24,6 +26,7 @@ import {VersionedInitializable} from './upgradeability/VersionedInitializable.so
 import {IModuleGlobals} from "./interfaces/IModuleGlobals.sol";
 
 contract Manager is 
+    ReentrancyGuard,
     IManager,
     NFTDerivativeProtocolMultiState,
     ManagerStorage,
@@ -81,26 +84,45 @@ contract Manager is
         return _RECEIVER;
     }
 
-    
-    function mintSBTValue(uint256 soulBoundTokenId, uint256 value) external whenNotPaused onlyGov {
+    function mintSBTValue(uint256 soulBoundTokenId, uint256 value) 
+        external 
+        whenNotPaused 
+        nonReentrant
+        onlyGov 
+    {
         address _sbt = IModuleGlobals(MODULE_GLOBALS).getSBT();
         
         INFTDerivativeProtocolTokenV1(_sbt).mintValue(soulBoundTokenId, value);
     }
 
-    function burnSBT(uint256 tokenId) external whenNotPaused onlyGov {
+    function burnSBT(uint256 tokenId) 
+        external 
+        whenNotPaused 
+        nonReentrant
+        onlyGov 
+    {
         address _sbt = IModuleGlobals(MODULE_GLOBALS).getSBT();
         INFTDerivativeProtocolTokenV1(_sbt).burn(tokenId);
     }
 
-    function burnSBTValue(uint256 tokenId, uint256 value) external whenNotPaused onlyGov {
+    function burnSBTValue(uint256 tokenId, uint256 value) 
+        external 
+        whenNotPaused 
+        nonReentrant
+        onlyGov 
+    {
         address _sbt = IModuleGlobals(MODULE_GLOBALS).getSBT();
         INFTDerivativeProtocolTokenV1(_sbt).burnValue(tokenId, value);
     }
 
     function createProfile(
         DataTypes.CreateProfileData calldata vars
-    ) external whenNotPaused returns (uint256) {
+    ) 
+        external 
+        whenNotPaused 
+        nonReentrant
+        returns (uint256) 
+    {
         address _sbt = IModuleGlobals(MODULE_GLOBALS).getSBT();
         if (!IModuleGlobals(MODULE_GLOBALS).isWhitelistProfileCreator(vars.wallet)) revert Errors.ProfileCreatorNotWhitelisted();
         if (_sbt == address(0)) revert Errors.SBTNotSet();
@@ -115,7 +137,12 @@ contract Manager is
 
     function createHub(
         DataTypes.HubData memory hub
-    ) external whenNotPaused returns(uint256){
+    ) 
+        external 
+        nonReentrant
+        whenNotPaused 
+        returns(uint256)
+    {
         _validateCallerIsSoulBoundTokenOwnerOrDispathcher(hub.soulBoundTokenId);
 
         if (!IModuleGlobals(MODULE_GLOBALS).isWhitelistHubCreator(hub.soulBoundTokenId)) revert Errors.HubCreatorNotWhitelisted();
@@ -135,7 +162,12 @@ contract Manager is
  
     function createProject(
         DataTypes.ProjectData memory project
-    ) external whenNotPaused returns (uint256) {
+    ) 
+        external 
+        whenNotPaused 
+        nonReentrant
+        returns (uint256) 
+    {
         _validateCallerIsSoulBoundTokenOwnerOrDispathcher(project.soulBoundTokenId);
         
         if (_hubIdBySoulBoundTokenId[project.soulBoundTokenId] != project.hubId) revert Errors.NotHubOwner();
@@ -178,15 +210,15 @@ contract Manager is
     }
  
     function _calculateRoyalty(uint256 publishId) internal view returns(uint96) {
-        uint256 projectid = _publishIdByProjectData[publishId].publication.projectId;
-        uint256 previousPublishId = _publishIdByProjectData[publishId].previousPublishId;
+        uint256 projectid = _projectDataByPublishId[publishId].publication.projectId;
+        uint256 previousPublishId = _projectDataByPublishId[publishId].previousPublishId;
         (, uint16 treasuryFee ) = IModuleGlobals(MODULE_GLOBALS).getTreasuryData();
 
         // fraction = community treasuryFee + genesisFee + previous dNDT fee
         uint96 fraction = 
             uint96(treasuryFee) + 
-            uint96(_publishIdByProjectData[_genesisPublishIdByProjectId[projectid]].publication.royaltyBasisPoints) +
-            uint96(_publishIdByProjectData[previousPublishId].publication.royaltyBasisPoints);
+            uint96(_projectDataByPublishId[_genesisPublishIdByProjectId[projectid]].publication.royaltyBasisPoints) +
+            uint96(_projectDataByPublishId[previousPublishId].publication.royaltyBasisPoints);
 
         return fraction;
     }
@@ -194,7 +226,12 @@ contract Manager is
     //prepare publish
     function prePublish(
         DataTypes.Publication memory publication
-    ) external override whenNotPaused returns (uint256) { 
+    ) 
+        external 
+        whenNotPaused 
+        nonReentrant
+        returns (uint256) 
+    { 
         _validateCallerIsSoulBoundTokenOwnerOrDispathcher(publication.soulBoundTokenId);
 
         _validateSameHub(publication.hubId, publication.projectId);
@@ -229,7 +266,7 @@ contract Manager is
             publishId,
             previousPublishId,
             treasuryOfSoulBoundTokenId,
-            _publishIdByProjectData
+            _projectDataByPublishId
         );
 
         //calculate royalties
@@ -248,14 +285,18 @@ contract Manager is
         string memory description,
         string[] memory materialURIs,
         uint256[] memory fromTokenIds
-    ) external override whenNotPaused {  
+    ) 
+        external 
+        whenNotPaused 
+        nonReentrant
+    {  
         if (publishId == 0) revert Errors.InvalidParameter();
         if (amount == 0) revert Errors.InvalidParameter();
-        if (_publishIdByProjectData[publishId].publication.amount < amount) revert Errors.AmountOnlyIncrease();
+        if (_projectDataByPublishId[publishId].publication.amount < amount) revert Errors.AmountOnlyIncrease();
 
-        _validateCallerIsSoulBoundTokenOwnerOrDispathcher(_publishIdByProjectData[publishId].publication.soulBoundTokenId);
+        _validateCallerIsSoulBoundTokenOwnerOrDispathcher(_projectDataByPublishId[publishId].publication.soulBoundTokenId);
 
-        if (_publishIdByProjectData[publishId].isMinted) revert Errors.CannotUpdateAfterMinted();
+        if (_projectDataByPublishId[publishId].isMinted) revert Errors.CannotUpdateAfterMinted();
         
         //calculate royalties
         if (_calculateRoyalty(publishId) > uint96(Constants._BASIS_POINTS)) {
@@ -271,27 +312,32 @@ contract Manager is
             description,
             materialURIs,
             fromTokenIds,
-            _publishIdByProjectData
+            _projectDataByPublishId
         );
     }
 
     function publish(
         uint256 publishId
-    ) external whenNotPaused returns (uint256) { 
+    ) 
+        external 
+        whenNotPaused 
+        nonReentrant
+        returns (uint256) 
+    { 
         if (publishId == 0) {
             revert Errors.InitParamsInvalid();
         } else {
 
-            _validateCallerIsSoulBoundTokenOwnerOrDispathcher(_publishIdByProjectData[publishId].publication.soulBoundTokenId);
-            address publisher = _soulBoundTokenIdToWallet[_publishIdByProjectData[publishId].publication.soulBoundTokenId];
-            address derivativeNFT = _derivativeNFTByProjectId[_publishIdByProjectData[publishId].publication.projectId];
-            if (_publishIdByProjectData[publishId].publication.amount == 0) revert Errors.InitParamsInvalid();
+            _validateCallerIsSoulBoundTokenOwnerOrDispathcher(_projectDataByPublishId[publishId].publication.soulBoundTokenId);
+            address publisher = _soulBoundTokenIdToWallet[_projectDataByPublishId[publishId].publication.soulBoundTokenId];
+            address derivativeNFT = _derivativeNFTByProjectId[_projectDataByPublishId[publishId].publication.projectId];
+            if (_projectDataByPublishId[publishId].publication.amount == 0) revert Errors.InitParamsInvalid();
             
-            if (!IModuleGlobals(MODULE_GLOBALS).isWhitelistCollectModule(_publishIdByProjectData[publishId].publication.collectModule))
+            if (!IModuleGlobals(MODULE_GLOBALS).isWhitelistCollectModule(_projectDataByPublishId[publishId].publication.collectModule))
                 revert Errors.CollectModuleNotWhitelisted();
         
             uint256 newTokenId = PublishLogic.createPublish(
-                _publishIdByProjectData[publishId].publication,
+                _projectDataByPublishId[publishId].publication,
                 publishId,
                 publisher,
                 derivativeNFT,
@@ -300,8 +346,8 @@ contract Manager is
 
             //Avoids stack too deep
             {
-                _publishIdByProjectData[publishId].isMinted = true;
-                _publishIdByProjectData[publishId].tokenId = newTokenId;
+                _projectDataByPublishId[publishId].isMinted = true;
+                _projectDataByPublishId[publishId].tokenId = newTokenId;
                 _tokenIdByPublishId[newTokenId] = publishId;
             }
 
@@ -311,26 +357,30 @@ contract Manager is
 
     function collect(
         DataTypes.CollectData memory collectData
-    ) external whenNotPaused returns(uint256){
-
+    ) 
+        external 
+        whenNotPaused 
+        nonReentrant
+        returns(uint256)
+    {
          _validateCallerIsSoulBoundTokenOwnerOrDispathcher(collectData.collectorSoulBoundTokenId);
 
-        address derivativeNFT =  _derivativeNFTByProjectId[_publishIdByProjectData[collectData.publishId].publication.projectId];
+        address derivativeNFT =  _derivativeNFTByProjectId[_projectDataByPublishId[collectData.publishId].publication.projectId];
 
         uint256 newTokenId = IDerivativeNFTV1(derivativeNFT).split(
             collectData.publishId, 
-            _publishIdByProjectData[collectData.publishId].tokenId, 
+            _projectDataByPublishId[collectData.publishId].tokenId, 
             _soulBoundTokenIdToWallet[collectData.collectorSoulBoundTokenId],
             collectData.collectValue
         );
 
         PublishLogic.collectDerivativeNFT(
             collectData,
-            _publishIdByProjectData[collectData.publishId].tokenId,
+            _projectDataByPublishId[collectData.publishId].tokenId,
             newTokenId,
-            _derivativeNFTByProjectId[_publishIdByProjectData[collectData.publishId].publication.projectId],
+            _derivativeNFTByProjectId[_projectDataByPublishId[collectData.publishId].publication.projectId],
             _pubByIdByProfile,
-            _publishIdByProjectData
+            _projectDataByPublishId
         );
 
         return newTokenId;    
@@ -338,17 +388,21 @@ contract Manager is
 
     function airdrop(
         DataTypes.AirdropData memory airdropData
-    ) external override whenNotPaused{
+    ) 
+        external
+        whenNotPaused
+        nonReentrant
+    {
          _validateCallerIsSoulBoundTokenOwnerOrDispathcher(airdropData.ownershipSoulBoundTokenId);
         
-        address derivativeNFT = _derivativeNFTByProjectId[_publishIdByProjectData[airdropData.publishId].publication.projectId];
+        address derivativeNFT = _derivativeNFTByProjectId[_projectDataByPublishId[airdropData.publishId].publication.projectId];
 
         PublishLogic.airdrop(
             derivativeNFT, 
             airdropData,
             _soulBoundTokenIdToWallet,
             _tokenIdByPublishId,
-            _publishIdByProjectData
+            _projectDataByPublishId
         );
     }
 
@@ -357,7 +411,11 @@ contract Manager is
         uint256 fromSoulBoundTokenId,
         uint256 toSoulBoundTokenId,
         uint256 tokenId
-    ) external whenNotPaused  {
+    ) 
+        external 
+        whenNotPaused 
+        nonReentrant
+    {
          _validateCallerIsSoulBoundTokenOwnerOrDispathcher(fromSoulBoundTokenId);
         address derivativeNFT = _derivativeNFTByProjectId[projectId];
         if (derivativeNFT == address(0)) revert Errors.InvalidParameter();
@@ -386,7 +444,11 @@ contract Manager is
         uint256 toSoulBoundTokenId,
         uint256 tokenId,
         uint256 value
-    ) external whenNotPaused {
+    ) 
+        external 
+        whenNotPaused 
+        nonReentrant
+    {
          _validateCallerIsSoulBoundTokenOwnerOrDispathcher(fromSoulBoundTokenId);
         address derivativeNFT = _derivativeNFTByProjectId[projectId];
         if (derivativeNFT == address(0)) revert Errors.InvalidParameter();
@@ -411,30 +473,31 @@ contract Manager is
     function setProfileImageURI(uint256 soulBoundTokenId, string calldata imageURI)
         external
         whenNotPaused
+        nonReentrant
     {
         _validateCallerIsSoulBoundTokenOwnerOrDispathcher(soulBoundTokenId);
         INFTDerivativeProtocolTokenV1(IModuleGlobals(MODULE_GLOBALS).getSBT()).setProfileImageURI(soulBoundTokenId, imageURI);
     }
 
     function getPublishInfo(uint256 publishId_) external view returns (DataTypes.PublishData memory) {
-        return _publishIdByProjectData[publishId_];
+        return _projectDataByPublishId[publishId_];
     }
  
     function getDerivativeNFT(uint256 projectId) external view returns (address) {
         return _derivativeNFTByProjectId[projectId];
     }
 
-    function getPublicationByTokenId(uint256 tokenId_) external view returns (DataTypes.Publication memory) {
+    function getPublicationByTokenId(uint256 tokenId_) external view returns (uint256, DataTypes.Publication memory) {
        uint256 publishId = _tokenIdByPublishId[tokenId_];
-       return _publishIdByProjectData[publishId].publication;
-    }
+       return (publishId, _projectDataByPublishId[publishId].publication);
+    } 
 
     function getProjectIdByContract(address contract_) external view returns (uint256) {
         return _projectIdToderivativeNFT[contract_];
     }
 
-    function getGenesisSoulBoundTokenIdByPublishId(uint256 publishId) external view returns(uint256) {
-       return _genesisPublishIdByProjectId[publishId];   
+    function getGenesisPublishIdByProjectId(uint256 projectId) external view returns(uint256) {
+       return _genesisPublishIdByProjectId[projectId];   
     }
 
     function getHubInfo(uint256 hubId) external view returns(DataTypes.HubData memory) {
@@ -453,13 +516,13 @@ contract Manager is
     /// *****GOV FUNCTIONS*****
     /// ***********************
 
-    function setEmergencyAdmin(address newEmergencyAdmin) external override onlyGov {
+    function setEmergencyAdmin(address newEmergencyAdmin) external nonReentrant onlyGov {
         address prevEmergencyAdmin = _emergencyAdmin;
         _emergencyAdmin = newEmergencyAdmin;
         emit Events.EmergencyAdminSet(msg.sender, prevEmergencyAdmin, newEmergencyAdmin, block.timestamp);
     }
 
-    function setState(DataTypes.ProtocolState newState) external override {
+    function setState(DataTypes.ProtocolState newState) external nonReentrant {
         if (msg.sender == _emergencyAdmin) {
             if (newState == DataTypes.ProtocolState.Unpaused) revert Errors.EmergencyAdminCannotUnpause();
             _validateNotPaused();
@@ -475,14 +538,14 @@ contract Manager is
         DataTypes.DerivativeNFTState newState
     ) 
         external 
-        override 
+        nonReentrant 
         onlyGov 
     {
         address derivativeNFT = _derivativeNFTByProjectId[projectId];
         IDerivativeNFTV1(derivativeNFT).setState(newState);
     }
 
-    function setGovernance(address newGovernance) external onlyGov {
+    function setGovernance(address newGovernance) external nonReentrant onlyGov {
         _setGovernance(newGovernance);
     }
 
@@ -490,7 +553,7 @@ contract Manager is
         return _governance;
     }
 
-    function setGlobalModule(address moduleGlobals) external onlyGov {
+    function setGlobalModule(address moduleGlobals) external nonReentrant onlyGov {
         if (moduleGlobals == address(0)) revert Errors.InitParamsInvalid();
         MODULE_GLOBALS = moduleGlobals;
         _soulBoundTokenIdToWallet[1] = IModuleGlobals(MODULE_GLOBALS).getTreasury();
@@ -506,7 +569,7 @@ contract Manager is
 
     function setDispatcherWithSig(DataTypes.SetDispatcherWithSigData calldata vars)
         external
-        override
+        nonReentrant
         whenNotPaused
     {
         address _sbt = IModuleGlobals(MODULE_GLOBALS).getSBT();

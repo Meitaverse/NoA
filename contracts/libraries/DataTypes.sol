@@ -9,15 +9,15 @@ pragma solidity ^0.8.13;
  * @notice A standard library of data types used throughout the Bitsoul Protocol.
  */
 library DataTypes {
-    enum PriceType {FIXED, DECLIINING_BY_TIME}
+    enum PriceType {FIXED, DECLIINING_BY_TIME, BIDDED}
 
     //0.1eth, 0.2eth, 0.3eth, 0.4eth, 0.5 eth
     enum VoucherParValueType {ZEROPOINT, ZEROPOINTONE, ZEROPOINTTWO, ZEROPOINTTHREE, ZEROPOINTFOUR, ZEROPOINTFIVE}
 
-    enum FeeType {
-        BY_AMOUNT,
-        FIXED
-    }
+    // enum FeeType {
+    //     BY_AMOUNT,
+    //     FIXED
+    // }
 
     enum FeeShareType {
         LEVEL_TWO,
@@ -170,29 +170,43 @@ library DataTypes {
     struct Market {
         bool isValid;
         uint64 precision;
-        FeeType feeType;
+        FeeShareType feeShareType;
         FeePayType feePayType;
-        uint128 feeAmount;
-        uint16 feeRate;
+        uint16 royaltyBasisPoints;
     }
 
-    struct Sale {
-        uint24 saleId;
+    struct SaleParam {
         uint256 soulBoundTokenId;
         uint256 projectId;
         uint256 tokenId;
+        uint128 onSellUnits; //on sell units
         uint32 startTime;
-        address seller;
-        uint128 price;
+        uint128 salePrice;
         PriceType priceType;
-        uint256 total; //sale units
-        uint128 units; //current units
+        uint128 min; //min units
+        uint128 max; //max units
+        // bool useAllowList;
+    }
+
+    struct Sale {
+        uint256 soulBoundTokenId;
+        uint256 projectId;
+        uint256 tokenId;
+        uint256 newTokenId;
+        uint32 startTime;
+        uint128 salePrice;
+        PriceType priceType;
+        uint128 onSellUnits; //on sell units
+        uint128 seledUnits; //selled units
         uint128 min; //min units
         uint128 max; //max units
         address derivativeNFT; //sale asset
-        address currency; //pay currency
-        bool useAllowList;
+        // bool useAllowList;
         bool isValid;
+        uint256 genesisSoulBoundTokenId;
+        uint256 genesisRoyaltyBasisPoints;
+        uint256 previousSoulBoundTokenId;
+        uint256 previousRoyaltyBasisPoints;
      }
 
     /**
@@ -298,5 +312,18 @@ library DataTypes {
         uint256 usedTimestamp;
     }
 
+    struct CollectFeeUsers {
+       uint256 ownershipSoulBoundTokenId;
+       uint256 collectorSoulBoundTokenId;
+       uint256 genesisSoulBoundTokenId;
+       uint256 previousSoulBoundTokenId;
+    }
+
+    struct RoyaltyAmounts {
+       uint256 treasuryAmount;
+       uint256 genesisAmount;
+       uint256 previousAmount;
+       uint256 adjustedAmount;
+    }
 
 }

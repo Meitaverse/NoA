@@ -85,10 +85,12 @@ abstract contract ManagerStorage {
 
     mapping(uint256 => address) internal _dispatcherByProfile;
     mapping(uint256 => mapping(uint256 => DataTypes.PublicationStruct)) internal _pubByIdByProfile;
+
+    //projectId => publishId
     mapping(uint256 => uint256) internal _genesisPublishIdByProjectId;
 
     //publishId => publishData
-    mapping(uint256 => DataTypes.PublishData) internal _publishIdByProjectData;
+    mapping(uint256 => DataTypes.PublishData) internal _projectDataByPublishId;
     
     //tokenId => publishId
     mapping(uint256 => uint256) internal _tokenIdByPublishId;

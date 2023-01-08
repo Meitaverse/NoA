@@ -449,61 +449,44 @@ library Events {
     );
 
     event FixedPriceSet (
-       address   derivativeNFT,
-       uint128   saleId,
-       uint256   projectId,
-       uint256   tokenId,
-       uint128   units,
-       uint8     priceType,
-       uint128   price
+       uint256 soulBoundTokenId,
+       uint128  saleId,
+       uint128  preSalePrice,
+       uint128  newSalePrice,
+       uint256  timestamp
     );
 
     event PublishSale(
+        DataTypes.SaleParam saleParam,
         address derivativeNFT,
-        address seller,
-        uint256 tokenId,
-        uint128 saleId,
-        uint8 priceType,
-        uint128 units,
-        uint32  startTime,
-        address currency,
-        uint128 min,
-        uint128 max,
-        bool useAllowList
+        uint256 newTokenId,
+        uint128 saleId
     );
 
    event AddMarket(
         address derivativeNFT,
-        uint64 precision,
-        uint8 feePayType,
-        uint8 feeType,
-        uint128 feeAmount,
-        uint16 feeRate
+        DataTypes.FeePayType feePayType,
+        DataTypes.FeeShareType feeShareType,
+        // uint128 feeAmount,
+        uint16 royaltyBasisPoints
     );
 
    event RemoveMarket(address derivativeNFT);
 
    event RemoveSale(
-         address    derivativeNFT,
-         address    seller,
-         uint128    saleId,
-         uint256    total,
-         uint256   saled
+        uint256 soulBoundTokenId,
+        uint128    saleId,
+        uint256    onSellUnits,
+        uint256    saledUnits
     ); 
     
     event Traded(
-        address indexed buyer,
         uint24 indexed saleId,
-        address indexed derivativeNFT,
-        uint256 tokenId,
         uint256 tradeId,
         uint32 tradeTime,
-        address currency,
-        uint8 priceType,
         uint128 price,
-        uint128 tradedUnits,
-        uint256 tradedAmount,
-        uint128 fee
+        uint256 newTokenIdBuyer,
+        uint128 tradedUnits
     );
 
     //BankTreasury
@@ -655,11 +638,9 @@ library Events {
     );
 
     event FeesForCollect (
-        uint256 collectorSoulBoundTokenId,
         uint256 publishId, 
-        uint256 treasuryAmount, 
-        uint256 genesisAmount,
-        uint256 adjustedAmount
+        DataTypes.CollectFeeUsers collectFeeUsers,
+        DataTypes.RoyaltyAmounts royaltyAmounts
     );
 
     event ExchangeSBTByEth(

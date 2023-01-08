@@ -6,10 +6,12 @@ import {ICollectModule} from "../../interfaces/ICollectModule.sol";
 import {IBankTreasury} from "../../interfaces/IBankTreasury.sol";
 import {Errors} from "../../libraries/Errors.sol";
 import {Events} from "../../libraries/Events.sol";
+import {DataTypes} from '../../libraries/DataTypes.sol';
 import {FeeModuleBase} from "../FeeModuleBase.sol";
 import {ModuleBase} from "../ModuleBase.sol";
 import {SafeMathUpgradeable} from "@openzeppelin/contracts-upgradeable/utils/math/SafeMathUpgradeable.sol";
 import {INFTDerivativeProtocolTokenV1} from "../../interfaces/INFTDerivativeProtocolTokenV1.sol";
+import {IManager} from "../../interfaces/IManager.sol";
 
 /**
  * @notice A struct containing the necessary data to execute collect actions on a publication.
@@ -24,12 +26,14 @@ import {INFTDerivativeProtocolTokenV1} from "../../interfaces/INFTDerivativeProt
  */
 struct ProfilePublicationData {
     uint256 genesisSoulBoundTokenId;       //创世的soulBoundTokenId
+    uint256 previousSoulBoundTokenId;       //上级soulBoundTokenId
     uint256 tokenId;                       //发行对应的tokenId
     uint256 amount;                        //发行总量
     uint256 salePrice;                     //发行单价
     uint256 royaltyBasisPoints;            //二创及OpenSea税点
     uint256 ownershipSoulBoundTokenId;     //发行人的灵魂币ID
     uint16 genesisFee;                     //创世NFT版税点数，最多90%，以后每个衍生NFT都需要支付
+    uint16 previousFee;                    //上级版税点数
 }
 
 /**
@@ -70,6 +74,11 @@ contract FeeCollectModule is FeeModuleBase, ModuleBase, ICollectModule {
         )
             revert Errors.InitParamsInvalid();
 
+        //previous 
+        DataTypes.PublishData memory publishData  = IManager(MANAGER).getPublishInfo(publishId);
+        DataTypes.PublishData memory previousPublishData = IManager(MANAGER).getPublishInfo(publishData.previousPublishId);
+        uint previousSoulBoundTokenId = previousPublishData.publication.soulBoundTokenId;
+        
         //Save 
         _dataByPublicationByProfile[publishId].tokenId = tokenId;
         _dataByPublicationByProfile[publishId].amount = amount;
@@ -77,7 +86,9 @@ contract FeeCollectModule is FeeModuleBase, ModuleBase, ICollectModule {
         _dataByPublicationByProfile[publishId].royaltyBasisPoints = royaltyBasisPoints;
         _dataByPublicationByProfile[publishId].ownershipSoulBoundTokenId = ownershipSoulBoundTokenId;
         _dataByPublicationByProfile[publishId].genesisSoulBoundTokenId = genesisSoulBoundTokenId;
+        _dataByPublicationByProfile[publishId].previousSoulBoundTokenId = previousSoulBoundTokenId;
         _dataByPublicationByProfile[publishId].genesisFee = genesisFee;
+        _dataByPublicationByProfile[publishId].previousFee = uint16(previousPublishData.publication.royaltyBasisPoints);
     }
 
     /**
@@ -122,24 +133,21 @@ contract FeeCollectModule is FeeModuleBase, ModuleBase, ICollectModule {
     ) external view returns (
         uint16 treasuryFee, 
         uint256 genesisSoulBoundTokenId, 
-        uint256 treasuryAmount, 
-        uint256 genesisAmount, 
-        uint256 adjustedAmount
+        DataTypes.RoyaltyAmounts memory royaltyAmounts
     ) {
 
         uint256 payValue = collectValue.mul(_dataByPublicationByProfile[publishId].salePrice);
         (,  treasuryFee) = _treasuryData();
         genesisSoulBoundTokenId = _dataByPublicationByProfile[publishId].genesisSoulBoundTokenId;
-        treasuryAmount = payValue.mul(treasuryFee).div(BPS_MAX);
-        genesisAmount = payValue.mul(_dataByPublicationByProfile[publishId].genesisFee).div(BPS_MAX);
-        adjustedAmount = payValue.sub(payValue.mul(treasuryFee).div(BPS_MAX)).sub(payValue.mul(_dataByPublicationByProfile[publishId].genesisFee).div(BPS_MAX));
+        royaltyAmounts.treasuryAmount = payValue.mul(treasuryFee).div(BPS_MAX);
+        royaltyAmounts.genesisAmount = payValue.mul(_dataByPublicationByProfile[publishId].genesisFee).div(BPS_MAX);
+        royaltyAmounts.previousAmount = payValue.mul(_dataByPublicationByProfile[publishId].previousFee).div(BPS_MAX);
+        royaltyAmounts.adjustedAmount = payValue.sub(royaltyAmounts.treasuryAmount).sub(royaltyAmounts.genesisAmount).sub(royaltyAmounts.previousAmount);
 
         return (
            treasuryFee,
            genesisSoulBoundTokenId,
-           treasuryAmount, 
-           genesisAmount,
-           adjustedAmount
+           royaltyAmounts
         );
     }
 
@@ -150,33 +158,40 @@ contract FeeCollectModule is FeeModuleBase, ModuleBase, ICollectModule {
         uint256 collectValue,
         bytes calldata data
     ) internal {
+        DataTypes.RoyaltyAmounts memory royaltyAmounts;
         uint256 payValue = collectValue.mul(_dataByPublicationByProfile[publishId].salePrice);
         uint256 genesisSoulBoundTokenId = _dataByPublicationByProfile[publishId].genesisSoulBoundTokenId;
         
         //获取交易税点
         (address treasury, uint16 treasuryFee) = _treasuryData();
-        uint256 treasuryAmount = payValue.mul(treasuryFee).div(BPS_MAX);
-        uint256 genesisAmount = payValue.mul(_dataByPublicationByProfile[publishId].genesisFee).div(BPS_MAX);
+        royaltyAmounts.treasuryAmount = payValue.mul(treasuryFee).div(BPS_MAX);
+        royaltyAmounts.previousAmount = payValue.mul(_dataByPublicationByProfile[publishId].previousFee).div(BPS_MAX);
+        royaltyAmounts.genesisAmount = payValue.mul(_dataByPublicationByProfile[publishId].genesisFee).div(BPS_MAX);
         {
-            uint256 adjustedAmount = payValue.sub(treasuryAmount).sub(genesisAmount);
-            if ( adjustedAmount > 0) 
-                INFTDerivativeProtocolTokenV1(_sbt()).transferValue(collectorSoulBoundTokenId, ownershipSoulBoundTokenId, adjustedAmount);
+            // royaltyAmounts.adjustedAmount = payValue.sub(royaltyAmounts.treasuryAmount).sub(royaltyAmounts.genesisAmount);
+            royaltyAmounts.adjustedAmount = payValue.sub(royaltyAmounts.treasuryAmount).sub(royaltyAmounts.genesisAmount).sub(royaltyAmounts.previousAmount);
+            if ( royaltyAmounts.adjustedAmount > 0) 
+                INFTDerivativeProtocolTokenV1(_sbt()).transferValue(collectorSoulBoundTokenId, ownershipSoulBoundTokenId, royaltyAmounts.adjustedAmount);
             
             uint256 treasuryOfSoulBoundTokenId = IBankTreasury(treasury).getSoulBoundTokenId();
             
-            if (treasuryAmount > 0) INFTDerivativeProtocolTokenV1(_sbt()).transferValue(collectorSoulBoundTokenId, treasuryOfSoulBoundTokenId, treasuryAmount);
-            if (genesisSoulBoundTokenId >0 && genesisAmount > 0) INFTDerivativeProtocolTokenV1(_sbt()).transferValue(collectorSoulBoundTokenId, genesisSoulBoundTokenId, genesisAmount);
-           
+            if (royaltyAmounts.treasuryAmount > 0) INFTDerivativeProtocolTokenV1(_sbt()).transferValue(collectorSoulBoundTokenId, treasuryOfSoulBoundTokenId, royaltyAmounts.treasuryAmount);
+            if (genesisSoulBoundTokenId >0 && royaltyAmounts.genesisAmount > 0) INFTDerivativeProtocolTokenV1(_sbt()).transferValue(collectorSoulBoundTokenId, genesisSoulBoundTokenId, royaltyAmounts.genesisAmount);
+            if (royaltyAmounts.previousAmount > 0) INFTDerivativeProtocolTokenV1(_sbt()).transferValue(collectorSoulBoundTokenId, _dataByPublicationByProfile[publishId].previousSoulBoundTokenId, royaltyAmounts.previousAmount);
+
+            DataTypes.CollectFeeUsers memory collectFeeUsers =  DataTypes.CollectFeeUsers({
+                ownershipSoulBoundTokenId: ownershipSoulBoundTokenId,
+                collectorSoulBoundTokenId: collectorSoulBoundTokenId,
+                genesisSoulBoundTokenId: genesisSoulBoundTokenId,
+                previousSoulBoundTokenId: _dataByPublicationByProfile[publishId].previousSoulBoundTokenId
+            });
+
             emit Events.FeesForCollect(
-                collectorSoulBoundTokenId,
                 publishId,
-                treasuryAmount,
-                genesisAmount,
-                adjustedAmount
+                collectFeeUsers,
+                royaltyAmounts
             );
         }
-
     }
-
 
 }

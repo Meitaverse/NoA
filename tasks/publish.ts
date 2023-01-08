@@ -49,6 +49,8 @@ task("publish", "publish function")
   const userAddress = user.address;
   const userTwoAddress = userTwo.address;
   const userThreeAddress = userThree.address;
+  
+
 
   const managerImpl = await loadContract(hre, Manager__factory, "ManagerImpl");
   const manager = await loadContract(hre, Manager__factory, "Manager");
@@ -73,14 +75,14 @@ task("publish", "publish function")
     let abiCoder = ethers.utils.defaultAbiCoder;
     const SECOND_PROFILE_ID =2; 
     const FIRST_HUB_ID =1; 
-    // const FIRST_PROJECT_ID =1; 
     const DEFAULT_COLLECT_PRICE = 10; // parseEther('10');
+    const Default_royaltyBasisPoints = 50; //
     const GENESIS_FEE_BPS = 100;
     const DEFAULT_TEMPLATE_NUMBER = 1;
 
     const collectModuleInitData = abiCoder.encode(
       ['uint256', 'uint16', 'uint256', 'uint256'],
-      [SECOND_PROFILE_ID, GENESIS_FEE_BPS, DEFAULT_COLLECT_PRICE, 50]
+      [SECOND_PROFILE_ID, GENESIS_FEE_BPS, DEFAULT_COLLECT_PRICE, Default_royaltyBasisPoints]
     );
 
     const publishModuleinitData = abiCoder.encode(
@@ -106,7 +108,7 @@ task("publish", "publish function")
         projectId: projectid,
         amount: 11,
         salePrice: DEFAULT_COLLECT_PRICE,
-        royaltyBasisPoints: 50,
+        royaltyBasisPoints: Default_royaltyBasisPoints,
         name: "Dollar",
         description: "Hand draw",
         materialURIs: [],

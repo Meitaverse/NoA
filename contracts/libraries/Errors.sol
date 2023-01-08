@@ -126,4 +126,16 @@ library Errors {
   error AmountOnlyIncrease();
   error InvalidSale();
   error OnlySeller();
+
+  //market
+  error ExceedsPurchaseLimit();
+  error NotInAllowList();
+  error UnsupportedDerivativeNFT();
+  error MinGTMax();
+  error MaxGTTotal();
+  error UnitsLTMin();
+  error UnitsGTMax();
+  error ExceedsUint128Max();
+  error TotalIsZero();
+  error NotSeller();
 }

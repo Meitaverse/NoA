@@ -2,7 +2,6 @@
 
 pragma solidity ^0.8.13;
 
-
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/access/AccessControlUpgradeable.sol";
@@ -12,6 +11,7 @@ import "@solvprotocol/erc-3525/contracts/IERC3525Receiver.sol";
 import "@solvprotocol/erc-3525/contracts/IERC3525.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
 import "@openzeppelin/contracts-upgradeable/utils/structs/EnumerableSetUpgradeable.sol";
+import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 
 import {IERC3525Metadata} from "@solvprotocol/erc-3525/contracts/extensions/IERC3525Metadata.sol";
 import {IDerivativeNFTV1} from "./interfaces/IDerivativeNFTV1.sol";
@@ -31,6 +31,7 @@ import {IManager} from "./interfaces/IManager.sol";
 
 contract MarketPlace is
     Initializable,
+    ReentrancyGuard,
     IMarketPlace,
     MarketPlaceStorage,
     PriceManager,
@@ -124,7 +125,12 @@ contract MarketPlace is
         return 0x009ce20b;
     }
 
-    function setGlobalModule(address moduleGlobals) external onlyGov {
+    function setGlobalModule(address moduleGlobals) 
+        external
+        nonReentrant
+        whenNotPaused  
+        onlyGov 
+    {
         if (moduleGlobals == address(0)) revert Errors.InitParamsInvalid();
         MODULE_GLOBALS = moduleGlobals;
     }
@@ -132,83 +138,176 @@ contract MarketPlace is
     function getGlobalModule() external view returns (address) {
         return MODULE_GLOBALS;
     }
-
    
-    function getGovernance() external override returns (address) {
+    function getGovernance() external view returns (address) {
          return _governance;
     }
 
-    function publishFixedPrice(DataTypes.Sale memory sale) external override {
-        _validateCallerIsSoulBoundTokenOwnerOrDispathcher(sale.soulBoundTokenId);
+    function publishSale(
+        DataTypes.SaleParam memory saleParam
+    ) 
+        external 
+        nonReentrant
+        whenNotPaused  
+    {
+        _validateCallerIsSoulBoundTokenOwnerOrDispathcher(saleParam.soulBoundTokenId);
+        
+        if (saleParam.max > 0) {
+            if (saleParam.min > saleParam.max) revert Errors.MinGTMax();
+        }
 
+        address _manager = IModuleGlobals(MODULE_GLOBALS).getManager();
+        address derivativeNFT = IManager(_manager).getDerivativeNFT(saleParam.projectId);
+        if (derivativeNFT == address(0)) 
+            revert Errors.InvalidParameter();
+        
+        if (!markets[derivativeNFT].isValid)
+            revert Errors.UnsupportedDerivativeNFT();
+        
+        uint128 total = uint128(IERC3525(derivativeNFT).balanceOf(saleParam.tokenId));
+        if(total > type(uint128).max) revert Errors.ExceedsUint128Max();
+        if(total == 0) revert Errors.TotalIsZero();
+        if(saleParam.max > total) revert Errors.MaxGTTotal(); 
+        
         uint24 saleId = _generateNextSaleId();
-        _derivativeNFTSales[sale.derivativeNFT].add(saleId);
-        PriceManager.setFixedPrice(saleId, sale.price);
-        _publishFixedPrice(sale);
+        _derivativeNFTSales[derivativeNFT].add(saleId);
+        PriceManager.setFixedPrice(saleId, saleParam.salePrice);
+
+        //must approve manager before
+        uint256 newTokenId = IERC3525(derivativeNFT).transferFrom(saleParam.tokenId, address(this), saleParam.onSellUnits);
+        
+        //genesis
+        uint256 genesisPublishId = IManager(IModuleGlobals(MODULE_GLOBALS).getManager()).getGenesisPublishIdByProjectId(saleParam.projectId);
+        DataTypes.PublishData memory gengesisPublishData  = IManager(IModuleGlobals(MODULE_GLOBALS).getManager()).getPublishInfo(genesisPublishId);
+        DataTypes.ProjectData memory genesisProjectData = IManager(IModuleGlobals(MODULE_GLOBALS).getManager()).getProjectInfo(saleParam.projectId);
+   
+        //previous 
+        (uint256 publishId, )  = IManager(IModuleGlobals(MODULE_GLOBALS).getManager()).getPublicationByTokenId(saleParam.tokenId);
+        DataTypes.PublishData memory publishData  = IManager(IModuleGlobals(MODULE_GLOBALS).getManager()).getPublishInfo(publishId);
+        
+        DataTypes.PublishData memory previousPublishData = IManager(IModuleGlobals(MODULE_GLOBALS).getManager()).getPublishInfo(publishData.previousPublishId);
+ 
+        _publishFixedPrice(
+            saleId, 
+            newTokenId, 
+            derivativeNFT, 
+            saleParam,
+            genesisProjectData.soulBoundTokenId,
+            gengesisPublishData.publication.royaltyBasisPoints,
+            previousPublishData.publication.soulBoundTokenId,
+            previousPublishData.publication.royaltyBasisPoints
+        ); 
     }
 
-    function removeSale(uint256 soulBoundTokenId, address seller, uint24 saleId) external override {
-        _validateCallerIsSoulBoundTokenOwnerOrDispathcher(soulBoundTokenId);
-        _removeSale(seller, saleId);
+    function fixedPriceSet(uint24 saleId, uint128 newSalePrice) external  {
+        _validateCallerIsSoulBoundTokenOwnerOrDispathcher(sales[saleId].soulBoundTokenId);
+
+        DataTypes.Sale memory sale = sales[saleId];
+
+        if (!sale.isValid) revert Errors.InvalidSale();
+
+        uint128 preSalePrice = sale.salePrice;
+        
+        emit Events.FixedPriceSet(
+            sales[saleId].soulBoundTokenId,
+            saleId,
+            preSalePrice,
+            newSalePrice,
+            block.timestamp
+        );
+    }
+
+    function setSaleValid(uint24 saleId, bool isValid) external onlyGov{
+        DataTypes.Sale storage sale = sales[saleId];
+        sale.isValid = isValid;
+    }
+
+    function setMarketValid(address derivativeNFT, bool isValid) external onlyGov{
+        markets[derivativeNFT].isValid = isValid;
+    }
+
+    function removeSale(uint24 saleId) external nonReentrant {
+        _validateCallerIsSoulBoundTokenOwnerOrDispathcher(sales[saleId].soulBoundTokenId);
+       
+        _removeSale(saleId);
     }
 
     function addMarket(
         address derivativeNFT_,
-        uint64 precision_,
-        uint8 feePayType_,
-        uint8 feeType_,
-        uint128 feeAmount_,
-        uint16 feeRate_
-    ) external override {
-        
+        DataTypes.FeePayType feePayType_,
+        DataTypes.FeeShareType feeShareType_,
+        uint16 royaltyBasisPoints_
+    ) 
+        external 
+        nonReentrant
+        whenNotPaused   
+        onlyGov 
+    {
         markets[derivativeNFT_].isValid = true;
-        markets[derivativeNFT_].precision = precision_;
         markets[derivativeNFT_].feePayType = DataTypes.FeePayType(feePayType_);
-        markets[derivativeNFT_].feeType = DataTypes.FeeType(feeType_);
-        markets[derivativeNFT_].feeAmount = feeAmount_;
-        markets[derivativeNFT_].feeRate = feeRate_;
+        markets[derivativeNFT_].feeShareType = DataTypes.FeeShareType(feeShareType_);
+        markets[derivativeNFT_].royaltyBasisPoints = royaltyBasisPoints_;
 
         emit Events.AddMarket(
             derivativeNFT_,
-            precision_,
             feePayType_,
-            feeType_,
-            feeAmount_,
-            feeRate_
+            feeShareType_,
+            royaltyBasisPoints_
         );
     }
 
-    function removeMarket(address derivativeNFT_) external override {
+    function removeMarket(address derivativeNFT_) 
+        external 
+        nonReentrant
+        whenNotPaused   
+        onlyGov
+    {
         delete markets[derivativeNFT_];
         emit Events.RemoveMarket(derivativeNFT_);
     }
 
     function buyUnits(
-        uint256 soulBoundTokenId,
-        address buyer,
+        uint256 buyerSoulBoundTokenId,
         uint24 saleId,
         uint128 units
-    ) external payable override returns (uint256 amount, uint128 fee) {
-         _validateCallerIsSoulBoundTokenOwnerOrDispathcher(soulBoundTokenId);
+    )
+        external 
+        payable 
+        nonReentrant
+        whenNotPaused 
+    {
+         _validateCallerIsSoulBoundTokenOwnerOrDispathcher(buyerSoulBoundTokenId);
+
+        address _manager = IModuleGlobals(MODULE_GLOBALS).getManager();
+        address buyer = IManager(_manager).getWalletBySoulBoundTokenId(buyerSoulBoundTokenId);
+ 
         if (sales[saleId].max > 0) {
-            require(saleRecords[sales[saleId].saleId][buyer].add(units) <= sales[saleId].max, "exceeds purchase limit");
-            saleRecords[sales[saleId].saleId][buyer] = saleRecords[sales[saleId].saleId][buyer].add(units);
+            if (saleRecords[saleId][buyer].add(units) > sales[saleId].max) 
+                revert Errors.ExceedsPurchaseLimit(); 
+
+            saleRecords[saleId][buyer] = saleRecords[saleId][buyer].add(units);
         }
 
-        if (sales[saleId].useAllowList) {
-            require(_allowAddresses[sales[saleId].derivativeNFT].contains(buyer), "not in allow list");
+        if (sales[saleId].min > units) {
+           
+            revert Errors.UnitsLTMin();
         }
 
-        return
-            _buyByUnits(
-                _generateNextTradeId(),
-                buyer,
-                saleId,
-                PriceManager.price(DataTypes.PriceType.FIXED, saleId),
-                units
-            );
+        if (units > sales[saleId].max) {
+           
+            revert Errors.UnitsGTMax();
+        }
+
+        _buyByUnits(
+            buyerSoulBoundTokenId,
+            _generateNextTradeId(),
+            buyer,
+            saleId,
+            PriceManager.price(DataTypes.PriceType.FIXED, saleId),
+            units
+        );
     }
-    
+
     function purchasedUnits(
         uint24 saleId_, 
         address buyer_
@@ -236,15 +335,15 @@ contract MarketPlace is
     {
         return _derivativeNFTSales[derivativeNFT_].at(index_);
     }
-    //--- internal  ---//
 
+    //--- internal  ---//
 
     function _generateNextTradeId() internal returns (uint24) {
         _nextTradeId.increment();
         return uint24(_nextTradeId.current());
     } 
 
-    function  _validateCallerIsSoulBoundTokenOwnerOrDispathcher(uint256 soulBoundTokenId_) internal view {
+    function _validateCallerIsSoulBoundTokenOwnerOrDispathcher(uint256 soulBoundTokenId_) internal view {
          address _sbt = IModuleGlobals(MODULE_GLOBALS).getSBT();
          address _manager = IModuleGlobals(MODULE_GLOBALS).getManager();
 
@@ -275,124 +374,134 @@ contract MarketPlace is
     }
 
     function _publishFixedPrice(
-        DataTypes.Sale memory sale
+        uint24 saleId,
+        uint256 newTokenId, 
+        address derivativeNFT, 
+        DataTypes.SaleParam memory saleParam,
+        uint256 genesisSoulBoundTokenId,
+        uint256 genesisRoyaltyBasisPoints,
+        uint256 previousSoulBoundTokenId,
+        uint256 previousRoyaltyBasisPoints
     ) internal {
 
-        // DataTypes.PriceType priceType_ = DataTypes.PriceType.FIXED;
-
-        require(markets[sale.derivativeNFT].isValid, "unsupported derivativeNFT");
-        if (sale.max > 0) {
-            require(sale.min <= sale.max, "min > max");
-        }
-
-        uint128 units = uint128(IERC3525(sale.derivativeNFT).balanceOf(sale.tokenId));
-        require(units <= type(uint128).max, "exceeds uint128 max");
-        sales[sale.saleId] = DataTypes.Sale({
-            saleId: sale.saleId,
-            soulBoundTokenId: sale.soulBoundTokenId,
-            projectId : sale.projectId,
-            seller: msg.sender,
-            price: sale.price,
-            tokenId: sale.tokenId,
-            total: uint128(units),
-            units: uint128(units),
-            startTime: sale.startTime,
-            min: sale.min,
-            max: sale.max,
-            derivativeNFT: sale.derivativeNFT,
-            currency: sale.currency,
-            priceType: sale.priceType,
-            useAllowList: sale.useAllowList,
-            isValid: true
+        sales[saleId] = DataTypes.Sale({
+            soulBoundTokenId: saleParam.soulBoundTokenId,
+            projectId : saleParam.projectId,
+            salePrice: saleParam.salePrice,
+            tokenId: saleParam.tokenId,
+            newTokenId: newTokenId,
+            onSellUnits: saleParam.onSellUnits, 
+            seledUnits: 0,
+            startTime: saleParam.startTime,
+            min: saleParam.min,
+            max: saleParam.max,
+            derivativeNFT: derivativeNFT,
+            priceType: saleParam.priceType,
+            isValid: true, 
+            genesisSoulBoundTokenId: genesisSoulBoundTokenId,
+            genesisRoyaltyBasisPoints: genesisRoyaltyBasisPoints,
+            previousSoulBoundTokenId: previousSoulBoundTokenId,
+            previousRoyaltyBasisPoints: previousRoyaltyBasisPoints
         });
 
         emit Events.PublishSale(
-            sale.derivativeNFT,
-            sale.seller,
-            sale.tokenId,
-            sale.saleId,
-            uint8(sale.priceType),
-            sale.units,
-            sale.startTime,
-            sale.currency,
-            sale.min,
-            sale.max,   
-            sale.useAllowList
-        );
-        
-        emit Events.FixedPriceSet(
-            sale.derivativeNFT,
-            sale.saleId,
-            sale.projectId,
-            sale.tokenId,
-            uint128(units),
-            uint8(sale.priceType),
-            sale.price
+            saleParam,
+            derivativeNFT,
+            newTokenId,
+            saleId
         );
     }
 
-
     function _removeSale(
-        address seller,
         uint24 saleId_
     ) internal {
         DataTypes.Sale memory sale = sales[saleId_];
-        if (!sale.isValid) revert Errors.InvalidSale();
 
-        if(sale.seller != seller) revert Errors.OnlySeller();
+        if (!sale.isValid) revert Errors.InvalidSale();
 
         delete sales[saleId_];
 
         emit Events.RemoveSale(
-            sale.derivativeNFT,
-            sale.seller,
-            sale.saleId,
-            sale.total,
-            sale.total - sale.units
+            sale.soulBoundTokenId,
+            saleId_,
+            sale.onSellUnits,
+            sale.seledUnits
         );
     }
 
-
     function _buyByUnits(
+        uint256 buyerSoulBoundTokenId_,
         uint256 nextTradeId_,
         address buyer_,
         uint24 saleId_, 
         uint128 price_,
         uint128 units_
-    ) internal returns (uint256 amount_, uint128 fee_) {
-        DataTypes.Sale storage sale_ = sales[saleId_];
+    ) internal {
+        DataTypes.Sale storage sale_ = sales[saleId_];   
 
-        amount_ = uint256(units_).mul(uint256(price_)).div(
-            uint256(markets[sale_.derivativeNFT].precision)
-        );
+        //transfer units to buyer
+        uint256 newTokenIdBuyer_ = IERC3525(sale_.derivativeNFT).transferFrom(sale_.newTokenId, buyer_, uint256(units_));
+
+        uint256 payValue = units_.mul(sale_.salePrice);
+
+        //get realtime bank treasury fee points
+        (, uint16 treasuryFee) = IModuleGlobals(MODULE_GLOBALS).getTreasuryData();
+
+        DataTypes.RoyaltyAmounts memory royaltyAmounts;
+        royaltyAmounts.treasuryAmount = payValue.mul(treasuryFee).div(BPS_MAX);
+
+        royaltyAmounts.genesisAmount = payValue.mul(sale_.genesisRoyaltyBasisPoints).div(BPS_MAX);
+        royaltyAmounts.previousAmount = payValue.mul(sale_.previousRoyaltyBasisPoints).div(BPS_MAX);
+            
+        if (royaltyAmounts.treasuryAmount > 0){
+            if (markets[sale_.derivativeNFT].feePayType == DataTypes.FeePayType.BUYER_PAY) {
+                INFTDerivativeProtocolTokenV1(IModuleGlobals(MODULE_GLOBALS).getSBT()).transferValue(buyerSoulBoundTokenId_, Constants._BANK_TREASURY_SOUL_BOUND_TOKENID, royaltyAmounts.treasuryAmount);
+                royaltyAmounts.adjustedAmount = payValue.sub(royaltyAmounts.treasuryAmount).sub(royaltyAmounts.genesisAmount).sub(royaltyAmounts.previousAmount);
+                
+            } else {
+                INFTDerivativeProtocolTokenV1(IModuleGlobals(MODULE_GLOBALS).getSBT()).transferValue(sale_.soulBoundTokenId, Constants._BANK_TREASURY_SOUL_BOUND_TOKENID, royaltyAmounts.treasuryAmount);
+                royaltyAmounts.adjustedAmount = payValue.sub(royaltyAmounts.genesisAmount).sub(royaltyAmounts.previousAmount);
+                
+            }
+        } 
+
+        if(markets[sale_.derivativeNFT].feeShareType == DataTypes.FeeShareType.LEVEL_TWO ) {
+
+            if ( royaltyAmounts.adjustedAmount > 0) 
+                INFTDerivativeProtocolTokenV1(IModuleGlobals(MODULE_GLOBALS).getSBT()).transferValue(buyerSoulBoundTokenId_, sale_.soulBoundTokenId, royaltyAmounts.adjustedAmount);
+            
+            if (royaltyAmounts.genesisAmount > 0) INFTDerivativeProtocolTokenV1(IModuleGlobals(MODULE_GLOBALS).getSBT()).transferValue(buyerSoulBoundTokenId_, sale_.genesisSoulBoundTokenId, royaltyAmounts.genesisAmount);
+            if (royaltyAmounts.previousAmount > 0) INFTDerivativeProtocolTokenV1(IModuleGlobals(MODULE_GLOBALS).getSBT()).transferValue(buyerSoulBoundTokenId_, sale_.previousSoulBoundTokenId, royaltyAmounts.previousAmount);
+        
+        } else if(markets[sale_.derivativeNFT].feeShareType == DataTypes.FeeShareType.LEVEL_FIVE) {
+            royaltyAmounts.adjustedAmount = payValue.mul(markets[sale_.derivativeNFT].royaltyBasisPoints);
+            if ( royaltyAmounts.adjustedAmount > 0 ) 
+                INFTDerivativeProtocolTokenV1(IModuleGlobals(MODULE_GLOBALS).getSBT()).transferValue(buyerSoulBoundTokenId_, sale_.soulBoundTokenId, royaltyAmounts.adjustedAmount);
+            
+            INFTDerivativeProtocolTokenV1(IModuleGlobals(MODULE_GLOBALS).getSBT()).transferValue(buyerSoulBoundTokenId_, Constants._BANK_TREASURY_SOUL_BOUND_TOKENID, payValue.sub(royaltyAmounts.adjustedAmount).sub(royaltyAmounts.treasuryAmount));
+        }
+
+        sale_.onSellUnits -= units_;
+        sale_.seledUnits += units_;
 
         emit Events.Traded(
-            buyer_,
-            sale_.saleId,
-            sale_.derivativeNFT,
-            sale_.tokenId,
+            saleId_,
             nextTradeId_,
             uint32(block.timestamp),
-            sale_.currency,
-            uint8(sale_.priceType),
             price_,
-            units_,
-            amount_,
-            // uint8(feePayType),
-            fee_
-        );  
+            newTokenIdBuyer_,
+            units_
+        );
 
-        if (sale_.units == 0) {
+        if (sale_.onSellUnits == 0) {
             emit Events.RemoveSale(
-                sale_.derivativeNFT,
-                sale_.seller,
-                sale_.saleId,
-                sale_.total,
-                sale_.total - sale_.units
+                sale_.soulBoundTokenId,
+                saleId_,
+                sale_.onSellUnits,
+                sale_.seledUnits
             );
-            delete sales[sale_.saleId];
+            delete sales[saleId_];
         }
-        return (amount_, fee_);
     }
 
 }

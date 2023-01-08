@@ -10,13 +10,9 @@ import {IDerivativeNFTV1} from "../interfaces/IDerivativeNFTV1.sol";
 import {ICollectModule} from '../interfaces/ICollectModule.sol';
 import {Strings} from '@openzeppelin/contracts/utils/Strings.sol';
 import {IERC3525} from "@solvprotocol/erc-3525/contracts/IERC3525.sol";
-import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
-import {SafeMathUpgradeable} from "@openzeppelin/contracts-upgradeable/utils/math/SafeMathUpgradeable.sol";
+
 import "@solvprotocol/erc-3525/contracts/ERC3525Upgradeable.sol";
 import {Clones} from '@openzeppelin/contracts/proxy/Clones.sol';
-import "@openzeppelin/contracts-upgradeable/utils/structs/EnumerableSetUpgradeable.sol";
-import {IManager} from "../interfaces/IManager.sol";
-import "./SafeMathUpgradeable128.sol";
 
 /**
  * @title InteractionLogic
@@ -29,7 +25,6 @@ import "./SafeMathUpgradeable128.sol";
 
 library InteractionLogic {
     using Strings for uint256;
-
     
     function createHub(
         address creator,
@@ -125,41 +120,5 @@ library InteractionLogic {
         
         return derivativeNFT;
     } 
-    
-    using SafeMathUpgradeable for uint256;
-    using EnumerableSetUpgradeable for EnumerableSetUpgradeable.UintSet;
-    using EnumerableSetUpgradeable for EnumerableSetUpgradeable.AddressSet;
-    using SafeMathUpgradeable128 for uint128;
-
-    uint16 internal constant PERCENTAGE_BASE = 10000;
-
-
-
-    // function _getFee(
-    //     address derivativeNFT_, 
-    //     address currency_, 
-    //     uint256 amount,
-    //     mapping(address => DataTypes.Market) storage markets
-    // )
-    //     internal
-    //     view
-    //     returns (uint128)
-    // {
-    //     currency_;
-    //     DataTypes.Market storage market = markets[derivativeNFT_];
-    //     if (market.feeType == DataTypes.FeeType.FIXED) {
-    //         return market.feeAmount;
-    //     } else if (market.feeType == DataTypes.FeeType.BY_AMOUNT) {
-    //         uint256 fee = amount.mul(uint256(market.feeRate)).div(
-    //             uint256(PERCENTAGE_BASE)
-    //         );
-    //         require(fee <= type(uint128).max, "Fee: exceeds uint128 max");
-    //         return uint128(fee);
-    //     } else {
-    //         revert("unsupported feeType");
-    //     }
-    // }
-
-
 
 }

@@ -9,5 +9,7 @@ library Constants {
 
     uint16 internal constant _BASIS_POINTS = 10000;
 
+    uint16 internal constant _BANK_TREASURY_SOUL_BOUND_TOKENID = 1;
+
     
 }

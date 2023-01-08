@@ -66,7 +66,7 @@ abstract contract MockManagerV2Storage {
     mapping(uint256 => uint256) internal _genesisPublishIdByProjectId;
 
     //publishId => publishData
-    mapping(uint256 => DataTypes.PublishData) internal _publishIdByProjectData;
+    mapping(uint256 => DataTypes.PublishData) internal _projectDataByPublishId;
     
     //tokenId => publishId
     mapping(uint256 => uint256) internal _tokenIdByPublishId;

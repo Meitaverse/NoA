@@ -20,25 +20,23 @@ interface IMarketPlace {
        address governance_
     ) external;
    
-    function getGlobalModule() external returns(address);
+    function getGlobalModule() external view returns(address);
 
-    function getGovernance() external returns(address);
+    function getGovernance() external view returns(address);
 
-
-    function publishFixedPrice(
-        DataTypes.Sale memory sale
+    function publishSale(
+        DataTypes.SaleParam memory saleParam
     ) external;
 
+    function fixedPriceSet(uint24 saleId, uint128 newSalePrice) external;
 
-    function removeSale(uint256 soulBoundTokenId, address seller, uint24 saleId) external;
+    function removeSale(uint24 saleId) external;
 
     function addMarket(
         address derivativeNFT_,
-        uint64 precision_,
-        uint8 feePayType_,
-        uint8 feeType_,
-        uint128 feeAmount_,
-        uint16 feeRate_
+        DataTypes.FeePayType feePayType_,
+        DataTypes.FeeShareType feeShareType_,
+        uint16 royaltyBasisPoints_
     ) external;
 
     function removeMarket(
@@ -46,11 +44,10 @@ interface IMarketPlace {
     ) external;
 
     function buyUnits(
-        uint256 soulBoundTokenId,
-        address buyer,
+        uint256 buyerSoulBoundTokenId,
         uint24 saleId, 
         uint128 units
-    )  external payable returns (uint256 amount, uint128 fee);
+    )  external payable;
     
     function purchasedUnits(
         uint24 saleId_, 

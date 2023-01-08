@@ -47,6 +47,7 @@ import {
   
 } from '../../__setup.spec';
 
+const Default_royaltyBasisPoints = 50; //
 
 
 makeSuiteCleanRoom('Publishing', function () {
@@ -112,7 +113,7 @@ makeSuiteCleanRoom('Publishing', function () {
 
             const collectModuleInitData = abiCoder.encode(
                 ['uint256', 'uint16', 'uint256', 'uint256'],
-                [SECOND_PROFILE_ID, GENESIS_FEE_BPS, DEFAULT_COLLECT_PRICE, 50]
+                [SECOND_PROFILE_ID, GENESIS_FEE_BPS, DEFAULT_COLLECT_PRICE, Default_royaltyBasisPoints]
             );
 
             //mint 100Value to user
@@ -125,7 +126,7 @@ makeSuiteCleanRoom('Publishing', function () {
                     projectId: FIRST_PROJECT_ID,
                     amount: 1,
                     salePrice: DEFAULT_COLLECT_PRICE,
-                    royaltyBasisPoints: 50,
+                    royaltyBasisPoints: Default_royaltyBasisPoints,
                     name: "Dollar",
                     description: "Hand draw",
                     materialURIs: [],
@@ -158,7 +159,7 @@ makeSuiteCleanRoom('Publishing', function () {
 
             const collectModuleInitData = abiCoder.encode(
                 ['uint256', 'uint16', 'uint256', 'uint256'],
-                [SECOND_PROFILE_ID, GENESIS_FEE_BPS, DEFAULT_COLLECT_PRICE, 50]
+                [SECOND_PROFILE_ID, GENESIS_FEE_BPS, DEFAULT_COLLECT_PRICE, Default_royaltyBasisPoints]
             );
 
             //mint 100Value to user
@@ -173,7 +174,7 @@ makeSuiteCleanRoom('Publishing', function () {
                     projectId: FIRST_PROJECT_ID,
                     amount: 2,
                     salePrice: DEFAULT_COLLECT_PRICE,
-                    royaltyBasisPoints: 50,                    
+                    royaltyBasisPoints: Default_royaltyBasisPoints,                    
                     name: "Dollar",
                     description: "Hand draw",
                     materialURIs: [],
@@ -197,7 +198,7 @@ makeSuiteCleanRoom('Publishing', function () {
 
             const collectModuleInitData = abiCoder.encode(
                 ['uint256', 'uint16', 'uint256', 'uint256'],
-                [SECOND_PROFILE_ID, GENESIS_FEE_BPS, DEFAULT_COLLECT_PRICE, 50]
+                [SECOND_PROFILE_ID, GENESIS_FEE_BPS, DEFAULT_COLLECT_PRICE, Default_royaltyBasisPoints]
             );
             
             //mint 100Value to user
@@ -212,7 +213,7 @@ makeSuiteCleanRoom('Publishing', function () {
                    projectId: FIRST_PROJECT_ID,
                    amount: 1,
                    salePrice: DEFAULT_COLLECT_PRICE,
-                   royaltyBasisPoints: 50,                   
+                   royaltyBasisPoints: Default_royaltyBasisPoints,                   
                    name: "Dollar",
                    description: "Hand draw",
                    materialURIs: [],
@@ -254,7 +255,7 @@ makeSuiteCleanRoom('Publishing', function () {
 
             const collectModuleInitData = abiCoder.encode(
                 ['uint256', 'uint16', 'uint256', 'uint256'],
-                [SECOND_PROFILE_ID, GENESIS_FEE_BPS, DEFAULT_COLLECT_PRICE, 50]
+                [SECOND_PROFILE_ID, GENESIS_FEE_BPS, DEFAULT_COLLECT_PRICE, Default_royaltyBasisPoints]
             );
             
             //mint 100Value to user
@@ -273,7 +274,7 @@ makeSuiteCleanRoom('Publishing', function () {
                    projectId: FIRST_PROJECT_ID,
                    amount: 1,
                    salePrice: DEFAULT_COLLECT_PRICE,
-                   royaltyBasisPoints: 50,                   
+                   royaltyBasisPoints: Default_royaltyBasisPoints,                   
                    name: "Dollar",
                    description: "Hand draw",
                    materialURIs: [],

@@ -99,19 +99,18 @@ interface IManager {
 
 
     /**
-     * @notice Returns the genesis soulBoundTokenId by publishId
+     * @notice Returns the genesis publishId by projectId
      *
-     * @param publishId The publish Id
+     * @param projectId The project Id
      * 
      * @return uin256 The tokenId of the SoulBundToken.
      */
-    function getGenesisSoulBoundTokenIdByPublishId(uint256 publishId) external view returns(uint256);
+    function getGenesisPublishIdByProjectId(uint256 projectId) external view returns(uint256);
 
     function getReceiver() external view returns (address);
 
     function getProjectIdByContract(address contract_) external view returns (uint256);
 
-   
     function createHub(
         DataTypes.HubData memory hub
     ) external returns(uint256);
@@ -136,7 +135,7 @@ interface IManager {
 
     function getDerivativeNFT(uint256 projectId) external view returns (address);
 
-    function getPublicationByTokenId(uint256 tokenId_) external view returns (DataTypes.Publication memory);
+    function getPublicationByTokenId(uint256 tokenId_) external view returns (uint256, DataTypes.Publication memory);
     
     function getWalletBySoulBoundTokenId(uint256 soulBoundTokenId) external view returns(address);
 
@@ -218,35 +217,4 @@ interface IManager {
 
     function calculateRoyalty(uint256 publishId) external view returns(uint96);
 
-/*
-    function publishFixedPrice(
-        DataTypes.Sale memory sale
-    ) external;
-
-
-    function removeSale(uint256 soulBoundTokenId, address seller, uint24 saleId) external;
-
-    function addMarket(
-        address derivativeNFT_,
-        uint64 precision_,
-        uint8 feePayType_,
-        uint8 feeType_,
-        uint128 feeAmount_,
-        uint16 feeRate_
-    ) external;
-
-    function removeMarket(
-        address derivativeNFT_
-    ) external;
-
-    function buyUnits(
-        uint256 soulBoundTokenId,
-        address buyer,
-        uint24 saleId, 
-        uint128 units
-    )  external payable returns (uint256 amount, uint128 fee);
-*/
-
-
-   
 }

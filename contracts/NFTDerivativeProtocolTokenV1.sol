@@ -10,6 +10,8 @@ import "@solvprotocol/erc-3525/contracts/ERC3525SlotEnumerableUpgradeable.sol";
 import "@solvprotocol/erc-3525/contracts/ERC3525Upgradeable.sol";
 import "@solvprotocol/erc-3525/contracts/IERC3525Receiver.sol";
 import "@solvprotocol/erc-3525/contracts/extensions/IERC3525Metadata.sol";
+import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
+
 import {IERC20Upgradeable} from "@openzeppelin/contracts-upgradeable/token/ERC20/IERC20Upgradeable.sol";
 import {SafeMathUpgradeable} from "@openzeppelin/contracts-upgradeable/utils/math/SafeMathUpgradeable.sol";
 import {Errors} from "./libraries/Errors.sol";
@@ -23,6 +25,7 @@ import {INFTDerivativeProtocolTokenV1} from "./interfaces/INFTDerivativeProtocol
  */
 contract NFTDerivativeProtocolTokenV1 is
     Initializable,
+    ReentrancyGuard,
     AccessControlUpgradeable,
     PausableUpgradeable,
     SBTStorage,
@@ -107,7 +110,7 @@ contract NFTDerivativeProtocolTokenV1 is
         return _contractWhitelisted[contract_];
     }
 
-    function whitelistContract(address contract_, bool toWhitelist_) external override {
+    function whitelistContract(address contract_, bool toWhitelist_) external nonReentrant {
         if (!hasRole(DEFAULT_ADMIN_ROLE, _msgSender())) revert Errors.Unauthorized();
         _whitelistContract(contract_, toWhitelist_);
     }
@@ -127,7 +130,7 @@ contract NFTDerivativeProtocolTokenV1 is
     function createProfile(
         address creator,
         DataTypes.CreateProfileData calldata vars
-    ) external override whenNotPaused onlyManager returns (uint256) {
+    ) external nonReentrant whenNotPaused onlyManager returns (uint256) {
         _validateNickName(vars.nickName);
 
         if (balanceOf(vars.wallet) > 0) revert Errors.TokenIsClaimed(); 
@@ -157,7 +160,7 @@ contract NFTDerivativeProtocolTokenV1 is
     function mintValue(
         uint256 soulBoundTokenId, 
         uint256 value
-    ) external payable whenNotPaused onlyManager {
+    ) external payable whenNotPaused nonReentrant onlyManager {
         total_supply += value;
         if (total_supply > MAX_SUPPLY) revert Errors.MaxSupplyExceeded();
 
@@ -165,16 +168,16 @@ contract NFTDerivativeProtocolTokenV1 is
         emit Events.MintSBTValue(soulBoundTokenId, value, block.timestamp);
     }
 
-    function balanceOfSBT(uint256 tokenId) external view override returns (uint256) {
+    function balanceOfSBT(uint256 tokenId) external view returns (uint256) {
         return super.balanceOf(tokenId);
     }
      
-    function burn(uint256 tokenId) external whenNotPaused onlyManager{
+    function burn(uint256 tokenId) external whenNotPaused nonReentrant onlyManager{
         ERC3525Upgradeable._burn(tokenId);
         emit Events.BurnSBT(tokenId, block.timestamp);
     }
 
-    function burnValue(uint256 tokenId, uint256 value) external whenNotPaused onlyManager {
+    function burnValue(uint256 tokenId, uint256 value) external whenNotPaused nonReentrant onlyManager {
         require(_isApprovedOrOwner(_msgSender(), tokenId), "ERC3525: caller is not token owner nor approved");
         ERC3525Upgradeable._burnValue(tokenId, value);
         emit Events.BurnSBTValue(tokenId, value, block.timestamp);
@@ -193,7 +196,7 @@ contract NFTDerivativeProtocolTokenV1 is
         uint256 fromTokenId_,
         uint256 toTokenId_,
         uint256 value_
-    ) external {
+    ) external nonReentrant {
          //call only by BankTreasury or FeeCollectModule or publishModule  or Voucher
         if (_contractWhitelisted[msg.sender]) {
             ERC3525Upgradeable._transferValue(fromTokenId_, toTokenId_, value_);
@@ -211,6 +214,8 @@ contract NFTDerivativeProtocolTokenV1 is
         public 
         payable 
         virtual 
+        nonReentrant
+        whenNotPaused
         override(ERC3525Upgradeable, IERC721Upgradeable) 
         isTransferAllowed(tokenId_)  //Soul bound token can not transfer
     {
@@ -226,6 +231,8 @@ contract NFTDerivativeProtocolTokenV1 is
         public 
         payable 
         virtual 
+        nonReentrant
+        whenNotPaused 
         override(ERC3525Upgradeable, IERC721Upgradeable) 
         isTransferAllowed(tokenId_) 
     {
@@ -237,7 +244,13 @@ contract NFTDerivativeProtocolTokenV1 is
         uint256 slot_,
         address operator_,
         bool approved_
-    ) external payable virtual {
+    ) 
+        external 
+        payable 
+        virtual 
+        nonReentrant
+        whenNotPaused         
+    {
         if (!(_msgSender() == owner_ || isApprovedForAll(owner_, _msgSender()))) {
             revert Errors.NotAllowed();
         }
@@ -284,7 +297,11 @@ contract NFTDerivativeProtocolTokenV1 is
         return _MANAGER;
     }
     
-    function setBankTreasury(address bankTreasury, uint256 initialSupply) external  {
+    function setBankTreasury(address bankTreasury, uint256 initialSupply) 
+        external  
+        nonReentrant
+        whenNotPaused 
+    {
         if (!hasRole(DEFAULT_ADMIN_ROLE, _msgSender())) revert Errors.Unauthorized();
         
         if (bankTreasury == address(0)) revert Errors.InitParamsInvalid();
@@ -318,7 +335,8 @@ contract NFTDerivativeProtocolTokenV1 is
     function setProfileImageURI(uint256 soulBoundTokenId, string calldata imageURI)
         external
         override
-        whenNotPaused
+        nonReentrant
+        whenNotPaused 
         onlyManager
     { 
         _setProfileImageURI(soulBoundTokenId, imageURI);

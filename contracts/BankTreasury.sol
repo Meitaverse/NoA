@@ -9,6 +9,7 @@ import "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
 import "@openzeppelin/contracts/utils/introspection/IERC165.sol";
 import "@solvprotocol/erc-3525/contracts/IERC3525Receiver.sol";
 import "@solvprotocol/erc-3525/contracts/IERC3525.sol";
+import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 
 import {IERC20Upgradeable} from "@openzeppelin/contracts-upgradeable/token/ERC20/IERC20Upgradeable.sol";
 import {SafeERC20Upgradeable} from "@openzeppelin/contracts-upgradeable/token/ERC20/utils/SafeERC20Upgradeable.sol";
@@ -32,6 +33,7 @@ import {IModuleGlobals} from "./interfaces/IModuleGlobals.sol";
  */
 contract BankTreasury is 
     Initializable,
+    ReentrancyGuard,
     IBankTreasury,
     BankTreasuryStorage,
     IERC165,
@@ -332,6 +334,7 @@ contract BankTreasury is
     )
         external
         whenNotPaused
+        nonReentrant
         onlyGov
     {
         address _sbt = IModuleGlobals(MODULE_GLOBALS).getSBT();
@@ -357,6 +360,7 @@ contract BankTreasury is
         external
         payable
         whenNotPaused
+        nonReentrant
     {
         // only called by owner of soulBoundTokenId
         address _manager = IModuleGlobals(MODULE_GLOBALS).getManager();
@@ -408,6 +412,7 @@ contract BankTreasury is
         external
         payable
         whenNotPaused
+        nonReentrant
     {
         // only called by owner of soulBoundTokenId
         address _manager = IModuleGlobals(MODULE_GLOBALS).getManager();
@@ -465,6 +470,7 @@ contract BankTreasury is
     ) 
         external
         whenNotPaused
+        nonReentrant
     {
         address _sbt = IModuleGlobals(MODULE_GLOBALS).getSBT();
         address _voucher = IModuleGlobals(MODULE_GLOBALS).getVoucher();
@@ -489,7 +495,7 @@ contract BankTreasury is
        );
     }
     
-    function setExchangePrice(uint256 exchangePrice_) external onlyGov {
+    function setExchangePrice(uint256 exchangePrice_) external nonReentrant onlyGov {
         _exchangePrice = exchangePrice_;
     }
 
