@@ -2765,3 +2765,167 @@ export class TemplateWhitelistedHistory extends Entity {
     this.set("timestamp", Value.fromBigInt(value));
   }
 }
+
+export class ExchangeSBTByEthHistory extends Entity {
+  constructor(id: string) {
+    super();
+    this.set("id", Value.fromString(id));
+  }
+
+  save(): void {
+    let id = this.get("id");
+    assert(
+      id != null,
+      "Cannot save ExchangeSBTByEthHistory entity without an ID"
+    );
+    if (id) {
+      assert(
+        id.kind == ValueKind.STRING,
+        `Entities of type ExchangeSBTByEthHistory must have an ID of type String but the id '${id.displayData()}' is of type ${id.displayKind()}`
+      );
+      store.set("ExchangeSBTByEthHistory", id.toString(), this);
+    }
+  }
+
+  static load(id: string): ExchangeSBTByEthHistory | null {
+    return changetype<ExchangeSBTByEthHistory | null>(
+      store.get("ExchangeSBTByEthHistory", id)
+    );
+  }
+
+  get id(): string {
+    let value = this.get("id");
+    return value!.toString();
+  }
+
+  set id(value: string) {
+    this.set("id", Value.fromString(value));
+  }
+
+  get soulBoundTokenId(): BigInt {
+    let value = this.get("soulBoundTokenId");
+    return value!.toBigInt();
+  }
+
+  set soulBoundTokenId(value: BigInt) {
+    this.set("soulBoundTokenId", Value.fromBigInt(value));
+  }
+
+  get exchangeWallet(): Bytes {
+    let value = this.get("exchangeWallet");
+    return value!.toBytes();
+  }
+
+  set exchangeWallet(value: Bytes) {
+    this.set("exchangeWallet", Value.fromBytes(value));
+  }
+
+  get amount(): BigInt {
+    let value = this.get("amount");
+    return value!.toBigInt();
+  }
+
+  set amount(value: BigInt) {
+    this.set("amount", Value.fromBigInt(value));
+  }
+
+  get timestamp(): BigInt {
+    let value = this.get("timestamp");
+    return value!.toBigInt();
+  }
+
+  set timestamp(value: BigInt) {
+    this.set("timestamp", Value.fromBigInt(value));
+  }
+}
+
+export class ExchangeEthBySBTHistory extends Entity {
+  constructor(id: string) {
+    super();
+    this.set("id", Value.fromString(id));
+  }
+
+  save(): void {
+    let id = this.get("id");
+    assert(
+      id != null,
+      "Cannot save ExchangeEthBySBTHistory entity without an ID"
+    );
+    if (id) {
+      assert(
+        id.kind == ValueKind.STRING,
+        `Entities of type ExchangeEthBySBTHistory must have an ID of type String but the id '${id.displayData()}' is of type ${id.displayKind()}`
+      );
+      store.set("ExchangeEthBySBTHistory", id.toString(), this);
+    }
+  }
+
+  static load(id: string): ExchangeEthBySBTHistory | null {
+    return changetype<ExchangeEthBySBTHistory | null>(
+      store.get("ExchangeEthBySBTHistory", id)
+    );
+  }
+
+  get id(): string {
+    let value = this.get("id");
+    return value!.toString();
+  }
+
+  set id(value: string) {
+    this.set("id", Value.fromString(value));
+  }
+
+  get soulBoundTokenId(): BigInt {
+    let value = this.get("soulBoundTokenId");
+    return value!.toBigInt();
+  }
+
+  set soulBoundTokenId(value: BigInt) {
+    this.set("soulBoundTokenId", Value.fromBigInt(value));
+  }
+
+  get toWallet(): Bytes {
+    let value = this.get("toWallet");
+    return value!.toBytes();
+  }
+
+  set toWallet(value: Bytes) {
+    this.set("toWallet", Value.fromBytes(value));
+  }
+
+  get sbtValue(): BigInt {
+    let value = this.get("sbtValue");
+    return value!.toBigInt();
+  }
+
+  set sbtValue(value: BigInt) {
+    this.set("sbtValue", Value.fromBigInt(value));
+  }
+
+  get exchangePrice(): BigInt {
+    let value = this.get("exchangePrice");
+    return value!.toBigInt();
+  }
+
+  set exchangePrice(value: BigInt) {
+    this.set("exchangePrice", Value.fromBigInt(value));
+  }
+
+  get ethAmount(): BigInt {
+    let value = this.get("ethAmount");
+    return value!.toBigInt();
+  }
+
+  set ethAmount(value: BigInt) {
+    this.set("ethAmount", Value.fromBigInt(value));
+  }
+
+  get timestamp(): BigInt {
+    let value = this.get("timestamp");
+    return value!.toBigInt();
+  }
+
+  set timestamp(value: BigInt) {
+    this.set("timestamp", Value.fromBigInt(value));
+  }
+}

@@ -6,54 +6,41 @@ import {Events} from "../libraries/Events.sol";
 import {DataTypes} from "../libraries/DataTypes.sol";
 import {Errors} from "../libraries/Errors.sol";
 
-
 /**
  * @title DerivativeNFTMultiState
  *
- * @notice This is an abstract contract that implements internal Manager state setting and validation.
+ * @notice This is an abstract contract that implements internal derivativeNFT state setting and validation.
  *
  * whenNotPaused: Either publishingPaused or Unpaused.
  * whenPublishingEnabled: When Unpaused only.
  */
 abstract contract DerivativeNFTMultiState {
-    DataTypes.ProtocolState private _state;
+    DataTypes.DerivativeNFTState private _state;
 
     modifier whenNotPaused() {
         _validateNotPaused();
         _;
     }
 
-    modifier whenPublishingEnabled() {
-        _validatePublishingEnabled();
-        _;
-    }
-
     /**
-     * @notice Returns the current protocol state.
+     * @notice Returns the current DerivativeNFT state.
      *
-     * @return ProtocolState The Protocol state, an enum, where:
+     * @return DerivativeNFTState The DerivativeNFT state, an enum, where:
      *      0: Unpaused
-     *      1: PublishingPaused
-     *      2: Paused
+     *      1: Paused
      */
-    function getState() external view returns (DataTypes.ProtocolState) {
+    function getState() external view returns (DataTypes.DerivativeNFTState) {
         return _state;
     }
 
-    function _setState(DataTypes.ProtocolState newState) internal {
-        DataTypes.ProtocolState prevState = _state;
+    function _setState(DataTypes.DerivativeNFTState newState) internal {
+        DataTypes.DerivativeNFTState prevState = _state;
         _state = newState;
-        emit Events.StateSet(msg.sender, prevState, newState, block.timestamp);
-    }
-
-    function _validatePublishingEnabled() internal view {
-        if (_state != DataTypes.ProtocolState.Unpaused) {
-            revert Errors.PublishingPaused();
-        }
+        emit Events.DerivativeNFTStateSet(msg.sender, prevState, newState, block.timestamp);
     }
 
     function _validateNotPaused() internal view {
-        if (_state == DataTypes.ProtocolState.Paused) revert Errors.Paused();
+        if (_state == DataTypes.DerivativeNFTState.Paused) revert Errors.Paused();
     }
 
 }

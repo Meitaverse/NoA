@@ -8,7 +8,7 @@ import "@solvprotocol/erc-3525/contracts/IERC3525.sol";
 import "../interfaces/IDerivativeNFTV1.sol";
 import "../interfaces/INFTDerivativeProtocolTokenV1.sol";
 import "../interfaces/IManagerV2.sol";
-import "../base/DerivativeNFTMultiState.sol";
+import "../base/NFTDerivativeProtocolMultiState.sol";
 import {DataTypes} from '../libraries/DataTypes.sol';
 import {Events} from"../libraries/Events.sol";
 import {InteractionLogic} from '../libraries/InteractionLogic.sol';
@@ -21,7 +21,7 @@ import "../libraries/SafeMathUpgradeable128.sol";
 
 import {VersionedInitializable} from '../upgradeability/VersionedInitializable.sol';
 
-contract ManagerV2 is IManagerV2, DerivativeNFTMultiState, MockManagerV2Storage, PriceManager, VersionedInitializable {
+contract ManagerV2 is IManagerV2, NFTDerivativeProtocolMultiState, MockManagerV2Storage, PriceManager, VersionedInitializable {
     // using SafeMathUpgradeable for uint256;
     using SafeMathUpgradeable128 for uint128;
     using EnumerableSetUpgradeable for EnumerableSetUpgradeable.UintSet;
@@ -83,7 +83,7 @@ contract ManagerV2 is IManagerV2, DerivativeNFTMultiState, MockManagerV2Storage,
         DataTypes.HubData memory hub
     ) external whenNotPaused onlyGov {
         uint256 hubId = _generateNextHubId();
-        _hubBySoulBoundTokenId[hub.soulBoundTokenId] = hubId;
+        _hubIdBySoulBoundTokenId[hub.soulBoundTokenId] = hubId;
         InteractionLogic.createHub(
             msg.sender,
             hubId, 
@@ -95,7 +95,7 @@ contract ManagerV2 is IManagerV2, DerivativeNFTMultiState, MockManagerV2Storage,
     function createProject( 
         DataTypes.ProjectData memory project
     ) external whenNotPaused returns (uint256) {
-        if (_hubBySoulBoundTokenId[project.soulBoundTokenId] != project.hubId) revert Errors.NotHubOwner();
+        if (_hubIdBySoulBoundTokenId[project.soulBoundTokenId] != project.hubId) revert Errors.NotHubOwner();
         if (_projectNameHashByEventId[keccak256(bytes(project.name))] > 0) {
             revert Errors.ProjectExisted();
         }
@@ -137,7 +137,7 @@ contract ManagerV2 is IManagerV2, DerivativeNFTMultiState, MockManagerV2Storage,
         bool isHubOwner;
         address derivatveNFT = _derivativeNFTByProjectId[publication.projectId];
         if (derivatveNFT == address(0)) revert Errors.InvalidParameter();
-        if ( _hubBySoulBoundTokenId[publication.soulBoundTokenId] == publication.hubId) {
+        if ( _hubIdBySoulBoundTokenId[publication.soulBoundTokenId] == publication.hubId) {
             isHubOwner = true;
         }
         // return PublishLogic.publish(projectId, publication, derivatveNFT, soulBoundTokenId, amount, publishModule, publishModuleInitData, isHubOwner);
@@ -200,62 +200,8 @@ contract ManagerV2 is IManagerV2, DerivativeNFTMultiState, MockManagerV2Storage,
         uint256 value,
         bytes calldata transferValueModuledata
     ) external whenNotPaused  {
-
      
     }
-
-    function publishFixedPrice(DataTypes.Sale memory sale) external whenNotPaused onlyGov {
-        uint24 saleId = _generateNextSaleId();
-        _derivativeNFTSales[sale.derivativeNFT].add(saleId);
-        PriceManager.setFixedPrice(saleId, sale.price);
-        InteractionLogic.publishFixedPrice(sale, markets, sales);
-    }
-
-    function removeSale(uint24 saleId_) external whenNotPaused onlyGov {
-        InteractionLogic.removeSale(saleId_, sales);
-    }
-
-    function addMarket(
-        address derivativeNFT_,
-        uint64 precision_,
-        uint8 feePayType_,
-        uint8 feeType_,
-        uint128 feeAmount_,
-        uint16 feeRate_
-    ) external whenNotPaused onlyGov {
-        InteractionLogic.addMarket(derivativeNFT_, precision_, feePayType_, feeType_, feeAmount_, feeRate_, markets);
-    }
-
-    function removeMarket(address derivativeNFT_) external whenNotPaused onlyGov {
-        InteractionLogic.removeMarket(derivativeNFT_, markets);
-    }
-
-    function buyUnits(
-        uint256 soulBoundTokenId,
-        address buyer,
-        uint24 saleId,
-        uint128 units
-    ) external payable whenNotPaused returns (uint256 amount, uint128 fee) {
-        if (sales[saleId].max > 0) {
-            require(saleRecords[sales[saleId].saleId][buyer].add(units) <= sales[saleId].max, "exceeds purchase limit");
-            saleRecords[sales[saleId].saleId][buyer] = saleRecords[sales[saleId].saleId][buyer].add(units);
-        }
-
-        if (sales[saleId].useAllowList) {
-            require(_allowAddresses[sales[saleId].derivativeNFT].contains(buyer), "not in allow list");
-        }
-        return
-            InteractionLogic.buyByUnits(
-                _generateNextTradeId(),
-                buyer,
-                saleId,
-                PriceManager.price(DataTypes.PriceType.FIXED, saleId),
-                units,
-                markets,
-                sales
-            );
-    }
-
 
     /// ***********************
     /// *****GOV FUNCTIONS*****
@@ -287,11 +233,6 @@ contract ManagerV2 is IManagerV2, DerivativeNFTMultiState, MockManagerV2Storage,
     }
 
 
-
-    function _generateNextSaleId() internal returns (uint24) {
-        _nextSaleId.increment();
-        return uint24(_nextSaleId.current());
-    }
 
     function _generateNextTradeId() internal returns (uint24) {
         _nextTradeId.increment();

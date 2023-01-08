@@ -124,4 +124,6 @@ library Errors {
 
   error AmountLimit();
   error AmountOnlyIncrease();
+  error InvalidSale();
+  error OnlySeller();
 }

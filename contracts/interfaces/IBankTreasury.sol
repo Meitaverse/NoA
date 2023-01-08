@@ -40,7 +40,7 @@ interface IBankTreasury {
     ) external;
 
     function exchangeVoucher(
-        uint256 voucherId,
+        uint256 tokenId,
         uint256 soulBoundTokenId      
     ) external;
     
@@ -53,7 +53,7 @@ interface IBankTreasury {
 
      function exchangeEthBySBT(
         uint256 soulBoundTokenId,
-        uint256 sbtAmount,
+        uint256 sbtValue,
         DataTypes.EIP712Signature calldata sign        
     ) external payable;
 
@@ -73,7 +73,7 @@ interface IBankTreasury {
 
      function calculateAmountEther(uint256 ethAmount) external view returns(uint256);
 
-    function calculateAmountSBT(uint256 sbtAmount) external view returns(uint256);
+    function calculateAmountSBT(uint256 sbtValue) external view returns(uint256);
 
 
     /**

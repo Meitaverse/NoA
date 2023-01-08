@@ -506,6 +506,74 @@ export class EmergencyAdminSet__Params {
   }
 }
 
+export class ExchangeEthBySBT extends ethereum.Event {
+  get params(): ExchangeEthBySBT__Params {
+    return new ExchangeEthBySBT__Params(this);
+  }
+}
+
+export class ExchangeEthBySBT__Params {
+  _event: ExchangeEthBySBT;
+
+  constructor(event: ExchangeEthBySBT) {
+    this._event = event;
+  }
+
+  get soulBoundTokenId(): BigInt {
+    return this._event.parameters[0].value.toBigInt();
+  }
+
+  get toWallet(): Address {
+    return this._event.parameters[1].value.toAddress();
+  }
+
+  get sbtValue(): BigInt {
+    return this._event.parameters[2].value.toBigInt();
+  }
+
+  get exchangePrice(): BigInt {
+    return this._event.parameters[3].value.toBigInt();
+  }
+
+  get ethAmount(): BigInt {
+    return this._event.parameters[4].value.toBigInt();
+  }
+
+  get timestamp(): BigInt {
+    return this._event.parameters[5].value.toBigInt();
+  }
+}
+
+export class ExchangeSBTByEth extends ethereum.Event {
+  get params(): ExchangeSBTByEth__Params {
+    return new ExchangeSBTByEth__Params(this);
+  }
+}
+
+export class ExchangeSBTByEth__Params {
+  _event: ExchangeSBTByEth;
+
+  constructor(event: ExchangeSBTByEth) {
+    this._event = event;
+  }
+
+  get soulBoundTokenId(): BigInt {
+    return this._event.parameters[0].value.toBigInt();
+  }
+
+  get exchangeWallet(): Address {
+    return this._event.parameters[1].value.toAddress();
+  }
+
+  get amount(): BigInt {
+    return this._event.parameters[2].value.toBigInt();
+  }
+
+  get timestamp(): BigInt {
+    return this._event.parameters[3].value.toBigInt();
+  }
+}
+
 export class ExecuteTransaction extends ethereum.Event {
   get params(): ExecuteTransaction__Params {
     return new ExecuteTransaction__Params(this);
@@ -804,32 +872,6 @@ export class ManagerGovernanceSet__Params {
   }
 }
 
-export class MintSBTValue extends ethereum.Event {
-  get params(): MintSBTValue__Params {
-    return new MintSBTValue__Params(this);
-  }
-}
-
-export class MintSBTValue__Params {
-  _event: MintSBTValue;
-
-  constructor(event: MintSBTValue) {
-    this._event = event;
-  }
-
-  get soulBoundTokenId(): BigInt {
-    return this._event.parameters[0].value.toBigInt();
-  }
-
-  get value(): BigInt {
-    return this._event.parameters[1].value.toBigInt();
-  }
-
-  get timestamp(): BigInt {
-    return this._event.parameters[2].value.toBigInt();
-  }
-}
-
 export class MintNFTVoucher extends ethereum.Event {
   get params(): MintNFTVoucher__Params {
     return new MintNFTVoucher__Params(this);
@@ -865,6 +907,32 @@ export class MintNFTVoucher__Params {
 
   get generateTimestamp(): BigInt {
     return this._event.parameters[5].value.toBigInt();
+  }
+}
+
+export class MintSBTValue extends ethereum.Event {
+  get params(): MintSBTValue__Params {
+    return new MintSBTValue__Params(this);
+  }
+}
+
+export class MintSBTValue__Params {
+  _event: MintSBTValue;
+
+  constructor(event: MintSBTValue) {
+    this._event = event;
+  }
+
+  get soulBoundTokenId(): BigInt {
+    return this._event.parameters[0].value.toBigInt();
+  }
+
+  get value(): BigInt {
+    return this._event.parameters[1].value.toBigInt();
+  }
+
+  get timestamp(): BigInt {
+    return this._event.parameters[2].value.toBigInt();
   }
 }
 
@@ -942,32 +1010,6 @@ export class ModuleGlobalsManagerSet__Params {
   }
 }
 
-export class ModuleGlobalsSBTSet extends ethereum.Event {
-  get params(): ModuleGlobalsSBTSet__Params {
-    return new ModuleGlobalsSBTSet__Params(this);
-  }
-}
-
-export class ModuleGlobalsSBTSet__Params {
-  _event: ModuleGlobalsSBTSet;
-
-  constructor(event: ModuleGlobalsSBTSet) {
-    this._event = event;
-  }
-
-  get prevSBT(): Address {
-    return this._event.parameters[0].value.toAddress();
-  }
-
-  get newSBT(): Address {
-    return this._event.parameters[1].value.toAddress();
-  }
-
-  get timestamp(): BigInt {
-    return this._event.parameters[2].value.toBigInt();
-  }
-}
-
 export class ModuleGlobalsPublishRoyaltySet extends ethereum.Event {
   get params(): ModuleGlobalsPublishRoyaltySet__Params {
     return new ModuleGlobalsPublishRoyaltySet__Params(this);
@@ -987,6 +1029,32 @@ export class ModuleGlobalsPublishRoyaltySet__Params {
 
   get newPublishRoyalty(): BigInt {
     return this._event.parameters[1].value.toBigInt();
+  }
+
+  get timestamp(): BigInt {
+    return this._event.parameters[2].value.toBigInt();
+  }
+}
+
+export class ModuleGlobalsSBTSet extends ethereum.Event {
+  get params(): ModuleGlobalsSBTSet__Params {
+    return new ModuleGlobalsSBTSet__Params(this);
+  }
+}
+
+export class ModuleGlobalsSBTSet__Params {
+  _event: ModuleGlobalsSBTSet;
+
+  constructor(event: ModuleGlobalsSBTSet) {
+    this._event = event;
+  }
+
+  get prevSBT(): Address {
+    return this._event.parameters[0].value.toAddress();
+  }
+
+  get newSBT(): Address {
+    return this._event.parameters[1].value.toAddress();
   }
 
   get timestamp(): BigInt {
@@ -1608,16 +1676,16 @@ export class SetContractWhitelisted__Params {
   }
 }
 
-export class SetUserAmountLimit extends ethereum.Event {
+export class UserAmountLimitSet extends ethereum.Event {
   get params(): SetUserAmountLimit__Params {
     return new SetUserAmountLimit__Params(this);
   }
 }
 
 export class SetUserAmountLimit__Params {
-  _event: SetUserAmountLimit;
+  _event: UserAmountLimitSet;
 
-  constructor(event: SetUserAmountLimit) {
+  constructor(event: UserAmountLimitSet) {
     this._event = event;
   }
 

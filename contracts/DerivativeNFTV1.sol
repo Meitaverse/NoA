@@ -138,7 +138,7 @@ contract DerivativeNFTV1 is
         _setMetadataDescriptor(metadataDescriptor_);
 
         //default Unpaused
-        _setState(DataTypes.ProtocolState.Unpaused);
+        _setState(DataTypes.DerivativeNFTState.Unpaused);
 
         _projectId = projectId_;
         _soulBoundTokenId = soulBoundTokenId_;
@@ -155,10 +155,10 @@ contract DerivativeNFTV1 is
         _setMetadataDescriptor(metadataDescriptor_);
     }
 
-    function setState(DataTypes.ProtocolState newState) external override onlyManager{
+    function setState(DataTypes.DerivativeNFTState newState) external override onlyManager{
         _setState(newState);
     }
-  
+    
     function setTokenRoyalty(
         uint256 tokenId,
         address recipient,
@@ -179,13 +179,12 @@ contract DerivativeNFTV1 is
         _deleteDefaultRoyalty();
     }
 
-
     // Publication only can publish once
     function publish(
         uint256 publishId,
         DataTypes.Publication memory publication,
         address publisher
-    ) external whenPublishingEnabled onlyManager returns (uint256) { //
+    ) external whenNotPaused onlyManager returns (uint256) { //
         
         if (_publicationNameHashBySlot[keccak256(bytes(publication.name))] > 0) revert Errors.PublicationIsExisted();
         if (publication.soulBoundTokenId != _soulBoundTokenId && publication.fromTokenIds.length == 0) revert Errors.InvalidParameter();

@@ -344,9 +344,9 @@ contract BankTreasury is
         return ethAmount.div(_exchangePrice);
     }
 
-    function calculateAmountSBT(uint256 sbtAmount) external view returns(uint256) {
+    function calculateAmountSBT(uint256 sbtValue) external view returns(uint256) {
         if (_exchangePrice == 0) revert Errors.ExchangePriceIsZero();
-        return sbtAmount.mul(_exchangePrice);
+        return sbtValue.mul(_exchangePrice);
     }
 
     function exchangeSBTByEth(
@@ -391,12 +391,18 @@ contract BankTreasury is
         address _sbt = IModuleGlobals(MODULE_GLOBALS).getSBT();
         INFTDerivativeProtocolTokenV1(_sbt).transferValue(_soulBoundTokenId, soulBoundTokenId, amount);
 
-         //TODO event
+         emit Events.ExchangeSBTByEth(
+             soulBoundTokenId,
+             exchangeWallet,
+             amount,
+             block.timestamp
+         );
+
     }
 
     function exchangeEthBySBT(
         uint256 soulBoundTokenId,
-        uint256 sbtAmount,
+        uint256 sbtValue,
         DataTypes.EIP712Signature calldata sig        
     )
         external
@@ -411,7 +417,7 @@ contract BankTreasury is
         }
 
         if (_exchangePrice == 0) revert Errors.ExchangePriceIsZero();
-        if (sbtAmount == 0) revert Errors.AmountIsZero();
+        if (sbtValue == 0) revert Errors.AmountIsZero();
         if (soulBoundTokenId ==0) revert Errors.SoulBoundTokenIdNotExists();
         
         address payable _to = payable(msg.sender);
@@ -423,7 +429,7 @@ contract BankTreasury is
                             EXCHANGE_ETHER_BY_SBT_TYPEHASH,
                             _to,
                             soulBoundTokenId,
-                            sbtAmount,
+                            sbtValue,
                             sigNonces[_to]++,
                             sig.deadline
                         )
@@ -433,21 +439,28 @@ contract BankTreasury is
                 sig
             );
         }
+
         address _sbt = IModuleGlobals(MODULE_GLOBALS).getSBT();
-        INFTDerivativeProtocolTokenV1(_sbt).transferValue(soulBoundTokenId, _soulBoundTokenId, sbtAmount);
+        INFTDerivativeProtocolTokenV1(_sbt).transferValue(soulBoundTokenId, _soulBoundTokenId, sbtValue);
 
         //transfer eth to msg.sender
-        uint256 ethAmount = sbtAmount.mul(_exchangePrice);
+        uint256 ethAmount = sbtValue.mul(_exchangePrice);
 
         (bool success, ) = _to.call{value: ethAmount}("");
         if (!success) revert Errors.TxFailed();
 
-         //TODO event
-
+         emit Events.ExchangeEthBySBT(
+             soulBoundTokenId,
+             _to,
+             sbtValue,
+             _exchangePrice,
+             ethAmount,
+             block.timestamp
+         );
     }
 
     function exchangeVoucher(
-        uint256 voucherId,
+        uint256 tokenId,
         uint256 soulBoundTokenId
     ) 
         external
@@ -460,15 +473,20 @@ contract BankTreasury is
             revert Errors.Unauthorized();
         }
 
-       DataTypes.VoucherData memory voucherData =  IVoucher(_voucher).getVoucherData(voucherId);
+       DataTypes.VoucherData memory voucherData =  IVoucher(_voucher).getVoucherData(tokenId);
        if (voucherData.tokenId == 0) revert Errors.VoucherNotExists();
        if (voucherData.isUsed) revert Errors.VoucherIsUsed();
 
        INFTDerivativeProtocolTokenV1(_sbt).transferValue(_soulBoundTokenId, soulBoundTokenId, voucherData.sbtValue);
-       IVoucher(_voucher).useVoucher(msg.sender, voucherId, soulBoundTokenId); 
+       IVoucher(_voucher).useVoucher(msg.sender, tokenId, soulBoundTokenId); 
 
-       //TODO event
-
+       emit Events.ExchangeVoucher(
+            soulBoundTokenId,
+            msg.sender,
+            tokenId,
+            voucherData.sbtValue,
+            block.timestamp
+       );
     }
     
     function setExchangePrice(uint256 exchangePrice_) external onlyGov {

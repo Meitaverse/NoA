@@ -56,16 +56,31 @@ abstract contract ManagerStorage {
         keccak256('PermitValue(address spender,uint256 tokenId,uint256 value,uint256 nonce,uint256 deadline)');
     
     
+    // hubId => HubData
     mapping(uint256 => DataTypes.HubData) internal _hubInfos;
-    mapping(uint256 => uint256) internal _hubBySoulBoundTokenId;
-    mapping(bytes32 => uint256) internal _projectNameHashByEventId; //用于判断project name是否重复
+
+    //soulBoundTokenId => hub
+    mapping(uint256 => uint256) internal _hubIdBySoulBoundTokenId;
+
+    //check project name is duplicate
+    mapping(bytes32 => uint256) internal _projectNameHashByEventId; 
+
+    //derivariveNFT address  => SoulBoundTokenId
     mapping(address => uint256) internal _derivariveNFTToSoulBoundTokenId;
+
+    //projectId => projectInfo
     mapping(uint256 => DataTypes.ProjectData) internal _projectInfoByProjectId;
+
+    //projectId => derivativeNFT
     mapping(uint256 => address) internal _derivativeNFTByProjectId;
+
+    //soulBoundTokenId => wallet
     mapping(uint256 => address) internal _soulBoundTokenIdToWallet;
     
     // wallet address => soulBoundTokenId
     mapping(address => uint256) internal _walletToSoulBoundTokenId;
+
+    //derivativeNFT => projectId
     mapping(address => uint256) internal _projectIdToderivativeNFT;
 
     mapping(uint256 => address) internal _dispatcherByProfile;
@@ -88,30 +103,14 @@ abstract contract ManagerStorage {
     address internal _emergencyAdmin;
     address internal _owner;
 
-    Counters.Counter internal _nextSaleId;
-    Counters.Counter internal _nextTradeId;
+
     Counters.Counter internal _nextHubId;
     Counters.Counter internal _nextProjectId;
     Counters.Counter internal _nextPublishId;
     
     string internal _svgLogo;
 
-    // --- market place --- //
-
-    // derivativeNFT => Market
-    mapping(address => DataTypes.Market) internal markets;
-
-    //saleId => struct Sale
-    mapping(uint24 => DataTypes.Sale) internal sales;
     
-    // records of user purchased units from an order
-    mapping(uint24 => mapping(address => uint128)) internal saleRecords;
-
-    //derivativeNFT => saleId
-    mapping(address => EnumerableSetUpgradeable.UintSet) internal _derivativeNFTSales;
-    mapping(address => EnumerableSetUpgradeable.AddressSet) internal _allowAddresses;
-
-
     //MultiRecipient
   
 }

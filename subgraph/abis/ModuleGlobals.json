@@ -78,12 +78,12 @@
     },
     {
       "inputs": [],
-      "name": "getNDPT",
+      "name": "getPublishCurrencyTax",
       "outputs": [
         {
-          "internalType": "address",
+          "internalType": "uint256",
           "name": "",
-          "type": "address"
+          "type": "uint256"
         }
       ],
       "stateMutability": "view",
@@ -91,12 +91,12 @@
     },
     {
       "inputs": [],
-      "name": "getPublishCurrencyTax",
+      "name": "getSBT",
       "outputs": [
         {
-          "internalType": "uint256",
+          "internalType": "address",
           "name": "",
-          "type": "uint256"
+          "type": "address"
         }
       ],
       "stateMutability": "view",
@@ -302,12 +302,12 @@
     {
       "inputs": [
         {
-          "internalType": "address",
-          "name": "newNDPT",
-          "type": "address"
+          "internalType": "uint256",
+          "name": "publishRoyalty",
+          "type": "uint256"
         }
       ],
-      "name": "setNDPT",
+      "name": "setPublishRoyalty",
       "outputs": [],
       "stateMutability": "nonpayable",
       "type": "function"
@@ -315,12 +315,12 @@
     {
       "inputs": [
         {
-          "internalType": "uint256",
-          "name": "publishRoyalty",
-          "type": "uint256"
+          "internalType": "address",
+          "name": "newSBT",
+          "type": "address"
         }
       ],
-      "name": "setPublishRoyalty",
+      "name": "setSBT",
       "outputs": [],
       "stateMutability": "nonpayable",
       "type": "function"

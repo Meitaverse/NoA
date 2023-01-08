@@ -139,32 +139,4 @@ interface IManagerV2 {
         bytes calldata transferValueModuledata
     ) external;
 
-     function publishFixedPrice(
-        DataTypes.Sale memory sale
-    ) external;
-
-    function removeSale(
-        uint24 saleId_
-    ) external;
-
-    function addMarket(
-        address derivativeNFT_,
-        uint64 precision_,
-        uint8 feePayType_,
-        uint8 feeType_,
-        uint128 feeAmount_,
-        uint16 feeRate_
-    ) external;
-
-    function removeMarket(
-        address derivativeNFT_
-    ) external;
-
-    function buyUnits(
-        uint256 soulBoundTokenId,
-        address buyer,
-        uint24 saleId, 
-        uint128 units
-    )  external payable returns (uint256 amount, uint128 fee);
-
 }

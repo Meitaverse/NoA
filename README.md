@@ -164,10 +164,10 @@ query{
 ```
 
 
-### 查询所有NDP value铸造历史
+### 查询所有SBT value铸造历史
 ```
 query {
-  mintNDPValueHistories(first: 100) {
+  mintSBTValueHistories(first: 100) {
     id
     soulBoundTokenId
     value

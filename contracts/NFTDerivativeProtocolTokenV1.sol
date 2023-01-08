@@ -300,7 +300,7 @@ contract NFTDerivativeProtocolTokenV1 is
 
         _sbtDetails[tokenId_] = DataTypes.SoulBoundTokenDetail({
             nickName: "Bank Treasury",
-            imageURI: "", //TODO
+            imageURI: "",
             locked: true
         });
         

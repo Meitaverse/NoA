@@ -200,11 +200,22 @@ library DataTypes {
      *
      * @param Unpaused The fully unpaused state.
      * @param PublishingPaused The state where only publication creation functions are paused.
+     * @param ProfilePaused The state where only profile creation functions are paused.
+     * @param HubPaused The state where only hub creation functions are paused.
+     * @param ProjectPaused The state where only project creation functions are paused.
      * @param Paused The fully paused state.
      */
     enum ProtocolState {
         Unpaused,
         PublishingPaused,
+        ProfilePaused,
+        HubPaused,
+        ProjectPaused,
+        Paused
+    }
+    
+    enum DerivativeNFTState {
+        Unpaused,
         Paused
     }
 

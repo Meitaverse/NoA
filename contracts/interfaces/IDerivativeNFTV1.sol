@@ -77,7 +77,7 @@ interface IDerivativeNFTV1 {
 
   function setMetadataDescriptor(address metadataDescriptor_) external;
 
-  function setState(DataTypes.ProtocolState newState) external;
+  function setState(DataTypes.DerivativeNFTState newState) external;
 
   function setDefaultRoyalty(address recipient, uint96 fraction) external;
   

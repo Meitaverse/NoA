@@ -123,6 +123,7 @@ const config: HardhatUserConfig = {
     only: [
       ':ModuleGlobals$', 
       ':Voucher$', 
+      ':MarketPlace$', 
       ':Manager$',
       ':BankTreasury$',
       ':DerivativeNFTV1$', 

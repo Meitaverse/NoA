@@ -92,7 +92,7 @@ contract Voucher is
         if (userAmountLimit == 0) revert Errors.InvalidParameter();
         uint256 preUserAmountLimit = _userAmountLimit;
         _userAmountLimit = userAmountLimit;
-        emit Events.SetUserAmountLimit(preUserAmountLimit, _userAmountLimit, block.timestamp);
+        emit Events.UserAmountLimitSet(preUserAmountLimit, _userAmountLimit, block.timestamp);
     }
     
     function getUserAmountLimit() external view returns(uint256) {
@@ -176,6 +176,20 @@ contract Voucher is
         onlyOwner
     {
         uint256 _tokenId = _generateNextVoucherId();
+        _generateVoucher(
+            _tokenId,
+            voucherType,
+            account
+        ); 
+    }
+
+    function _generateVoucher(
+        uint256 _tokenId,
+        DataTypes.VoucherParValueType voucherType,
+        address account
+    ) 
+        internal
+    {
         uint256 etherValue;
         uint256 amount;
 
@@ -205,6 +219,7 @@ contract Voucher is
         if (amount == 0) revert Errors.InvidVoucherParValueType();
 
         _mint(account, _tokenId, amount, "");
+
         _vouchers[_tokenId] = DataTypes.VoucherData({
             vouchType: voucherType,
             tokenId: _tokenId,
@@ -238,63 +253,34 @@ contract Voucher is
         external
         onlyOwner
     {
-        uint256[] memory ids = new uint256[](voucherTypes.length);
+        uint256[] memory _ids = new uint256[](voucherTypes.length);
         uint256[] memory amounts = new uint256[](voucherTypes.length);
         for (uint256 i = 0; i < voucherTypes.length; ) {
-            ids[i] =  _generateNextVoucherId();
+            _ids[i] =  _generateNextVoucherId();
             unchecked {
                 ++i;
             }
-            emit Events.PermanentURI(string(abi.encodePacked(_uriBase, StringsUpgradeable.toString(ids[i]), ".json")), ids[i]);
+            _generateVoucher(
+                _ids[i],
+                voucherTypes[i],
+                account
+            ); 
         }
 
-        for (uint256 i = 0; i < voucherTypes.length; ) {
-            uint256 etherValue;
-            uint256 amount;
-            if (voucherTypes[i] == DataTypes.VoucherParValueType.ZEROPOINTONE){
-                etherValue = 0.1 ether;
-                amount = 100;
-            } 
-            else if (voucherTypes[i] == DataTypes.VoucherParValueType.ZEROPOINTTWO){
-                etherValue = 0.2 ether;
-                amount = 200;
-            } 
-            else if (voucherTypes[i] == DataTypes.VoucherParValueType.ZEROPOINTTHREE){
-                etherValue = 0.3 ether;
-                amount = 300;
-            } 
-            else if (voucherTypes[i] == DataTypes.VoucherParValueType.ZEROPOINTFOUR){
-                etherValue = 0.4 ether;
-                amount = 400;
-            } 
-            else if (voucherTypes[i] == DataTypes.VoucherParValueType.ZEROPOINTFIVE) {
-                etherValue = 0.5 ether;
-                amount = 500;
-            }   else {
-                revert Errors.NotAllowed();
-            }
-
-            if (amount == 0) revert Errors.InvidVoucherParValueType();
-
-            unchecked {
-                ++i;
-            }
-        }
-
-        _mintBatch(account, ids, amounts, "");
+        _mintBatch(account, _ids, amounts, "");
     }
 
-    function getVoucherData(uint256 voucherId) external view returns(DataTypes.VoucherData memory) {
-        return _vouchers[voucherId];
+    function getVoucherData(uint256 tokenId) external view returns(DataTypes.VoucherData memory) {
+        return _vouchers[tokenId];
     }
 
-    function useVoucher(address account, uint256 voucherId, uint256 soulBoundTokenId) 
+    function useVoucher(address account, uint256 tokenId, uint256 soulBoundTokenId) 
         external onlyBankTreasury 
     {
-        if (balanceOf(account, voucherId) == 0) {
+        if (balanceOf(account, tokenId) == 0) {
             revert Errors.NotOwnerVoucher();
         }
-         DataTypes.VoucherData storage voucherData = _vouchers[voucherId];
+         DataTypes.VoucherData storage voucherData = _vouchers[tokenId];
          if (voucherData.isUsed) revert Errors.VoucherIsUsed();
          if (voucherData.endTimestamp !=0 && voucherData.endTimestamp < block.timestamp) revert Errors.VoucherExpired();
          voucherData.isUsed = true;

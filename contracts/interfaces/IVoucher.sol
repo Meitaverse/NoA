@@ -53,7 +53,7 @@ interface IVoucher {
         address account
     ) external;
 
-    function getVoucherData(uint256 voucherId) external view returns(DataTypes.VoucherData memory);
+    function getVoucherData(uint256 tokenId) external view returns(DataTypes.VoucherData memory);
 
     function setTokenUri(uint tokenId_, string memory uri_) external;
 
@@ -65,11 +65,11 @@ interface IVoucher {
      * @dev only call by owner
      *
      * @param account The account to exchange 
-     * @param voucherId The account to received 
-     * @param voucherId The soulBoundTokenId of  
+     * @param tokenId The account to received 
+     * @param tokenId The soulBoundTokenId of  
      *
      */
-    function useVoucher(address account, uint256 voucherId, uint256 soulBoundTokenId) external;
+    function useVoucher(address account, uint256 tokenId, uint256 soulBoundTokenId) external;
 
      function burn(
         address owner,

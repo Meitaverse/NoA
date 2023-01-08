@@ -9,25 +9,23 @@ type Profile @entity {
   timestamp: BigInt!
 }
 
-# mint NDPValue history    
-type MintNDPValueHistory @entity {
+# mint SBTValue history    
+type MintSBTValueHistory @entity {
   id: ID!
   soulBoundTokenId: BigInt!
   value: BigInt!
   timestamp: BigInt!
-}    
-
-    
+} 
     
 # burn SBT history    
-type BurnNDPTHistory @entity {
+type BurnSBTHistory @entity {
   id: ID!
   soulBoundTokenId: BigInt!
   timestamp: BigInt!
 }    
 
 # burn SBT value history    
-type BurnNDPTValueHistory @entity {
+type BurnSBTValueHistory @entity {
   id: ID!
   soulBoundTokenId: BigInt!
   value: BigInt!
@@ -152,7 +150,7 @@ type NFTVoucherHistory @entity {
   account: Bytes!
   vouchType: Int!
   tokenId: BigInt!
-  ndptValue: BigInt!
+  sbtValue: BigInt!
   generateTimestamp: BigInt!
 }
 
@@ -237,7 +235,7 @@ type ERC3525ReceivedHistory @entity {
   gas: BigInt!
 }
 
-# NDP contract BankTreasurySet history
+# SBT contract BankTreasurySet history
 type BankTreasurySetHistory @entity {
   id: ID!
   soulBoundTokenId: BigInt!
@@ -287,11 +285,11 @@ type ModuleGlobalsManagerSetHistory @entity {
   timestamp: BigInt!
 }
 
-# ModuleGlbals NDPT Set history
-type ModuleGlobalsNDPTSetHistory @entity {
+# ModuleGlbals SBT Set history
+type ModuleGlobalsSBTSetHistory @entity {
   id: ID!
-  prevNDPT: Bytes!
-  newNDPT: Bytes!
+  prevSBT: Bytes!
+  newSBT: Bytes!
   timestamp: BigInt!
 }
 
@@ -340,5 +338,25 @@ type TemplateWhitelistedHistory @entity {
   id: ID!
   template: Bytes!
   whitelisted: Boolean!
+  timestamp: BigInt!
+}
+
+# Bank treasury ExchangeSBTByEth history
+type ExchangeSBTByEthHistory @entity {
+  id: ID!
+  soulBoundTokenId: BigInt!
+  exchangeWallet: Bytes!
+  amount: BigInt!
+  timestamp: BigInt!
+}
+
+# Bank treasury ExchangeEthBySBTHistory history
+type ExchangeEthBySBTHistory @entity {
+  id: ID!
+  soulBoundTokenId: BigInt!
+  toWallet: Bytes!
+  sbtValue: BigInt!
+  exchangePrice: BigInt!
+  ethAmount: BigInt!
   timestamp: BigInt!
 }

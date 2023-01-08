@@ -143,6 +143,13 @@ library Events {
         uint256 timestamp
     );
 
+    event DerivativeNFTStateSet(
+        address indexed caller,
+        DataTypes.DerivativeNFTState indexed prevState,
+        DataTypes.DerivativeNFTState indexed newState,
+        uint256 timestamp
+    );
+
     /**
      * @dev Emitted when the bank treasury receive ERC3525 tokens
      *
@@ -161,6 +168,27 @@ library Events {
         bytes data, 
         uint256 gas
     );
+
+    /**
+     * @dev Emitted when the market place receive ERC3525 tokens
+     *
+     * @param operator The operator who called by.
+     * @param fromTokenId The from token id
+     * @param toTokenId The to token id
+     * @param value The value of token
+     * @param data The data extend
+     * @param gas The gas left
+     */    
+    event MarketPlaceERC3525Received(
+        address operator, 
+        uint256 fromTokenId, 
+        uint256 toTokenId, 
+        uint256 value, 
+        bytes data, 
+        uint256 gas
+    );
+
+    
 
     //Receiver
     /**
@@ -607,7 +635,7 @@ library Events {
         uint256 generateTimestamp
     );
 
-    event SetUserAmountLimit(
+    event UserAmountLimitSet(
         uint256 preUserAmountLimit,
         uint256 userAmountLimit,
         uint256 endTimestamp
@@ -632,6 +660,30 @@ library Events {
         uint256 treasuryAmount, 
         uint256 genesisAmount,
         uint256 adjustedAmount
+    );
+
+    event ExchangeSBTByEth(
+        uint256 indexed soulBoundTokenId,
+        address indexed exchangeWallet,
+        uint256 indexed sbtValue,
+        uint256 timestamp
+    );
+
+    event ExchangeEthBySBT(
+         uint256 indexed soulBoundTokenId,
+         address indexed toWallet,
+         uint256 indexed sbtValue,
+         uint256 exchangePrice,
+         uint256 ethAmount,
+         uint256 timestamp
+    );
+
+    event ExchangeVoucher(
+        uint256 indexed soulBoundTokenId,
+        address indexed operator,
+        uint256 indexed tokenId,
+        uint256 sbtValue,
+        uint256 timestamp
     );
 
 }

@@ -56,7 +56,7 @@ abstract contract MockManagerV2Storage {
         keccak256('PermitValue(address spender,uint256 tokenId,uint256 value,uint256 nonce,uint256 deadline)');
     
     mapping(uint256 => DataTypes.HubData) internal _hubInfos;
-    mapping(uint256 => uint256) internal _hubBySoulBoundTokenId;
+    mapping(uint256 => uint256) internal _hubIdBySoulBoundTokenId;
     mapping(bytes32 => uint256) internal _projectNameHashByEventId; //用于判断project name是否重复
     mapping(uint256 => DataTypes.ProjectData) internal _projectInfoByProjectId;
     mapping(uint256 => address) internal _derivativeNFTByProjectId;
@@ -80,7 +80,7 @@ abstract contract MockManagerV2Storage {
     address internal _emergencyAdmin;
     address internal _governance;
 
-    Counters.Counter internal _nextSaleId;
+    
     Counters.Counter internal _nextTradeId;
     Counters.Counter internal _nextHubId;
     Counters.Counter internal _nextProjectId;
@@ -96,12 +96,6 @@ abstract contract MockManagerV2Storage {
     //saleId => struct Sale
     mapping(uint24 => DataTypes.Sale) internal sales;
     
-    // records of user purchased units from an order
-    mapping(uint24 => mapping(address => uint128)) internal saleRecords;
-
-    //derivativeNFT => saleId
-    mapping(address => EnumerableSetUpgradeable.UintSet) internal _derivativeNFTSales;
-    mapping(address => EnumerableSetUpgradeable.AddressSet) internal _allowAddresses;
 
 
     //MultiRecipient

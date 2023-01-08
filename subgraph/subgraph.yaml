@@ -5,7 +5,7 @@ schema:
   file: ./schema.graphql
 dataSources:
   - kind: ethereum/contract
-    name: NDP
+    name: SBT
     network: mainnet
     source:
       address: "0xB7f8BC63BbcaD18155201308C8f3540b07f84F5e"
@@ -18,14 +18,14 @@ dataSources:
       entities:
         - BankTreasurySet
         - ProfileCreated
-        - MintNDPTValue
-        - BurnNDPT
-        - BurnNDPTValue
+        - MintSBTValue
+        - BurnSBT
+        - BurnSBTValue
         - ProfileImageURISet
         - ApprovalForSlot
       abis:
-        - name: NDP
-          file: ./abis/NDP.json
+        - name: SBT
+          file: ./abis/SBT.json
         - name: Events
           file: ./abis/Events.json
       eventHandlers:
@@ -33,17 +33,17 @@ dataSources:
           handler: handleBankTreasurySet
         - event: ProfileCreated(indexed uint256,indexed address,indexed address,string,string,uint256)
           handler: handleProfileCreated
-        - event: MintNDPTValue(uint256,uint256,uint256)
-          handler: handleMintNDPTValue
-        - event: BurnNDPT(uint256,uint256)
-          handler: handleBurnNDPT
-        - event: BurnNDPTValue(uint256,uint256,uint256)
-          handler: handleBurnNDPTValue
+        - event: MintSBTValue(uint256,uint256,uint256)
+          handler: handleMintSBTValue
+        - event: BurnSBT(uint256,uint256)
+          handler: handleBurnSBT
+        - event: BurnSBTValue(uint256,uint256,uint256)
+          handler: handleBurnSBTValue
         - event: ProfileImageURISet(indexed uint256,string,uint256)
           handler: handleProfileImageURISet
         - event: ApprovalForSlot(indexed address,indexed uint256,indexed address,bool)
           handler: handleApprovalForSlot
-      file: ./src/ndp-mapping.ts
+      file: ./src/sbt-mapping.ts
 
   - kind: ethereum/contract
     name: Manager
@@ -109,13 +109,19 @@ dataSources:
       language: wasm/assemblyscript
       entities:
         - ERC3525Received
+        - ExchangeSBTByEth
+        - ExchangeEthBySBT
       abis:
         - name: Events
           file: ./abis/Events.json
       eventHandlers:
         - event: ERC3525Received(address,uint256,uint256,uint256,bytes,uint256)
           handler: handleERC3525Received
-      file: ./src/manager-mapping.ts
+        - event: ExchangeSBTByEth(indexed uint256,indexed address,indexed uint256,uint256)
+          handler: handleExchangeSBTByEth
+        - event: ExchangeEthBySBT(indexed uint256,indexed address,indexed uint256,uint256,uint256,uint256)
+          handler: handleExchangeSBTByEth
+      file: ./src/bankTreasury-mapping.ts
   
   - kind: ethereum/contract
     name: Voucher
@@ -130,12 +136,18 @@ dataSources:
       language: wasm/assemblyscript
       entities:
         - MintNFTVoucher
+        - UserAmountLimitSet
+        - GenerateVoucher
       abis:
         - name: Events
           file: ./abis/Events.json
       eventHandlers:
         - event: MintNFTVoucher(uint256,address,uint8,uint256,uint256,uint256)
           handler: handleMintNFTVoucher
+        - event: UserAmountLimitSet(uint256,uint256,uint256)
+          handler: handleUserAmountLimitSet
+        - event: GenerateVoucher(uint8,uint256,uint256,uint256,uint256,uint256)
+          handler: handleGenerateVoucher
       file: ./src/voucher-mapping.ts
 
   - kind: ethereum/contract
@@ -155,7 +167,7 @@ dataSources:
         - ModuleGlobalsTreasurySet
         - ModuleGlobalsVoucherSet
         - ModuleGlobalsManagerSet
-        - ModuleGlobalsNDPTSet
+        - ModuleGlobalsSBTSet
         - ModuleGlobalsPublishRoyaltySet
         - ModuleGlobalsTreasuryFeeSet
         - ModuleGlobalsGovernanceSet
@@ -176,8 +188,8 @@ dataSources:
           handler: handleModuleGlobalsVoucherSet
         - event: ModuleGlobalsManagerSet(indexed address,indexed address,uint256)
           handler: handleModuleGlobalsManagerSet
-        - event: ModuleGlobalsNDPTSet(indexed address,indexed address,uint256)
-          handler: handleModuleGlobalsNDPTSet
+        - event: ModuleGlobalsSBTSet(indexed address,indexed address,uint256)
+          handler: handleModuleGlobalsSBTSet
         - event: ModuleGlobalsPublishRoyaltySet(indexed uint256,indexed uint256,uint256)
           handler: handleModuleGlobalsPublishRoyaltySet
         - event: ModuleGlobalsTreasuryFeeSet(indexed uint16,indexed uint16,uint256)

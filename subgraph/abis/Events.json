@@ -120,7 +120,7 @@
           "type": "uint256"
         }
       ],
-      "name": "BurnNDPT",
+      "name": "BurnSBT",
       "type": "event"
     },
     {
@@ -145,7 +145,7 @@
           "type": "uint256"
         }
       ],
-      "name": "BurnNDPTValue",
+      "name": "BurnSBTValue",
       "type": "event"
     },
     {
@@ -524,6 +524,80 @@
       "inputs": [
         {
           "indexed": true,
+          "internalType": "uint256",
+          "name": "soulBoundTokenId",
+          "type": "uint256"
+        },
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "toWallet",
+          "type": "address"
+        },
+        {
+          "indexed": true,
+          "internalType": "uint256",
+          "name": "sbtValue",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "exchangePrice",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "ethAmount",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "timestamp",
+          "type": "uint256"
+        }
+      ],
+      "name": "ExchangeEthBySBT",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "uint256",
+          "name": "soulBoundTokenId",
+          "type": "uint256"
+        },
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "exchangeWallet",
+          "type": "address"
+        },
+        {
+          "indexed": true,
+          "internalType": "uint256",
+          "name": "amount",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "timestamp",
+          "type": "uint256"
+        }
+      ],
+      "name": "ExchangeSBTByEth",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
           "internalType": "address",
           "name": "owner",
           "type": "address"
@@ -716,7 +790,7 @@
         {
           "indexed": false,
           "internalType": "uint256",
-          "name": "ndptValue",
+          "name": "sbtValue",
           "type": "uint256"
         },
         {
@@ -851,31 +925,6 @@
         },
         {
           "indexed": false,
-          "internalType": "uint256",
-          "name": "value",
-          "type": "uint256"
-        },
-        {
-          "indexed": false,
-          "internalType": "uint256",
-          "name": "timestamp",
-          "type": "uint256"
-        }
-      ],
-      "name": "MintNDPTValue",
-      "type": "event"
-    },
-    {
-      "anonymous": false,
-      "inputs": [
-        {
-          "indexed": false,
-          "internalType": "uint256",
-          "name": "soulBoundTokenId",
-          "type": "uint256"
-        },
-        {
-          "indexed": false,
           "internalType": "address",
           "name": "account",
           "type": "address"
@@ -895,7 +944,7 @@
         {
           "indexed": false,
           "internalType": "uint256",
-          "name": "ndptValue",
+          "name": "sbtValue",
           "type": "uint256"
         },
         {
@@ -906,6 +955,31 @@
         }
       ],
       "name": "MintNFTVoucher",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "soulBoundTokenId",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "value",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "timestamp",
+          "type": "uint256"
+        }
+      ],
+      "name": "MintSBTValue",
       "type": "event"
     },
     {
@@ -982,31 +1056,6 @@
       "inputs": [
         {
           "indexed": true,
-          "internalType": "address",
-          "name": "prevNDPT",
-          "type": "address"
-        },
-        {
-          "indexed": true,
-          "internalType": "address",
-          "name": "newNDPT",
-          "type": "address"
-        },
-        {
-          "indexed": false,
-          "internalType": "uint256",
-          "name": "timestamp",
-          "type": "uint256"
-        }
-      ],
-      "name": "ModuleGlobalsNDPTSet",
-      "type": "event"
-    },
-    {
-      "anonymous": false,
-      "inputs": [
-        {
-          "indexed": true,
           "internalType": "uint256",
           "name": "prevPublishRoyalty",
           "type": "uint256"
@@ -1025,6 +1074,31 @@
         }
       ],
       "name": "ModuleGlobalsPublishRoyaltySet",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "prevSBT",
+          "type": "address"
+        },
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "newSBT",
+          "type": "address"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "timestamp",
+          "type": "uint256"
+        }
+      ],
+      "name": "ModuleGlobalsSBTSet",
       "type": "event"
     },
     {
@@ -1714,7 +1788,7 @@
           "type": "uint256"
         }
       ],
-      "name": "SetUserAmountLimit",
+      "name": "UserAmountLimitSet",
       "type": "event"
     },
     {

@@ -12,7 +12,7 @@ import {DataTypes} from '../libraries/DataTypes.sol';
  */
 interface IManager {
     /**
-     * @notice Initializes the Manager, setting the initial governance address and receiver address
+     * @notice Initializes the Manager, setting the initial governance address
      *
      * @param governance_ The address of Governance.
      */
@@ -62,6 +62,11 @@ interface IManager {
    */
    function setState(DataTypes.ProtocolState newState) external;
  
+    function setDerivativeNFTState(
+        uint256 projectId,
+        DataTypes.DerivativeNFTState newState
+    ) external;
+
     function mintSBTValue(
         uint256 soulBoundTokenId, 
         uint256 value
@@ -213,13 +218,13 @@ interface IManager {
 
     function calculateRoyalty(uint256 publishId) external view returns(uint96);
 
+/*
     function publishFixedPrice(
         DataTypes.Sale memory sale
     ) external;
 
-    function removeSale(
-        uint24 saleId_
-    ) external;
+
+    function removeSale(uint256 soulBoundTokenId, address seller, uint24 saleId) external;
 
     function addMarket(
         address derivativeNFT_,
@@ -240,6 +245,8 @@ interface IManager {
         uint24 saleId, 
         uint128 units
     )  external payable returns (uint256 amount, uint128 fee);
+*/
+
 
    
 }

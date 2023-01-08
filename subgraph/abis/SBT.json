@@ -26,6 +26,11 @@
     },
     {
       "inputs": [],
+      "name": "MaxSupplyExceeded",
+      "type": "error"
+    },
+    {
+      "inputs": [],
       "name": "NickNameLengthInvalid",
       "type": "error"
     },
@@ -190,49 +195,6 @@
         }
       ],
       "name": "Paused",
-      "type": "event"
-    },
-    {
-      "anonymous": false,
-      "inputs": [
-        {
-          "indexed": true,
-          "internalType": "uint256",
-          "name": "soulBoundTokenId",
-          "type": "uint256"
-        },
-        {
-          "indexed": true,
-          "internalType": "address",
-          "name": "creator",
-          "type": "address"
-        },
-        {
-          "indexed": true,
-          "internalType": "address",
-          "name": "wallet",
-          "type": "address"
-        },
-        {
-          "indexed": false,
-          "internalType": "string",
-          "name": "nickName",
-          "type": "string"
-        },
-        {
-          "indexed": false,
-          "internalType": "string",
-          "name": "imageURI",
-          "type": "string"
-        },
-        {
-          "indexed": false,
-          "internalType": "uint256",
-          "name": "timestamp",
-          "type": "uint256"
-        }
-      ],
-      "name": "ProfileCreated",
       "type": "event"
     },
     {
@@ -439,6 +401,19 @@
     },
     {
       "inputs": [],
+      "name": "MAX_SUPPLY",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
       "name": "PAUSER_ROLE",
       "outputs": [
         {
@@ -574,7 +549,7 @@
           "type": "uint256"
         }
       ],
-      "name": "balanceOfNDPT",
+      "name": "balanceOfSBT",
       "outputs": [
         {
           "internalType": "uint256",
@@ -893,7 +868,7 @@
       "inputs": [
         {
           "internalType": "uint256",
-          "name": "tokenId",
+          "name": "soulBoundTokenId",
           "type": "uint256"
         },
         {

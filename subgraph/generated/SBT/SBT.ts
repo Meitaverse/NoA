@@ -164,44 +164,6 @@ export class Paused__Params {
   }
 }
 
-export class ProfileCreated extends ethereum.Event {
-  get params(): ProfileCreated__Params {
-    return new ProfileCreated__Params(this);
-  }
-}
-
-export class ProfileCreated__Params {
-  _event: ProfileCreated;
-
-  constructor(event: ProfileCreated) {
-    this._event = event;
-  }
-
-  get soulBoundTokenId(): BigInt {
-    return this._event.parameters[0].value.toBigInt();
-  }
-
-  get creator(): Address {
-    return this._event.parameters[1].value.toAddress();
-  }
-
-  get wallet(): Address {
-    return this._event.parameters[2].value.toAddress();
-  }
-
-  get nickName(): string {
-    return this._event.parameters[3].value.toString();
-  }
-
-  get imageURI(): string {
-    return this._event.parameters[4].value.toString();
-  }
-
-  get timestamp(): BigInt {
-    return this._event.parameters[5].value.toBigInt();
-  }
-}
-
 export class RoleAdminChanged extends ethereum.Event {
   get params(): RoleAdminChanged__Params {
     return new RoleAdminChanged__Params(this);
@@ -454,6 +416,21 @@ export class SBT extends ethereum.SmartContract {
     return ethereum.CallResult.fromValue(value[0].toBytes());
   }
 
+  MAX_SUPPLY(): BigInt {
+    let result = super.call("MAX_SUPPLY", "MAX_SUPPLY():(uint256)", []);
+
+    return result[0].toBigInt();
+  }
+
+  try_MAX_SUPPLY(): ethereum.CallResult<BigInt> {
+    let result = super.tryCall("MAX_SUPPLY", "MAX_SUPPLY():(uint256)", []);
+    if (result.reverted) {
+      return new ethereum.CallResult();
+    }
+    let value = result.value;
+    return ethereum.CallResult.fromValue(value[0].toBigInt());
+  }
+
   PAUSER_ROLE(): Bytes {
     let result = super.call("PAUSER_ROLE", "PAUSER_ROLE():(bytes32)", []);
 
@@ -559,11 +536,9 @@ export class SBT extends ethereum.SmartContract {
   }
 
   balanceOfSBT(tokenId: BigInt): BigInt {
-    let result = super.call(
-      "balanceOfSBT",
-      "balanceOfSBT(uint256):(uint256)",
-      [ethereum.Value.fromUnsignedBigInt(tokenId)]
-    );
+    let result = super.call("balanceOfSBT", "balanceOfSBT(uint256):(uint256)", [
+      ethereum.Value.fromUnsignedBigInt(tokenId)
+    ]);
 
     return result[0].toBigInt();
   }
@@ -1520,7 +1495,7 @@ export class MintValueCall__Inputs {
     this._call = call;
   }
 
-  get tokenId(): BigInt {
+  get soulBoundTokenId(): BigInt {
     return this._call.inputValues[0].value.toBigInt();
   }
 
