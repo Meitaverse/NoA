@@ -2965,3 +2965,80 @@ export class ExchangeEthBySBTHistory extends Entity {
     this.set("timestamp", Value.fromBigInt(value));
   }
 }
+
+export class Market extends Entity {
+  constructor(id: string) {
+    super();
+    this.set("id", Value.fromString(id));
+  }
+
+  save(): void {
+    let id = this.get("id");
+    assert(id != null, "Cannot save Market entity without an ID");
+    if (id) {
+      assert(
+        id.kind == ValueKind.STRING,
+        `Entities of type Market must have an ID of type String but the id '${id.displayData()}' is of type ${id.displayKind()}`
+      );
+      store.set("Market", id.toString(), this);
+    }
+  }
+
+  static load(id: string): Market | null {
+    return changetype<Market | null>(store.get("Market", id));
+  }
+
+  get id(): string {
+    let value = this.get("id");
+    return value!.toString();
+  }
+
+  set id(value: string) {
+    this.set("id", Value.fromString(value));
+  }
+
+  get derivativeNFT(): Bytes {
+    let value = this.get("derivativeNFT");
+    return value!.toBytes();
+  }
+
+  set derivativeNFT(value: Bytes) {
+    this.set("derivativeNFT", Value.fromBytes(value));
+  }
+
+  get feePayType(): i32 {
+    let value = this.get("feePayType");
+    return value!.toI32();
+  }
+
+  set feePayType(value: i32) {
+    this.set("feePayType", Value.fromI32(value));
+  }
+
+  get feeShareType(): i32 {
+    let value = this.get("feeShareType");
+    return value!.toI32();
+  }
+
+  set feeShareType(value: i32) {
+    this.set("feeShareType", Value.fromI32(value));
+  }
+
+  get royaltyBasisPoints(): i32 {
+    let value = this.get("royaltyBasisPoints");
+    return value!.toI32();
+  }
+
+  set royaltyBasisPoints(value: i32) {
+    this.set("royaltyBasisPoints", Value.fromI32(value));
+  }
+
+  get timestamp(): BigInt {
+    let value = this.get("timestamp");
+    return value!.toBigInt();
+  }
+
+  set timestamp(value: BigInt) {
+    this.set("timestamp", Value.fromBigInt(value));
+  }
+}

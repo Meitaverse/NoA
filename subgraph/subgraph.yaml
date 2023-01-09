@@ -245,3 +245,25 @@ dataSources:
         - event: ReceiverReceived(address,uint256,uint256,uint256,bytes,uint256)
           handler: handleReceiverReceived
       file: ./src/receiver-mapping.ts
+
+
+  - kind: ethereum/contract
+    name: MarketPlace
+    network: mainnet
+    source:
+      address: "0x9A676e781A523b5d0C0e43731313A708CB607508"
+      abi: Events
+      startBlock: 0
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.6
+      language: wasm/assemblyscript
+      entities:
+        - AddMarket
+      abis:
+        - name: Events
+          file: ./abis/Events.json
+      eventHandlers:
+        - event: AddMarket(address,uint8,uint8,uint16)
+          handler: handleAddMarket
+      file: ./src/marketplace-mapping.ts

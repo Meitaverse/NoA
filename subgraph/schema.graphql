@@ -364,3 +364,13 @@ type ExchangeEthBySBTHistory @entity {
   ethAmount: BigInt!
   timestamp: BigInt!
 }
+
+# Market Place
+type Market @entity {
+  id: ID!
+  derivativeNFT: Bytes!
+  feePayType: Int!
+  feeShareType: Int!
+  royaltyBasisPoints: Int!
+  timestamp: BigInt!
+}
