@@ -261,7 +261,7 @@ import {
         console.log('\n\t-- Deploying market place --');
 
         const marketPlaceImpl = await deployContract(
-            new BankTreasury__factory(deployer).deploy({ nonce: deployerNonce++ })
+            new MarketPlace__factory    (deployer).deploy({ nonce: deployerNonce++ })
         );
 
         let initializeDataMarket = marketPlaceImpl.interface.encodeFunctionData("initialize", [
@@ -270,7 +270,7 @@ import {
       
         const marketPlaceProxy = await new ERC1967Proxy__factory(deployer).deploy(
             marketPlaceImpl.address,
-          initializeData,
+            initializeDataMarket,
           { nonce: deployerNonce++ }
         );
         const marketPlaceContract = new MarketPlace__factory(deployer).attach(marketPlaceProxy.address);
