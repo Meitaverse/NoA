@@ -98,7 +98,8 @@ makeSuiteCleanRoom('UUPS ability', function () {
         const v2 = new BankTreasuryV2__factory(deployer).attach(bankTreasuryContract.address);
 
         console.log("v2.MANAGER: ", (await v2.getManager()).toUpperCase());
-         expect((await v2.getManager()).toUpperCase()).to.eq(managerV1Address.toUpperCase());
+        expect((await v2.getManager()).toUpperCase()).to.eq(managerV1Address.toUpperCase());
+        
       });
       
 

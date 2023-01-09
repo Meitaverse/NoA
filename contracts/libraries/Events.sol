@@ -482,11 +482,13 @@ library Events {
     
     event Traded(
         uint24 indexed saleId,
+        address indexed buyer,
         uint256 tradeId,
         uint32 tradeTime,
         uint128 price,
         uint256 newTokenIdBuyer,
-        uint128 tradedUnits
+        uint128 tradedUnits,
+        DataTypes.RoyaltyAmounts
     );
 
     //BankTreasury

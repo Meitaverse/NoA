@@ -169,7 +169,6 @@ library DataTypes {
      */
     struct Market {
         bool isValid;
-        uint64 precision;
         FeeShareType feeShareType;
         FeePayType feePayType;
         uint16 royaltyBasisPoints;
@@ -201,7 +200,6 @@ library DataTypes {
         uint128 min; //min units
         uint128 max; //max units
         address derivativeNFT; //sale asset
-        // bool useAllowList;
         bool isValid;
         uint256 genesisSoulBoundTokenId;
         uint256 genesisRoyaltyBasisPoints;

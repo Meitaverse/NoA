@@ -221,7 +221,7 @@ dataSources:
         - name: Events
           file: ./abis/Events.json
       eventHandlers:
-        - event: FeesForCollect(uint256,uint256,uint256,uint256,uint256)
+        - event: FeesForCollect(uint256,(uint256,uint256,uint256,uint256),(uint256,uint256,uint256,uint256))
           handler: handleFeesForCollect
       file: ./src/feeCollectModule-mapping.ts
 

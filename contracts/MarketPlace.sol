@@ -168,6 +168,7 @@ contract MarketPlace is
         if(total > type(uint128).max) revert Errors.ExceedsUint128Max();
         if(total == 0) revert Errors.TotalIsZero();
         if(saleParam.max > total) revert Errors.MaxGTTotal(); 
+        if(saleParam.onSellUnits > total) revert Errors.UnitsGTTotal(); 
         
         uint24 saleId = _generateNextSaleId();
         _derivativeNFTSales[derivativeNFT].add(saleId);
@@ -199,7 +200,11 @@ contract MarketPlace is
         ); 
     }
 
-    function fixedPriceSet(uint24 saleId, uint128 newSalePrice) external  {
+    function fixedPriceSet(uint24 saleId, uint128 newSalePrice) 
+        external  
+        nonReentrant
+        whenNotPaused          
+    {
         _validateCallerIsSoulBoundTokenOwnerOrDispathcher(sales[saleId].soulBoundTokenId);
 
         DataTypes.Sale memory sale = sales[saleId];
@@ -217,16 +222,30 @@ contract MarketPlace is
         );
     }
 
-    function setSaleValid(uint24 saleId, bool isValid) external onlyGov{
+    function setSaleValid(uint24 saleId, bool isValid) 
+        external 
+        nonReentrant
+        whenNotPaused          
+        onlyGov
+    {
         DataTypes.Sale storage sale = sales[saleId];
         sale.isValid = isValid;
     }
 
-    function setMarketValid(address derivativeNFT, bool isValid) external onlyGov{
+    function setMarketValid(address derivativeNFT, bool isValid) 
+        external 
+        nonReentrant
+        whenNotPaused          
+        onlyGov
+    {
         markets[derivativeNFT].isValid = isValid;
     }
 
-    function removeSale(uint24 saleId) external nonReentrant {
+    function removeSale(uint24 saleId) 
+        external 
+        nonReentrant
+        whenNotPaused   
+    {
         _validateCallerIsSoulBoundTokenOwnerOrDispathcher(sales[saleId].soulBoundTokenId);
        
         _removeSale(saleId);
@@ -288,14 +307,8 @@ contract MarketPlace is
             saleRecords[saleId][buyer] = saleRecords[saleId][buyer].add(units);
         }
 
-        if (sales[saleId].min > units) {
-           
-            revert Errors.UnitsLTMin();
-        }
-
-        if (units > sales[saleId].max) {
-           
-            revert Errors.UnitsGTMax();
+        if (sales[saleId].min > 0) {
+            if (sales[saleId].min > units) revert Errors.UnitsLTMin();
         }
 
         _buyByUnits(
@@ -325,7 +338,7 @@ contract MarketPlace is
         return _derivativeNFTSales[derivativeNFT_].length();
     }
 
-    function saleIdOfICTokenByIndex(
+    function saleIdOfDerivativeNFTByIndex(
         address derivativeNFT_, 
         uint256 index_
     )
@@ -334,6 +347,10 @@ contract MarketPlace is
         returns (uint256)
     {
         return _derivativeNFTSales[derivativeNFT_].at(index_);
+    }
+
+    function getSaleData( uint24 saleId) external view returns(DataTypes.Sale memory) {
+        return sales[saleId];
     }
 
     //--- internal  ---//
@@ -431,7 +448,7 @@ contract MarketPlace is
 
     function _buyByUnits(
         uint256 buyerSoulBoundTokenId_,
-        uint256 nextTradeId_,
+        uint256 tradeId_,
         address buyer_,
         uint24 saleId_, 
         uint128 price_,
@@ -486,11 +503,13 @@ contract MarketPlace is
 
         emit Events.Traded(
             saleId_,
-            nextTradeId_,
+            buyer_,
+            tradeId_,
             uint32(block.timestamp),
             price_,
             newTokenIdBuyer_,
-            units_
+            units_,
+            royaltyAmounts
         );
 
         if (sale_.onSellUnits == 0) {

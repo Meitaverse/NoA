@@ -165,10 +165,14 @@ type ProfileCreatorWhitelistedHistory @entity {
 # FeeCollectModule
 type FeesForCollectHistory @entity {
   id: ID!
+  ownershipSoulBoundTokenId: BigInt!
   collectorSoulBoundTokenId: BigInt!
+  genesisSoulBoundTokenId: BigInt!
+  previousSoulBoundTokenId: BigInt!
   publishId: BigInt!
   treasuryAmount: BigInt!
   genesisAmount: BigInt!
+  previousAmount: BigInt!
   adjustedAmount: BigInt!
   timestamp: BigInt!
 }
@@ -346,7 +350,7 @@ type ExchangeSBTByEthHistory @entity {
   id: ID!
   soulBoundTokenId: BigInt!
   exchangeWallet: Bytes!
-  amount: BigInt!
+  sbtValue: BigInt!
   timestamp: BigInt!
 }
 

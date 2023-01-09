@@ -9,6 +9,7 @@ import "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
 import "@openzeppelin/contracts/utils/introspection/IERC165.sol";
 import "@solvprotocol/erc-3525/contracts/IERC3525Receiver.sol";
 import "@solvprotocol/erc-3525/contracts/IERC3525.sol";
+import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 
 import {IERC20Upgradeable} from "@openzeppelin/contracts-upgradeable/token/ERC20/IERC20Upgradeable.sol";
 import {SafeERC20Upgradeable} from "@openzeppelin/contracts-upgradeable/token/ERC20/utils/SafeERC20Upgradeable.sol";
@@ -21,17 +22,18 @@ import {IManager} from "../interfaces/IManager.sol";
 import {IVoucher} from "../interfaces/IVoucher.sol";
 import "../libraries/EthAddressLib.sol";
 import "../storage/BankTreasuryStorage.sol";
-import {IModuleGlobals} from "../interfaces/IModuleGlobals.sol";
 import {INFTDerivativeProtocolTokenV1} from "../interfaces/INFTDerivativeProtocolTokenV1.sol";
+import {IModuleGlobals} from "../interfaces/IModuleGlobals.sol";
+
 /**
- *  @title Bank Treasury
+ *  @title Bank TreasuryV2
  *  @author bitsoul Protocol
  * 
  *  Holds the fee, and set currencies whitelist
- *  
  */
-contract BankTreasuryV2 is
+contract BankTreasuryV2 is 
     Initializable,
+    ReentrancyGuard,
     IBankTreasuryV2,
     BankTreasuryStorage,
     IERC165,
@@ -44,25 +46,23 @@ contract BankTreasuryV2 is
     using SafeMathUpgradeable for uint256;
 
     bytes32 internal constant EIP712_DOMAIN_TYPEHASH =
-        keccak256("EIP712Domain(string name,string version,uint256 chainId,address verifyingContract)");
+        keccak256(
+            'EIP712Domain(string name,string version,uint256 chainId,address verifyingContract)'
+        );  
 
-    bytes32 internal constant EIP712_REVISION_HASH = keccak256("1");
+    bytes32 internal constant EIP712_REVISION_HASH = keccak256('1');
 
     bytes32 internal constant EXCHANGE_SBT_BY_ETHER_TYPEHASH =
-        keccak256(
-            "ExchangeSBTByEth(address exchangeWallet,uint256 soulBoundTokenId,uint256 amount,uint256 nonce,uint256 deadline)"
-        );
+        keccak256('ExchangeSBTByEth(address exchangeWallet,uint256 soulBoundTokenId,uint256 amount,uint256 nonce,uint256 deadline)');
 
     bytes32 internal constant EXCHANGE_ETHER_BY_SBT_TYPEHASH =
-        keccak256(
-            "ExchangeyEthBySBT(address to,uint256 soulBoundTokenId,uint256 sbtamount,uint256 nonce,uint256 deadline)"
-        );
+        keccak256('ExchangeyEthBySBT(address to,uint256 soulBoundTokenId,uint256 sbtamount,uint256 nonce,uint256 deadline)');
 
     bytes32 public constant PAUSER_ROLE = keccak256("PAUSER_ROLE");
     bytes32 public constant UPGRADER_ROLE = keccak256("UPGRADER_ROLE");
     uint16 internal constant BPS_MAX = 10000;
 
-     string public name;
+    string public name;
 
     /**
      * @dev This modifier reverts if the caller is not the configured governance address.
@@ -100,12 +100,16 @@ contract BankTreasuryV2 is
         _;
     }
 
+    function setGlobalModule(address moduleGlobals) external onlyGov {
+        if (moduleGlobals == address(0)) revert Errors.InitParamsInvalid();
+        MODULE_GLOBALS = moduleGlobals;
+    }
+    
     function getManager() external view returns(address) {
         return IModuleGlobals(MODULE_GLOBALS).getManager();
     }
 
     function getGovernance() external view returns (address) {
-        address _governance = IModuleGlobals(MODULE_GLOBALS).getGovernance();
         return _governance;
     }
 
@@ -131,7 +135,9 @@ contract BankTreasuryV2 is
         emit Events.Deposit(msg.sender, msg.value, address(this).balance);
     }
 
-    fallback() external payable {}
+    fallback() external payable {
+        // revert();
+    }
 
     function supportsInterface(
         bytes4 interfaceId
@@ -142,7 +148,7 @@ contract BankTreasuryV2 is
             interfaceId == type(IERC3525Receiver).interfaceId ||
             super.supportsInterface(interfaceId);
     }
-
+    
     function onERC3525Received(
         address operator,
         uint256 fromTokenId,
@@ -195,6 +201,7 @@ contract BankTreasuryV2 is
     function executeTransaction(
         uint256 _txIndex
     ) public whenNotPaused onlySigner txExists(_txIndex) notExecuted(_txIndex) {
+        address _sbt = IModuleGlobals(MODULE_GLOBALS).getSBT();
         DataTypes.Transaction storage transaction = _transactions[_txIndex];
 
         if (transaction.numConfirmations < _numConfirmationsRequired) revert Errors.CannotExecuteTx();
@@ -215,7 +222,7 @@ contract BankTreasuryV2 is
             );
 
         } else if (transaction.currencyType == DataTypes.CurrencyType.ERC3525) {
-            IERC3525(transaction.currency).transferFrom(
+            INFTDerivativeProtocolTokenV1(_sbt).transferValue(
                 transaction.fromTokenId,
                 transaction.toTokenId,
                 transaction.value
@@ -228,8 +235,6 @@ contract BankTreasuryV2 is
                 transaction.value
             );
         }
-
-       
     }
 
     function revokeConfirmation(
@@ -285,30 +290,44 @@ contract BankTreasuryV2 is
     function withdrawERC3525(
         uint256 toSoulBoundTokenId,
         uint256 amount
-    ) external whenNotPaused {
+    )
+        external
+        whenNotPaused
+        nonReentrant
+        onlyGov
+    {
         address _sbt = IModuleGlobals(MODULE_GLOBALS).getSBT();
-
-        IERC3525(_sbt).transferFrom(_soulBoundTokenId, toSoulBoundTokenId, amount);
+        INFTDerivativeProtocolTokenV1(_sbt).transferValue(_soulBoundTokenId, toSoulBoundTokenId, amount);
         emit Events.WithdrawERC3525(_soulBoundTokenId, toSoulBoundTokenId, amount, block.timestamp);
-
     }
 
-    function calculateAmountEther(uint256 ethAmount) external view returns (uint256) {
-        if (_exchangePrice == 0) revert Errors.ExchangePriceIsZero();
+    function calculateAmountEther(uint256 ethAmount) external view returns(uint256) {
+          if (_exchangePrice == 0) revert Errors.ExchangePriceIsZero();
         return ethAmount.div(_exchangePrice);
     }
 
-    function calculateAmountSBT(uint256 sbtValue) external view returns (uint256) {
+    function calculateAmountSBT(uint256 sbtValue) external view returns(uint256) {
         if (_exchangePrice == 0) revert Errors.ExchangePriceIsZero();
         return sbtValue.mul(_exchangePrice);
     }
-
 
     function exchangeSBTByEth(
         uint256 soulBoundTokenId,
         uint256 amount,
         DataTypes.EIP712Signature calldata sig
-    ) external payable whenNotPaused {
+    )
+        external
+        payable
+        whenNotPaused
+        nonReentrant
+    {
+        // only called by owner of soulBoundTokenId
+        address _manager = IModuleGlobals(MODULE_GLOBALS).getManager();
+
+        if (msg.sender != IManager(_manager).getWalletBySoulBoundTokenId(soulBoundTokenId) ) {
+            revert Errors.Unauthorized();
+        }
+
         if (_exchangePrice == 0) revert Errors.ExchangePriceIsZero();
         if (amount == 0) revert Errors.AmountIsZero();
         address exchangeWallet = msg.sender;
@@ -330,23 +349,41 @@ contract BankTreasuryV2 is
                 sig
             );
         }
-        
+
+        if (msg.value < _exchangePrice.mul(amount)) revert Errors.PaymentError();
         address _sbt = IModuleGlobals(MODULE_GLOBALS).getSBT();
-
         INFTDerivativeProtocolTokenV1(_sbt).transferValue(_soulBoundTokenId, soulBoundTokenId, amount);
+
+         emit Events.ExchangeSBTByEth(
+             soulBoundTokenId,
+             exchangeWallet,
+             amount,
+             block.timestamp
+         );
+
     }
-
-
 
     function exchangeEthBySBT(
         uint256 soulBoundTokenId,
         uint256 sbtValue,
-        DataTypes.EIP712Signature calldata sig
-    ) external payable whenNotPaused {
+        DataTypes.EIP712Signature calldata sig        
+    )
+        external
+        payable
+        whenNotPaused
+        nonReentrant
+    {
+        // only called by owner of soulBoundTokenId
+        address _manager = IModuleGlobals(MODULE_GLOBALS).getManager();
+
+        if (msg.sender != IManager(_manager).getWalletBySoulBoundTokenId(soulBoundTokenId)) {
+            revert Errors.Unauthorized();
+        }
+
         if (_exchangePrice == 0) revert Errors.ExchangePriceIsZero();
         if (sbtValue == 0) revert Errors.AmountIsZero();
-        if (soulBoundTokenId == 0) revert Errors.SoulBoundTokenIdNotExists();
-
+        if (soulBoundTokenId ==0) revert Errors.SoulBoundTokenIdNotExists();
+        
         address payable _to = payable(msg.sender);
         unchecked {
             _validateRecoveredAddress(
@@ -366,44 +403,67 @@ contract BankTreasuryV2 is
                 sig
             );
         }
+
         address _sbt = IModuleGlobals(MODULE_GLOBALS).getSBT();
         INFTDerivativeProtocolTokenV1(_sbt).transferValue(soulBoundTokenId, _soulBoundTokenId, sbtValue);
-
 
         //transfer eth to msg.sender
         uint256 ethAmount = sbtValue.mul(_exchangePrice);
 
         (bool success, ) = _to.call{value: ethAmount}("");
         if (!success) revert Errors.TxFailed();
+
+         emit Events.ExchangeEthBySBT(
+             soulBoundTokenId,
+             _to,
+             sbtValue,
+             _exchangePrice,
+             ethAmount,
+             block.timestamp
+         );
     }
 
-    // function createVoucher(
-    //     address account,
-    //     uint256 id,
-    //     uint256 amount,
-    //     bytes memory data
-    // ) external whenNotPaused onlyGov {
-    //     if (amount == 0) revert Errors.AmountIsZero();
-    //     IVoucher(_Voucher).mint(account, id, amount, data);
-    // }
+    function exchangeVoucher(
+        uint256 tokenId,
+        uint256 soulBoundTokenId
+    ) 
+        external
+        whenNotPaused
+        nonReentrant
+    {
+        address _sbt = IModuleGlobals(MODULE_GLOBALS).getSBT();
+        address _voucher = IModuleGlobals(MODULE_GLOBALS).getVoucher();
+        //isvalid
+        if (IERC3525(_sbt).ownerOf(soulBoundTokenId) != msg.sender ) {
+            revert Errors.Unauthorized();
+        }
 
-    // function createBatchVoucher(
-    //     address account,
-    //     uint256[] memory ids,
-    //     uint256[] memory amounts,
-    //     bytes memory data
-    // ) external whenNotPaused onlyGov {
-    //     IVoucher(_Voucher).mintBatch(account, ids, amounts, data);
-    // }
+       DataTypes.VoucherData memory voucherData =  IVoucher(_voucher).getVoucherData(tokenId);
+       if (voucherData.tokenId == 0) revert Errors.VoucherNotExists();
+       if (voucherData.isUsed) revert Errors.VoucherIsUsed();
 
-    function setExchangePrice(uint256 exchangePrice_) external onlyGov {
+       INFTDerivativeProtocolTokenV1(_sbt).transferValue(_soulBoundTokenId, soulBoundTokenId, voucherData.sbtValue);
+       IVoucher(_voucher).useVoucher(msg.sender, tokenId, soulBoundTokenId); 
+
+       emit Events.ExchangeVoucher(
+            soulBoundTokenId,
+            msg.sender,
+            tokenId,
+            voucherData.sbtValue,
+            block.timestamp
+       );
+    }
+    
+    function setExchangePrice(uint256 exchangePrice_) external nonReentrant onlyGov {
         _exchangePrice = exchangePrice_;
     }
 
     //--- internal  ---//
+    function _setGovernance(address newGovernance) internal {
+        _governance = newGovernance;
+    }
 
     function _validateCallerIsGovernance() internal view {
-        address _governance = IModuleGlobals(MODULE_GLOBALS).getGovernance();
         if (msg.sender != _governance) revert Errors.NotGovernance();
     }
 
@@ -451,7 +511,8 @@ contract BankTreasuryV2 is
     ) internal view {
         if (sig.deadline < block.timestamp) revert Errors.SignatureExpired();
         address recoveredAddress = ecrecover(digest, sig.v, sig.r, sig.s);
-        if (recoveredAddress == address(0) || recoveredAddress != expectedAddress) revert Errors.SignatureInvalid();
+        if (recoveredAddress == address(0) || recoveredAddress != expectedAddress)
+            revert Errors.SignatureInvalid();
     }
 
     /**
@@ -480,10 +541,10 @@ contract BankTreasuryV2 is
     function _calculateDigest(bytes32 hashedMessage) internal view returns (bytes32) {
         bytes32 digest;
         unchecked {
-            digest = keccak256(abi.encodePacked("\x19\x01", _calculateDomainSeparator(), hashedMessage));
+            digest = keccak256(
+                abi.encodePacked('\x19\x01', _calculateDomainSeparator(), hashedMessage)
+            );
         }
         return digest;
-    }
-
-
+    }    
 }

@@ -402,7 +402,7 @@ before(async function () {
 
   expect((await manager.version()).toNumber()).to.eq(1);
 
-  expect(await manager.getWalletBySoulBoundTokenId(1)).to.eq(bankTreasuryContract.address);
+  expect(await manager.getWalletBySoulBoundTokenId(FIRST_PROFILE_ID)).to.eq(bankTreasuryContract.address);
 
   expect((await derivativeNFTV1Impl.MANAGER()).toUpperCase()).to.eq(manager.address.toUpperCase());
 

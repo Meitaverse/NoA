@@ -5,13 +5,12 @@ pragma solidity ^0.8.13;
 import {DataTypes} from '../libraries/DataTypes.sol';
 
 /**
- * @title IBankTreasuryV2
+ * @title IBankTreasury
  * @author Bitsoul Protocol
  *
  * @notice This is the interface for the BankTreasuryBase contract, from which the BankTreasury inherit.
  */
 interface IBankTreasuryV2 {
-
     /**
      * @notice Implementation of an EIP-712 permit-style function for token burning. Allows anyone to burn
      * a token on behalf of the owner with a signature.
@@ -26,13 +25,17 @@ interface IBankTreasuryV2 {
         uint256 amount
     ) external;
 
+    function exchangeVoucher(
+        uint256 tokenId,
+        uint256 soulBoundTokenId      
+    ) external;
+    
 
-      function exchangeSBTByEth(
+    function exchangeSBTByEth(
         uint256 soulBoundTokenId, 
         uint256 amount,
         DataTypes.EIP712Signature calldata sign
     ) external payable ;
-
 
      function exchangeEthBySBT(
         uint256 soulBoundTokenId,
@@ -40,18 +43,17 @@ interface IBankTreasuryV2 {
         DataTypes.EIP712Signature calldata sign        
     ) external payable;
 
-
-
     function getSigners() external view returns (address[] memory);
 
     function getTransactionCount() external view returns (uint256);
 
     function getManager() external view returns(address);
-    function getGovernance() external returns(address);
 
-    function getSoulBoundTokenId() external returns (uint256);
+    function getGovernance() external view returns(address);
 
-    function getSBT() external returns(address);
+    function getSoulBoundTokenId() external view returns (uint256);
+
+    function getSBT() external view returns(address);
 
     function getVoucher() external view returns(address);
 

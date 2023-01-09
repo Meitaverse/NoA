@@ -6,30 +6,32 @@ import {DataTypes} from "../libraries/DataTypes.sol";
 
 interface INFTDerivativeProtocolTokenV2  { 
   
-    // /**
-    //  * @notice Initializes the NFT Derivative Protocol Token, setting the initial governance address as well as the name and symbol in
-    //  * the ERC3525 base contract.
-    //  *
-    //  * @param name The name to set for the Token.
-    //  * @param symbol The symbol to set for the Token.
-    //  * @param decimals The decimal to set for the Token.
-    //  * @param manager The address of Manager contract
-    //  * @param bankTreasury The address of BankTreasury contract
-    //  */
-    // function initialize(
-    //     string memory name,
-    //     string memory symbol,
-    //     uint8 decimals,
-    //     address manager,
-    //     address bankTreasury
-    // ) external ;
 
+    /**
+     * @notice Initializes the NFT Derivative Protocol Token, setting the initial governance address as well as the name and symbol in
+     * the ERC3525 base contract.
+     *
+     * @param name The name to set for the Token.
+     * @param symbol The symbol to set for the Token.
+     * @param decimals The decimal to set for the Token.
+     * @param manager The address of Manager contract
+     */
+    function initialize(
+        string memory name,
+        string memory symbol,
+        uint8 decimals,
+        address manager
+    ) external ;
 
      function version() external returns(uint256);
      function getManager() external returns(address);
      function getBankTreasury() external returns(address);
 
+     function isContractWhitelisted(address contract_) external view returns (bool);
 
+     function whitelistContract(address contract_, bool toWhitelist_) external;
+
+    function setProfileImageURI(uint256 soulBoundTokenId, string calldata imageURI) external;
     /**
      * @notice Approve or disapprove an operator to manage all of `_owner`'s tokens with the
      *  specified slot.
@@ -48,6 +50,8 @@ interface INFTDerivativeProtocolTokenV2  {
         bool _approved
     ) external payable;
 
+    function balanceOfSBT(uint256 tokenId) external view returns (uint256);
+
     /**
      * @notice Query if `_operator` is authorized to manage all of `_owner`'s tokens with the
      *  specified slot.
@@ -63,6 +67,20 @@ interface INFTDerivativeProtocolTokenV2  {
         address _operator
     ) external view returns (bool);
 
+    // /**
+    //  * @notice Mint to a address spec tokenId.
+    //  *  Only admin can execute.
+    //  *
+    //  * @param mintTo to address 
+    //  * @param slot is the lost of tokenId
+    //  * @param value is the value of tokenId
+    //  */
+    // function mint(
+    //     address mintTo,
+    //     uint256 slot,
+    //     uint256 value
+    // ) external payable returns(uint256 tokenId);
+  
     function createProfile(
         address creator,
        DataTypes.CreateProfileData calldata vars
@@ -72,9 +90,8 @@ interface INFTDerivativeProtocolTokenV2  {
 
     function svgLogo() external view returns (string memory);
 
-
     /**
-     * @notice Mint value to a tokenId.
+     * @notice Mint value to a soulBoundTokenId.
      *  Only admin can execute.
      *
      * @param soulBoundTokenId is the soulBoundTokenId of ERC3525 Token
@@ -101,6 +118,14 @@ interface INFTDerivativeProtocolTokenV2  {
      * @param value is the valueof the tokenId 
      */
     function burnValue(uint256 tokenId, uint256 value) external;
+
+
+    function transferValue(
+        uint256 fromTokenId_,
+        uint256 toTokenId_,
+        uint256 value_
+    ) external;
+
 
     //V2 
     function setSigner(address signer)  external;

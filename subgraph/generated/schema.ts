@@ -1351,6 +1351,15 @@ export class FeesForCollectHistory extends Entity {
     this.set("id", Value.fromString(value));
   }
 
+  get ownershipSoulBoundTokenId(): BigInt {
+    let value = this.get("ownershipSoulBoundTokenId");
+    return value!.toBigInt();
+  }
+
+  set ownershipSoulBoundTokenId(value: BigInt) {
+    this.set("ownershipSoulBoundTokenId", Value.fromBigInt(value));
+  }
+
   get collectorSoulBoundTokenId(): BigInt {
     let value = this.get("collectorSoulBoundTokenId");
     return value!.toBigInt();
@@ -1358,6 +1367,24 @@ export class FeesForCollectHistory extends Entity {
 
   set collectorSoulBoundTokenId(value: BigInt) {
     this.set("collectorSoulBoundTokenId", Value.fromBigInt(value));
+  }
+
+  get genesisSoulBoundTokenId(): BigInt {
+    let value = this.get("genesisSoulBoundTokenId");
+    return value!.toBigInt();
+  }
+
+  set genesisSoulBoundTokenId(value: BigInt) {
+    this.set("genesisSoulBoundTokenId", Value.fromBigInt(value));
+  }
+
+  get previousSoulBoundTokenId(): BigInt {
+    let value = this.get("previousSoulBoundTokenId");
+    return value!.toBigInt();
+  }
+
+  set previousSoulBoundTokenId(value: BigInt) {
+    this.set("previousSoulBoundTokenId", Value.fromBigInt(value));
   }
 
   get publishId(): BigInt {
@@ -1385,6 +1412,15 @@ export class FeesForCollectHistory extends Entity {
 
   set genesisAmount(value: BigInt) {
     this.set("genesisAmount", Value.fromBigInt(value));
+  }
+
+  get previousAmount(): BigInt {
+    let value = this.get("previousAmount");
+    return value!.toBigInt();
+  }
+
+  set previousAmount(value: BigInt) {
+    this.set("previousAmount", Value.fromBigInt(value));
   }
 
   get adjustedAmount(): BigInt {
@@ -2820,13 +2856,13 @@ export class ExchangeSBTByEthHistory extends Entity {
     this.set("exchangeWallet", Value.fromBytes(value));
   }
 
-  get amount(): BigInt {
-    let value = this.get("amount");
+  get sbtValue(): BigInt {
+    let value = this.get("sbtValue");
     return value!.toBigInt();
   }
 
-  set amount(value: BigInt) {
-    this.set("amount", Value.fromBigInt(value));
+  set sbtValue(value: BigInt) {
+    this.set("sbtValue", Value.fromBigInt(value));
   }
 
   get timestamp(): BigInt {

@@ -36,8 +36,8 @@ export function handleExchangeSBTByEth(event: ExchangeSBTByEth): void {
     if (history) {
         history.soulBoundTokenId = event.params.soulBoundTokenId
         history.exchangeWallet = event.params.exchangeWallet
-        history.amount = event.params.amount
-        history.timestamp = event.params.timestamp
+        history.sbtValue       = event.params.sbtValue
+        history.timestamp      = event.params.timestamp
         history.save()
     } 
 }

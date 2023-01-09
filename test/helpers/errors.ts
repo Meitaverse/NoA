@@ -19,6 +19,7 @@ export const ERRORS = {
   PROFILE_CREATOR_NOT_WHITELISTED: 'ProfileCreatorNotWhitelisted()',
   NOT_PROFILE_OWNER: 'NotProfileOwner()',
   NOT_PROFILE_OWNER_OR_DISPATCHER: 'NotProfileOwnerOrDispatcher()',
+  UnsupportedDerivativeNFT: 'UnsupportedDerivativeNFT()',
   PUBLICATION_DOES_NOT_EXIST: 'PublicationDoesNotExist()',
   PROFILE_HANDLE_TAKEN: 'HandleTaken()',
   INVALID_NICKNAME_LENGTH: 'NickNameLengthInvalid()',

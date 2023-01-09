@@ -133,6 +133,7 @@ library Errors {
   error UnsupportedDerivativeNFT();
   error MinGTMax();
   error MaxGTTotal();
+  error UnitsGTTotal();
   error UnitsLTMin();
   error UnitsGTMax();
   error ExceedsUint128Max();

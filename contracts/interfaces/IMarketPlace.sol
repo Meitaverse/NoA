@@ -53,5 +53,15 @@ interface IMarketPlace {
         uint24 saleId_, 
         address buyer_
     ) external view returns(uint128);
+
+    function saleIdOfDerivativeNFTByIndex(
+        address derivativeNFT_, 
+        uint256 index_
+    )
+        external
+        view
+        returns (uint256);
+
+    function getSaleData( uint24 saleId) external view returns(DataTypes.Sale memory);
    
 }

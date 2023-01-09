@@ -10,32 +10,20 @@
         },
         {
           "indexed": false,
-          "internalType": "uint64",
-          "name": "precision",
-          "type": "uint64"
-        },
-        {
-          "indexed": false,
-          "internalType": "uint8",
+          "internalType": "enum DataTypes.FeePayType",
           "name": "feePayType",
           "type": "uint8"
         },
         {
           "indexed": false,
-          "internalType": "uint8",
-          "name": "feeType",
+          "internalType": "enum DataTypes.FeeShareType",
+          "name": "feeShareType",
           "type": "uint8"
         },
         {
           "indexed": false,
-          "internalType": "uint128",
-          "name": "feeAmount",
-          "type": "uint128"
-        },
-        {
-          "indexed": false,
           "internalType": "uint16",
-          "name": "feeRate",
+          "name": "royaltyBasisPoints",
           "type": "uint16"
         }
       ],
@@ -425,6 +413,37 @@
       "inputs": [
         {
           "indexed": true,
+          "internalType": "address",
+          "name": "caller",
+          "type": "address"
+        },
+        {
+          "indexed": true,
+          "internalType": "enum DataTypes.DerivativeNFTState",
+          "name": "prevState",
+          "type": "uint8"
+        },
+        {
+          "indexed": true,
+          "internalType": "enum DataTypes.DerivativeNFTState",
+          "name": "newState",
+          "type": "uint8"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "timestamp",
+          "type": "uint256"
+        }
+      ],
+      "name": "DerivativeNFTStateSet",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
           "internalType": "uint256",
           "name": "soulBoundTokenId",
           "type": "uint256"
@@ -580,7 +599,7 @@
         {
           "indexed": true,
           "internalType": "uint256",
-          "name": "amount",
+          "name": "sbtValue",
           "type": "uint256"
         },
         {
@@ -591,6 +610,43 @@
         }
       ],
       "name": "ExchangeSBTByEth",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "uint256",
+          "name": "soulBoundTokenId",
+          "type": "uint256"
+        },
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "operator",
+          "type": "address"
+        },
+        {
+          "indexed": true,
+          "internalType": "uint256",
+          "name": "tokenId",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "sbtValue",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "timestamp",
+          "type": "uint256"
+        }
+      ],
+      "name": "ExchangeVoucher",
       "type": "event"
     },
     {
@@ -686,32 +742,64 @@
         {
           "indexed": false,
           "internalType": "uint256",
-          "name": "collectorSoulBoundTokenId",
-          "type": "uint256"
-        },
-        {
-          "indexed": false,
-          "internalType": "uint256",
           "name": "publishId",
           "type": "uint256"
         },
         {
+          "components": [
+            {
+              "internalType": "uint256",
+              "name": "ownershipSoulBoundTokenId",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "collectorSoulBoundTokenId",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "genesisSoulBoundTokenId",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "previousSoulBoundTokenId",
+              "type": "uint256"
+            }
+          ],
           "indexed": false,
-          "internalType": "uint256",
-          "name": "treasuryAmount",
-          "type": "uint256"
+          "internalType": "struct DataTypes.CollectFeeUsers",
+          "name": "collectFeeUsers",
+          "type": "tuple"
         },
         {
+          "components": [
+            {
+              "internalType": "uint256",
+              "name": "treasuryAmount",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "genesisAmount",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "previousAmount",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "adjustedAmount",
+              "type": "uint256"
+            }
+          ],
           "indexed": false,
-          "internalType": "uint256",
-          "name": "genesisAmount",
-          "type": "uint256"
-        },
-        {
-          "indexed": false,
-          "internalType": "uint256",
-          "name": "adjustedAmount",
-          "type": "uint256"
+          "internalType": "struct DataTypes.RoyaltyAmounts",
+          "name": "royaltyAmounts",
+          "type": "tuple"
         }
       ],
       "name": "FeesForCollect",
@@ -722,9 +810,9 @@
       "inputs": [
         {
           "indexed": false,
-          "internalType": "address",
-          "name": "derivativeNFT",
-          "type": "address"
+          "internalType": "uint256",
+          "name": "soulBoundTokenId",
+          "type": "uint256"
         },
         {
           "indexed": false,
@@ -734,33 +822,21 @@
         },
         {
           "indexed": false,
-          "internalType": "uint256",
-          "name": "projectId",
-          "type": "uint256"
-        },
-        {
-          "indexed": false,
-          "internalType": "uint256",
-          "name": "tokenId",
-          "type": "uint256"
-        },
-        {
-          "indexed": false,
           "internalType": "uint128",
-          "name": "units",
+          "name": "preSalePrice",
           "type": "uint128"
         },
         {
           "indexed": false,
-          "internalType": "uint8",
-          "name": "priceType",
-          "type": "uint8"
+          "internalType": "uint128",
+          "name": "newSalePrice",
+          "type": "uint128"
         },
         {
           "indexed": false,
-          "internalType": "uint128",
-          "name": "price",
-          "type": "uint128"
+          "internalType": "uint256",
+          "name": "timestamp",
+          "type": "uint256"
         }
       ],
       "name": "FixedPriceSet",
@@ -912,6 +988,49 @@
         }
       ],
       "name": "ManagerGovernanceSet",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": false,
+          "internalType": "address",
+          "name": "operator",
+          "type": "address"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "fromTokenId",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "toTokenId",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "value",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "internalType": "bytes",
+          "name": "data",
+          "type": "bytes"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "gas",
+          "type": "uint256"
+        }
+      ],
+      "name": "MarketPlaceERC3525Received",
       "type": "event"
     },
     {
@@ -1481,6 +1600,59 @@
       "anonymous": false,
       "inputs": [
         {
+          "components": [
+            {
+              "internalType": "uint256",
+              "name": "soulBoundTokenId",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "projectId",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "tokenId",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint128",
+              "name": "onSellUnits",
+              "type": "uint128"
+            },
+            {
+              "internalType": "uint32",
+              "name": "startTime",
+              "type": "uint32"
+            },
+            {
+              "internalType": "uint128",
+              "name": "salePrice",
+              "type": "uint128"
+            },
+            {
+              "internalType": "enum DataTypes.PriceType",
+              "name": "priceType",
+              "type": "uint8"
+            },
+            {
+              "internalType": "uint128",
+              "name": "min",
+              "type": "uint128"
+            },
+            {
+              "internalType": "uint128",
+              "name": "max",
+              "type": "uint128"
+            }
+          ],
+          "indexed": false,
+          "internalType": "struct DataTypes.SaleParam",
+          "name": "saleParam",
+          "type": "tuple"
+        },
+        {
           "indexed": false,
           "internalType": "address",
           "name": "derivativeNFT",
@@ -1488,14 +1660,8 @@
         },
         {
           "indexed": false,
-          "internalType": "address",
-          "name": "seller",
-          "type": "address"
-        },
-        {
-          "indexed": false,
           "internalType": "uint256",
-          "name": "tokenId",
+          "name": "newTokenId",
           "type": "uint256"
         },
         {
@@ -1503,48 +1669,6 @@
           "internalType": "uint128",
           "name": "saleId",
           "type": "uint128"
-        },
-        {
-          "indexed": false,
-          "internalType": "uint8",
-          "name": "priceType",
-          "type": "uint8"
-        },
-        {
-          "indexed": false,
-          "internalType": "uint128",
-          "name": "units",
-          "type": "uint128"
-        },
-        {
-          "indexed": false,
-          "internalType": "uint32",
-          "name": "startTime",
-          "type": "uint32"
-        },
-        {
-          "indexed": false,
-          "internalType": "address",
-          "name": "currency",
-          "type": "address"
-        },
-        {
-          "indexed": false,
-          "internalType": "uint128",
-          "name": "min",
-          "type": "uint128"
-        },
-        {
-          "indexed": false,
-          "internalType": "uint128",
-          "name": "max",
-          "type": "uint128"
-        },
-        {
-          "indexed": false,
-          "internalType": "bool",
-          "name": "useAllowList",
-          "type": "bool"
         }
       ],
       "name": "PublishSale",
@@ -1684,15 +1808,9 @@
       "inputs": [
         {
           "indexed": false,
-          "internalType": "address",
-          "name": "derivativeNFT",
-          "type": "address"
-        },
-        {
-          "indexed": false,
-          "internalType": "address",
-          "name": "seller",
-          "type": "address"
+          "internalType": "uint256",
+          "name": "soulBoundTokenId",
+          "type": "uint256"
         },
         {
           "indexed": false,
@@ -1703,13 +1821,13 @@
         {
           "indexed": false,
           "internalType": "uint256",
-          "name": "total",
+          "name": "onSellUnits",
           "type": "uint256"
         },
         {
           "indexed": false,
           "internalType": "uint256",
-          "name": "saled",
+          "name": "saledUnits",
           "type": "uint256"
         }
       ],
@@ -1764,31 +1882,6 @@
         }
       ],
       "name": "SetContractWhitelisted",
-      "type": "event"
-    },
-    {
-      "anonymous": false,
-      "inputs": [
-        {
-          "indexed": false,
-          "internalType": "uint256",
-          "name": "preUserAmountLimit",
-          "type": "uint256"
-        },
-        {
-          "indexed": false,
-          "internalType": "uint256",
-          "name": "userAmountLimit",
-          "type": "uint256"
-        },
-        {
-          "indexed": false,
-          "internalType": "uint256",
-          "name": "endTimestamp",
-          "type": "uint256"
-        }
-      ],
-      "name": "UserAmountLimitSet",
       "type": "event"
     },
     {
@@ -1889,12 +1982,6 @@
       "inputs": [
         {
           "indexed": true,
-          "internalType": "address",
-          "name": "buyer",
-          "type": "address"
-        },
-        {
-          "indexed": true,
           "internalType": "uint24",
           "name": "saleId",
           "type": "uint24"
@@ -1902,14 +1989,8 @@
         {
           "indexed": true,
           "internalType": "address",
-          "name": "derivativeNFT",
+          "name": "buyer",
           "type": "address"
-        },
-        {
-          "indexed": false,
-          "internalType": "uint256",
-          "name": "tokenId",
-          "type": "uint256"
         },
         {
           "indexed": false,
@@ -1925,21 +2006,15 @@
         },
         {
           "indexed": false,
-          "internalType": "address",
-          "name": "currency",
-          "type": "address"
-        },
-        {
-          "indexed": false,
-          "internalType": "uint8",
-          "name": "priceType",
-          "type": "uint8"
-        },
-        {
-          "indexed": false,
           "internalType": "uint128",
           "name": "price",
           "type": "uint128"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "newTokenIdBuyer",
+          "type": "uint256"
         },
         {
           "indexed": false,
@@ -1948,16 +2023,32 @@
           "type": "uint128"
         },
         {
+          "components": [
+            {
+              "internalType": "uint256",
+              "name": "treasuryAmount",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "genesisAmount",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "previousAmount",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "adjustedAmount",
+              "type": "uint256"
+            }
+          ],
           "indexed": false,
-          "internalType": "uint256",
-          "name": "tradedAmount",
-          "type": "uint256"
-        },
-        {
-          "indexed": false,
-          "internalType": "uint128",
-          "name": "fee",
-          "type": "uint128"
+          "internalType": "struct DataTypes.RoyaltyAmounts",
+          "name": "",
+          "type": "tuple"
         }
       ],
       "name": "Traded",
@@ -2072,6 +2163,31 @@
         }
       ],
       "name": "UpdateRoyaltyPoints",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "preUserAmountLimit",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "userAmountLimit",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "endTimestamp",
+          "type": "uint256"
+        }
+      ],
+      "name": "UserAmountLimitSet",
       "type": "event"
     },
     {

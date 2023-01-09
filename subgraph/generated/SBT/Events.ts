@@ -27,24 +27,16 @@ export class AddMarket__Params {
     return this._event.parameters[0].value.toAddress();
   }
 
-  get precision(): BigInt {
-    return this._event.parameters[1].value.toBigInt();
+  get feePayType(): i32 {
+    return this._event.parameters[1].value.toI32();
   }
 
-  get feePayType(): i32 {
+  get feeShareType(): i32 {
     return this._event.parameters[2].value.toI32();
   }
 
-  get feeType(): i32 {
+  get royaltyBasisPoints(): i32 {
     return this._event.parameters[3].value.toI32();
-  }
-
-  get feeAmount(): BigInt {
-    return this._event.parameters[4].value.toBigInt();
-  }
-
-  get feeRate(): i32 {
-    return this._event.parameters[5].value.toI32();
   }
 }
 
@@ -412,6 +404,36 @@ export class DerivativeNFTDeployed__Params {
   }
 }
 
+export class DerivativeNFTStateSet extends ethereum.Event {
+  get params(): DerivativeNFTStateSet__Params {
+    return new DerivativeNFTStateSet__Params(this);
+  }
+}
+
+export class DerivativeNFTStateSet__Params {
+  _event: DerivativeNFTStateSet;
+
+  constructor(event: DerivativeNFTStateSet) {
+    this._event = event;
+  }
+
+  get caller(): Address {
+    return this._event.parameters[0].value.toAddress();
+  }
+
+  get prevState(): i32 {
+    return this._event.parameters[1].value.toI32();
+  }
+
+  get newState(): i32 {
+    return this._event.parameters[2].value.toI32();
+  }
+
+  get timestamp(): BigInt {
+    return this._event.parameters[3].value.toBigInt();
+  }
+}
+
 export class DispatcherSet extends ethereum.Event {
   get params(): DispatcherSet__Params {
     return new DispatcherSet__Params(this);
@@ -565,12 +587,46 @@ export class ExchangeSBTByEth__Params {
     return this._event.parameters[1].value.toAddress();
   }
 
-  get amount(): BigInt {
+  get sbtValue(): BigInt {
     return this._event.parameters[2].value.toBigInt();
   }
 
   get timestamp(): BigInt {
     return this._event.parameters[3].value.toBigInt();
+  }
+}
+
+export class ExchangeVoucher extends ethereum.Event {
+  get params(): ExchangeVoucher__Params {
+    return new ExchangeVoucher__Params(this);
+  }
+}
+
+export class ExchangeVoucher__Params {
+  _event: ExchangeVoucher;
+
+  constructor(event: ExchangeVoucher) {
+    this._event = event;
+  }
+
+  get soulBoundTokenId(): BigInt {
+    return this._event.parameters[0].value.toBigInt();
+  }
+
+  get operator(): Address {
+    return this._event.parameters[1].value.toAddress();
+  }
+
+  get tokenId(): BigInt {
+    return this._event.parameters[2].value.toBigInt();
+  }
+
+  get sbtValue(): BigInt {
+    return this._event.parameters[3].value.toBigInt();
+  }
+
+  get timestamp(): BigInt {
+    return this._event.parameters[4].value.toBigInt();
   }
 }
 
@@ -673,24 +729,56 @@ export class FeesForCollect__Params {
     this._event = event;
   }
 
-  get collectorSoulBoundTokenId(): BigInt {
+  get publishId(): BigInt {
     return this._event.parameters[0].value.toBigInt();
   }
 
-  get publishId(): BigInt {
-    return this._event.parameters[1].value.toBigInt();
+  get collectFeeUsers(): FeesForCollectCollectFeeUsersStruct {
+    return changetype<FeesForCollectCollectFeeUsersStruct>(
+      this._event.parameters[1].value.toTuple()
+    );
   }
 
+  get royaltyAmounts(): FeesForCollectRoyaltyAmountsStruct {
+    return changetype<FeesForCollectRoyaltyAmountsStruct>(
+      this._event.parameters[2].value.toTuple()
+    );
+  }
+}
+
+export class FeesForCollectCollectFeeUsersStruct extends ethereum.Tuple {
+  get ownershipSoulBoundTokenId(): BigInt {
+    return this[0].toBigInt();
+  }
+
+  get collectorSoulBoundTokenId(): BigInt {
+    return this[1].toBigInt();
+  }
+
+  get genesisSoulBoundTokenId(): BigInt {
+    return this[2].toBigInt();
+  }
+
+  get previousSoulBoundTokenId(): BigInt {
+    return this[3].toBigInt();
+  }
+}
+
+export class FeesForCollectRoyaltyAmountsStruct extends ethereum.Tuple {
   get treasuryAmount(): BigInt {
-    return this._event.parameters[2].value.toBigInt();
+    return this[0].toBigInt();
   }
 
   get genesisAmount(): BigInt {
-    return this._event.parameters[3].value.toBigInt();
+    return this[1].toBigInt();
+  }
+
+  get previousAmount(): BigInt {
+    return this[2].toBigInt();
   }
 
   get adjustedAmount(): BigInt {
-    return this._event.parameters[4].value.toBigInt();
+    return this[3].toBigInt();
   }
 }
 
@@ -707,32 +795,24 @@ export class FixedPriceSet__Params {
     this._event = event;
   }
 
-  get derivativeNFT(): Address {
-    return this._event.parameters[0].value.toAddress();
+  get soulBoundTokenId(): BigInt {
+    return this._event.parameters[0].value.toBigInt();
   }
 
   get saleId(): BigInt {
     return this._event.parameters[1].value.toBigInt();
   }
 
-  get projectId(): BigInt {
+  get preSalePrice(): BigInt {
     return this._event.parameters[2].value.toBigInt();
   }
 
-  get tokenId(): BigInt {
+  get newSalePrice(): BigInt {
     return this._event.parameters[3].value.toBigInt();
   }
 
-  get units(): BigInt {
+  get timestamp(): BigInt {
     return this._event.parameters[4].value.toBigInt();
-  }
-
-  get priceType(): i32 {
-    return this._event.parameters[5].value.toI32();
-  }
-
-  get price(): BigInt {
-    return this._event.parameters[6].value.toBigInt();
   }
 }
 
@@ -869,6 +949,44 @@ export class ManagerGovernanceSet__Params {
 
   get timestamp(): BigInt {
     return this._event.parameters[3].value.toBigInt();
+  }
+}
+
+export class MarketPlaceERC3525Received extends ethereum.Event {
+  get params(): MarketPlaceERC3525Received__Params {
+    return new MarketPlaceERC3525Received__Params(this);
+  }
+}
+
+export class MarketPlaceERC3525Received__Params {
+  _event: MarketPlaceERC3525Received;
+
+  constructor(event: MarketPlaceERC3525Received) {
+    this._event = event;
+  }
+
+  get operator(): Address {
+    return this._event.parameters[0].value.toAddress();
+  }
+
+  get fromTokenId(): BigInt {
+    return this._event.parameters[1].value.toBigInt();
+  }
+
+  get toTokenId(): BigInt {
+    return this._event.parameters[2].value.toBigInt();
+  }
+
+  get value(): BigInt {
+    return this._event.parameters[3].value.toBigInt();
+  }
+
+  get data(): Bytes {
+    return this._event.parameters[4].value.toBytes();
+  }
+
+  get gas(): BigInt {
+    return this._event.parameters[5].value.toBigInt();
   }
 }
 
@@ -1431,48 +1549,60 @@ export class PublishSale__Params {
     this._event = event;
   }
 
-  get derivativeNFT(): Address {
-    return this._event.parameters[0].value.toAddress();
+  get saleParam(): PublishSaleSaleParamStruct {
+    return changetype<PublishSaleSaleParamStruct>(
+      this._event.parameters[0].value.toTuple()
+    );
   }
 
-  get seller(): Address {
+  get derivativeNFT(): Address {
     return this._event.parameters[1].value.toAddress();
   }
 
-  get tokenId(): BigInt {
+  get newTokenId(): BigInt {
     return this._event.parameters[2].value.toBigInt();
   }
 
   get saleId(): BigInt {
     return this._event.parameters[3].value.toBigInt();
   }
+}
 
-  get priceType(): i32 {
-    return this._event.parameters[4].value.toI32();
+export class PublishSaleSaleParamStruct extends ethereum.Tuple {
+  get soulBoundTokenId(): BigInt {
+    return this[0].toBigInt();
   }
 
-  get units(): BigInt {
-    return this._event.parameters[5].value.toBigInt();
+  get projectId(): BigInt {
+    return this[1].toBigInt();
+  }
+
+  get tokenId(): BigInt {
+    return this[2].toBigInt();
+  }
+
+  get onSellUnits(): BigInt {
+    return this[3].toBigInt();
   }
 
   get startTime(): BigInt {
-    return this._event.parameters[6].value.toBigInt();
+    return this[4].toBigInt();
   }
 
-  get currency(): Address {
-    return this._event.parameters[7].value.toAddress();
+  get salePrice(): BigInt {
+    return this[5].toBigInt();
+  }
+
+  get priceType(): i32 {
+    return this[6].toI32();
   }
 
   get min(): BigInt {
-    return this._event.parameters[8].value.toBigInt();
+    return this[7].toBigInt();
   }
 
   get max(): BigInt {
-    return this._event.parameters[9].value.toBigInt();
-  }
-
-  get useAllowList(): boolean {
-    return this._event.parameters[10].value.toBoolean();
+    return this[8].toBigInt();
   }
 }
 
@@ -1603,24 +1733,20 @@ export class RemoveSale__Params {
     this._event = event;
   }
 
-  get derivativeNFT(): Address {
-    return this._event.parameters[0].value.toAddress();
-  }
-
-  get seller(): Address {
-    return this._event.parameters[1].value.toAddress();
+  get soulBoundTokenId(): BigInt {
+    return this._event.parameters[0].value.toBigInt();
   }
 
   get saleId(): BigInt {
+    return this._event.parameters[1].value.toBigInt();
+  }
+
+  get onSellUnits(): BigInt {
     return this._event.parameters[2].value.toBigInt();
   }
 
-  get total(): BigInt {
+  get saledUnits(): BigInt {
     return this._event.parameters[3].value.toBigInt();
-  }
-
-  get saled(): BigInt {
-    return this._event.parameters[4].value.toBigInt();
   }
 }
 
@@ -1673,32 +1799,6 @@ export class SetContractWhitelisted__Params {
 
   get timestamp(): BigInt {
     return this._event.parameters[3].value.toBigInt();
-  }
-}
-
-export class UserAmountLimitSet extends ethereum.Event {
-  get params(): SetUserAmountLimit__Params {
-    return new SetUserAmountLimit__Params(this);
-  }
-}
-
-export class SetUserAmountLimit__Params {
-  _event: UserAmountLimitSet;
-
-  constructor(event: UserAmountLimitSet) {
-    this._event = event;
-  }
-
-  get preUserAmountLimit(): BigInt {
-    return this._event.parameters[0].value.toBigInt();
-  }
-
-  get userAmountLimit(): BigInt {
-    return this._event.parameters[1].value.toBigInt();
-  }
-
-  get endTimestamp(): BigInt {
-    return this._event.parameters[2].value.toBigInt();
   }
 }
 
@@ -1805,52 +1905,56 @@ export class Traded__Params {
     this._event = event;
   }
 
-  get buyer(): Address {
-    return this._event.parameters[0].value.toAddress();
-  }
-
   get saleId(): i32 {
-    return this._event.parameters[1].value.toI32();
+    return this._event.parameters[0].value.toI32();
   }
 
-  get derivativeNFT(): Address {
-    return this._event.parameters[2].value.toAddress();
-  }
-
-  get tokenId(): BigInt {
-    return this._event.parameters[3].value.toBigInt();
+  get buyer(): Address {
+    return this._event.parameters[1].value.toAddress();
   }
 
   get tradeId(): BigInt {
-    return this._event.parameters[4].value.toBigInt();
+    return this._event.parameters[2].value.toBigInt();
   }
 
   get tradeTime(): BigInt {
-    return this._event.parameters[5].value.toBigInt();
-  }
-
-  get currency(): Address {
-    return this._event.parameters[6].value.toAddress();
-  }
-
-  get priceType(): i32 {
-    return this._event.parameters[7].value.toI32();
+    return this._event.parameters[3].value.toBigInt();
   }
 
   get price(): BigInt {
-    return this._event.parameters[8].value.toBigInt();
+    return this._event.parameters[4].value.toBigInt();
+  }
+
+  get newTokenIdBuyer(): BigInt {
+    return this._event.parameters[5].value.toBigInt();
   }
 
   get tradedUnits(): BigInt {
-    return this._event.parameters[9].value.toBigInt();
+    return this._event.parameters[6].value.toBigInt();
   }
 
-  get tradedAmount(): BigInt {
-    return this._event.parameters[10].value.toBigInt();
+  get param7(): TradedParam7Struct {
+    return changetype<TradedParam7Struct>(
+      this._event.parameters[7].value.toTuple()
+    );
+  }
+}
+
+export class TradedParam7Struct extends ethereum.Tuple {
+  get treasuryAmount(): BigInt {
+    return this[0].toBigInt();
   }
 
-  get fee(): BigInt {
-    return this._event.parameters[11].value.toBigInt();
+  get genesisAmount(): BigInt {
+    return this[1].toBigInt();
+  }
+
+  get previousAmount(): BigInt {
+    return this[2].toBigInt();
+  }
+
+  get adjustedAmount(): BigInt {
+    return this[3].toBigInt();
   }
 }
 
@@ -1952,6 +2056,32 @@ export class UpdateRoyaltyPoints__Params {
   }
 
   get timestamp(): BigInt {
+    return this._event.parameters[2].value.toBigInt();
+  }
+}
+
+export class UserAmountLimitSet extends ethereum.Event {
+  get params(): UserAmountLimitSet__Params {
+    return new UserAmountLimitSet__Params(this);
+  }
+}
+
+export class UserAmountLimitSet__Params {
+  _event: UserAmountLimitSet;
+
+  constructor(event: UserAmountLimitSet) {
+    this._event = event;
+  }
+
+  get preUserAmountLimit(): BigInt {
+    return this._event.parameters[0].value.toBigInt();
+  }
+
+  get userAmountLimit(): BigInt {
+    return this._event.parameters[1].value.toBigInt();
+  }
+
+  get endTimestamp(): BigInt {
     return this._event.parameters[2].value.toBigInt();
   }
 }
