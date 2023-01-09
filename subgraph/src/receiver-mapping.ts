@@ -21,6 +21,7 @@ export function handleReceiverReceived(event: ReceiverReceived): void {
         history.value = event.params.value
         history.data = event.params.data
         history.gas = event.params.gas
+        history.timestamp = event.block.timestamp
         history.save()
         
     } 

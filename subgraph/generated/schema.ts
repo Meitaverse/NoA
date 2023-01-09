@@ -1648,6 +1648,15 @@ export class ReceiverReceivedHistory extends Entity {
   set gas(value: BigInt) {
     this.set("gas", Value.fromBigInt(value));
   }
+
+  get timestamp(): BigInt {
+    let value = this.get("timestamp");
+    return value!.toBigInt();
+  }
+
+  set timestamp(value: BigInt) {
+    this.set("timestamp", Value.fromBigInt(value));
+  }
 }
 
 export class DispatcherSetHistory extends Entity {
@@ -1949,6 +1958,15 @@ export class ERC3525ReceivedHistory extends Entity {
 
   set gas(value: BigInt) {
     this.set("gas", Value.fromBigInt(value));
+  }
+
+  get timestamp(): BigInt {
+    let value = this.get("timestamp");
+    return value!.toBigInt();
+  }
+
+  set timestamp(value: BigInt) {
+    this.set("timestamp", Value.fromBigInt(value));
   }
 }
 
@@ -3031,6 +3049,114 @@ export class Market extends Entity {
 
   set royaltyBasisPoints(value: i32) {
     this.set("royaltyBasisPoints", Value.fromI32(value));
+  }
+
+  get timestamp(): BigInt {
+    let value = this.get("timestamp");
+    return value!.toBigInt();
+  }
+
+  set timestamp(value: BigInt) {
+    this.set("timestamp", Value.fromBigInt(value));
+  }
+}
+
+export class MarketPlaceERC3525ReceivedHistory extends Entity {
+  constructor(id: string) {
+    super();
+    this.set("id", Value.fromString(id));
+  }
+
+  save(): void {
+    let id = this.get("id");
+    assert(
+      id != null,
+      "Cannot save MarketPlaceERC3525ReceivedHistory entity without an ID"
+    );
+    if (id) {
+      assert(
+        id.kind == ValueKind.STRING,
+        `Entities of type MarketPlaceERC3525ReceivedHistory must have an ID of type String but the id '${id.displayData()}' is of type ${id.displayKind()}`
+      );
+      store.set("MarketPlaceERC3525ReceivedHistory", id.toString(), this);
+    }
+  }
+
+  static load(id: string): MarketPlaceERC3525ReceivedHistory | null {
+    return changetype<MarketPlaceERC3525ReceivedHistory | null>(
+      store.get("MarketPlaceERC3525ReceivedHistory", id)
+    );
+  }
+
+  get id(): string {
+    let value = this.get("id");
+    return value!.toString();
+  }
+
+  set id(value: string) {
+    this.set("id", Value.fromString(value));
+  }
+
+  get operator(): Bytes {
+    let value = this.get("operator");
+    return value!.toBytes();
+  }
+
+  set operator(value: Bytes) {
+    this.set("operator", Value.fromBytes(value));
+  }
+
+  get fromTokenId(): BigInt {
+    let value = this.get("fromTokenId");
+    return value!.toBigInt();
+  }
+
+  set fromTokenId(value: BigInt) {
+    this.set("fromTokenId", Value.fromBigInt(value));
+  }
+
+  get toTokenId(): BigInt {
+    let value = this.get("toTokenId");
+    return value!.toBigInt();
+  }
+
+  set toTokenId(value: BigInt) {
+    this.set("toTokenId", Value.fromBigInt(value));
+  }
+
+  get value(): BigInt {
+    let value = this.get("value");
+    return value!.toBigInt();
+  }
+
+  set value(value: BigInt) {
+    this.set("value", Value.fromBigInt(value));
+  }
+
+  get data(): Bytes | null {
+    let value = this.get("data");
+    if (!value || value.kind == ValueKind.NULL) {
+      return null;
+    } else {
+      return value.toBytes();
+    }
+  }
+
+  set data(value: Bytes | null) {
+    if (!value) {
+      this.unset("data");
+    } else {
+      this.set("data", Value.fromBytes(<Bytes>value));
+    }
+  }
+
+  get gas(): BigInt {
+    let value = this.get("gas");
+    return value!.toBigInt();
+  }
+
+  set gas(value: BigInt) {
+    this.set("gas", Value.fromBigInt(value));
   }
 
   get timestamp(): BigInt {

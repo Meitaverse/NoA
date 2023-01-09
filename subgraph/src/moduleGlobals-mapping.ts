@@ -149,7 +149,7 @@ export function handleModuleGlobalsTreasuryFeeSet(event: ModuleGlobalsTreasuryFe
 export function handleModuleGlobalsGovernanceSet(event: ModuleGlobalsGovernanceSet): void {
     log.info("handleModuleGlobalsGovernanceSet, event.address: {}", [event.address.toHexString()])
 
-    let _idString = event.params.newGovernance.toString() + "-" +  event.params.timestamp.toString()
+    let _idString = event.params.newGovernance.toHexString() + "-" +  event.params.timestamp.toString()
     const history = ModuleGlobalsGovernanceSetHistory.load(_idString) || new ModuleGlobalsGovernanceSetHistory(_idString)
 
     if (history) {
@@ -163,7 +163,7 @@ export function handleModuleGlobalsGovernanceSet(event: ModuleGlobalsGovernanceS
 export function handleCollectModuleWhitelisted(event: CollectModuleWhitelisted): void {
     log.info("handleCollectModuleWhitelisted, event.address: {}", [event.address.toHexString()])
 
-    let _idString = event.params.collectModule.toString() + "-" +  event.params.timestamp.toString()
+    let _idString = event.params.collectModule.toHexString() + "-" +  event.params.timestamp.toString()
     const history = CollectModuleWhitelistedHistory.load(_idString) || new CollectModuleWhitelistedHistory(_idString)
 
     if (history) {
@@ -177,7 +177,7 @@ export function handleCollectModuleWhitelisted(event: CollectModuleWhitelisted):
 export function handlePublishModuleWhitelisted(event: PublishModuleWhitelisted): void {
     log.info("handlePublishModuleWhitelisted, event.address: {}", [event.address.toHexString()])
 
-    let _idString = event.params.publishModule.toString() + "-" +  event.params.timestamp.toString()
+    let _idString = event.params.publishModule.toHexString() + "-" +  event.params.timestamp.toString()
     const history = PublishModuleWhitelistedHistory.load(_idString) || new PublishModuleWhitelistedHistory(_idString)
 
     if (history) {
@@ -191,7 +191,7 @@ export function handlePublishModuleWhitelisted(event: PublishModuleWhitelisted):
 export function handleTemplateWhitelisted(event: TemplateWhitelisted): void {
     log.info("handleTemplateWhitelisted, event.address: {}", [event.address.toHexString()])
 
-    let _idString = event.params.template.toString() + "-" +  event.params.timestamp.toString()
+    let _idString = event.params.template.toHexString() + "-" +  event.params.timestamp.toString()
     const history = TemplateWhitelistedHistory.load(_idString) || new TemplateWhitelistedHistory(_idString)
 
     if (history) {

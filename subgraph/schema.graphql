@@ -199,6 +199,7 @@ type ReceiverReceivedHistory @entity {
   value: BigInt!
   data: Bytes
   gas: BigInt!
+  timestamp: BigInt!
 }
 
 # DispatcherSet history
@@ -237,6 +238,7 @@ type ERC3525ReceivedHistory @entity {
   value: BigInt!
   data: Bytes!
   gas: BigInt!
+  timestamp: BigInt!
 }
 
 # SBT contract BankTreasurySet history
@@ -372,5 +374,16 @@ type Market @entity {
   feePayType: Int!
   feeShareType: Int!
   royaltyBasisPoints: Int!
+  timestamp: BigInt!
+}
+
+type MarketPlaceERC3525ReceivedHistory @entity {
+  id: ID!
+  operator: Bytes!
+  fromTokenId: BigInt!
+  toTokenId: BigInt!
+  value: BigInt!
+  data: Bytes
+  gas: BigInt!
   timestamp: BigInt!
 }
