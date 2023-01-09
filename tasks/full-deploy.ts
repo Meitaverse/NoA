@@ -40,6 +40,8 @@ import {
     DerivativeMetadataDescriptor__factory,
     Template,
     Template__factory,
+    MarketPlace,
+    MarketPlace__factory,
   } from '../typechain';
   import { deployContract, waitForTx , ProtocolState, Error} from './helpers/utils';
   import { ManagerLibraryAddresses } from '../typechain/factories/contracts/Manager__factory';
@@ -255,6 +257,26 @@ import {
         console.log('\t-- bankTreasuryContract: ', bankTreasuryContract.address);
         await exportAddress(hre, bankTreasuryContract, 'BankTreasury');
 
+        
+        console.log('\n\t-- Deploying market place --');
+
+        const marketPlaceImpl = await deployContract(
+            new BankTreasury__factory(deployer).deploy({ nonce: deployerNonce++ })
+        );
+
+        let initializeDataMarket = marketPlaceImpl.interface.encodeFunctionData("initialize", [
+          governance.address
+        ]);
+      
+        const marketPlaceProxy = await new ERC1967Proxy__factory(deployer).deploy(
+            marketPlaceImpl.address,
+          initializeData,
+          { nonce: deployerNonce++ }
+        );
+        const marketPlaceContract = new MarketPlace__factory(deployer).attach(marketPlaceProxy.address);
+        console.log('\t-- marketPlaceContract: ', marketPlaceContract.address);
+        await exportAddress(hre, marketPlaceContract, 'MarketPlace');
+
         console.log('\n\t-- Deploying moduleGlobals --');
         const moduleGlobals = await deployContract(
             new ModuleGlobals__factory(deployer).deploy(
@@ -269,6 +291,7 @@ import {
         );
         console.log('\t-- moduleGlobals: ', moduleGlobals.address);
         await exportAddress(hre, moduleGlobals, 'ModuleGlobals');
+
         
         console.log('\n\t-- Deploying metadataDescriptor  --');
         const metadataDescriptor = await deployContract(

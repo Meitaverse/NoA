@@ -25,6 +25,7 @@ import {
     GovernorContract__factory,
     BankTreasury,
     BankTreasury__factory,
+    MarketPlace,
     DerivativeNFTV1,
     DerivativeNFTV1__factory,
     NFTDerivativeProtocolTokenV1,
@@ -39,6 +40,7 @@ import {
     DerivativeMetadataDescriptor__factory,
     Template,
     Template__factory,
+    MarketPlace__factory,
 
 } from "../typechain";
 import { metadataDescriptors } from "../typechain/contracts";
@@ -52,6 +54,7 @@ export type ContractName =
   | "Manager"
   | "SBT"
   | "BankTreasury"
+  | "MarketPlace"
   | "Voucher"
   | "FeeCollectModule"
   | "PublishModule"
@@ -64,6 +67,7 @@ export type DAOContract =
   | Manager
   | NFTDerivativeProtocolTokenV1
   | BankTreasury
+  | MarketPlace
   | Voucher
   | Template
   | DerivativeMetadataDescriptor
@@ -132,6 +136,7 @@ type ContractFactory =
   | typeof Manager__factory
   | typeof NFTDerivativeProtocolTokenV1__factory
   | typeof BankTreasury__factory
+  | typeof MarketPlace__factory
   | typeof Voucher__factory
   | typeof FeeCollectModule__factory
   | typeof PublishModule__factory
@@ -193,6 +198,8 @@ export async function loadContractByName(
       return NFTDerivativeProtocolTokenV1__factory.connect(address, deployer);
     case "BankTreasury":
       return BankTreasury__factory.connect(address, deployer);
+    case "MarketPlace":
+      return MarketPlace__factory.connect(address, deployer);
     case "Voucher":
       return Voucher__factory.connect(address, deployer);
     case "Template":
