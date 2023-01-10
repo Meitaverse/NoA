@@ -23,13 +23,14 @@ interface INFTDerivativeProtocolTokenV2  {
         address manager
     ) external ;
 
-     function version() external returns(uint256);
-     function getManager() external returns(address);
-     function getBankTreasury() external returns(address);
+    function version() external view returns(uint256);
+    function getManager() external view returns(address);
+    function getBankTreasury() external view returns(address);
+    function getSBTIdByWallet(address wallet) external view returns(uint256);
 
-     function isContractWhitelisted(address contract_) external view returns (bool);
+    function isContractWhitelisted(address contract_) external view returns (bool);
 
-     function whitelistContract(address contract_, bool toWhitelist_) external;
+    function whitelistContract(address contract_, bool toWhitelist_) external;
 
     function setProfileImageURI(uint256 soulBoundTokenId, string calldata imageURI) external;
     /**

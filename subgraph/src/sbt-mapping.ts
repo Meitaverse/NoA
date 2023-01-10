@@ -7,7 +7,7 @@ import {
     ApprovalForSlot,
     BurnSBT,
     BurnSBTValue,
-    ProfileImageURISet
+    ProfileImageURISet,
 } from "../generated/SBT/Events"
 
 import {
@@ -15,6 +15,9 @@ import {
     Transfer,
     TransferValue,
     SlotChanged,
+    Approval,
+    ApprovalForAll,
+    ApprovalValue,
 } from "../generated/SBTERC3525/SBT"
 
 import {
@@ -29,6 +32,9 @@ import {
     SBTAsset,
     SBTTransferValueHistory,
     SBTSlotChangedHistory,
+    ApprovalRecord,
+    ApprovalForAllRecord,
+    ApprovalValueRecord,
 } from "../generated/schema"
 
 export function handleBankTreasurySet(event: BankTreasurySet): void {
@@ -168,12 +174,6 @@ export function handleSBTTransfer(event: Transfer): void {
         const sbtAsset = SBTAsset.load(_idStringSBTAsset) || new SBTAsset(_idStringSBTAsset)
 
         if (sbtAsset) {
-            // const sbt = SBT.bind(event.address) 
-            // const result = sbt.try_balanceOf1(event.params._tokenId)
-
-            // let balanceOf  = BigInt.fromI32(0)
-            // if (!result.reverted) value = result.value
-
             sbtAsset.wallet = event.params._to
             sbtAsset.soulBoundTokenId = event.params._tokenId
             if (event.params._from.toHexString() == '0x0000000000000000000000000000000000000000') {
@@ -184,7 +184,7 @@ export function handleSBTTransfer(event: Transfer): void {
             sbtAsset.timestamp = event.block.timestamp
             sbtAsset.save()
         }
-    } 
+    }
 }
 
 export function handleSBTTransferValue(event: TransferValue): void {
@@ -205,22 +205,30 @@ export function handleSBTTransferValue(event: TransferValue): void {
         history.timestamp = event.block.timestamp
         history.save()
 
+        const sbt = SBT.bind(event.address) 
+
         if (event.params._fromTokenId.isZero()){
              //mint value
 
         } else {
 
             let _idStringSBTAssetFrom = event.params._fromTokenId.toString()
-            const sbtAssetFrom = SBTAsset.load(_idStringSBTAssetFrom) || new SBTAsset(_idStringSBTAssetFrom)
+            const sbtAssetFrom = SBTAsset.load(_idStringSBTAssetFrom) //|| new SBTAsset(_idStringSBTAssetFrom)
     
             if (sbtAssetFrom) {
-                let value = sbtAssetFrom.value ? sbtAssetFrom.value : BigInt.fromI32(0)
-                sbtAssetFrom.value = value.minus(event.params._value)
+               
+                const result = sbt.try_balanceOf1(event.params._fromTokenId)
+        
+                if (result.reverted) {
+                    log.warning('try_balanceOf1, result.reverted is true', [])
+                } else {
+                    log.info("try_balanceOf1, result.value: {}", [result.value.toString()])
+                    sbtAssetFrom.value = result.value
+                }
                 
                 sbtAssetFrom.timestamp = event.block.timestamp
                 sbtAssetFrom.save()
             }
-            
         }
 
         if (event.params._toTokenId.isZero()){
@@ -232,9 +240,16 @@ export function handleSBTTransferValue(event: TransferValue): void {
             const sbtAssetTo = SBTAsset.load(_idStringSBTAssetTo) || new SBTAsset(_idStringSBTAssetTo)
     
             if (sbtAssetTo) {
-                let value = sbtAssetTo.value ? sbtAssetTo.value : BigInt.fromI32(0)
-                sbtAssetTo.value = value.plus(event.params._value)
-                
+
+                const result = sbt.try_balanceOf1(event.params._toTokenId)
+        
+                if (result.reverted) {
+                    log.warning('try_balanceOf1, result.reverted is true', [])
+                } else {
+                    log.info("try_balanceOf1, result.value: {}", [result.value.toString()])
+                    sbtAssetTo.value = result.value
+                }
+                             
                 sbtAssetTo.timestamp = event.block.timestamp
                 sbtAssetTo.save()
             }
@@ -261,3 +276,52 @@ export function handleSBTSlotChanged(event: SlotChanged): void {
     } 
 }
 
+
+
+
+export function handleApproval(event: Approval): void {
+    log.info("handleApproval, event.address: {}", [event.address.toHexString()])
+
+    let _idString = event.params._owner.toHexString() + "-" +  event.params._approved.toHexString()
+    const approvalRecord = ApprovalRecord.load(_idString) || new ApprovalRecord(_idString)
+
+    if (approvalRecord) {
+        approvalRecord.owner = event.params._owner
+        approvalRecord.approved = event.params._approved
+        approvalRecord.tokenId = event.params._tokenId
+        approvalRecord.timestamp = event.block.timestamp
+        approvalRecord.save()
+    } 
+}
+
+export function handleApprovalForAll(event: ApprovalForAll): void {
+    log.info("handleApprovalForAll, event.address: {}", [event.address.toHexString()])
+
+    let _idString = event.params._owner.toHexString() + "-" + event.params._operator.toHexString() 
+    const approvalForAllRecord = ApprovalForAllRecord.load(_idString) || new ApprovalForAllRecord(_idString)
+
+    if (approvalForAllRecord) {
+        approvalForAllRecord.owner = event.params._owner
+        approvalForAllRecord.operator = event.params._operator
+        approvalForAllRecord.approved = event.params._approved
+        approvalForAllRecord.timestamp = event.block.timestamp
+        approvalForAllRecord.save()
+    
+    } 
+}
+
+export function handleApprovalValue(event: ApprovalValue): void {
+    log.info("handleApprovalValue, event.address: {}", [event.address.toHexString()])
+
+    let _idString = event.params._tokenId.toString() + "-" + event.params._operator.toHexString() 
+    const approvalValueRecord = ApprovalValueRecord.load(_idString) || new ApprovalValueRecord(_idString)
+
+    if (approvalValueRecord) {
+        approvalValueRecord.tokenId = event.params._tokenId
+        approvalValueRecord.operator = event.params._operator
+        approvalValueRecord.value = event.params._value
+        approvalValueRecord.timestamp = event.block.timestamp
+        approvalValueRecord.save()
+    
+    } 
+}

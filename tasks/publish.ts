@@ -95,10 +95,10 @@ task("publish", "publish function")
 
  
     let balance =(await sbt["balanceOf(uint256)"](SECOND_PROFILE_ID)).toNumber();
-    // if (balance == 0) {
+    if (balance == 0) {
       //mint 1000Value to user
       await manager.connect(governance).mintSBTValue(SECOND_PROFILE_ID, 1000);
-    // }
+    }
     console.log('\t--- balance of user: ', (await sbt["balanceOf(uint256)"](SECOND_PROFILE_ID)).toNumber());
 
     await waitForTx(

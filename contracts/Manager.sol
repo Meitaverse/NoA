@@ -468,15 +468,6 @@ contract Manager is
         );
     }
 
-    function setProfileImageURI(uint256 soulBoundTokenId, string calldata imageURI)
-        external
-        whenNotPaused
-        nonReentrant
-    {
-        _validateCallerIsSoulBoundTokenOwnerOrDispathcher(soulBoundTokenId);
-        INFTDerivativeProtocolTokenV1(IModuleGlobals(MODULE_GLOBALS).getSBT()).setProfileImageURI(soulBoundTokenId, imageURI);
-    }
-
     function getPublishInfo(uint256 publishId_) external view returns (DataTypes.PublishData memory) {
         return _projectDataByPublishId[publishId_];
     }

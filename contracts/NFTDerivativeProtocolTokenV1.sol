@@ -17,6 +17,7 @@ import {SafeMathUpgradeable} from "@openzeppelin/contracts-upgradeable/utils/mat
 import {Errors} from "./libraries/Errors.sol";
 import {Events} from "./libraries/Events.sol";
 import {Constants} from './libraries/Constants.sol';
+import {IManager} from "./interfaces/IManager.sol";
 import "./storage/SBTStorage.sol";
 import {INFTDerivativeProtocolTokenV1} from "./interfaces/INFTDerivativeProtocolTokenV1.sol";
 
@@ -277,6 +278,16 @@ contract NFTDerivativeProtocolTokenV1 is
     /// *****INTERNAL FUNCTIONS*****
     /// ****************************
 
+    function _validateCallerIsSoulBoundTokenOwnerOrDispathcher(uint256 soulBoundTokenId_) internal view {
+
+        if (ownerOf(soulBoundTokenId_) == msg.sender || 
+            IManager(_MANAGER).getDispatcher(soulBoundTokenId_) == msg.sender) {
+            return;
+        }
+
+        revert Errors.NotProfileOwnerOrDispatcher();
+    }
+
     function _validateCallerIsManager() internal view {
         if (msg.sender != _MANAGER) revert Errors.NotManager();
     }
@@ -319,7 +330,16 @@ contract NFTDerivativeProtocolTokenV1 is
             imageURI: "",
             locked: true
         });
-        
+
+        emit Events.ProfileCreated(
+            tokenId_,
+            _msgSender(),
+            _BANKTREASURY,    
+            "bank treasury",
+            "",
+            block.timestamp
+        );
+
         emit Events.BankTreasurySet(
             tokenId_, 
             bankTreasury,
@@ -330,14 +350,19 @@ contract NFTDerivativeProtocolTokenV1 is
     function getBankTreasury() external view returns(address) {
         return _BANKTREASURY;
     }
+
+    function getSBTIdByWallet(address wallet) external view returns(uint256) {
+        return _walletToSBTId[wallet];
+    }
     
     function setProfileImageURI(uint256 soulBoundTokenId, string calldata imageURI)
         external
         override
         nonReentrant
         whenNotPaused 
-        onlyManager
     { 
+        _validateCallerIsSoulBoundTokenOwnerOrDispathcher(soulBoundTokenId);
+
         _setProfileImageURI(soulBoundTokenId, imageURI);
     }
 

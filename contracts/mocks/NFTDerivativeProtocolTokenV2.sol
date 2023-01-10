@@ -17,6 +17,7 @@ import {SafeMathUpgradeable} from "@openzeppelin/contracts-upgradeable/utils/mat
 import {Errors} from "../libraries/Errors.sol";
 import {Events} from "../libraries/Events.sol";
 import {Constants} from '../libraries/Constants.sol';
+import {IManager} from "../interfaces/IManager.sol";
 import "../storage/SBTStorage.sol";
 import {INFTDerivativeProtocolTokenV2} from "../interfaces/INFTDerivativeProtocolTokenV2.sol";
 
@@ -45,6 +46,15 @@ contract NFTDerivativeProtocolTokenV2 is
 
     //===== Modifiers =====//
 
+    function _validateCallerIsSoulBoundTokenOwnerOrDispathcher(uint256 soulBoundTokenId_) internal view {
+
+        if (ownerOf(soulBoundTokenId_) == msg.sender || 
+            IManager(_MANAGER).getDispatcher(soulBoundTokenId_) == msg.sender) {
+            return;
+        }
+
+        revert Errors.NotProfileOwnerOrDispatcher();
+    }
     /**
      * @dev This modifier reverts if the caller is not the configured governance address.
      */
@@ -332,13 +342,17 @@ contract NFTDerivativeProtocolTokenV2 is
         return _BANKTREASURY;
     }
     
+    function getSBTIdByWallet(address wallet) external view returns(uint256) {
+        return _walletToSBTId[wallet];
+    }
+    
     function setProfileImageURI(uint256 soulBoundTokenId, string calldata imageURI)
         external
         override
         nonReentrant
         whenNotPaused 
-        onlyManager
     { 
+        _validateCallerIsSoulBoundTokenOwnerOrDispathcher(soulBoundTokenId);
         _setProfileImageURI(soulBoundTokenId, imageURI);
     }
 

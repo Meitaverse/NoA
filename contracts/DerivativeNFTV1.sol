@@ -43,12 +43,43 @@ contract DerivativeNFTV1 is
     bytes32 internal constant PERMIT_VALUE_TYPEHASH =
         keccak256('PermitValue(address spender,uint256 tokenId,uint256 value,uint256 nonce,uint256 deadline)');
     
+
+    /**
+     * @dev Emitted when a dNFT is burned.
+     *
+     * @param projectId The newly created profile's token ID.
+     * @param tokenId The profile creator, who created the token with the given profile ID.
+     * @param owner The image uri set for the profile.
+     * @param timestamp The current block timestamp.
+     */
+    event BurnToken(
+        uint256 projectId, 
+        uint256 tokenId, 
+        address owner,
+        uint256 timestamp
+    );
+
+    /**
+     * @dev Emitted when a dNFT is burned with sig.
+     *
+     * @param projectId The newly created profile's token ID.
+     * @param tokenId The profile creator, who created the token with the given profile ID.
+     * @param owner The image uri set for the profile.
+     * @param timestamp The current block timestamp.
+     */
+    event BurnTokenWithSig(
+        uint256 projectId, 
+        uint256 tokenId, 
+        address owner,
+        uint256 timestamp
+    );
+        
     using Counters for Counters.Counter;
     // using SafeMathUpgradeable for uint256;
 
     bool private _initialized;
 
-    Counters.Counter private  _nextSlotId;
+    Counters.Counter private _nextSlotId;
 
     uint256 internal _projectId;  //one derivativeNFT include one projectId
     uint256 internal _soulBoundTokenId;
@@ -57,11 +88,8 @@ contract DerivativeNFTV1 is
     address internal _receiver;
     DataTypes.FeeShareType internal _feeShareType;
 
-    // solhint-disable-next-line var-name-mixedcase
     address public immutable MANAGER;
-    // solhint-disable-next-line var-name-mixedcase
     address internal _SBT;
-    // solhint-disable-next-line var-name-mixedcase
     address internal _BANKTREASURY;
 
     uint96 internal _royaltyBasisPoints; //版税佣金点数, 本协议将版税的10%及金库固定税收5%设置为
@@ -88,7 +116,6 @@ contract DerivativeNFTV1 is
 
     //publication Name to Slot
     mapping(bytes32 => uint256) internal _publicationNameHashBySlot;
-
 
     mapping(address => uint256) public sigNonces;
 
@@ -325,7 +352,7 @@ contract DerivativeNFTV1 is
         }
         ERC3525Upgradeable._burn(tokenId_);
         _resetTokenRoyalty(tokenId_);
-        emit Events.BurnToken(slot, tokenId_, msg.sender, block.timestamp);
+        emit BurnToken(slot, tokenId_, msg.sender, block.timestamp);
     }
 
     function burnWithSig(uint256 tokenId, DataTypes.EIP712Signature calldata sig)
@@ -355,7 +382,7 @@ contract DerivativeNFTV1 is
         ERC3525Upgradeable._burn(tokenId);
         _resetTokenRoyalty(tokenId);
         
-        emit Events.BurnTokenWithSig(slot, tokenId, owner, block.timestamp);
+        emit BurnTokenWithSig(slot, tokenId, owner, block.timestamp);
     }
 
     function getSlotDetail(uint256 slot_) external view returns (DataTypes.SlotDetail memory) {
@@ -414,7 +441,7 @@ contract DerivativeNFTV1 is
         address from_,
         address to_,
         uint256 tokenId_
-    ) public payable virtual override  whenNotPaused  {
+    ) public payable virtual override  whenNotPaused {
         super.transferFrom(from_, to_, tokenId_);
     }
 
@@ -423,7 +450,7 @@ contract DerivativeNFTV1 is
         address to_,
         uint256 tokenId_,
         bytes memory data_
-    ) public payable virtual override  whenNotPaused  {
+    ) public payable virtual override whenNotPaused {
         super.safeTransferFrom(from_, to_, tokenId_, data_);
     }
 
@@ -501,6 +528,7 @@ contract DerivativeNFTV1 is
         } else {
             revert Errors.NotSoulBoundTokenOwner();
         }
+        //TODO event RoyaltySet
     }
 
     /**
@@ -552,6 +580,8 @@ contract DerivativeNFTV1 is
         require(receiver != address(0), "ERC2981: invalid receiver");
 
         _defaultRoyaltyInfo = RoyaltyInfo(receiver, feeNumerator);
+
+        //TODO event DefaultRoyaltySet
     }
 
     /**

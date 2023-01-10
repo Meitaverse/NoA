@@ -26,6 +26,8 @@ dataSources:
       abis:
         - name: Events
           file: ./abis/Events.json
+        - name: SBT
+          file: ./abis/SBT.json          
       eventHandlers:
         - event: BankTreasurySet(indexed uint256,indexed address,indexed uint256,uint256)
           handler: handleBankTreasurySet
@@ -55,6 +57,9 @@ dataSources:
       apiVersion: 0.0.6
       language: wasm/assemblyscript
       entities:
+        - Approval
+        - ApprovalForAll
+        - ApprovalValue      
         - Transfer
         - TransferValue
         - SlotChanged
@@ -62,6 +67,12 @@ dataSources:
         - name: SBT
           file: ./abis/SBT.json
       eventHandlers:
+        - event: Approval(indexed address,indexed address,indexed uint256)
+          handler: handleApproval
+        - event: ApprovalForAll(indexed address,indexed address,bool)
+          handler: handleApprovalForAll
+        - event: ApprovalValue(indexed uint256,indexed address,uint256)
+          handler: handleApprovalValue      
         - event: Transfer(indexed address,indexed address,indexed uint256)
           handler: handleSBTTransfer
         - event: TransferValue(indexed uint256,indexed uint256,uint256)

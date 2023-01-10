@@ -90,7 +90,7 @@ Queries (HTTP):     http://localhost:8000/subgraphs/name/NoA/MySubgraph
 
 ### 查询设置注册白名单历史
 ```
-query {
+{
   profileCreatorWhitelistedHistories(first: 100) {
     id
     profileCreator
@@ -102,7 +102,7 @@ query {
 
 ### 查询所有Profile
 ```
-query {
+{
   profiles(first:100){
     id,
     soulBoundTokenId,
@@ -117,7 +117,7 @@ query {
 
 ### 查询所有Hub
 ```
-query{
+{
   hubs(first:100){
     id,
     soulBoundTokenId,
@@ -134,7 +134,7 @@ query{
 
 ### 查询所有Projdct
 ```
-query{
+{
   projects(first:100){
     id,
     projectId,
@@ -147,7 +147,7 @@ query{
 ```
 ### 查询所有Publish历史
 ```
-query{
+{
   publishCreatedHistories(first:100){
     id,
     publishId,
@@ -166,7 +166,7 @@ query{
 
 ### 查询所有SBT value铸造历史
 ```
-query {
+{
   mintSBTValueHistories(first: 100) {
     id
     soulBoundTokenId
@@ -176,10 +176,36 @@ query {
 }
 ```
 
+### 查询预发布的记录
+```
+{
+  publications(first: 100) {
+    id
+    soulBoundTokenId
+    hubId
+    projectId
+    salePrice
+    royaltyBasisPoints
+    amount
+    name
+    description
+    materialURIs
+    fromTokenIds
+    collectModule
+    collectModuleInitData
+    publishModule
+    publishModuleInitData
+    publishId
+    previousPublishId
+    publishTaxAmount
+    timestamp
+  }
+}
+```
 
 ### 查询所有collect
 ```
-query {
+{
   feesForCollectHistories(first: 100) {
     id
     collectorSoulBoundTokenId
@@ -194,7 +220,7 @@ query {
 
 ### 查询所有airdrop histories
 ```
-query {
+{
   derivativeNFTAirdropedHistories(first: 100) {
     id
     projectId
@@ -212,8 +238,8 @@ query {
 
 ### 查询所有SBT Asset
 ```
-query { 
-  sBTAssets(first: 100) {
+{ 
+  sbtassets(first: 100) {
     id
     wallet
     soulBoundTokenId
@@ -233,3 +259,19 @@ or
 $ npm instal --save-dev hardhat-contract-sizer
 ```
 
+
+## 部署DerivativeNFT subgraph
+### 获取DerivativeNFT 合约地址
+```
+$ yarn hardhat getDerivativeNFT --projectid 1 --network local
+```
+
+### 生成代码
+```
+$ yarn graph-derivativeNFT-codegen && yarn graph-derivativeNFT-build
+```
+
+### 部署到graph node
+```
+$ yarn create-derivativeNFT-subgraph-node && yarn deploy-derivativeNFT-subgraph-node
+```

@@ -94,10 +94,6 @@ interface IManager {
         DataTypes.CreateProfileData calldata vars
     ) external returns (uint256);
 
-    
-    function setProfileImageURI(uint256 soulBoundTokenId, string calldata imageURI) external;
-
-
     /**
      * @notice Returns the genesis publishId by projectId
      *

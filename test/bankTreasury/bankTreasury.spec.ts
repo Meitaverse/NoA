@@ -143,7 +143,7 @@ makeSuiteCleanRoom('Bank Treasury', function () {
     context('Exchange', function () {
         it('User should receive SBT after withdrawERC3525', async function () {
           expect((await sbtContract['balanceOf(uint256)'](FIRST_PROFILE_ID)).toNumber()).to.eq(INITIAL_SUPPLY);
-          expect((await sbtContract['balanceOf(uint256)'](FIRST_PROFILE_ID)).toNumber()).to.eq(0);
+          expect((await sbtContract['balanceOf(uint256)'](SECOND_PROFILE_ID)).toNumber()).to.eq(0);
           
           await expect(
             bankTreasuryContract.connect(governance).withdrawERC3525(SECOND_PROFILE_ID, 1)

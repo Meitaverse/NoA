@@ -69,35 +69,6 @@ library Events {
         uint256 timestamp
     );
 
-    /**
-     * @dev Emitted when a dNFT is burned.
-     *
-     * @param projectId The newly created profile's token ID.
-     * @param tokenId The profile creator, who created the token with the given profile ID.
-     * @param owner The image uri set for the profile.
-     * @param timestamp The current block timestamp.
-     */
-    event BurnToken(
-        uint256 projectId, 
-        uint256 tokenId, 
-        address owner,
-        uint256 timestamp
-    );
-
-    /**
-     * @dev Emitted when a dNFT is burned with sig.
-     *
-     * @param projectId The newly created profile's token ID.
-     * @param tokenId The profile creator, who created the token with the given profile ID.
-     * @param owner The image uri set for the profile.
-     * @param timestamp The current block timestamp.
-     */
-    event BurnTokenWithSig(
-        uint256 projectId, 
-        uint256 tokenId, 
-        address owner,
-        uint256 timestamp
-    );
 
     /**
      * @dev Emitted when a dispatcher is set for a specific soulBoundToken.

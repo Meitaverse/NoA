@@ -95,7 +95,7 @@ export function handleHubCreated(event: HubCreated): void {
 export function handlePublishPrepared(event: PublishPrepared): void {
     log.info("handlePublishPrepared, event.address: {}", [event.address.toHexString()])
 
-    let _idString = event.params.publication.soulBoundTokenId.toString() + "-" +  event.params.publishId.toString()
+    let _idString = event.params.publication.soulBoundTokenId.toString() + "-" + event.params.publication.hubId.toString() + "-" + event.params.publishId.toString()
     const publication = Publication.load(_idString) || new Publication(_idString)
     if (publication) {
         publication.soulBoundTokenId = event.params.publication.soulBoundTokenId

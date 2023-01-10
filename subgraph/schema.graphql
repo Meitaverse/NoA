@@ -1,4 +1,4 @@
-# 管理Profile的增加与删除
+# Profile record
 type Profile @entity {
   id: ID!
   soulBoundTokenId: BigInt!
@@ -68,6 +68,35 @@ type BurnSBTValueHistory @entity {
   value: BigInt!
   timestamp: BigInt!
 }    
+
+
+# Approval 
+type ApprovalRecord @entity {
+  id: ID!
+  owner: Bytes!
+  approved: Bytes!
+  tokenId: BigInt!
+  timestamp: BigInt!
+}    
+
+# ApprovalForAll 
+type ApprovalForAllRecord @entity {
+  id: ID!
+  owner: Bytes!
+  operator: Bytes!
+  approved: Boolean!
+  timestamp: BigInt!
+}    
+
+# ApprovalValue 
+type ApprovalValueRecord @entity {
+  id: ID!
+  tokenId: BigInt!
+  operator: Bytes!
+  value: BigInt!
+  timestamp: BigInt!
+}    
+
 
 # Profile ImageURI Set history    
 type ProfileImageURISetHistory @entity {
