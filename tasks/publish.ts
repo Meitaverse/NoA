@@ -95,10 +95,10 @@ task("publish", "publish function")
 
  
     let balance =(await sbt["balanceOf(uint256)"](SECOND_PROFILE_ID)).toNumber();
-    if (balance == 0) {
+    // if (balance == 0) {
       //mint 1000Value to user
       await manager.connect(governance).mintSBTValue(SECOND_PROFILE_ID, 1000);
-    }
+    // }
     console.log('\t--- balance of user: ', (await sbt["balanceOf(uint256)"](SECOND_PROFILE_ID)).toNumber());
 
     await waitForTx(
@@ -184,6 +184,8 @@ task("publish", "publish function")
       "\t--- description: ", publishInfo.publication.description
     );
 */
+
+
     console.log(
       "\n\t--- Publish  ..."
     );
@@ -210,4 +212,5 @@ task("publish", "publish function")
     const FIRST_DNFT_TOKEN_ID = 1;
     console.log('\n\t--- ownerOf FIRST_DNFT_TOKEN_ID : ', await derivativeNFT.ownerOf(FIRST_DNFT_TOKEN_ID));
     console.log('\t--- balanceOf FIRST_DNFT_TOKEN_ID : ', (await derivativeNFT["balanceOf(uint256)"](FIRST_DNFT_TOKEN_ID)).toNumber());
-});
+
+  });
