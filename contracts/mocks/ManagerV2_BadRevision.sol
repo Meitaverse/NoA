@@ -112,7 +112,7 @@ contract ManagerV2_BadRevision is
 
         uint256 projectId = _generateNextProjectId();
         _projectNameHashByEventId[keccak256(bytes(project.name))] = projectId;
-        address derivativeNFT = InteractionLogic.createProject(
+        InteractionLogic.createProject(
             _DNFT_IMPL,
             SBT,
             TREASURY,
@@ -121,7 +121,6 @@ contract ManagerV2_BadRevision is
             _RECEIVER,
             _derivativeNFTByProjectId
         );
-        
 
         _projectInfoByProjectId[projectId] = DataTypes.ProjectData({
             hubId: project.hubId,

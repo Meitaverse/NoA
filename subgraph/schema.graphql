@@ -6,6 +6,7 @@ type Profile @entity {
   wallet: Bytes!
   nickName: String!
   imageURI: String!
+  isRemove: Boolean!
   timestamp: BigInt!
 }
 
@@ -143,6 +144,45 @@ type WithdrawERC3525History @entity {
   timestamp: BigInt!
 }
 
+type Transaction @entity {
+  id: ID!
+  owner: Bytes!
+  txIndex: BigInt!
+  to: Bytes
+  value: BigInt
+  data: Bytes
+  isConfirmed: Boolean!
+  timestamp: BigInt!
+}
+
+type ExecuteTransactionHistory @entity {
+  id: ID!
+  owner: Bytes!
+  txIndex: BigInt!
+  to: Bytes!
+  value: BigInt!
+  timestamp: BigInt!
+}
+
+type ExchangeVoucherHistory @entity {
+  id: ID!
+  soulBoundTokenId: BigInt!
+  operator: Bytes!
+  tokenId: BigInt!
+  sbtValue: BigInt!
+  timestamp: BigInt!
+}
+
+type ExecuteTransactionERC3525History @entity {
+  id: ID!
+  owner: Bytes!
+  txIndex: BigInt!
+  fromTokenId: BigInt!
+  toTokenId: BigInt!
+  value: BigInt!
+  timestamp: BigInt!
+}
+
 # Voucher NFT
 type NFTVoucherHistory @entity {
   id: ID!
@@ -153,6 +193,17 @@ type NFTVoucherHistory @entity {
   sbtValue: BigInt!
   generateTimestamp: BigInt!
 }
+
+type VoucherRecord @entity {
+  id: ID!
+  vouchType: Int!
+  tokenId: BigInt!
+  etherValue: BigInt!
+  sbtValue: BigInt!
+  generateTimestamp: BigInt!
+  endTimestamp: BigInt!
+}
+
 
 # ModuleGlobals
 type ProfileCreatorWhitelistedHistory @entity {
@@ -283,6 +334,13 @@ type ModuleGlobalsVoucherSetHistory @entity {
   timestamp: BigInt!
 }
 
+type UserAmountLimitSetHistory @entity {
+  id: ID!
+  preUserAmountLimit: BigInt!
+  userAmountLimit: BigInt!
+  timestamp: BigInt!
+}
+
 # ModuleGlbals Manager Set history
 type ModuleGlobalsManagerSetHistory @entity {
   id: ID!
@@ -374,6 +432,7 @@ type Market @entity {
   feePayType: Int!
   feeShareType: Int!
   royaltyBasisPoints: Int!
+  isRemove: Boolean!
   timestamp: BigInt!
 }
 
@@ -386,4 +445,40 @@ type MarketPlaceERC3525ReceivedHistory @entity {
   data: Bytes
   gas: BigInt!
   timestamp: BigInt!
+}
+
+
+type PublishSaleRecord @entity {
+  id: ID!
+  soulBoundTokenId: BigInt!
+  projectId: BigInt!
+  tokenId: BigInt!
+  onSellUnits: BigInt!
+  saledUnits: BigInt!
+  startTime: BigInt!
+  preSalePrice: BigInt!
+  salePrice: BigInt!
+  priceType: Int!
+  min: BigInt!
+  max: BigInt!
+  derivativeNFT: Bytes!
+  tokenIdOfMarket: BigInt!
+  saleId: BigInt!
+  isRemove: Boolean!
+  timestamp: BigInt!
+}
+
+type TradedHistory @entity {
+  id: ID!
+  saleId: Int!
+  buyer: Bytes!
+  tradeId: BigInt!
+  tradeTime: BigInt!
+  price: BigInt!
+  newTokenIdBuyer: BigInt!
+  tradedUnits: BigInt!
+  treasuryAmount: BigInt!
+  genesisAmount: BigInt!
+  previousAmount: BigInt!
+  adjustedAmount: BigInt!
 }

@@ -37,6 +37,7 @@ services:
       - ./data/ipfs:/data/ipfs
   postgres:
     image: postgres
+    restart: on-failure
     ports:
       - '5432:5432'
     command:
@@ -51,6 +52,6 @@ services:
       # FIXME: remove this env. var. which we shouldn't need. Introduced by
       # <https://github.com/graphprotocol/graph-node/pull/3511>, maybe as a
       # workaround for https://github.com/docker/for-mac/issues/6270?
-      PGDATA: "/var/lib/postgresql/data"
+      PGDATA: /var/lib/postgresql/data
     volumes:
       - ./data/postgres:/var/lib/postgresql/data

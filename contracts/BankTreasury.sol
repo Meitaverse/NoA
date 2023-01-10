@@ -146,6 +146,10 @@ contract BankTreasury is
         MODULE_GLOBALS = moduleGlobals;
     }
     
+    function getGlobalModule() external view returns (address) {
+        return MODULE_GLOBALS;
+    }
+    
     function getManager() external view returns(address) {
         return IModuleGlobals(MODULE_GLOBALS).getManager();
     }

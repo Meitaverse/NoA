@@ -403,6 +403,10 @@ contract Voucher is
         MODULE_GLOBALS = moduleGlobals;
     }
 
+    function getGlobalModule() external view returns(address) {
+        return MODULE_GLOBALS;
+    }
+
     function _setURIPrefix(string memory _newBaseMetadataURI) internal {
         _uriBase = _newBaseMetadataURI;
     }

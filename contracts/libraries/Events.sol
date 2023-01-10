@@ -459,12 +459,11 @@ library Events {
     event PublishSale(
         DataTypes.SaleParam saleParam,
         address derivativeNFT,
-        uint256 newTokenId,
+        uint256 tokenIdOfMarket,
         uint128 saleId
     );
 
    event AddMarket(
-        // address projectId,
         address derivativeNFT,
         DataTypes.FeePayType feePayType,
         DataTypes.FeeShareType feeShareType,
@@ -488,7 +487,7 @@ library Events {
         uint128 price,
         uint256 newTokenIdBuyer,
         uint128 tradedUnits,
-        DataTypes.RoyaltyAmounts
+        DataTypes.RoyaltyAmounts royaltyAmounts
     );
 
     //BankTreasury
@@ -623,7 +622,7 @@ library Events {
     event UserAmountLimitSet(
         uint256 preUserAmountLimit,
         uint256 userAmountLimit,
-        uint256 endTimestamp
+        uint256 timestamp
     );
 
     event SetContractWhitelisted(

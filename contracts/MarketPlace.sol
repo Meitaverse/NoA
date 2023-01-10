@@ -125,6 +125,7 @@ contract MarketPlace is
         return 0x009ce20b;
     }
 
+    //must set after moduleGlobals deployed
     function setGlobalModule(address moduleGlobals) 
         external
         nonReentrant
@@ -150,7 +151,7 @@ contract MarketPlace is
         nonReentrant
         whenNotPaused  
     {
-        _validateCallerIsSoulBoundTokenOwnerOrDispathcher(saleParam.soulBoundTokenId);
+         _validateCallerIsSoulBoundTokenOwnerOrDispathcher(saleParam.soulBoundTokenId);
         
         if (saleParam.max > 0) {
             if (saleParam.min > saleParam.max) revert Errors.MinGTMax();
@@ -175,8 +176,8 @@ contract MarketPlace is
         PriceManager.setFixedPrice(saleId, saleParam.salePrice);
 
         //must approve manager before
-        uint256 newTokenId = IERC3525(derivativeNFT).transferFrom(saleParam.tokenId, address(this), saleParam.onSellUnits);
-        
+        uint256 tokenIdOfMarket = IERC3525(derivativeNFT).transferFrom(saleParam.tokenId, address(this), saleParam.onSellUnits);
+       
         //genesis
         uint256 genesisPublishId = IManager(IModuleGlobals(MODULE_GLOBALS).getManager()).getGenesisPublishIdByProjectId(saleParam.projectId);
         DataTypes.PublishData memory gengesisPublishData  = IManager(IModuleGlobals(MODULE_GLOBALS).getManager()).getPublishInfo(genesisPublishId);
@@ -190,7 +191,7 @@ contract MarketPlace is
  
         _publishFixedPrice(
             saleId, 
-            newTokenId, 
+            tokenIdOfMarket, 
             derivativeNFT, 
             saleParam,
             genesisProjectData.soulBoundTokenId,
@@ -198,6 +199,7 @@ contract MarketPlace is
             previousPublishData.publication.soulBoundTokenId,
             previousPublishData.publication.royaltyBasisPoints
         ); 
+
     }
 
     function fixedPriceSet(uint24 saleId, uint128 newSalePrice) 
@@ -275,6 +277,10 @@ contract MarketPlace is
         );
     }
 
+    function getMarketInfo(address derivativeNFT) external view returns(DataTypes.Market memory) {
+        return markets[derivativeNFT];
+    }
+
     function removeMarket(address derivativeNFT_) 
         external 
         nonReentrant
@@ -316,7 +322,7 @@ contract MarketPlace is
             _generateNextTradeId(),
             buyer,
             saleId,
-            PriceManager.price(DataTypes.PriceType.FIXED, saleId),
+            PriceManager.price(sales[saleId].priceType, saleId),
             units
         );
     }
@@ -361,6 +367,8 @@ contract MarketPlace is
     } 
 
     function _validateCallerIsSoulBoundTokenOwnerOrDispathcher(uint256 soulBoundTokenId_) internal view {
+        if (MODULE_GLOBALS == address(0)) revert Errors.ModuleGlobasNotSet();
+        
          address _sbt = IModuleGlobals(MODULE_GLOBALS).getSBT();
          address _manager = IModuleGlobals(MODULE_GLOBALS).getManager();
 
@@ -381,6 +389,7 @@ contract MarketPlace is
     }
 
     function _validateCallerIsManager() internal view {
+        if (MODULE_GLOBALS == address(0)) revert Errors.ModuleGlobasNotSet();
         address _manager = IModuleGlobals(MODULE_GLOBALS).getManager();
         if (msg.sender != _manager) revert Errors.NotManager();
     }
@@ -392,7 +401,7 @@ contract MarketPlace is
 
     function _publishFixedPrice(
         uint24 saleId,
-        uint256 newTokenId, 
+        uint256 tokenIdOfMarket, 
         address derivativeNFT, 
         DataTypes.SaleParam memory saleParam,
         uint256 genesisSoulBoundTokenId,
@@ -400,13 +409,12 @@ contract MarketPlace is
         uint256 previousSoulBoundTokenId,
         uint256 previousRoyaltyBasisPoints
     ) internal {
-
         sales[saleId] = DataTypes.Sale({
             soulBoundTokenId: saleParam.soulBoundTokenId,
             projectId : saleParam.projectId,
             salePrice: saleParam.salePrice,
             tokenId: saleParam.tokenId,
-            newTokenId: newTokenId,
+            tokenIdOfMarket: tokenIdOfMarket,
             onSellUnits: saleParam.onSellUnits, 
             seledUnits: 0,
             startTime: saleParam.startTime,
@@ -424,7 +432,7 @@ contract MarketPlace is
         emit Events.PublishSale(
             saleParam,
             derivativeNFT,
-            newTokenId,
+            tokenIdOfMarket,
             saleId
         );
     }
@@ -435,6 +443,11 @@ contract MarketPlace is
         DataTypes.Sale memory sale = sales[saleId_];
 
         if (!sale.isValid) revert Errors.InvalidSale();
+
+        //TODO transfer from tokenIdOfMarket to seller if units is not zero
+        if (sale.onSellUnits > 0) {
+            IERC3525(sale.derivativeNFT).transferFrom(sale.tokenIdOfMarket, sale.tokenId, sale.onSellUnits);
+        }
 
         delete sales[saleId_];
 
@@ -455,13 +468,14 @@ contract MarketPlace is
         uint128 units_
     ) internal {
         DataTypes.Sale storage sale_ = sales[saleId_];   
-
+        
         //transfer units to buyer
-        uint256 newTokenIdBuyer_ = IERC3525(sale_.derivativeNFT).transferFrom(sale_.newTokenId, buyer_, uint256(units_));
+        uint256 newTokenIdBuyer_ = IERC3525(sale_.derivativeNFT).transferFrom(sale_.tokenIdOfMarket, buyer_, uint256(units_));
 
         uint256 payValue = units_.mul(sale_.salePrice);
 
         //get realtime bank treasury fee points
+        if (MODULE_GLOBALS == address(0)) revert Errors.ModuleGlobasNotSet();
         (, uint16 treasuryFee) = IModuleGlobals(MODULE_GLOBALS).getTreasuryData();
 
         DataTypes.RoyaltyAmounts memory royaltyAmounts;

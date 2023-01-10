@@ -379,10 +379,7 @@ contract DerivativeNFTV1 is
         uint256 fromTokenId_,
         address to_,
         uint256 value_
-    ) public payable virtual override whenNotPaused returns (uint256) { //onlyManager
-        //TODO to_ must a valid SBT Id
-        // uint256 _toSoulBoundTokenId = IManager(MANAGER).getSoulBoundTokenIdByWallet(to_);
-        // if (_toSoulBoundTokenId == 0 ) revert Errors.ToIsNotSoulBoundToken();
+    ) public payable virtual override whenNotPaused returns (uint256) {
 
         uint256 newTokenId = super.transferFrom(fromTokenId_, to_, value_);
       
@@ -395,7 +392,7 @@ contract DerivativeNFTV1 is
              _fraction = _royaltyBasisPoints;
         }
 
-        //set royalties
+        //set royaltiespa
         _setTokenRoyalty(
             newTokenId,
             _BANKTREASURY,
@@ -409,7 +406,7 @@ contract DerivativeNFTV1 is
         uint256 fromTokenId_,
         uint256 toTokenId_,
         uint256 value_
-    ) public payable virtual override whenNotPaused  { //onlyManager
+    ) public payable virtual override whenNotPaused  {
       super.transferFrom(fromTokenId_, toTokenId_, value_);
     }
 
@@ -417,10 +414,7 @@ contract DerivativeNFTV1 is
         address from_,
         address to_,
         uint256 tokenId_
-    ) public payable virtual override  whenNotPaused  { //onlyManager
-        //TODO to_ must a valid SBT wallet who had create profile
-        // uint256 _toSoulBoundTokenId = IManager(MANAGER).getSoulBoundTokenIdByWallet(to_);
-        // if (_toSoulBoundTokenId == 0 ) revert Errors.ToIsNotSoulBoundToken();
+    ) public payable virtual override  whenNotPaused  {
         super.transferFrom(from_, to_, tokenId_);
     }
 
@@ -429,10 +423,7 @@ contract DerivativeNFTV1 is
         address to_,
         uint256 tokenId_,
         bytes memory data_
-    ) public payable virtual override  whenNotPaused  { //onlyManager
-        //TODO to_ must a valid SBT Id
-        // uint256 _toSoulBoundTokenId = IManager(MANAGER).getSoulBoundTokenIdByWallet(to_);
-        // if (_toSoulBoundTokenId == 0 ) revert Errors.ToIsNotSoulBoundToken();
+    ) public payable virtual override  whenNotPaused  {
         super.safeTransferFrom(from_, to_, tokenId_, data_);
     }
 
@@ -440,10 +431,7 @@ contract DerivativeNFTV1 is
         address from_,
         address to_,
         uint256 tokenId_
-    ) public payable virtual override  whenNotPaused {  //onlyManager
-        //to_ must a valid SBT Id
-        // uint256 _toSoulBoundTokenId = IManager(MANAGER).getSoulBoundTokenIdByWallet(to_);
-        // if (_toSoulBoundTokenId == 0 ) revert Errors.ToIsNotSoulBoundToken();
+    ) public payable virtual override  whenNotPaused {
        super.safeTransferFrom(from_, to_, tokenId_, "");
     }
 

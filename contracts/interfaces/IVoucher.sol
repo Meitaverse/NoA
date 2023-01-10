@@ -53,6 +53,8 @@ interface IVoucher {
         address account
     ) external;
 
+    function getGlobalModule() external view returns(address);
+
     function getVoucherData(uint256 tokenId) external view returns(DataTypes.VoucherData memory);
 
     function setTokenUri(uint tokenId_, string memory uri_) external;

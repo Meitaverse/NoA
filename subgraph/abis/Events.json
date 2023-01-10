@@ -1661,7 +1661,7 @@
         {
           "indexed": false,
           "internalType": "uint256",
-          "name": "newTokenId",
+          "name": "tokenIdOfMarket",
           "type": "uint256"
         },
         {
@@ -2047,7 +2047,7 @@
           ],
           "indexed": false,
           "internalType": "struct DataTypes.RoyaltyAmounts",
-          "name": "",
+          "name": "royaltyAmounts",
           "type": "tuple"
         }
       ],
@@ -2183,7 +2183,7 @@
         {
           "indexed": false,
           "internalType": "uint256",
-          "name": "endTimestamp",
+          "name": "timestamp",
           "type": "uint256"
         }
       ],

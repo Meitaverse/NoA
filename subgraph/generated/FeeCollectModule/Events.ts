@@ -1559,7 +1559,7 @@ export class PublishSale__Params {
     return this._event.parameters[1].value.toAddress();
   }
 
-  get newTokenId(): BigInt {
+  get tokenIdOfMarket(): BigInt {
     return this._event.parameters[2].value.toBigInt();
   }
 
@@ -1933,14 +1933,14 @@ export class Traded__Params {
     return this._event.parameters[6].value.toBigInt();
   }
 
-  get param7(): TradedParam7Struct {
-    return changetype<TradedParam7Struct>(
+  get royaltyAmounts(): TradedRoyaltyAmountsStruct {
+    return changetype<TradedRoyaltyAmountsStruct>(
       this._event.parameters[7].value.toTuple()
     );
   }
 }
 
-export class TradedParam7Struct extends ethereum.Tuple {
+export class TradedRoyaltyAmountsStruct extends ethereum.Tuple {
   get treasuryAmount(): BigInt {
     return this[0].toBigInt();
   }
@@ -2081,7 +2081,7 @@ export class UserAmountLimitSet__Params {
     return this._event.parameters[1].value.toBigInt();
   }
 
-  get endTimestamp(): BigInt {
+  get timestamp(): BigInt {
     return this._event.parameters[2].value.toBigInt();
   }
 }

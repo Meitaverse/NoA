@@ -43,7 +43,7 @@ import {
     MarketPlace,
     MarketPlace__factory,
   } from '../typechain';
-  import { deployContract, waitForTx , ProtocolState, Error} from './helpers/utils';
+  import { deployContract, waitForTx , ProtocolState, Error, ZERO_ADDRESS} from './helpers/utils';
   import { ManagerLibraryAddresses } from '../typechain/factories/contracts/Manager__factory';
   
   import { DataTypes } from '../typechain/contracts/modules/template/Template';
@@ -80,7 +80,6 @@ import {
         const userThree = accounts[4];
 
         const proxyAdminAddress = deployer.address;
-        const profileCreatorAddress = deployer.address;
 
         // Nonce management in case of deployment issues
         let deployerNonce = await ethers.provider.getTransactionCount(deployer.address);
@@ -354,6 +353,9 @@ import {
       
         console.log('\n\t-- bankTreasuryContract set moduleGlobals address --');
         await waitForTx( bankTreasuryContract.connect(governance).setGlobalModule(moduleGlobals.address));
+       
+        console.log('\n\t-- marketPlaceContract set moduleGlobals address --');
+        await waitForTx( marketPlaceContract.connect(governance).setGlobalModule(moduleGlobals.address));
 
         console.log('\n\t-- manager set Protocol state to unpaused --');
         await waitForTx( manager.connect(governance).setState(ProtocolState.Unpaused));
@@ -363,5 +365,19 @@ import {
         await waitForTx( moduleGlobals.connect(governance).whitelistProfileCreator(userTwo.address, true));
         await waitForTx( moduleGlobals.connect(governance).whitelistProfileCreator(userThree.address, true));
         
+        if (await manager.connect(governance).getGlobalModule() == ZERO_ADDRESS) {
+            console.log('\n\t ==== error: manager not set ModuleGlobas ====');
+        }
+        
+        if (await bankTreasuryContract.getGlobalModule() == ZERO_ADDRESS) {
+            console.log('\n\t ==== error: bankTreasury not set ModuleGlobas ====');
+        }
+        
+        if (await marketPlaceContract.getGlobalModule() == ZERO_ADDRESS) {
+            console.log('\n\t ==== error: marketPlace not set ModuleGlobas ====');
+        }
+        if (await voucherContract.getGlobalModule() == ZERO_ADDRESS) {
+            console.log('\n\t ==== error: voucher not set ModuleGlobas ====');
+        }
 
    });

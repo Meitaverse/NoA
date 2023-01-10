@@ -17,7 +17,6 @@ import {DataTypes} from './libraries/DataTypes.sol';
 import {Events} from"./libraries/Events.sol";
 import {InteractionLogic} from './libraries/InteractionLogic.sol';
 import {PublishLogic} from './libraries/PublishLogic.sol';
-import {PriceManager} from './libraries/PriceManager.sol';
 import {ManagerStorage} from  "./storage/ManagerStorage.sol";
 import "./libraries/SafeMathUpgradeable128.sol";
 import {IBankTreasury} from "./interfaces/IBankTreasury.sol";
@@ -30,7 +29,6 @@ contract Manager is
     IManager,
     NFTDerivativeProtocolMultiState,
     ManagerStorage,
-    PriceManager,
     VersionedInitializable
 {
     using SafeMathUpgradeable128 for uint128;

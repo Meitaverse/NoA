@@ -38,7 +38,7 @@ export function handleBankTreasurySet(event: BankTreasurySet): void {
 export function handleProfileCreated(event: ProfileCreated): void {
     log.info("handleProfileCreated, event.address: {}", [event.address.toHexString()])
 
-    let _idString = event.params.soulBoundTokenId.toString() + "-" + event.params.timestamp.toString()
+    let _idString = event.params.soulBoundTokenId.toString()
     const profile = Profile.load(_idString) || new Profile(_idString)
 
     if (profile) {
@@ -47,6 +47,7 @@ export function handleProfileCreated(event: ProfileCreated): void {
         profile.wallet = event.params.wallet
         profile.nickName = event.params.nickName
         profile.imageURI = event.params.imageURI
+        profile.isRemove = false
         profile.timestamp = event.params.timestamp
         profile.save()
         
@@ -94,6 +95,17 @@ export function handleBurnSBT(event: BurnSBT): void {
         history.soulBoundTokenId = event.params.soulBoundTokenId
         history.timestamp = event.params.timestamp
         history.save()
+        
+    } 
+
+    let _idStringProfile = event.params.soulBoundTokenId.toString()
+    const profile = Profile.load(_idStringProfile)
+
+    if (profile) {
+        profile.soulBoundTokenId = event.params.soulBoundTokenId
+        profile.isRemove = true
+        profile.timestamp = event.params.timestamp
+        profile.save()
         
     } 
 }

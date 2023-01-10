@@ -22,6 +22,7 @@ library Errors {
   error TokenExisted(uint256 tokenId);
   error NotProfileOwner();
   error ToIsNotSoulBoundToken();
+  error ModuleGlobasNotSet();
   error NotProfileOwnerOrDispatcher();
   error ZeroAddress();
   error EventNotExists();

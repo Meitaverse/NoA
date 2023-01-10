@@ -9,7 +9,7 @@ pragma solidity ^0.8.13;
  * @notice A standard library of data types used throughout the Bitsoul Protocol.
  */
 library DataTypes {
-    enum PriceType {FIXED, DECLIINING_BY_TIME, BIDDED}
+    enum PriceType {FIXED, DECLIINING_BY_TIME, AUCTION, BID}
 
     //0.1eth, 0.2eth, 0.3eth, 0.4eth, 0.5 eth
     enum VoucherParValueType {ZEROPOINT, ZEROPOINTONE, ZEROPOINTTWO, ZEROPOINTTHREE, ZEROPOINTFOUR, ZEROPOINTFIVE}
@@ -70,7 +70,7 @@ library DataTypes {
         string metadataURI;
         address descriptor;
         uint96  defaultRoyaltyPoints;
-        DataTypes.FeeShareType feeShareType;
+        FeeShareType feeShareType;
     }
     
     /**
@@ -184,14 +184,13 @@ library DataTypes {
         PriceType priceType;
         uint128 min; //min units
         uint128 max; //max units
-        // bool useAllowList;
     }
 
     struct Sale {
         uint256 soulBoundTokenId;
         uint256 projectId;
         uint256 tokenId;
-        uint256 newTokenId;
+        uint256 tokenIdOfMarket;
         uint32 startTime;
         uint128 salePrice;
         PriceType priceType;

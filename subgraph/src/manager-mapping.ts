@@ -5,7 +5,6 @@ import {
     TransferDerivativeNFT,
     TransferValueDerivativeNFT,
     HubCreated,
-    GenerateVoucher,
     PublishPrepared,
     PublishCreated,
     DerivativeNFTCollected,

@@ -111,6 +111,12 @@ dataSources:
         - ERC3525Received
         - ExchangeSBTByEth
         - ExchangeEthBySBT
+        - SubmitTransaction
+        - ConfirmTransaction
+        - ExecuteTransaction
+        - ExecuteTransactionERC3525
+        - RevokeConfirmation
+        - ExchangeVoucher
       abis:
         - name: Events
           file: ./abis/Events.json
@@ -120,7 +126,19 @@ dataSources:
         - event: ExchangeSBTByEth(indexed uint256,indexed address,indexed uint256,uint256)
           handler: handleExchangeSBTByEth
         - event: ExchangeEthBySBT(indexed uint256,indexed address,indexed uint256,uint256,uint256,uint256)
-          handler: handleExchangeSBTByEth
+          handler: handleExchangeEthBySBT
+        - event: SubmitTransaction(indexed address,indexed uint256,indexed address,uint256,bytes)
+          handler: handleSubmitTransaction
+        - event: ConfirmTransaction(indexed address,indexed uint256)
+          handler: handleConfirmTransaction
+        - event: ExecuteTransaction(indexed address,indexed uint256,address,uint256)
+          handler: handleExecuteTransaction
+        - event: ExecuteTransactionERC3525(indexed address,indexed uint256,indexed uint256,uint256,uint256)
+          handler: handleExecuteTransactionERC3525
+        - event: RevokeConfirmation(indexed address,indexed uint256)
+          handler: handleRevokeConfirmation
+        - event: ExchangeVoucher(indexed uint256,indexed address,indexed uint256,uint256,uint256)
+          handler: handleExchangeVoucher
       file: ./src/bankTreasury-mapping.ts
   
   - kind: ethereum/contract
@@ -136,7 +154,7 @@ dataSources:
       language: wasm/assemblyscript
       entities:
         - MintNFTVoucher
-        # - UserAmountLimitSet
+        - UserAmountLimitSet
         - GenerateVoucher
       abis:
         - name: Events
@@ -144,8 +162,8 @@ dataSources:
       eventHandlers:
         - event: MintNFTVoucher(uint256,address,uint8,uint256,uint256,uint256)
           handler: handleMintNFTVoucher
-        # - event: UserAmountLimitSet(uint256,uint256,uint256)
-        #   handler: handleUserAmountLimitSet
+        - event: UserAmountLimitSet(uint256,uint256,uint256)
+          handler: handleUserAmountLimitSet
         - event: GenerateVoucher(uint8,uint256,uint256,uint256,uint256,uint256)
           handler: handleGenerateVoucher
       file: ./src/voucher-mapping.ts
@@ -260,28 +278,28 @@ dataSources:
       language: wasm/assemblyscript
       entities:
         - MarketPlaceERC3525Received
-        # - FixedPriceSet
+        - FixedPriceSet
         - AddMarket
-        # - RemoveMarket
-        # - PublishSale
-        # - RemoveSale
-        # - Traded
+        - RemoveMarket
+        - PublishSale
+        - RemoveSale
+        - Traded
       abis:
         - name: Events
           file: ./abis/Events.json
       eventHandlers:
         - event: MarketPlaceERC3525Received(address,uint256,uint256,uint256,bytes,uint256)
           handler: handleMarketPlaceERC3525Received
-        # - event: FixedPriceSet(uint256,uint128,uint128,uint128,uint256)
-        #   handler: handleFixedPriceSet
+        - event: FixedPriceSet(uint256,uint128,uint128,uint128,uint256)
+          handler: handleFixedPriceSet
         - event: AddMarket(address,uint8,uint8,uint16)
           handler: handleAddMarket
-        # - event: RemoveMarket(address)
-        #   handler: handleRemoveMarket
-        # - event: PublishSale((uint256,uint256,uint256,uint128,uint32,uint128,uint8,uint128,uint128),address,uint256,uint128)
-        #   handler: handlePublishSale
-        # - event: RemoveSale(uint256,uint128,uint256,uint256)
-        #   handler: handleRemoveSale
-        # - event: Traded(indexed uint24,indexed address,uint256,uint32,uint128,uint256,uint128,(uint256,uint256,uint256,uint256))
-        #   handler: handleTraded
+        - event: RemoveMarket(address)
+          handler: handleRemoveMarket
+        - event: PublishSale((uint256,uint256,uint256,uint128,uint32,uint128,uint8,uint128,uint128),address,uint256,uint128)
+          handler: handlePublishSale
+        - event: RemoveSale(uint256,uint128,uint256,uint256)
+          handler: handleRemoveSale
+        - event: Traded(indexed uint24,indexed address,uint256,uint32,uint128,uint256,uint128,(uint256,uint256,uint256,uint256))
+          handler: handleTraded
       file: ./src/marketplace-mapping.ts

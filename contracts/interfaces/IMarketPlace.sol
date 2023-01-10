@@ -39,6 +39,8 @@ interface IMarketPlace {
         uint16 royaltyBasisPoints_
     ) external;
 
+    function getMarketInfo(address derivativeNFT) external view returns(DataTypes.Market memory);
+
     function removeMarket(
         address derivativeNFT_
     ) external;

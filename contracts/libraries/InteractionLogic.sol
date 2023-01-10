@@ -93,7 +93,7 @@ library InteractionLogic {
         string memory symbol_,
         address descriptor_,
         uint96 defaultRoyaltyPoints_,
-       DataTypes.FeeShareType feeShareType_,
+        DataTypes.FeeShareType feeShareType_,
         address receiver_
     ) private returns (address) {
 

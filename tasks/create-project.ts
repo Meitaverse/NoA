@@ -20,6 +20,9 @@ import {
   DerivativeMetadataDescriptor__factory,
   Template,
   Template__factory,
+  MarketPlace__factory,
+  DerivativeNFTV1,
+  DerivativeNFTV1__factory,
 } from '../typechain';
 
 import { loadContract } from "./config";
@@ -49,6 +52,7 @@ task("create-project", "create-project function")
   const managerImpl = await loadContract(hre, Manager__factory, "ManagerImpl");
   const manager = await loadContract(hre, Manager__factory, "Manager");
   const bankTreasury = await loadContract(hre, BankTreasury__factory, "BankTreasury");
+  const marketPlace = await loadContract(hre, MarketPlace__factory, "MarketPlace");
   const sbt = await loadContract(hre, NFTDerivativeProtocolTokenV1__factory, "SBT");
   const voucher = await loadContract(hre, Voucher__factory, "Voucher");
   const moduleGlobals = await loadContract(hre, ModuleGlobals__factory, "ModuleGlobals");
@@ -76,11 +80,13 @@ task("create-project", "create-project function")
           metadataURI: "metadataURI",
           descriptor: metadataDescriptor.address,
           defaultRoyaltyPoints: 0,
-          feeShareType: 0,  
+          feeShareType: 0,  //LEVEL_TWO
         })
     );
 
-    let projectInfo = await manager.connect(user).getProjectInfo(1);
+    const FIRST_PROJECT_ID =1;
+
+    let projectInfo = await manager.connect(user).getProjectInfo(FIRST_PROJECT_ID);
     console.log(
       "\n\t--- projectInfo info - hubId: ", projectInfo.hubId.toNumber()
     );
@@ -108,4 +114,22 @@ task("create-project", "create-project function")
     console.log(
       "\t--- projectInfo info - feeShareType: ", projectInfo.feeShareType
     );
+
+  //   let derivativeNFT: DerivativeNFTV1;
+
+  //   derivativeNFT = DerivativeNFTV1__factory.connect(
+  //     await manager.connect(user).getDerivativeNFT(FIRST_PROJECT_ID),
+  //     user
+  //   );
+
+  //   //addMarket
+  //   await waitForTx(
+  //     marketPlace.connect(governance).addMarket(
+  //         derivativeNFT.address,
+  //         0,
+  //         0,
+  //         50
+  //     )
+  // );
+    
 });

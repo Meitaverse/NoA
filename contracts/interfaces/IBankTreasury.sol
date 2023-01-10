@@ -57,6 +57,8 @@ interface IBankTreasury {
         DataTypes.EIP712Signature calldata sign        
     ) external payable;
 
+    function getGlobalModule() external view returns(address);
+    
     function getSigners() external view returns (address[] memory);
 
     function getTransactionCount() external view returns (uint256);
