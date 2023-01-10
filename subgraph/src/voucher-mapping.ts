@@ -7,9 +7,16 @@ import {
 } from "../generated/Voucher/Events"
 
 import {
+    Voucher,
+    TransferBatch,
+    TransferSingle,
+} from "../generated/VoucherERC1155/Voucher"
+
+import {
     NFTVoucherHistory,
     UserAmountLimitSetHistory,
     VoucherRecord,
+    VoucherAsset,
 } from "../generated/schema"
 
 export function handleMintNFTVoucher(event: MintNFTVoucher): void {
@@ -44,6 +51,7 @@ export function handleUserAmountLimitSet(event: UserAmountLimitSet): void {
         
     } 
 }
+
 export function handleGenerateVoucher(event: GenerateVoucher): void {
     log.info("handleGenerateVoucher, event.address: {}", [event.address.toHexString()])
 
@@ -60,4 +68,59 @@ export function handleGenerateVoucher(event: GenerateVoucher): void {
         voucherRecord.save()
         
     } 
+}
+
+export function handleTransferBatch(event: TransferBatch): void {
+    log.info("handleTransferBatch, event.address: {}", [event.address.toHexString()])
+   
+    for (let index = 0; index <  event.params.ids.length; index++) {
+        let _idString = event.params.ids[index].toString()
+
+        const voucherAssetFrom = VoucherAsset.load(_idString) || new VoucherAsset(_idString)
+
+        if (voucherAssetFrom) {
+            voucherAssetFrom.wallet = event.params.from
+            voucherAssetFrom.tokenId = event.params.ids[index]
+            voucherAssetFrom.value = voucherAssetFrom.value.minus(event.params.values[index])
+            voucherAssetFrom.timestamp = event.block.timestamp
+            voucherAssetFrom.save()
+        } 
+
+        const voucherAssetTo = VoucherAsset.load(_idString) || new VoucherAsset(_idString)
+
+        if (voucherAssetTo) {
+            voucherAssetTo.wallet = event.params.to
+            voucherAssetTo.tokenId = event.params.ids[index]
+            voucherAssetTo.value = voucherAssetTo.value.plus(event.params.values[index])
+            voucherAssetTo.timestamp = event.block.timestamp
+            voucherAssetTo.save()
+        } 
+    }
+}
+
+export function handleTransferSingle(event: TransferSingle): void {
+    log.info("handleTransferBatch, event.address: {}", [event.address.toHexString()])
+
+    let _idString = event.params.id.toString()
+    const voucherAssetFrom = VoucherAsset.load(_idString) || new VoucherAsset(_idString)
+
+    if (voucherAssetFrom) {
+        voucherAssetFrom.wallet = event.params.to
+        voucherAssetFrom.tokenId = event.params.id
+        voucherAssetFrom.value = voucherAssetFrom.value.plus(event.params.value)
+        voucherAssetFrom.timestamp = event.block.timestamp
+        voucherAssetFrom.save()
+        
+    } 
+
+    const voucherAssetTo = VoucherAsset.load(_idString) || new VoucherAsset(_idString)
+
+    if (voucherAssetTo) {
+        voucherAssetTo.wallet = event.params.to
+        voucherAssetTo.tokenId = event.params.id
+        voucherAssetTo.value = voucherAssetTo.value.plus(event.params.value)
+        voucherAssetTo.timestamp = event.block.timestamp
+        voucherAssetTo.save()
+    } 
+
 }

@@ -171,9 +171,6 @@ contract NFTDerivativeProtocolTokenV2 is
         emit Events.MintSBTValue(soulBoundTokenId, value, block.timestamp);
     }
 
-    function balanceOfSBT(uint256 tokenId) external view returns (uint256) {
-        return super.balanceOf(tokenId);
-    }
      
     function burn(uint256 tokenId) external whenNotPaused nonReentrant onlyManager{
         ERC3525Upgradeable._burn(tokenId);

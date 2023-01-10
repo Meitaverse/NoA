@@ -106,6 +106,290 @@ export class Profile extends Entity {
   }
 }
 
+export class SBTTransferHistory extends Entity {
+  constructor(id: string) {
+    super();
+    this.set("id", Value.fromString(id));
+  }
+
+  save(): void {
+    let id = this.get("id");
+    assert(id != null, "Cannot save SBTTransferHistory entity without an ID");
+    if (id) {
+      assert(
+        id.kind == ValueKind.STRING,
+        `Entities of type SBTTransferHistory must have an ID of type String but the id '${id.displayData()}' is of type ${id.displayKind()}`
+      );
+      store.set("SBTTransferHistory", id.toString(), this);
+    }
+  }
+
+  static load(id: string): SBTTransferHistory | null {
+    return changetype<SBTTransferHistory | null>(
+      store.get("SBTTransferHistory", id)
+    );
+  }
+
+  get id(): string {
+    let value = this.get("id");
+    return value!.toString();
+  }
+
+  set id(value: string) {
+    this.set("id", Value.fromString(value));
+  }
+
+  get from(): Bytes {
+    let value = this.get("from");
+    return value!.toBytes();
+  }
+
+  set from(value: Bytes) {
+    this.set("from", Value.fromBytes(value));
+  }
+
+  get to(): Bytes {
+    let value = this.get("to");
+    return value!.toBytes();
+  }
+
+  set to(value: Bytes) {
+    this.set("to", Value.fromBytes(value));
+  }
+
+  get tokenId(): BigInt {
+    let value = this.get("tokenId");
+    return value!.toBigInt();
+  }
+
+  set tokenId(value: BigInt) {
+    this.set("tokenId", Value.fromBigInt(value));
+  }
+
+  get timestamp(): BigInt {
+    let value = this.get("timestamp");
+    return value!.toBigInt();
+  }
+
+  set timestamp(value: BigInt) {
+    this.set("timestamp", Value.fromBigInt(value));
+  }
+}
+
+export class SBTAsset extends Entity {
+  constructor(id: string) {
+    super();
+    this.set("id", Value.fromString(id));
+  }
+
+  save(): void {
+    let id = this.get("id");
+    assert(id != null, "Cannot save SBTAsset entity without an ID");
+    if (id) {
+      assert(
+        id.kind == ValueKind.STRING,
+        `Entities of type SBTAsset must have an ID of type String but the id '${id.displayData()}' is of type ${id.displayKind()}`
+      );
+      store.set("SBTAsset", id.toString(), this);
+    }
+  }
+
+  static load(id: string): SBTAsset | null {
+    return changetype<SBTAsset | null>(store.get("SBTAsset", id));
+  }
+
+  get id(): string {
+    let value = this.get("id");
+    return value!.toString();
+  }
+
+  set id(value: string) {
+    this.set("id", Value.fromString(value));
+  }
+
+  get wallet(): Bytes {
+    let value = this.get("wallet");
+    return value!.toBytes();
+  }
+
+  set wallet(value: Bytes) {
+    this.set("wallet", Value.fromBytes(value));
+  }
+
+  get soulBoundTokenId(): BigInt {
+    let value = this.get("soulBoundTokenId");
+    return value!.toBigInt();
+  }
+
+  set soulBoundTokenId(value: BigInt) {
+    this.set("soulBoundTokenId", Value.fromBigInt(value));
+  }
+
+  get value(): BigInt {
+    let value = this.get("value");
+    return value!.toBigInt();
+  }
+
+  set value(value: BigInt) {
+    this.set("value", Value.fromBigInt(value));
+  }
+
+  get timestamp(): BigInt {
+    let value = this.get("timestamp");
+    return value!.toBigInt();
+  }
+
+  set timestamp(value: BigInt) {
+    this.set("timestamp", Value.fromBigInt(value));
+  }
+}
+
+export class SBTTransferValueHistory extends Entity {
+  constructor(id: string) {
+    super();
+    this.set("id", Value.fromString(id));
+  }
+
+  save(): void {
+    let id = this.get("id");
+    assert(
+      id != null,
+      "Cannot save SBTTransferValueHistory entity without an ID"
+    );
+    if (id) {
+      assert(
+        id.kind == ValueKind.STRING,
+        `Entities of type SBTTransferValueHistory must have an ID of type String but the id '${id.displayData()}' is of type ${id.displayKind()}`
+      );
+      store.set("SBTTransferValueHistory", id.toString(), this);
+    }
+  }
+
+  static load(id: string): SBTTransferValueHistory | null {
+    return changetype<SBTTransferValueHistory | null>(
+      store.get("SBTTransferValueHistory", id)
+    );
+  }
+
+  get id(): string {
+    let value = this.get("id");
+    return value!.toString();
+  }
+
+  set id(value: string) {
+    this.set("id", Value.fromString(value));
+  }
+
+  get fromSoulBoundTokenId(): BigInt {
+    let value = this.get("fromSoulBoundTokenId");
+    return value!.toBigInt();
+  }
+
+  set fromSoulBoundTokenId(value: BigInt) {
+    this.set("fromSoulBoundTokenId", Value.fromBigInt(value));
+  }
+
+  get toSoulBoundTokenId(): BigInt {
+    let value = this.get("toSoulBoundTokenId");
+    return value!.toBigInt();
+  }
+
+  set toSoulBoundTokenId(value: BigInt) {
+    this.set("toSoulBoundTokenId", Value.fromBigInt(value));
+  }
+
+  get value(): BigInt {
+    let value = this.get("value");
+    return value!.toBigInt();
+  }
+
+  set value(value: BigInt) {
+    this.set("value", Value.fromBigInt(value));
+  }
+
+  get timestamp(): BigInt {
+    let value = this.get("timestamp");
+    return value!.toBigInt();
+  }
+
+  set timestamp(value: BigInt) {
+    this.set("timestamp", Value.fromBigInt(value));
+  }
+}
+
+export class SBTSlotChangedHistory extends Entity {
+  constructor(id: string) {
+    super();
+    this.set("id", Value.fromString(id));
+  }
+
+  save(): void {
+    let id = this.get("id");
+    assert(
+      id != null,
+      "Cannot save SBTSlotChangedHistory entity without an ID"
+    );
+    if (id) {
+      assert(
+        id.kind == ValueKind.STRING,
+        `Entities of type SBTSlotChangedHistory must have an ID of type String but the id '${id.displayData()}' is of type ${id.displayKind()}`
+      );
+      store.set("SBTSlotChangedHistory", id.toString(), this);
+    }
+  }
+
+  static load(id: string): SBTSlotChangedHistory | null {
+    return changetype<SBTSlotChangedHistory | null>(
+      store.get("SBTSlotChangedHistory", id)
+    );
+  }
+
+  get id(): string {
+    let value = this.get("id");
+    return value!.toString();
+  }
+
+  set id(value: string) {
+    this.set("id", Value.fromString(value));
+  }
+
+  get soulBoundTokenId(): BigInt {
+    let value = this.get("soulBoundTokenId");
+    return value!.toBigInt();
+  }
+
+  set soulBoundTokenId(value: BigInt) {
+    this.set("soulBoundTokenId", Value.fromBigInt(value));
+  }
+
+  get oldSlot(): BigInt {
+    let value = this.get("oldSlot");
+    return value!.toBigInt();
+  }
+
+  set oldSlot(value: BigInt) {
+    this.set("oldSlot", Value.fromBigInt(value));
+  }
+
+  get newSlot(): BigInt {
+    let value = this.get("newSlot");
+    return value!.toBigInt();
+  }
+
+  set newSlot(value: BigInt) {
+    this.set("newSlot", Value.fromBigInt(value));
+  }
+
+  get timestamp(): BigInt {
+    let value = this.get("timestamp");
+    return value!.toBigInt();
+  }
+
+  set timestamp(value: BigInt) {
+    this.set("timestamp", Value.fromBigInt(value));
+  }
+}
+
 export class MintSBTValueHistory extends Entity {
   constructor(id: string) {
     super();
@@ -1631,6 +1915,74 @@ export class NFTVoucherHistory extends Entity {
 
   set generateTimestamp(value: BigInt) {
     this.set("generateTimestamp", Value.fromBigInt(value));
+  }
+}
+
+export class VoucherAsset extends Entity {
+  constructor(id: string) {
+    super();
+    this.set("id", Value.fromString(id));
+  }
+
+  save(): void {
+    let id = this.get("id");
+    assert(id != null, "Cannot save VoucherAsset entity without an ID");
+    if (id) {
+      assert(
+        id.kind == ValueKind.STRING,
+        `Entities of type VoucherAsset must have an ID of type String but the id '${id.displayData()}' is of type ${id.displayKind()}`
+      );
+      store.set("VoucherAsset", id.toString(), this);
+    }
+  }
+
+  static load(id: string): VoucherAsset | null {
+    return changetype<VoucherAsset | null>(store.get("VoucherAsset", id));
+  }
+
+  get id(): string {
+    let value = this.get("id");
+    return value!.toString();
+  }
+
+  set id(value: string) {
+    this.set("id", Value.fromString(value));
+  }
+
+  get wallet(): Bytes {
+    let value = this.get("wallet");
+    return value!.toBytes();
+  }
+
+  set wallet(value: Bytes) {
+    this.set("wallet", Value.fromBytes(value));
+  }
+
+  get tokenId(): BigInt {
+    let value = this.get("tokenId");
+    return value!.toBigInt();
+  }
+
+  set tokenId(value: BigInt) {
+    this.set("tokenId", Value.fromBigInt(value));
+  }
+
+  get value(): BigInt {
+    let value = this.get("value");
+    return value!.toBigInt();
+  }
+
+  set value(value: BigInt) {
+    this.set("value", Value.fromBigInt(value));
+  }
+
+  get timestamp(): BigInt {
+    let value = this.get("timestamp");
+    return value!.toBigInt();
+  }
+
+  set timestamp(value: BigInt) {
+    this.set("timestamp", Value.fromBigInt(value));
   }
 }
 

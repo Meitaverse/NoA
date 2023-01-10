@@ -11,6 +11,13 @@ import {
 } from "../generated/SBT/Events"
 
 import {
+    SBT,
+    Transfer,
+    TransferValue,
+    SlotChanged,
+} from "../generated/SBTERC3525/SBT"
+
+import {
     Profile,
     MintSBTValueHistory,
     ApprovalForSlotHistory,
@@ -18,6 +25,10 @@ import {
     BurnSBTHistory,
     BurnSBTValueHistory,
     ProfileImageURISetHistory,
+    SBTTransferHistory,
+    SBTAsset,
+    SBTTransferValueHistory,
+    SBTSlotChangedHistory,
 } from "../generated/schema"
 
 export function handleBankTreasurySet(event: BankTreasurySet): void {
@@ -137,6 +148,116 @@ export function handleProfileImageURISet(event: ProfileImageURISet): void {
         history.timestamp = event.params.timestamp
         history.save()
         
+    } 
+}
+
+export function handleSBTTransfer(event: Transfer): void {
+    log.info("handleSBTTransfer, event.address: {}, _from: {}", [event.address.toHexString(), event.params._from.toHexString()])
+
+    let _idString = event.params._from.toHexString() + "-" + event.params._to.toHexString()+ "-" + event.block.timestamp.toString()
+    const history = SBTTransferHistory.load(_idString) || new SBTTransferHistory(_idString)
+
+    if (history) {
+        history.from = event.params._from
+        history.to = event.params._to
+        history.tokenId = event.params._tokenId
+        history.timestamp = event.block.timestamp
+        history.save()
+
+        let _idStringSBTAsset = event.params._tokenId.toString()
+        const sbtAsset = SBTAsset.load(_idStringSBTAsset) || new SBTAsset(_idStringSBTAsset)
+
+        if (sbtAsset) {
+            // const sbt = SBT.bind(event.address) 
+            // const result = sbt.try_balanceOf1(event.params._tokenId)
+
+            // let balanceOf  = BigInt.fromI32(0)
+            // if (!result.reverted) value = result.value
+
+            sbtAsset.wallet = event.params._to
+            sbtAsset.soulBoundTokenId = event.params._tokenId
+            if (event.params._from.toHexString() == '0x0000000000000000000000000000000000000000') {
+                sbtAsset.value = BigInt.fromI32(0)
+            } else {
+                //no change
+            }
+            sbtAsset.timestamp = event.block.timestamp
+            sbtAsset.save()
+        }
+    } 
+}
+
+export function handleSBTTransferValue(event: TransferValue): void {
+    log.info("handleSBTTransferValue, event.address: {}, _fromTokenId:{},_toTokenId:{}, _value:{} ", [
+        event.address.toHexString(),
+        event.params._fromTokenId.toString(),
+        event.params._toTokenId.toString(),
+        event.params._value.toString()
+    ])
+
+    let _idString = event.params._fromTokenId.toHexString() + "-" + event.params._toTokenId.toHexString()+ "-" + event.block.timestamp.toString()
+    const history = SBTTransferValueHistory.load(_idString) || new SBTTransferValueHistory(_idString)
+
+    if (history) {
+        history.fromSoulBoundTokenId = event.params._fromTokenId
+        history.toSoulBoundTokenId = event.params._toTokenId
+        history.value = event.params._value
+        history.timestamp = event.block.timestamp
+        history.save()
+
+        if (event.params._fromTokenId.isZero()){
+             //mint value
+
+        } else {
+
+            let _idStringSBTAssetFrom = event.params._fromTokenId.toString()
+            const sbtAssetFrom = SBTAsset.load(_idStringSBTAssetFrom) || new SBTAsset(_idStringSBTAssetFrom)
+    
+            if (sbtAssetFrom) {
+                let value = sbtAssetFrom.value ? sbtAssetFrom.value : BigInt.fromI32(0)
+                sbtAssetFrom.value = value.minus(event.params._value)
+                
+                sbtAssetFrom.timestamp = event.block.timestamp
+                sbtAssetFrom.save()
+            }
+            
+        }
+
+        if (event.params._toTokenId.isZero()){
+            //burn
+
+        } else {
+            
+            let _idStringSBTAssetTo = event.params._toTokenId.toString()
+            const sbtAssetTo = SBTAsset.load(_idStringSBTAssetTo) || new SBTAsset(_idStringSBTAssetTo)
+    
+            if (sbtAssetTo) {
+                let value = sbtAssetTo.value ? sbtAssetTo.value : BigInt.fromI32(0)
+                sbtAssetTo.value = value.plus(event.params._value)
+                
+                sbtAssetTo.timestamp = event.block.timestamp
+                sbtAssetTo.save()
+            }
+
+        }
+    
+    } 
+}
+
+
+export function handleSBTSlotChanged(event: SlotChanged): void {
+    log.info("handleSBTSlotChanged, event.address: {}", [event.address.toHexString()])
+
+    let _idString = event.params._tokenId.toHexString() + "-" + event.block.timestamp.toString()
+    const history = SBTSlotChangedHistory.load(_idString) || new SBTSlotChangedHistory(_idString)
+
+    if (history) {
+        history.soulBoundTokenId = event.params._tokenId
+        history.oldSlot = event.params._oldSlot
+        history.newSlot = event.params._newSlot
+        history.timestamp = event.block.timestamp
+        history.save()
+    
     } 
 }
 

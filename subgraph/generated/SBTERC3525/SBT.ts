@@ -535,27 +535,6 @@ export class SBT extends ethereum.SmartContract {
     return ethereum.CallResult.fromValue(value[0].toBigInt());
   }
 
-  balanceOf(tokenId: BigInt): BigInt {
-    let result = super.call("balanceOf", "balanceOf(uint256):(uint256)", [
-      ethereum.Value.fromUnsignedBigInt(tokenId)
-    ]);
-
-    return result[0].toBigInt();
-  }
-
-  try_balanceOfSBT(tokenId: BigInt): ethereum.CallResult<BigInt> {
-    let result = super.tryCall(
-      "balanceOf",
-      "balanceOf(uint256):(uint256)",
-      [ethereum.Value.fromUnsignedBigInt(tokenId)]
-    );
-    if (result.reverted) {
-      return new ethereum.CallResult();
-    }
-    let value = result.value;
-    return ethereum.CallResult.fromValue(value[0].toBigInt());
-  }
-
   contractURI(): string {
     let result = super.call("contractURI", "contractURI():(string)", []);
 

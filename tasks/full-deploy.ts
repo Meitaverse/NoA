@@ -332,7 +332,7 @@ import {
             bankTreasuryContract.address, 
             INITIAL_SUPPLY
         ));
-        let balance =  await sbtContract.balanceOfSBT(FIRST_PROFILE_ID)
+        let balance =  await sbtContract['balanceOf(uint256)'](FIRST_PROFILE_ID); 
         console.log('\t-- INITIAL SUPPLY of the first soul bound token id:', balance.toNumber());
         
         console.log('\n\t-- Whitelisting sbtContract Contract address --');

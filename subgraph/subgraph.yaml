@@ -24,8 +24,6 @@ dataSources:
         - ProfileImageURISet
         - ApprovalForSlot
       abis:
-        - name: SBT
-          file: ./abis/SBT.json
         - name: Events
           file: ./abis/Events.json
       eventHandlers:
@@ -43,6 +41,33 @@ dataSources:
           handler: handleProfileImageURISet
         - event: ApprovalForSlot(indexed address,indexed uint256,indexed address,bool)
           handler: handleApprovalForSlot
+      file: ./src/sbt-mapping.ts
+
+  - kind: ethereum/contract
+    name: SBTERC3525
+    network: mainnet
+    source:
+      address: "0x610178dA211FEF7D417bC0e6FeD39F05609AD788"
+      abi: SBT
+      startBlock: 0
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.6
+      language: wasm/assemblyscript
+      entities:
+        - Transfer
+        - TransferValue
+        - SlotChanged
+      abis:
+        - name: SBT
+          file: ./abis/SBT.json
+      eventHandlers:
+        - event: Transfer(indexed address,indexed address,indexed uint256)
+          handler: handleSBTTransfer
+        - event: TransferValue(indexed uint256,indexed uint256,uint256)
+          handler: handleSBTTransferValue
+        - event: SlotChanged(indexed uint256,indexed uint256,indexed uint256)
+          handler: handleSBTSlotChanged
       file: ./src/sbt-mapping.ts
 
   - kind: ethereum/contract
@@ -166,6 +191,30 @@ dataSources:
           handler: handleUserAmountLimitSet
         - event: GenerateVoucher(uint8,uint256,uint256,uint256,uint256,uint256)
           handler: handleGenerateVoucher
+      file: ./src/voucher-mapping.ts
+  
+  - kind: ethereum/contract
+    name: VoucherERC1155
+    network: mainnet
+    source:
+      address: "0x2279B7A0a67DB372996a5FaB50D91eAA73d2eBe6"
+      abi: Voucher
+      startBlock: 0
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.6
+      language: wasm/assemblyscript
+      entities:
+        - TransferBatch
+        - TransferSingle
+      abis:
+        - name: Voucher
+          file: ./abis/Voucher.json
+      eventHandlers:
+        - event: TransferBatch(indexed address,indexed address,indexed address,uint256[],uint256[]) 
+          handler: handleTransferBatch
+        - event: TransferSingle(indexed address,indexed address,indexed address,uint256,uint256)
+          handler: handleTransferSingle
       file: ./src/voucher-mapping.ts
 
   - kind: ethereum/contract

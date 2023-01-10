@@ -142,21 +142,21 @@ makeSuiteCleanRoom('Bank Treasury', function () {
 
     context('Exchange', function () {
         it('User should receive SBT after withdrawERC3525', async function () {
-          expect((await sbtContract.balanceOfSBT(FIRST_PROFILE_ID)).toNumber()).to.eq(INITIAL_SUPPLY);
-          expect((await sbtContract.balanceOfSBT(SECOND_PROFILE_ID)).toNumber()).to.eq(0);
+          expect((await sbtContract['balanceOf(uint256)'](FIRST_PROFILE_ID)).toNumber()).to.eq(INITIAL_SUPPLY);
+          expect((await sbtContract['balanceOf(uint256)'](FIRST_PROFILE_ID)).toNumber()).to.eq(0);
           
           await expect(
             bankTreasuryContract.connect(governance).withdrawERC3525(SECOND_PROFILE_ID, 1)
           ).to.not.be.reverted;
 
-          expect((await sbtContract.balanceOfSBT(FIRST_PROFILE_ID)).toNumber()).to.eq(INITIAL_SUPPLY-1);
-          expect((await sbtContract.balanceOfSBT(SECOND_PROFILE_ID)).toNumber()).to.eq(1);
+          expect((await sbtContract['balanceOf(uint256)'](FIRST_PROFILE_ID)).toNumber()).to.eq(INITIAL_SUPPLY-1);
+          expect((await sbtContract['balanceOf(uint256)'](SECOND_PROFILE_ID)).toNumber()).to.eq(1);
 
         });
 
         it('User should exchange Voucher SBT', async function () {
-          expect((await sbtContract.balanceOfSBT(FIRST_PROFILE_ID)).toNumber()).to.eq(INITIAL_SUPPLY);
-          expect((await sbtContract.balanceOfSBT(SECOND_PROFILE_ID)).toNumber()).to.eq(0);
+          expect((await sbtContract['balanceOf(uint256)'](FIRST_PROFILE_ID)).toNumber()).to.eq(INITIAL_SUPPLY);
+          expect((await sbtContract['balanceOf(uint256)'](SECOND_PROFILE_ID)).toNumber()).to.eq(0);
           
           await expect(
             voucherContract.connect(deployer).generateVoucher(1, userAddress)
@@ -172,12 +172,12 @@ makeSuiteCleanRoom('Bank Treasury', function () {
             bankTreasuryContract.connect(user).exchangeVoucher(FIRST_VOUCHER_TOKEN_ID, SECOND_PROFILE_ID)
           ).to.not.be.reverted;
 
-          expect((await sbtContract.balanceOfSBT(SECOND_PROFILE_ID)).toNumber()).to.eq(100);
+          expect((await sbtContract['balanceOf(uint256)'](SECOND_PROFILE_ID)).toNumber()).to.eq(100);
         });
 
         it('Voucher transfer to a new user, and new owner should exchange Voucher SBT', async function () {
-          expect((await sbtContract.balanceOfSBT(FIRST_PROFILE_ID)).toNumber()).to.eq(INITIAL_SUPPLY);
-          expect((await sbtContract.balanceOfSBT(SECOND_PROFILE_ID)).toNumber()).to.eq(0);
+          expect((await sbtContract['balanceOf(uint256)'](FIRST_PROFILE_ID)).toNumber()).to.eq(INITIAL_SUPPLY);
+          expect((await sbtContract['balanceOf(uint256)'](SECOND_PROFILE_ID)).toNumber()).to.eq(0);
           
           await expect(
             voucherContract.connect(deployer).generateVoucher(1, userAddress)
@@ -204,7 +204,7 @@ makeSuiteCleanRoom('Bank Treasury', function () {
             bankTreasuryContract.connect(userTwo).exchangeVoucher(FIRST_VOUCHER_TOKEN_ID, THIRD_PROFILE_ID)
           ).to.not.be.reverted;
 
-          expect((await sbtContract.balanceOfSBT(THIRD_PROFILE_ID)).toNumber()).to.eq(100);
+          expect((await sbtContract['balanceOf(uint256)'](THIRD_PROFILE_ID)).toNumber()).to.eq(100);
 
           let voucherData2 = await voucherContract.getVoucherData(FIRST_VOUCHER_TOKEN_ID);
 
@@ -218,11 +218,11 @@ makeSuiteCleanRoom('Bank Treasury', function () {
     context('Voucher generate', function () {
         
       it('User should success mint a ERC1155 NFT and transfer SBT to bank treasury', async function () {
-        expect((await sbtContract.balanceOfSBT(FIRST_PROFILE_ID)).toNumber()).to.eq(INITIAL_SUPPLY);
-        expect((await sbtContract.balanceOfSBT(SECOND_PROFILE_ID)).toNumber()).to.eq(0);
+        expect((await sbtContract['balanceOf(uint256)'](FIRST_PROFILE_ID)).toNumber()).to.eq(INITIAL_SUPPLY);
+        expect((await sbtContract['balanceOf(uint256)'](SECOND_PROFILE_ID)).toNumber()).to.eq(0);
         //mint 100Value to user
         await manager.connect(governance).mintSBTValue(SECOND_PROFILE_ID, 100);
-        expect((await sbtContract.balanceOfSBT(SECOND_PROFILE_ID)).toNumber()).to.eq(100);
+        expect((await sbtContract['balanceOf(uint256)'](SECOND_PROFILE_ID)).toNumber()).to.eq(100);
 
         expect(await manager.getWalletBySoulBoundTokenId(SECOND_PROFILE_ID)).to.eq(userAddress);
 
@@ -233,16 +233,16 @@ makeSuiteCleanRoom('Bank Treasury', function () {
         );
         console.log('mintNFT ok');
 
-        expect((await sbtContract.balanceOfSBT(SECOND_PROFILE_ID)).toNumber()).to.eq(0);
-        expect((await sbtContract.balanceOfSBT(FIRST_PROFILE_ID)).toNumber()).to.eq(INITIAL_SUPPLY + 100);
+        expect((await sbtContract['balanceOf(uint256)'](SECOND_PROFILE_ID)).toNumber()).to.eq(0);
+        expect((await sbtContract['balanceOf(uint256)'](FIRST_PROFILE_ID)).toNumber()).to.eq(INITIAL_SUPPLY + 100);
        
       });
 
     
       it('Should faild to mint a ERC1155 NFT when balance of user is less than 100', async function () {
-        expect((await sbtContract.balanceOfSBT(FIRST_PROFILE_ID)).toNumber()).to.eq(INITIAL_SUPPLY);
+        expect((await sbtContract['balanceOf(uint256)'](FIRST_PROFILE_ID)).toNumber()).to.eq(INITIAL_SUPPLY);
         
-        expect((await sbtContract.balanceOfSBT(SECOND_PROFILE_ID)).toNumber()).to.eq(0);
+        expect((await sbtContract['balanceOf(uint256)'](SECOND_PROFILE_ID)).toNumber()).to.eq(0);
 
         await expect(
           voucherContract.connect(user).mintNFT(
@@ -252,18 +252,18 @@ makeSuiteCleanRoom('Bank Treasury', function () {
           )
         ).to.be.revertedWith(ERRORS.ERC3525_INSUFFICIENT_BALANCE);
 
-        expect((await sbtContract.balanceOfSBT(FIRST_PROFILE_ID)).toNumber()).to.eq(INITIAL_SUPPLY);
-        expect((await sbtContract.balanceOfSBT(SECOND_PROFILE_ID)).toNumber()).to.eq(0);
+        expect((await sbtContract['balanceOf(uint256)'](FIRST_PROFILE_ID)).toNumber()).to.eq(INITIAL_SUPPLY);
+        expect((await sbtContract['balanceOf(uint256)'](SECOND_PROFILE_ID)).toNumber()).to.eq(0);
        
 
       });
 
       it('Should faild to mint a ERC1155 NFT when amount is zero', async function () {
-        expect((await sbtContract.balanceOfSBT(FIRST_PROFILE_ID)).toNumber()).to.eq(INITIAL_SUPPLY);
-        expect((await sbtContract.balanceOfSBT(SECOND_PROFILE_ID)).toNumber()).to.eq(0);
+        expect((await sbtContract['balanceOf(uint256)'](FIRST_PROFILE_ID)).toNumber()).to.eq(INITIAL_SUPPLY);
+        expect((await sbtContract['balanceOf(uint256)'](SECOND_PROFILE_ID)).toNumber()).to.eq(0);
         //mint 100Value to user
         await manager.connect(governance).mintSBTValue(SECOND_PROFILE_ID, 100);
-        expect((await sbtContract.balanceOfSBT(SECOND_PROFILE_ID)).toNumber()).to.eq(100);
+        expect((await sbtContract['balanceOf(uint256)'](SECOND_PROFILE_ID)).toNumber()).to.eq(100);
 
                
         await expect(
@@ -274,8 +274,8 @@ makeSuiteCleanRoom('Bank Treasury', function () {
           )
         ).to.be.revertedWith(ERRORS.AmountSBT_Is_Zero);
 
-        expect((await sbtContract.balanceOfSBT(FIRST_PROFILE_ID)).toNumber()).to.eq(INITIAL_SUPPLY);
-        expect((await sbtContract.balanceOfSBT(SECOND_PROFILE_ID)).toNumber()).to.eq(100);
+        expect((await sbtContract['balanceOf(uint256)'](FIRST_PROFILE_ID)).toNumber()).to.eq(INITIAL_SUPPLY);
+        expect((await sbtContract['balanceOf(uint256)'](SECOND_PROFILE_ID)).toNumber()).to.eq(100);
        
 
       });

@@ -73,12 +73,12 @@ task("collect", "collect a dNFT function")
 
     let collector = accounts[collectorid];
     console.log('\n\t-- collector: ', collector.address);
-    let balance =(await sbt.balanceOfSBT(collectorid)).toNumber();
+    let balance =(await sbt["balanceOf(uint256)"](collectorid)).toNumber();
     if (balance == 0) {
       //mint 1000Value to user
       await manager.connect(governance).mintSBTValue(collectorid, 1000);
     }
-    console.log('\t--- balance of collector: ', (await sbt.balanceOfSBT(collectorid)).toNumber());
+    console.log('\t--- balance of collector: ', (await sbt["balanceOf(uint256)"](collectorid)).toNumber());
 
 
     const FIRST_PROJECT_ID =1; 

@@ -10,7 +10,43 @@ type Profile @entity {
   timestamp: BigInt!
 }
 
-# mint SBTValue history    
+#  SBT Transfer history
+type SBTTransferHistory @entity {
+  id: ID!
+  from: Bytes!
+  to: Bytes!
+  tokenId: BigInt!
+  timestamp: BigInt!
+}
+
+#  SBT Asset
+type SBTAsset @entity {
+  id: ID!
+  wallet: Bytes!
+  soulBoundTokenId: BigInt!
+  value: BigInt!
+  timestamp: BigInt!
+}
+
+#  SBT transfer value history    
+type SBTTransferValueHistory @entity {
+  id: ID!
+  fromSoulBoundTokenId: BigInt!
+  toSoulBoundTokenId: BigInt!
+  value: BigInt!
+  timestamp: BigInt!
+} 
+
+#  SBT Slot Changed history    
+type SBTSlotChangedHistory @entity {
+  id: ID!
+  soulBoundTokenId: BigInt!
+  oldSlot: BigInt!
+  newSlot: BigInt!
+  timestamp: BigInt!
+} 
+
+# Mint SBTValue history    
 type MintSBTValueHistory @entity {
   id: ID!
   soulBoundTokenId: BigInt!
@@ -192,6 +228,15 @@ type NFTVoucherHistory @entity {
   tokenId: BigInt!
   sbtValue: BigInt!
   generateTimestamp: BigInt!
+}
+
+#  Voucher Asset
+type VoucherAsset @entity {
+  id: ID!
+  wallet: Bytes!
+  tokenId: BigInt!
+  value: BigInt!
+  timestamp: BigInt!
 }
 
 type VoucherRecord @entity {

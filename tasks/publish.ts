@@ -90,16 +90,16 @@ task("publish", "publish function")
         [template.address, DEFAULT_TEMPLATE_NUMBER],
     );
     const FIRST_PROFILE_ID =1;
-    let balance_bank =(await sbt.balanceOfSBT(FIRST_PROFILE_ID)).toNumber();
+    let balance_bank =(await sbt["balanceOf(uint256)"](FIRST_PROFILE_ID)).toNumber();
     console.log('\n\t--- balance of bank : ', balance_bank);
 
  
-    let balance =(await sbt.balanceOfSBT(SECOND_PROFILE_ID)).toNumber();
+    let balance =(await sbt["balanceOf(uint256)"](SECOND_PROFILE_ID)).toNumber();
     if (balance == 0) {
       //mint 1000Value to user
       await manager.connect(governance).mintSBTValue(SECOND_PROFILE_ID, 1000);
     }
-    console.log('\t--- balance of user: ', (await sbt.balanceOfSBT(SECOND_PROFILE_ID)).toNumber());
+    console.log('\t--- balance of user: ', (await sbt["balanceOf(uint256)"](SECOND_PROFILE_ID)).toNumber());
 
     await waitForTx(
       manager.connect(user).prePublish({
@@ -195,10 +195,10 @@ task("publish", "publish function")
     );
 
 
-    balance_bank =(await sbt.balanceOfSBT(FIRST_PROFILE_ID)).toNumber();
+    balance_bank =(await sbt["balanceOf(uint256)"](FIRST_PROFILE_ID)).toNumber();
     console.log('\n\t--- balance of bank : ', balance_bank);
 
-    let balance_left =(await sbt.balanceOfSBT(SECOND_PROFILE_ID)).toNumber();
+    let balance_left =(await sbt["balanceOf(uint256)"](SECOND_PROFILE_ID)).toNumber();
     console.log('\t--- balance of user after publish : ', balance_left);
     
     let derivativeNFT: DerivativeNFTV1;

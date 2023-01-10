@@ -102,7 +102,7 @@ makeSuiteCleanRoom('Fee Collect Module', function () {
 
       //mint some Values to userTwo
       await manager.connect(governance).mintSBTValue(THIRD_PROFILE_ID, parseEther('10'));
-      // expect((await sbtContract.balanceOfSBT(THIRD_PROFILE_ID)).toNumber()).to.eq(parseEther('10'));
+      // expect((await sbtContract.balanceOf(THIRD_PROFILE_ID)).toNumber()).to.eq(parseEther('10'));
         
 
       expect(

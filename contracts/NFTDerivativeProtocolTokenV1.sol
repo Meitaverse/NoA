@@ -161,6 +161,8 @@ contract NFTDerivativeProtocolTokenV1 is
         uint256 soulBoundTokenId, 
         uint256 value
     ) external payable whenNotPaused nonReentrant onlyManager {
+        if (value == 0) revert Errors.InvalidParameter();
+
         total_supply += value;
         if (total_supply > MAX_SUPPLY) revert Errors.MaxSupplyExceeded();
 
@@ -168,10 +170,6 @@ contract NFTDerivativeProtocolTokenV1 is
         emit Events.MintSBTValue(soulBoundTokenId, value, block.timestamp);
     }
 
-    function balanceOfSBT(uint256 tokenId) external view returns (uint256) {
-        return super.balanceOf(tokenId);
-    }
-     
     function burn(uint256 tokenId) external whenNotPaused nonReentrant onlyManager{
         ERC3525Upgradeable._burn(tokenId);
         emit Events.BurnSBT(tokenId, block.timestamp);
@@ -304,7 +302,8 @@ contract NFTDerivativeProtocolTokenV1 is
     {
         if (!hasRole(DEFAULT_ADMIN_ROLE, _msgSender())) revert Errors.Unauthorized();
         
-        if (bankTreasury == address(0)) revert Errors.InitParamsInvalid();
+        if (bankTreasury == address(0)) revert Errors.InvalidParameter();
+        if (initialSupply == 0) revert Errors.InvalidParameter();
         if (_BANKTREASURY != address(0)) revert Errors.InitialIsAlreadyDone();
         _BANKTREASURY = bankTreasury;
         

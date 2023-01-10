@@ -210,6 +210,20 @@ query {
 ```
 
 
+### 查询所有SBT Asset
+```
+query { 
+  sBTAssets(first: 100) {
+    id
+    wallet
+    soulBoundTokenId
+    value
+    timestamp
+  }
+}
+```
+
+
 ## 获取合约大小
 ```
 $ yarn add --dev hardhat-contract-sizer
