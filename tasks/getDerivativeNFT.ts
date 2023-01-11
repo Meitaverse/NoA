@@ -62,22 +62,14 @@ task("getDerivativeNFT", "get DerivativeNFT function")
   const publishModule = await loadContract(hre, PublishModule__factory, "PublishModule");
   const template = await loadContract(hre, Template__factory, "Template");
 
-  console.log('\t-- deployer: ', deployer.address);
-  console.log('\t-- governance: ', governance.address);
-  console.log('\t-- user: ', user.address);
-  console.log('\t-- userTwo: ', userTwo.address);
-  console.log('\t-- userThree: ', userThree.address);
-
-  console.log(
-      "\t--- ModuleGlobals governance address: ", await moduleGlobals.getGovernance()
-    );
   
-    let derivativeNFT: DerivativeNFTV1;
-    derivativeNFT = DerivativeNFTV1__factory.connect(
-      await manager.connect(user).getDerivativeNFT(projectid),
-      user
-    );
-      
-    console.log('\n\t---projectid: ', projectid, ' ---derivativeNFT  address: ',  derivativeNFT.address);
+  let derivativeNFT: DerivativeNFTV1;
+  derivativeNFT = DerivativeNFTV1__factory.connect(
+    await manager.connect(user).getDerivativeNFT(projectid),
+    user
+  );
+    
+  console.log('\n\t---projectid: ', projectid);
+  console.log('\t---derivativeNFT address: ',  derivativeNFT.address);
 
   });

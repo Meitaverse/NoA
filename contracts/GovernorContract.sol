@@ -27,7 +27,7 @@ contract GovernorContract is
         Governor("GovernorContract")
         GovernorSettings(_votingDelay,_votingPeriod,0)
         GovernorVotes(_token)
-        GovernorVotesQuorumFraction(_quorumPercentage)//投票数量/百分比
+        GovernorVotesQuorumFraction(_quorumPercentage) //投票数量/百分比
         GovernorTimelockControl(_timelock)
     {}
 

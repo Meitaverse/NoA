@@ -1,6 +1,5 @@
 import { log, Address, BigInt, Bytes, store, TypedMap } from "@graphprotocol/graph-ts";
 
-
 import {
     DerivativeNFTV1,
     Transfer,
@@ -24,7 +23,6 @@ import {
     ApprovalForAllRecord,
     ApprovalValueRecord,
 } from "../generated/schema"
-
 
 export function handleTransfer(event: Transfer): void {
     log.info("handleTransfer, event.address: {}, _from: {}", [event.address.toHexString(), event.params._from.toHexString()])

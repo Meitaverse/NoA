@@ -264,9 +264,26 @@ $ npm instal --save-dev hardhat-contract-sizer
 ### 获取DerivativeNFT 合约地址
 ```
 $ yarn hardhat getDerivativeNFT --projectid 1 --network local
+
+//输出:
+	---projectid:  1
+	---derivativeNFT address:  0x3B02fF1e626Ed7a8fd6eC5299e2C54e1421B626B
+```
+
+### 将上一步骤输出的derivativeNFT address合约地址替换
+文件: subgraphDerivativeNFT/subgraph.yaml
+```
+...
+ source:
+      address: "0x3b02ff1e626ed7a8fd6ec5299e2c54e1421b626b" //<==替换
+      abi: DerivativeNFTV1
+      startBlock: 0
+...
+
 ```
 
 ### 生成代码
+
 ```
 $ yarn graph-derivativeNFT-codegen && yarn graph-derivativeNFT-build
 ```
@@ -274,4 +291,29 @@ $ yarn graph-derivativeNFT-codegen && yarn graph-derivativeNFT-build
 ### 部署到graph node
 ```
 $ yarn create-derivativeNFT-subgraph-node && yarn deploy-derivativeNFT-subgraph-node
+```
+
+### 查询 DerivativeNFT Asset
+```
+{
+  derivativeNFTAssets(first: 100) {
+    id
+    wallet
+    tokenId
+    value
+    timestamp
+  }
+}
+```
+
+## Governance
+
+### create a proposal
+```
+
+```
+
+### vote a proposal
+```
+
 ```

@@ -612,7 +612,6 @@ contract Manager is
         emit Events.ManagerGovernanceSet(msg.sender, prevGovernance, newGovernance, block.timestamp);
     }
 
-
     function _generateNextHubId() internal returns (uint256) {
         _nextHubId.increment();
         return uint24(_nextHubId.current());
