@@ -65,8 +65,6 @@ import {
   const INITIAL_SUPPLY = 1000000;  //SBT初始发行总量
   const VOUCHER_AMOUNT_LIMIT = 100;  //用户用SBT兑换Voucher的最低数量 
   
-   let box: Box;
-   let timeLock: TimeLock;
 
   const SBT_NAME = 'NFT Derivative Protocol';
   const SBT_SYMBOL = 'SBT';
@@ -123,11 +121,24 @@ import {
         console.log('\t-- template: ', template.address);
         await exportAddress(hre, template, 'Template');
 
-        box = await new Box__factory(deployer).deploy();
-        console.log("box address: ", box.address);
+        // box = await new Box__factory(deployer).deploy();
+        // console.log("box address: ", box.address);
       
-        timeLock = await new TimeLock__factory(deployer).deploy(MIN_DELAY, [], [], deployer.address);
-        console.log("timeLock address: ", timeLock.address);
+        // timeLock = await new TimeLock__factory(deployer).deploy(MIN_DELAY, [], [], deployer.address);
+        // console.log("timeLock address: ", timeLock.address);
+        console.log('\n\t-- Deploying timeLock  --');
+        const timeLock = await deployContract(
+            new TimeLock__factory(deployer).deploy(
+                MIN_DELAY, 
+                [], 
+                [], 
+                deployer.address,
+                { nonce: deployerNonce++ }
+            )
+        );
+        console.log('\t-- timeLock: ', timeLock.address);
+        await exportAddress(hre, timeLock, 'TimeLock');
+
       
         console.log('\n\t-- Deploying receiver  --');
         const receiverMock = await deployContract(
@@ -252,7 +263,7 @@ import {
         await exportAddress(hre, sbtContract, 'SBT');
 
 
-        const governorImpl = await new GovernorContract__factory(deployer).deploy();
+        const governorImpl = await new GovernorContract__factory(deployer).deploy({ nonce: deployerNonce++ });
         let initializeDataGovrnor = governorImpl.interface.encodeFunctionData("initialize", [
             sbtContract.address,
             timeLock.address,
@@ -263,11 +274,12 @@ import {
 
         const gonvernorProxy = await new ERC1967Proxy__factory(deployer).deploy(
             governorImpl.address,
-            initializeDataGovrnor
+            initializeDataGovrnor,
+            { nonce: deployerNonce++ }
             );
         const governorContract = new GovernorContract__factory(deployer).attach(gonvernorProxy.address);
-        console.log("governorContract address: ", governorContract.address);
-        await exportAddress(hre, sbtContract, 'GovernorContract');
+        console.log("\t-- governorContract address: ", governorContract.address);
+        await exportAddress(hre, governorContract, 'GovernorContract');
 
         console.log('\n\t-- Deploying bank treasury --');
         const soulBoundTokenIdOfBankTreaury = 1;
