@@ -639,5 +639,17 @@ library Events {
         uint256 timestamp
     );
 
+
+    //votes
+     /**
+     * @dev Emitted when an account changes their delegate.
+     */
+    event DelegateChanged(address indexed delegator, address indexed fromDelegate, address indexed toDelegate, uint256 tokeId_delegator);
+
+    /**
+     * @dev Emitted when a token transfer or delegate change results in changes to a delegate's number of votes.
+     */
+    event DelegateVotesChanged(address indexed delegate, uint256 previousBalance, uint256 newBalance);
+
 }
 

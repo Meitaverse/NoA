@@ -76,10 +76,10 @@ interface IManager {
         uint256 soulBoundTokenId
    )external;
 
-    function burnSBTValue(
-        uint256 soulBoundTokenId,
-        uint256 value
-    ) external;
+    // function burnSBTValue(
+    //     uint256 soulBoundTokenId,
+    //     uint256 value
+    // ) external;
 
     /**
      * @notice Creates a profile with the specified parameters, minting a profile NFT to the given recipient. This

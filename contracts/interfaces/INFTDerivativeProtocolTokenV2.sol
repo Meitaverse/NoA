@@ -5,67 +5,18 @@ pragma solidity ^0.8.0;
 import {DataTypes} from "../libraries/DataTypes.sol";
 
 interface INFTDerivativeProtocolTokenV2  { 
-  
 
-    /**
-     * @notice Initializes the NFT Derivative Protocol Token, setting the initial governance address as well as the name and symbol in
-     * the ERC3525 base contract.
-     *
-     * @param name The name to set for the Token.
-     * @param symbol The symbol to set for the Token.
-     * @param decimals The decimal to set for the Token.
-     * @param manager The address of Manager contract
-     */
-    function initialize(
-        string memory name,
-        string memory symbol,
-        uint8 decimals,
-        address manager
-    ) external ;
 
     function version() external view returns(uint256);
-    function getManager() external view returns(address);
-    function getBankTreasury() external view returns(address);
-    function getSBTIdByWallet(address wallet) external view returns(uint256);
+    // function getManager() external view returns(address);
+    // function getBankTreasury() external view returns(address);
 
-    function isContractWhitelisted(address contract_) external view returns (bool);
+    // function isContractWhitelisted(address contract_) external view returns (bool);
 
     function whitelistContract(address contract_, bool toWhitelist_) external;
 
-    function setProfileImageURI(uint256 soulBoundTokenId, string calldata imageURI) external;
-    /**
-     * @notice Approve or disapprove an operator to manage all of `_owner`'s tokens with the
-     *  specified slot.
-     * @dev Caller SHOULD be `_owner` or an operator who has been authorized through
-     *  `setApprovalForAll`.
-     *  MUST emit ApprovalSlot event.
-     * @param _owner The address that owns the ERC3525 tokens
-     * @param _slot The slot of tokens being queried approval of
-     * @param _operator The address for whom to query approval
-     * @param _approved Identify if `_operator` would be approved or disapproved
-     */
-    function setApprovalForSlot(
-        address _owner,
-        uint256 _slot,
-        address _operator,
-        bool _approved
-    ) external payable;
-
-    /**
-     * @notice Query if `_operator` is authorized to manage all of `_owner`'s tokens with the
-     *  specified slot.
-     * @param _owner The address that owns the ERC3525 tokens
-     * @param _slot The slot of tokens being queried approval of
-     * @param _operator The address for whom to query approval
-     * @return True if `_operator` is authorized to manage all of `_owner`'s tokens with `_slot`,
-     *  false otherwise.
-     */
-    function isApprovedForSlot(
-        address _owner,
-        uint256 _slot,
-        address _operator
-    ) external view returns (bool);
-
+    // function setProfileImageURI(uint256 soulBoundTokenId, string calldata imageURI) external;
+    
     // /**
     //  * @notice Mint to a address spec tokenId.
     //  *  Only admin can execute.
@@ -87,7 +38,6 @@ interface INFTDerivativeProtocolTokenV2  {
 
     // function version() external view returns (uint256);
 
-    function svgLogo() external view returns (string memory);
 
     /**
      * @notice Mint value to a soulBoundTokenId.

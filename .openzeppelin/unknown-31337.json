@@ -5310,7 +5310,7 @@
             "src": "contracts/BankTreasury.sol:59"
           },
           {
-            "label": "_MANAGER",
+            "label": "_manager",
             "offset": 0,
             "slot": "304",
             "type": "t_address",
@@ -5709,7 +5709,7 @@
             "src": "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol:107"
           },
           {
-            "label": "_MANAGER",
+            "label": "_manager",
             "offset": 0,
             "slot": "403",
             "type": "t_address",

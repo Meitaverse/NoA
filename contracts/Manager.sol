@@ -103,15 +103,15 @@ contract Manager is
         INFTDerivativeProtocolTokenV1(_sbt).burn(tokenId);
     }
 
-    function burnSBTValue(uint256 tokenId, uint256 value) 
-        external 
-        whenNotPaused 
-        nonReentrant
-        onlyGov 
-    {
-        address _sbt = IModuleGlobals(MODULE_GLOBALS).getSBT();
-        INFTDerivativeProtocolTokenV1(_sbt).burnValue(tokenId, value);
-    }
+    // function burnSBTValue(uint256 tokenId, uint256 value) 
+    //     external 
+    //     whenNotPaused 
+    //     nonReentrant
+    //     onlyGov 
+    // {
+    //     address _sbt = IModuleGlobals(MODULE_GLOBALS).getSBT();
+    //     INFTDerivativeProtocolTokenV1(_sbt).burnValue(tokenId, value);
+    // }
 
     function createProfile(
         DataTypes.CreateProfileData calldata vars
@@ -124,6 +124,7 @@ contract Manager is
         address _sbt = IModuleGlobals(MODULE_GLOBALS).getSBT();
         if (!IModuleGlobals(MODULE_GLOBALS).isWhitelistProfileCreator(vars.wallet)) revert Errors.ProfileCreatorNotWhitelisted();
         if (_sbt == address(0)) revert Errors.SBTNotSet();
+        _validateNickName(vars.nickName);
 
         uint256 soulBoundTokenId = INFTDerivativeProtocolTokenV1(_sbt).createProfile(msg.sender, vars);
 
@@ -195,7 +196,6 @@ contract Manager is
             defaultRoyaltyPoints: project.defaultRoyaltyPoints,
             feeShareType: project.feeShareType
         });
-
         return projectId;
     }
 
@@ -689,4 +689,9 @@ contract Manager is
         revert Errors.NotSameHub(); 
     }
 
+    function _validateNickName(string calldata nickName) private pure {
+        bytes memory byteNickName = bytes(nickName);
+        if (byteNickName.length == 0 || byteNickName.length > Constants.MAX_NICKNAME_LENGTH)
+            revert Errors.NickNameLengthInvalid();
+    }
 }

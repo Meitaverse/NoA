@@ -90,7 +90,7 @@ contract DerivativeNFTV1 is
 
     address public immutable MANAGER;
     address internal _SBT;
-    address internal _BANKTREASURY;
+    address internal _banktreasury;
 
     uint96 internal _royaltyBasisPoints; //版税佣金点数, 本协议将版税的10%及金库固定税收5%设置为
 
@@ -156,7 +156,7 @@ contract DerivativeNFTV1 is
         if (sbt == address(0)) revert Errors.InitParamsInvalid();
         _SBT = sbt;
         if (bankTreasury == address(0)) revert Errors.InitParamsInvalid();
-        _BANKTREASURY = bankTreasury;
+        _banktreasury = bankTreasury;
 
         if (metadataDescriptor_ == address(0x0)) revert Errors.ZeroAddress();
 
@@ -171,7 +171,7 @@ contract DerivativeNFTV1 is
         _soulBoundTokenId = soulBoundTokenId_;
         _receiver = receiver_;
 
-        _setDefaultRoyalty(_BANKTREASURY, defaultRoyaltyPoints_);
+        _setDefaultRoyalty(_banktreasury, defaultRoyaltyPoints_);
 
         _feeShareType = feeShareType_;
 
@@ -422,7 +422,7 @@ contract DerivativeNFTV1 is
         //set royaltiespa
         _setTokenRoyalty(
             newTokenId,
-            _BANKTREASURY,
+            _banktreasury,
             _fraction
         );
 
@@ -476,7 +476,7 @@ contract DerivativeNFTV1 is
         //set royalties
         _setTokenRoyalty(
             tokenId_,
-            _BANKTREASURY,
+            _banktreasury,
             _fraction
         );
     }

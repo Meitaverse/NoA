@@ -23,47 +23,28 @@ interface INFTDerivativeProtocolTokenV1  {
     ) external ;
 
     function version() external view returns(uint256);
-    function getManager() external view returns(address);
-    function getBankTreasury() external view returns(address);
-    function getSBTIdByWallet(address wallet) external view returns(uint256);
+    // function getManager() external view returns(address);
+    // function getBankTreasury() external view returns(address);
 
-    function isContractWhitelisted(address contract_) external view returns (bool);
+    // function isContractWhitelisted(address contract_) external view returns (bool);
 
     function whitelistContract(address contract_, bool toWhitelist_) external;
 
-    function setProfileImageURI(uint256 soulBoundTokenId, string calldata imageURI) external;
-    /**
-     * @notice Approve or disapprove an operator to manage all of `_owner`'s tokens with the
-     *  specified slot.
-     * @dev Caller SHOULD be `_owner` or an operator who has been authorized through
-     *  `setApprovalForAll`.
-     *  MUST emit ApprovalSlot event.
-     * @param _owner The address that owns the ERC3525 tokens
-     * @param _slot The slot of tokens being queried approval of
-     * @param _operator The address for whom to query approval
-     * @param _approved Identify if `_operator` would be approved or disapproved
-     */
-    function setApprovalForSlot(
-        address _owner,
-        uint256 _slot,
-        address _operator,
-        bool _approved
-    ) external payable;
+    // function setProfileImageURI(uint256 soulBoundTokenId, string calldata imageURI) external;
+    
+    // function setApprovalForSlot(
+    //     address _owner,
+    //     uint256 _slot,
+    //     address _operator,
+    //     bool _approved
+    // ) external payable;
 
-    /**
-     * @notice Query if `_operator` is authorized to manage all of `_owner`'s tokens with the
-     *  specified slot.
-     * @param _owner The address that owns the ERC3525 tokens
-     * @param _slot The slot of tokens being queried approval of
-     * @param _operator The address for whom to query approval
-     * @return True if `_operator` is authorized to manage all of `_owner`'s tokens with `_slot`,
-     *  false otherwise.
-     */
-    function isApprovedForSlot(
-        address _owner,
-        uint256 _slot,
-        address _operator
-    ) external view returns (bool);
+   
+    // function isApprovedForSlot(
+    //     address _owner,
+    //     uint256 _slot,
+    //     address _operator
+    // ) external view returns (bool);
 
     // /**
     //  * @notice Mint to a address spec tokenId.
@@ -86,8 +67,7 @@ interface INFTDerivativeProtocolTokenV1  {
 
     // function version() external view returns (uint256);
 
-    function svgLogo() external view returns (string memory);
-
+    
     /**
      * @notice Mint value to a soulBoundTokenId.
      *  Only admin can execute.
@@ -108,14 +88,14 @@ interface INFTDerivativeProtocolTokenV1  {
      */
     function burn(uint256 tokenId) external;
 
-    /**
-     * @notice Burn value of a tokenId.
-     *  Only admin can execute.
-     *
-     * @param tokenId is the tokenId of ERC3525 Token
-     * @param value is the valueof the tokenId 
-     */
-    function burnValue(uint256 tokenId, uint256 value) external;
+    // /**
+    //  * @notice Burn value of a tokenId.
+    //  *  Only admin can execute.
+    //  *
+    //  * @param tokenId is the tokenId of ERC3525 Token
+    //  * @param value is the valueof the tokenId 
+    //  */
+    // function burnValue(uint256 tokenId, uint256 value) external;
 
 
     function transferValue(

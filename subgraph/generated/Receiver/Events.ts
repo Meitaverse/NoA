@@ -148,66 +148,6 @@ export class BurnSBTValue__Params {
   }
 }
 
-export class BurnToken extends ethereum.Event {
-  get params(): BurnToken__Params {
-    return new BurnToken__Params(this);
-  }
-}
-
-export class BurnToken__Params {
-  _event: BurnToken;
-
-  constructor(event: BurnToken) {
-    this._event = event;
-  }
-
-  get projectId(): BigInt {
-    return this._event.parameters[0].value.toBigInt();
-  }
-
-  get tokenId(): BigInt {
-    return this._event.parameters[1].value.toBigInt();
-  }
-
-  get owner(): Address {
-    return this._event.parameters[2].value.toAddress();
-  }
-
-  get timestamp(): BigInt {
-    return this._event.parameters[3].value.toBigInt();
-  }
-}
-
-export class BurnTokenWithSig extends ethereum.Event {
-  get params(): BurnTokenWithSig__Params {
-    return new BurnTokenWithSig__Params(this);
-  }
-}
-
-export class BurnTokenWithSig__Params {
-  _event: BurnTokenWithSig;
-
-  constructor(event: BurnTokenWithSig) {
-    this._event = event;
-  }
-
-  get projectId(): BigInt {
-    return this._event.parameters[0].value.toBigInt();
-  }
-
-  get tokenId(): BigInt {
-    return this._event.parameters[1].value.toBigInt();
-  }
-
-  get owner(): Address {
-    return this._event.parameters[2].value.toAddress();
-  }
-
-  get timestamp(): BigInt {
-    return this._event.parameters[3].value.toBigInt();
-  }
-}
-
 export class CollectModuleWhitelisted extends ethereum.Event {
   get params(): CollectModuleWhitelisted__Params {
     return new CollectModuleWhitelisted__Params(this);

@@ -115,6 +115,18 @@ Queries (HTTP):     http://localhost:8000/subgraphs/name/NoA/MySubgraph
 }	
 ```
 
+### 查询所有SBT Asset 记录
+```
+ {
+  sbtassets(first: 100) {
+    id
+    wallet
+    soulBoundTokenId
+    value
+    timestamp
+  }
+}
+```
 ### 查询所有Hub
 ```
 {

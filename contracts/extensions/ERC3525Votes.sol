@@ -4,7 +4,8 @@ pragma solidity ^0.8.0;
 
 import "./draft-ERC3525PermitUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/utils/math/MathUpgradeable.sol";
-import "@openzeppelin/contracts-upgradeable/governance/utils/IVotesUpgradeable.sol";
+import "./IVotesUpgradeable.sol";
+import "../libraries/Events.sol";
 import "@openzeppelin/contracts-upgradeable/utils/math/SafeCastUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/utils/cryptography/ECDSAUpgradeable.sol";
 /**
@@ -134,8 +135,8 @@ abstract contract ERC3525Votes is IVotesUpgradeable, ERC3525PermitUpgradeable {
     /**
      * @dev Delegate votes from the sender to `delegatee`.
      */
-    function delegate(address delegatee) public virtual override {
-        _delegate(_msgSender(), delegatee);
+    function delegate(address delegatee, uint256 tokeId_delegator) public virtual override {
+        _delegate(_msgSender(), delegatee, tokeId_delegator);
     }
 
     /**
@@ -143,6 +144,7 @@ abstract contract ERC3525Votes is IVotesUpgradeable, ERC3525PermitUpgradeable {
      */
     function delegateBySig(
         address delegatee,
+        uint256 tokeId_delegator,
         uint256 nonce,
         uint256 expiry,
         uint8 v,
@@ -157,7 +159,7 @@ abstract contract ERC3525Votes is IVotesUpgradeable, ERC3525PermitUpgradeable {
             s
         );
         require(nonce == _useNonce(signer), "ERC20Votes: invalid nonce");
-        _delegate(signer, delegatee);
+        _delegate(signer, delegatee, tokeId_delegator);
     }
 
     /**
@@ -176,6 +178,11 @@ abstract contract ERC3525Votes is IVotesUpgradeable, ERC3525PermitUpgradeable {
         require(totalSupply() <= _maxSupply(), "ERC3525Votes: total supply risks overflowing votes");
         _writeCheckpoint(_totalSupplyCheckpoints, _add, value_);
         return tokenId;
+    }
+
+    function _mintValue(uint256 tokenId_, uint256 value_) internal virtual override{
+        super._mintValue(tokenId_, value_);  
+         _writeCheckpoint(_totalSupplyCheckpoints, _add, value_);
     }
 
     /**
@@ -208,12 +215,14 @@ abstract contract ERC3525Votes is IVotesUpgradeable, ERC3525PermitUpgradeable {
      *
      * Emits events {IVotes-DelegateChanged} and {IVotes-DelegateVotesChanged}.
      */
-    function _delegate(address delegator, address delegatee) internal virtual {
+    function _delegate(address delegator, address delegatee, uint256 tokeId_delegator) internal virtual {
         address currentDelegate = delegates(delegator);
-        uint256 delegatorBalance = balanceOf(delegator);
+       
+        //TODO  ERC3525 
+        uint256 delegatorBalance = balanceOf(tokeId_delegator); //balanceOf(delegator);
         _delegates[delegator] = delegatee;
 
-        emit DelegateChanged(delegator, currentDelegate, delegatee);
+        emit Events.DelegateChanged(delegator, currentDelegate, delegatee, tokeId_delegator);
 
         _moveVotingPower(currentDelegate, delegatee, delegatorBalance);
     }
@@ -226,12 +235,12 @@ abstract contract ERC3525Votes is IVotesUpgradeable, ERC3525PermitUpgradeable {
         if (src != dst && amount > 0) {
             if (src != address(0)) {
                 (uint256 oldWeight, uint256 newWeight) = _writeCheckpoint(_checkpoints[src], _subtract, amount);
-                emit DelegateVotesChanged(src, oldWeight, newWeight);
+                emit Events.DelegateVotesChanged(src, oldWeight, newWeight);
             }
 
             if (dst != address(0)) {
                 (uint256 oldWeight, uint256 newWeight) = _writeCheckpoint(_checkpoints[dst], _add, amount);
-                emit DelegateVotesChanged(dst, oldWeight, newWeight);
+                emit Events.DelegateVotesChanged(dst, oldWeight, newWeight);
             }
         }
     }

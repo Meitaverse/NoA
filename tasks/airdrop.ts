@@ -87,7 +87,7 @@ task("airdrop", "airdrop array of dNFTs to many users function")
         ownershipSoulBoundTokenId: ownerid,
         toSoulBoundTokenIds: [3, 4], //userTwo, userThree
         tokenId: nftid,
-        values: [1, 1],
+        values: [1, 2],
       })
     );
     

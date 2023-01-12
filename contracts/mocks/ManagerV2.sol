@@ -66,9 +66,9 @@ contract ManagerV2 is IManagerV2, NFTDerivativeProtocolMultiState, MockManagerV2
         INFTDerivativeProtocolTokenV1(SBT).burn(tokenId);
     }
 
-    function burnSBTValue(uint256 tokenId, uint256 value) external whenNotPaused onlyGov {
-        INFTDerivativeProtocolTokenV1(SBT).burnValue(tokenId, value);
-    }
+    // function burnSBTValue(uint256 tokenId, uint256 value) external whenNotPaused onlyGov {
+    //     INFTDerivativeProtocolTokenV1(SBT).burnValue(tokenId, value);
+    // }
 
     function createProfile(
         DataTypes.CreateProfileData calldata vars

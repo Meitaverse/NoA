@@ -56,12 +56,12 @@ task("manager-verify", "manager-verify function")
   console.log(
     "---\t sbt contract version: ", (await sbt.version()).toNumber()
   );
-  console.log(
-    "---\t sbt getManager(): ", (await sbt.getManager())
-  );
-  console.log(
-    "---\t sbt getBankTreasury(): ", (await sbt.getBankTreasury())
-  );
+  // console.log(
+  //   "---\t sbt getManager(): ", (await sbt.getManager())
+  // );
+  // console.log(
+  //   "---\t sbt getBankTreasury(): ", (await sbt.getBankTreasury())
+  // );
 
   console.log(
     "---\t bankTreasury getManager(): ",(await bankTreasury.getManager())

@@ -44,10 +44,10 @@ interface IManagerV2 {
         uint256 soulBoundTokenId
    )external;
 
-    function burnSBTValue(
-        uint256 soulBoundTokenId,
-        uint256 value
-    ) external;
+    // function burnSBTValue(
+    //     uint256 soulBoundTokenId,
+    //     uint256 value
+    // ) external;
 
 
     /**

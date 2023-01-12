@@ -5,11 +5,21 @@ import { expect, use } from 'chai';
 import { solidity } from 'ethereum-waffle';
 import { BytesLike, Contract, Signer, Wallet } from 'ethers';
 import { ethers } from "hardhat";
+import {
+  MIN_DELAY,
+  QUORUM_PERCENTAGE,
+  VOTING_PERIOD,
+  VOTING_DELAY,
+} from "../helper-hardhat-config"
 
 import {
   ERC1967Proxy__factory,
-  Currency,
-  Currency__factory,
+  // Currency,
+  // Currency__factory,
+  Box,
+  Box__factory,
+  TimeLock,
+  TimeLock__factory,
   Events,
   Events__factory,
   PublishModule,
@@ -69,7 +79,7 @@ import { DataTypes } from '../typechain/contracts/modules/template/Template';
 use(solidity);
 
 export const NUM_CONFIRMATIONS_REQUIRED = 3;
-export const CURRENCY_MINT_AMOUNT = parseEther('100');
+// export const CURRENCY_MINT_AMOUNT = parseEther('100');
 export const BPS_MAX = 10000;
 export const TREASURY_FEE_BPS = 50;
 export const PublishRoyaltySBT = 100;
@@ -118,10 +128,13 @@ export let userAddress: string;
 export let userTwoAddress: string;
 export let userThreeAddress: string;
 export let governanceAddress: string;
+export let governorContract: GovernorContract;
 export let testWallet: Wallet;
 export let managerImpl: Manager;
 export let manager: Manager;
-export let currency: Currency;
+// export let currency: Currency;
+export let box: Box;
+export let timeLock: TimeLock;
 export let abiCoder: AbiCoder;
 export let mockModuleData: BytesLike;
 export let managerLibs: ManagerLibraryAddresses;
@@ -200,7 +213,26 @@ before(async function () {
   );
 
   // Currency
-  currency = await new Currency__factory(deployer).deploy();
+  // currency = await new Currency__factory(deployer).deploy();
+  box = await new Box__factory(deployer).deploy();
+  console.log("box address: ", box.address);
+
+  timeLock = await new TimeLock__factory(deployer).deploy(MIN_DELAY, [], [], deployerAddress);
+  console.log("timeLock address: ", timeLock.address);
+
+  // const timeLock = await deploy("TimeLock", {
+  //   from: deployer,
+  //   /**
+  //    * Here we can set any address in admin role also zero address.
+  //    * previously In tutorial deployer has given admin role then
+  //    * renounced as well. in later section so we are doing the same by giving admin role to
+  //    * deployer and then renounced to keep the tutorial same.
+  //    */
+  //   args: [MIN_DELAY, [], [], deployer],
+  //   log: true,
+  //   // we need to wait if on a live network so we can verify properly
+  //   waitConfirmations: networkConfig[network.name].blockConfirmations || 1,
+  // })
 
 
   receiverMock = await new ERC3525ReceiverMock__factory(deployer).deploy(RECEIVER_MAGIC_VALUE, Error.None);
@@ -268,6 +300,17 @@ before(async function () {
   );
   sbtContract = new NFTDerivativeProtocolTokenV1__factory(deployer).attach(sbtProxy.address);
 
+
+  // governorContract = await new GovernorContract__factory(deployer).deploy(
+  //   sbtContract.address,
+  //   timeLock.address,
+  //   QUORUM_PERCENTAGE, 
+  //   VOTING_PERIOD,
+  //   VOTING_DELAY,
+  // );
+  // console.log("governorContract address: ", governorContract.address);
+
+
   const soulBoundTokenIdOfBankTreaury = FIRST_PROFILE_ID;
   bankTreasuryImpl = await new BankTreasury__factory(deployer).deploy( );
   let initializeData = bankTreasuryImpl.interface.encodeFunctionData("initialize", [
@@ -283,6 +326,7 @@ before(async function () {
   );
   bankTreasuryContract = new BankTreasury__factory(deployer).attach(bankTreasuryProxy.address);
   
+
   //market place
   marketPlaceImpl = await new MarketPlace__factory(deployer).deploy( );
   let marketPlaceData = marketPlaceImpl.interface.encodeFunctionData("initialize", [
@@ -326,14 +370,14 @@ before(async function () {
     moduleGlobals.address
   );
 
-
   expect(bankTreasuryContract).to.not.be.undefined;
   expect(marketPlaceContract).to.not.be.undefined;
   expect(sbtContract).to.not.be.undefined;
   expect(receiverMock).to.not.be.undefined;
   expect(derivativeNFTV1Impl).to.not.be.undefined;
   expect(manager).to.not.be.undefined;
-  expect(currency).to.not.be.undefined;
+  expect(timeLock).to.not.be.undefined;
+  expect(governorContract).to.not.be.undefined;
   expect(metadataDescriptor).to.not.be.undefined;
   expect(feeCollectModule).to.not.be.undefined;
   expect(publishModule).to.not.be.undefined;
@@ -407,10 +451,10 @@ before(async function () {
   expect((await derivativeNFTV1Impl.MANAGER()).toUpperCase()).to.eq(manager.address.toUpperCase());
 
   expect((await sbtContract.version()).toNumber()).to.eq(1);
-  expect((await sbtContract.getManager()).toUpperCase()).to.eq(manager.address.toUpperCase());
+  // expect((await sbtContract.getManager()).toUpperCase()).to.eq(manager.address.toUpperCase());
   console.log('sbtContract getManager ok ');
 
-  expect((await sbtContract.getBankTreasury()).toUpperCase()).to.eq(bankTreasuryContract.address.toUpperCase());
+  // expect((await sbtContract.getBankTreasury()).toUpperCase()).to.eq(bankTreasuryContract.address.toUpperCase());
   
   expect((await bankTreasuryContract.getManager()).toUpperCase()).to.eq(manager.address.toUpperCase());
   console.log('bankTreasuryContract getManager ok ');

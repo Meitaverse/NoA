@@ -19,7 +19,7 @@ describe("Test governance contracts, proposals,voting and execution", function (
 
         timeLock = await ethers.getContractFactory("TimeLock")
       
-        deployedTimeLock=await timeLock.deploy(MIN_DELAY,[],[], owner.address);
+        deployedTimeLock = await timeLock.deploy(MIN_DELAY,[],[], owner.address);
 
         await deployedTimeLock.deployed();
        
@@ -29,7 +29,7 @@ describe("Test governance contracts, proposals,voting and execution", function (
         await deployedGovernor.deployed()
 
         box = await ethers.getContractFactory("Box")
-        deployedBox=await box.deploy()
+        deployedBox = await box.deploy()
         await deployedBox.deployed()
         /** This is done so as to transfer the ownership to timelock contract so that it can execute the operation */
         const transferTx = await deployedBox.transferOwnership(deployedTimeLock.address)
@@ -87,7 +87,9 @@ describe("Test governance contracts, proposals,voting and execution", function (
         let voteTx = await deployedGovernor.castVoteWithReason(proposalId, voteWay, reason)
         let voteTxReceipt = await voteTx.wait(1)
         console.log(voteTxReceipt.events[0].args.reason)
+
         proposalState = await deployedGovernor.state(proposalId)
+
         console.log(`Current Proposal State: ${proposalState}`)
         /**
          * Moving blocks to simulate completion of voting period
@@ -100,11 +102,11 @@ describe("Test governance contracts, proposals,voting and execution", function (
         console.log("Queueing...")
 
         //获取赞同的票数
-        const votes = await deployedGovernor.getVotes(owner.address,12)
-        console.log("votes",votes)
+        const votes = await deployedGovernor.getVotes(owner.address, 12)
+        console.log("votes", votes)
         console.log(`Checkpoints: ${await deployedToken.numCheckpoints(owner.address)}`)
      
-        const quorum=await deployedGovernor.quorum(12)
+        const quorum = await deployedGovernor.quorum(12)
         console.log("quorum",quorum)
         proposalState = await deployedGovernor.state(proposalId)
         console.log(`Current Proposal State: ${proposalState}`)
@@ -249,7 +251,7 @@ describe("Test governance contracts, proposals,voting and execution", function (
 
 
         console.log("Queueing...");
-        const votes=await deployedGovernor.getVotes(owner.address,37);
+        const votes = await deployedGovernor.getVotes(owner.address,37);
         console.log("votes",votes);
         console.log(`Checkpoints: ${await deployedToken.numCheckpoints(owner.address)}`);
      
