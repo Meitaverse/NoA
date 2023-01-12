@@ -224,7 +224,7 @@ contract DerivativeNFTV1 is
         uint256 publishId,
         DataTypes.Publication memory publication,
         address publisher
-    ) external whenNotPaused onlyManager returns (uint256) { //
+    ) external whenNotPaused onlyManager returns (uint256) { 
         
         if (_publicationNameHashBySlot[keccak256(bytes(publication.name))] > 0) revert Errors.PublicationIsExisted();
         if (publication.soulBoundTokenId != _soulBoundTokenId && publication.fromTokenIds.length == 0) revert Errors.InvalidParameter();
@@ -235,7 +235,7 @@ contract DerivativeNFTV1 is
         for (uint256 i = 0; i < publication.fromTokenIds.length; ++i) {
             if (!(_isApprovedOrOwner(msg.sender, publication.fromTokenIds[i])))  revert Errors.NotOwnerNorApproved();
 
-            //cant not burn
+            //cant not burn, must approve caller(manager contract address)
             this.transferFrom(publication.fromTokenIds[i], _receiver, 1);
         }
 
@@ -250,7 +250,8 @@ contract DerivativeNFTV1 is
         _publicationNameHashBySlot[keccak256(bytes(publication.name))] = slot;
         uint256 newTokenId = ERC3525Upgradeable._createOriginalTokenId();
         _tokenIdToPublishId[newTokenId] = publishId;
-
+        //TODO
+        ERC3525Upgradeable.setApprovalForAll(address(this), true);
         _mint(publisher, newTokenId, slot, publication.amount);
         
         return newTokenId;

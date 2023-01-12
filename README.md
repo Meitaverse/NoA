@@ -15,7 +15,10 @@ Run `yarn test` to run the unit tests
 
 ## The Graph
 
-### Login AWS Server: 16.163.166.55
+### Login AWS Server: 
+http://54.251.169.181:8000/subgraphs/name/NoA/MySubgraph/graphq
+http://54.251.169.181:8000/subgraphs/name/NoA/MySubgraph
+
 Start docker-compose
 ```
 

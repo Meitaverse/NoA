@@ -279,7 +279,7 @@ makeSuiteCleanRoom('Bank Treasury', function () {
         it("can only be mint SBT value through governance", async () => {
             await expect(manager.connect(userTwo).mintSBTValue(THIRD_PROFILE_ID, 900000)).to.be.revertedWith(ERRORS.NOT_GOVERNANCE);
             let balanceOfUserTwo =(await sbtContract['balanceOf(uint256)'](THIRD_PROFILE_ID)).toNumber();
-            // console.log('balance of userTwo: ', balanceOfUserTwo);
+            console.log('balance of userTwo: ', balanceOfUserTwo);
             expect(balanceOfUserTwo).to.eq(0);
         });
 
@@ -443,7 +443,7 @@ makeSuiteCleanRoom('Bank Treasury', function () {
             expect(proposalState.toString()).to.eq('7');
             // console.log();
             //7 - Executed
-            // console.log(`Executed! Current Proposal State: ${proposalState}`);
+            console.log(`Executed! Current Proposal State: ${proposalState}`);
         
         });
         
