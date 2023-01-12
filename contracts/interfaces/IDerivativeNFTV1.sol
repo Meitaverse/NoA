@@ -74,6 +74,8 @@ interface IDerivativeNFTV1 {
    * @return Event.
    */
   function getSlotDetail(uint256 slot_) external view returns (DataTypes.SlotDetail memory);
+  
+  function setTokenImageURI(uint256 tokenId, string calldata imageURI) external;
 
   function setMetadataDescriptor(address metadataDescriptor_) external;
 

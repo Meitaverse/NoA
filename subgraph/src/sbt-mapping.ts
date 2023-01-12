@@ -6,8 +6,6 @@ import {
     BankTreasurySet,
     ApprovalForSlot,
     BurnSBT,
-    BurnSBTValue,
-    ProfileImageURISet,
 } from "../generated/SBT/Events"
 
 import {
@@ -26,8 +24,6 @@ import {
     ApprovalForSlotHistory,
     BankTreasurySetHistory,
     BurnSBTHistory,
-    BurnSBTValueHistory,
-    ProfileImageURISetHistory,
     SBTTransferHistory,
     SBTAsset,
     SBTTransferValueHistory,
@@ -123,36 +119,6 @@ export function handleBurnSBT(event: BurnSBT): void {
         profile.isRemove = true
         profile.timestamp = event.params.timestamp
         profile.save()
-        
-    } 
-}
-
-export function handleBurnSBTValue(event: BurnSBTValue): void {
-    log.info("handleBurnSBTValue, event.address: {}", [event.address.toHexString()])
-
-    let _idString = event.params.soulBoundTokenId.toString() + "-" + event.params.timestamp.toString()
-    const history = BurnSBTValueHistory.load(_idString) || new BurnSBTValueHistory(_idString)
-
-    if (history) {
-        history.soulBoundTokenId = event.params.soulBoundTokenId
-        history.value = event.params.value
-        history.timestamp = event.params.timestamp
-        history.save()
-        
-    } 
-}
-
-export function handleProfileImageURISet(event: ProfileImageURISet): void {
-    log.info("handleProfileImageURISet, event.address: {}", [event.address.toHexString()])
-
-    let _idString = event.params.soulBoundTokenId.toString() + "-" + event.params.timestamp.toString()
-    const history = ProfileImageURISetHistory.load(_idString) || new ProfileImageURISetHistory(_idString)
-
-    if (history) {
-        history.soulBoundTokenId = event.params.soulBoundTokenId
-        history.imageURI = event.params.imageURI
-        history.timestamp = event.params.timestamp
-        history.save()
         
     } 
 }

@@ -6,14 +6,8 @@ import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import "@openzeppelin/contracts-upgradeable/access/AccessControlUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
-// import "@solvprotocol/erc-3525/contracts/ERC3525SlotEnumerableUpgradeable.sol";
 import "@solvprotocol/erc-3525/contracts/ERC3525Upgradeable.sol";
-// import "@solvprotocol/erc-3525/contracts/IERC3525Receiver.sol";
-// import "@solvprotocol/erc-3525/contracts/extensions/IERC3525Metadata.sol";
-// import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 
-// import {IERC20Upgradeable} from "@openzeppelin/contracts-upgradeable/token/ERC20/IERC20Upgradeable.sol";
-// import {SafeMathUpgradeable} from "@openzeppelin/contracts-upgradeable/utils/math/SafeMathUpgradeable.sol";
 import {Errors} from "./libraries/Errors.sol";
 import {Events} from "./libraries/Events.sol";
 import {Constants} from './libraries/Constants.sol';
@@ -27,13 +21,11 @@ import {INFTDerivativeProtocolTokenV1} from "./interfaces/INFTDerivativeProtocol
  */
 contract NFTDerivativeProtocolTokenV1 is
     Initializable,
-    // ReentrancyGuard,
     AccessControlUpgradeable,
     PausableUpgradeable,
     ERC3525Votes,
     SBTStorage,
     INFTDerivativeProtocolTokenV1, 
-    // ERC3525SlotEnumerableUpgradeable,
     UUPSUpgradeable
 {
     // using SafeMathUpgradeable for uint256;
@@ -99,7 +91,7 @@ contract NFTDerivativeProtocolTokenV1 is
     //     return _contractWhitelisted[contract_];
     // }
 
-    function whitelistContract(address contract_, bool toWhitelist_) external  { //nonReentrant
+    function whitelistContract(address contract_, bool toWhitelist_) external  { 
         if (!hasRole(DEFAULT_ADMIN_ROLE, _msgSender())) revert Errors.Unauthorized();
         _whitelistContract(contract_, toWhitelist_);
     }
@@ -121,11 +113,10 @@ contract NFTDerivativeProtocolTokenV1 is
         DataTypes.CreateProfileData calldata vars
     ) 
         external 
-        // whenNotPaused 
+        whenNotPaused
         onlyManager  
         returns (uint256) 
-    { //nonReentrant
-        // _validateNickName(vars.nickName);
+    { 
 
         if (balanceOf(vars.wallet) > 0) revert Errors.TokenIsClaimed(); 
         
@@ -155,9 +146,9 @@ contract NFTDerivativeProtocolTokenV1 is
     ) 
         external 
         payable 
-        // whenNotPaused  
+        whenNotPaused 
         onlyManager 
-    { //nonReentrant
+    { 
         if (value == 0) revert Errors.InvalidParameter();
 
         total_supply += value;
@@ -169,28 +160,18 @@ contract NFTDerivativeProtocolTokenV1 is
 
     function burn(uint256 tokenId) 
         external 
-        // whenNotPaused  
+        whenNotPaused 
         onlyManager
-    { //nonReentrant
+    { 
         ERC3525Upgradeable._burn(tokenId);
         emit Events.BurnSBT(tokenId, block.timestamp);
     }
-
-    // function burnValue(uint256 tokenId, uint256 value) 
-    //     external 
-    //     // whenNotPaused 
-    //     onlyManager 
-    // { //nonReentrant
-    //     require(_isApprovedOrOwner(_msgSender(), tokenId), "ERC3525: caller is not token owner nor approved");
-    //     ERC3525Upgradeable._burnValue(tokenId, value);
-    //     emit Events.BurnSBTValue(tokenId, value, block.timestamp);
-    // }
 
     function transferValue(
         uint256 fromTokenId_,
         uint256 toTokenId_,
         uint256 value_
-    ) external  { //nonReentrant
+    ) external  { 
          //call only by BankTreasury or FeeCollectModule or publishModule  or Voucher
         if (_contractWhitelisted[msg.sender]) {
             ERC3525Upgradeable._transferValue(fromTokenId_, toTokenId_, value_);
@@ -201,45 +182,6 @@ contract NFTDerivativeProtocolTokenV1 is
 
     //-- orverride -- //
 
-    // function _mint(address to_, uint256 slot_, uint256 value_) internal virtual override(ERC3525Votes) returns (uint256) {
-    //     return super._mint(to_, slot_, value_);
-    // }
-
-   /**
-     * @dev Snapshots the totalSupply after it has been decreased.
-     */
-    // function _burnValue(uint256 tokenId_, uint256 burnValue_) internal virtual override(ERC3525Votes){
-    //     super._burnValue(tokenId_, burnValue_);
-    // }
-
-    /**
-     * @dev Move voting power when tokens are transferred.
-     *
-     * Emits a {IVotes-DelegateVotesChanged} event.
-     */
-    // function _afterValueTransfer(
-    //     address from_,
-    //     address to_,
-    //     uint256 fromTokenId_,
-    //     uint256 toTokenId_,
-    //     uint256 slot_,
-    //     uint256 value_
-    // ) internal virtual override(ERC3525Votes) {
-    //     super._afterValueTransfer(from_, to_, fromTokenId_, toTokenId_, slot_, value_);
-    // }
-
-    // function _beforeValueTransfer(
-    //     address from_,
-    //     address to_,
-    //     uint256 fromTokenId_,
-    //     uint256 toTokenId_,
-    //     uint256 slot_,
-    //     uint256 value_
-    // ) internal virtual override(ERC3525Upgradeable) {
-    //     super._beforeValueTransfer(from_, to_, fromTokenId_, toTokenId_, slot_, value_);
-
-    // }
-
     function transferFrom(
         address from_,
         address to_,
@@ -248,8 +190,7 @@ contract NFTDerivativeProtocolTokenV1 is
         public 
         payable 
         virtual 
-        // nonReentrant
-        // whenNotPaused
+        whenNotPaused
         override
         isTransferAllowed(tokenId_)  //Soul bound token can not transfer
     {
@@ -265,43 +206,12 @@ contract NFTDerivativeProtocolTokenV1 is
         public 
         payable 
         virtual 
-        // nonReentrant
-        // whenNotPaused 
+        whenNotPaused
         override 
         isTransferAllowed(tokenId_) 
     {
         super.safeTransferFrom(from_, to_, tokenId_, data_);
     }
-
-    // function setApprovalForSlot(
-    //     address owner_,
-    //     uint256 slot_,
-    //     address operator_,
-    //     bool approved_
-    // ) 
-    //     external 
-    //     payable 
-    //     virtual 
-    //     // nonReentrant
-    //     // whenNotPaused         
-    // {
-    //     if (!(_msgSender() == owner_ || isApprovedForAll(owner_, _msgSender()))) {
-    //         revert Errors.NotAllowed();
-    //     }
-    //     _setApprovalForSlot(owner_, slot_, operator_, approved_);
-    // }
-
-    // function isApprovedForSlot(address owner_, uint256 slot_, address operator_) external view virtual returns (bool) {
-    //     return _slotApprovals[owner_][slot_][operator_];
-    // }
-
-    // function _setApprovalForSlot(address owner_, uint256 slot_, address operator_, bool approved_) internal virtual {
-    //     if (owner_ == operator_) {
-    //         revert Errors.ApproveToOwner();
-    //     }
-    //     _slotApprovals[owner_][slot_][operator_] = approved_;
-    //     emit Events.ApprovalForSlot(owner_, slot_, operator_, approved_);
-    // }
 
     function supportsInterface(bytes4 interfaceId) public view virtual override(AccessControlUpgradeable, ERC3525Upgradeable) returns (bool) {
         return
@@ -309,16 +219,10 @@ contract NFTDerivativeProtocolTokenV1 is
             super.supportsInterface(interfaceId);
     } 
 
- //V1
-    // function getManager() external view returns(address) {
-    //     return _manager;
-    // }
-
-    
     function setBankTreasury(address bankTreasury, uint256 initialSupply) 
         external  
-        // nonReentrant
-        // whenNotPaused 
+        
+        whenNotPaused
     {
         if (!hasRole(DEFAULT_ADMIN_ROLE, _msgSender())) revert Errors.Unauthorized();
         
@@ -359,16 +263,6 @@ contract NFTDerivativeProtocolTokenV1 is
     //     return _banktreasury;
     // }
 
-    // function setProfileImageURI(uint256 soulBoundTokenId, string calldata imageURI)
-    //     external
-    //     override
-    //     // nonReentrant
-    //     // whenNotPaused 
-    // { 
-    //     _validateCallerIsSoulBoundTokenOwnerOrDispathcher(soulBoundTokenId);
-
-    //     _setProfileImageURI(soulBoundTokenId, imageURI);
-    // }
 
 
     /// ****************************
@@ -398,20 +292,5 @@ contract NFTDerivativeProtocolTokenV1 is
         if (!hasRole(UPGRADER_ROLE, _msgSender())) revert Errors.Unauthorized();
     }
    
-    // function _setProfileImageURI(uint256 soulBoundTokenId, string calldata imageURI) internal {
-    //     if (bytes(imageURI).length > Constants.MAX_PROFILE_IMAGE_URI_LENGTH)
-    //         revert Errors.ProfileImageURILengthInvalid(); 
-
-    //     DataTypes.SoulBoundTokenDetail storage detail = _sbtDetails[soulBoundTokenId];
-    //     detail.imageURI = imageURI;
-
-    //     emit Events.ProfileImageURISet(soulBoundTokenId, imageURI, block.timestamp);
-    // }
-
-    // function _validateNickName(string calldata nickName) private pure {
-    //     bytes memory byteNickName = bytes(nickName);
-    //     if (byteNickName.length == 0 || byteNickName.length > Constants.MAX_NICKNAME_LENGTH)
-    //         revert Errors.NickNameLengthInvalid();
-    // }
 
 }

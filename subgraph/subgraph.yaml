@@ -20,8 +20,6 @@ dataSources:
         - ProfileCreated
         - MintSBTValue
         - BurnSBT
-        - BurnSBTValue
-        - ProfileImageURISet
         - ApprovalForSlot
       abis:
         - name: Events
@@ -37,10 +35,6 @@ dataSources:
           handler: handleMintSBTValue
         - event: BurnSBT(uint256,uint256)
           handler: handleBurnSBT
-        - event: BurnSBTValue(uint256,uint256,uint256)
-          handler: handleBurnSBTValue
-        - event: ProfileImageURISet(indexed uint256,string,uint256)
-          handler: handleProfileImageURISet
         - event: ApprovalForSlot(indexed address,indexed uint256,indexed address,bool)
           handler: handleApprovalForSlot
       file: ./src/sbt-mapping.ts
@@ -104,6 +98,7 @@ dataSources:
         - DerivativeNFTAirdroped
         - DispatcherSet
         - StateSet
+        - ValueChanged
       abis:
         - name: Events
           file: ./abis/Events.json
@@ -130,6 +125,8 @@ dataSources:
           handler: handleDispatcherSet
         - event:  StateSet(indexed address,indexed uint8,indexed uint8,uint256)
           handler: handleStateSet
+        - event:  ValueChanged(uint256,address)
+          handler: handleValueChanged
       file: ./src/manager-mapping.ts
 
   - kind: ethereum/contract

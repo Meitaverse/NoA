@@ -23,6 +23,7 @@ import {IBankTreasury} from "./interfaces/IBankTreasury.sol";
 import {Clones} from '@openzeppelin/contracts/proxy/Clones.sol';
 import {VersionedInitializable} from './upgradeability/VersionedInitializable.sol';
 import {IModuleGlobals} from "./interfaces/IModuleGlobals.sol";
+import "hardhat/console.sol";
 
 contract Manager is 
     ReentrancyGuard,
@@ -103,15 +104,6 @@ contract Manager is
         INFTDerivativeProtocolTokenV1(_sbt).burn(tokenId);
     }
 
-    // function burnSBTValue(uint256 tokenId, uint256 value) 
-    //     external 
-    //     whenNotPaused 
-    //     nonReentrant
-    //     onlyGov 
-    // {
-    //     address _sbt = IModuleGlobals(MODULE_GLOBALS).getSBT();
-    //     INFTDerivativeProtocolTokenV1(_sbt).burnValue(tokenId, value);
-    // }
 
     function createProfile(
         DataTypes.CreateProfileData calldata vars
@@ -538,8 +530,16 @@ contract Manager is
         _setGovernance(newGovernance);
     }
 
+    function setTimeLock(address timeLock) external nonReentrant onlyGov {
+        _timeLock = timeLock;
+    }
+
     function getGovernance() external view returns(address) {
         return _governance;
+    }
+
+    function getTimeLock() external view returns(address) {
+        return _timeLock;
     }
 
     function setGlobalModule(address moduleGlobals) external nonReentrant onlyGov {
@@ -593,7 +593,7 @@ contract Manager is
     }
 
     function _validateCallerIsGovernance() internal view {
-        if (msg.sender != _governance) revert Errors.NotGovernance();
+        if (!(msg.sender == _governance || msg.sender == _timeLock)) revert Errors.NotGovernance();
     }
     
     function _validateCallerIsOwner() internal view {
@@ -694,4 +694,30 @@ contract Manager is
         if (byteNickName.length == 0 || byteNickName.length > Constants.MAX_NICKNAME_LENGTH)
             revert Errors.NickNameLengthInvalid();
     }
+
+
+    //Box
+  uint256 private _value;
+
+
+  // Stores a new value in the contract
+  // owner可以为合约地址，由合约来调用
+  function store(uint256 newValue) public onlyGov {
+    console.log('_timeLock: ', _timeLock);
+    console.log('manager store tx.origin: ', tx.origin);
+    console.log('manager store caller: ', msg.sender);
+    if (msg.sender == _governance || msg.sender == _timeLock)  {
+        console.log('store: caller is governance or governanor');
+    } else {
+        revert Errors.NotGovernance();
+    }
+
+    _value = newValue;
+    emit Events.ValueChanged(newValue, msg.sender);
+  }
+
+  // Reads the last stored value
+  function retrieve() public view returns (uint256) {
+    return _value;
+  }
 }

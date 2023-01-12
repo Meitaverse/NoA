@@ -347,12 +347,6 @@ library Events {
         uint256 timestamp
     );
 
-    event BurnSBTValue(
-        uint256 soulBoundTokenId, 
-        uint256 value, 
-        uint256 timestamp
-    );
-
     /**
      * @dev Emitted when Manager call to mintValue of SBT Tokens.
      * @param soulBoundTokenId The token id of SBT
@@ -365,18 +359,6 @@ library Events {
         uint256 timestamp
     );
 
-    /**
-     * @dev Emitted when a profile's URI is set.
-     *
-     * @param soulBoundTokenId The token ID of the profile for which the URI is set.
-     * @param imageURI The URI set for the given profile.
-     * @param timestamp The current block timestamp.
-     */
-    event ProfileImageURISet(
-        uint256 indexed soulBoundTokenId, 
-        string imageURI, 
-        uint256 timestamp
-    );
 
     event DerivativeNFTCollected(
         uint256 projectId,
@@ -650,6 +632,10 @@ library Events {
      * @dev Emitted when a token transfer or delegate change results in changes to a delegate's number of votes.
      */
     event DelegateVotesChanged(address indexed delegate, uint256 previousBalance, uint256 newBalance);
+
+
+    // Emitted when the stored value changes
+    event ValueChanged(uint256 newValue, address caller);
 
 }
 

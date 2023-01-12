@@ -11,7 +11,8 @@ import {
     DerivativeNFTDeployed,
     DerivativeNFTAirdroped,
     DispatcherSet,
-    StateSet
+    StateSet,
+    ValueChanged,
 } from "../generated/Manager/Events"
 
 import {
@@ -215,4 +216,14 @@ export function handleStateSet(event: StateSet): void {
         history.timestamp = event.params.timestamp
         history.save()
     } 
+}
+
+export function handleValueChanged(event: ValueChanged): void {
+    log.info("handleValueChanged, event.address: {}, value: {}, caller:{}", 
+        [
+            event.address.toHexString(),
+            event.params.newValue.toString(),
+            event.params.caller.toHexString()
+        ])
+
 }

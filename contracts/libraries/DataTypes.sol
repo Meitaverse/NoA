@@ -139,6 +139,7 @@ library DataTypes {
      */
     struct SlotDetail {
         Publication publication;
+        string imageURI;
         uint256 timestamp; //minted timestamp
     }
 

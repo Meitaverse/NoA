@@ -61,14 +61,6 @@ type BurnSBTHistory @entity {
   timestamp: BigInt!
 }    
 
-# burn SBT value history    
-type BurnSBTValueHistory @entity {
-  id: ID!
-  soulBoundTokenId: BigInt!
-  value: BigInt!
-  timestamp: BigInt!
-}    
-
 
 # Approval 
 type ApprovalRecord @entity {
@@ -98,14 +90,13 @@ type ApprovalValueRecord @entity {
 }    
 
 
-# Profile ImageURI Set history    
-type ProfileImageURISetHistory @entity {
+# derivativeNFT ImageURI Set history    
+type DerivativeNFTImageURISetHistory @entity {
   id: ID!
   soulBoundTokenId: BigInt!
   imageURI: String!
   timestamp: BigInt!
 }    
-
 
 # Hub
 type Hub @entity {

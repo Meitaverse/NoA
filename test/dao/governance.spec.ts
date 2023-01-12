@@ -123,7 +123,7 @@ makeSuiteCleanRoom('Bank Treasury', function () {
 
 
         expect(await manager.getWalletBySoulBoundTokenId(SECOND_PROFILE_ID)).to.eq(userAddress);
-        // expect(await manager.getWalletBySoulBoundTokenId(THIRD_PROFILE_ID)).to.eq(userTwoAddress);
+        expect(await manager.getWalletBySoulBoundTokenId(THIRD_PROFILE_ID)).to.eq(userTwoAddress);
     });
 
     context('Vote', function () {
@@ -132,7 +132,7 @@ makeSuiteCleanRoom('Bank Treasury', function () {
             await expect(box.connect(user).store(55)).to.be.revertedWith("Ownable: caller is not the owner")
         });
 
-        it("One user proposes, votes, waits, queues, and then executes", async () => {
+        it("One user proposes, votes, waits, queues, and then Box executes", async () => {
             //mint Value to user for vote , value 必须大于90万
             await manager.connect(governance).mintSBTValue(SECOND_PROFILE_ID, 900000);
             let balanceOfUser =(await sbtContract['balanceOf(uint256)'](SECOND_PROFILE_ID)).toNumber();
@@ -180,7 +180,7 @@ makeSuiteCleanRoom('Bank Treasury', function () {
             const encodedFunctionCall = box.interface.encodeFunctionData(FUNC, [NEW_STORE_VALUE]);
             
             //创建一个propose的交易
-            const proposeTx = await governorContract.connect(deployer).propose(
+            const proposeTx = await governorContract.propose( //connect(deployer).
                 [box.address],
                 [0],
                 [encodedFunctionCall],
@@ -268,6 +268,170 @@ makeSuiteCleanRoom('Bank Treasury', function () {
             console.log((await box.retrieve()).toString());
 
             proposalState = await governorContract.state(proposalId);
+            // assert.equal(proposalState.toString(), "7")
+            expect(proposalState.toString()).to.eq('7');
+            console.log();
+            //7 - Executed
+            console.log(`Executed! Current Proposal State: ${proposalState}`);
+        
+        });
+
+        it("onlyGov proposes, votes, waits, queues, and then Manager onlyGov functions executes", async () => {
+            //mint Value to user for vote , value 必须大于90万
+            await manager.connect(governance).mintSBTValue(SECOND_PROFILE_ID, 900000);
+            let balanceOfUser =(await sbtContract['balanceOf(uint256)'](SECOND_PROFILE_ID)).toNumber();
+            console.log('balance of user: ', balanceOfUser);
+
+            let balanceOfUserTwo =(await sbtContract['balanceOf(uint256)'](THIRD_PROFILE_ID)).toNumber();
+            console.log('balance of userTwo: ', balanceOfUserTwo);
+
+            const transactionResponse = sbtContract.connect(user).delegate(userAddress, SECOND_PROFILE_ID);
+            // await transactionResponse.wait(1);
+            const receipt = await waitForTx(transactionResponse);
+            matchEvent(
+                receipt,
+                'DelegateChanged',
+                [
+                  userAddress, 
+                  ZERO_ADDRESS, 
+                  userAddress,
+                  SECOND_PROFILE_ID,
+                ],
+              );
+
+  
+            console.log(`Checkpoints: ${await sbtContract.numCheckpoints(userAddress)}`);
+            let checkpoints = await sbtContract.checkpoints(userAddress, 0);
+            console.log(`checkpoints.fromBlock: ${checkpoints.fromBlock}`);
+            console.log(`checkpoints.votes: ${checkpoints.votes}`);
+         
+             //返回 user 选择的委托。    
+            console.log("delegates: ",await sbtContract.delegates(userAddress));
+
+            //manager set governanor to timeLock contract
+            await expect(
+                manager.connect(governance).setTimeLock(timeLock.address)
+            ).to.not.be.reverted;
+
+            const proposerRole = await timeLock.PROPOSER_ROLE();
+            const executorRole = await timeLock.EXECUTOR_ROLE();
+            const adminRole = await timeLock.TIMELOCK_ADMIN_ROLE();
+            console.log('proposerRole: ', proposerRole);
+            console.log('executorRole: ', executorRole);
+            console.log('adminRole: ', adminRole);
+    
+            const proposerTx = await timeLock.grantRole(proposerRole, governorContract.address);
+            await proposerTx.wait(1);
+
+            // const executorTx = await timeLock.grantRole(executorRole, governorContract.address);
+            // await executorTx.wait(1);
+            // const executorTx2 = await timeLock.grantRole(executorRole, manager.address);
+            // await executorTx2.wait(1);
+            const executorTx = await timeLock.grantRole(executorRole, ADDRESS_ZERO);
+            await executorTx.wait(1);
+   
+            const revokeTx = await timeLock.revokeRole(adminRole, await deployer.getAddress());
+            await revokeTx.wait(1);
+    
+            // propose
+            const FUNC_mintSBTValue = 'mintSBTValue';
+            
+            const encodedFunctionCall = manager.interface.encodeFunctionData(FUNC_mintSBTValue, [THIRD_PROFILE_ID, 6000]);
+            
+            //创建一个propose的交易
+            const proposeTx = await governorContract.propose( //connect(deployer).
+                [manager.address],
+                [0],
+                [encodedFunctionCall],
+                PROPOSAL_DESCRIPTION,
+            );  
+
+            const proposeReceipt = await proposeTx.wait(1);
+            const proposalId = proposeReceipt.events![0].args!.proposalId;
+            console.log('proposalId:', proposalId);
+
+            let proposalState = await governorContract.state(proposalId);
+            const proposalSnapShot = await governorContract.proposalSnapshot(proposalId);
+            const proposalDeadline = await governorContract.proposalDeadline(proposalId);
+    
+            // 0 - Pending
+            console.log(`Pending! Current Proposal State: ${proposalState}`);
+            // What block # the proposal was snapshot
+            console.log(`Current Proposal Snapshot: ${proposalSnapShot}`);
+            // The block number the proposal voting expires
+            console.log(`Current Proposal Deadline: ${proposalDeadline}`);
+
+            await moveBlocks(VOTING_DELAY + 1);
+            console.log();
+
+            // user vote
+            const voteTx = await governorContract.connect(user).castVoteWithReason(
+                proposalId, 
+                voteWay, 
+                reason,
+            );
+
+            await voteTx.wait(1);
+
+            proposalState = await governorContract.state(proposalId);
+
+            // assert.equal(proposalState.toString(), "1")
+            expect(proposalState.toString()).to.eq('1');
+
+            
+            // 1 - Active
+            
+            console.log(`Active! Current Proposal State: ${proposalState}`);
+
+            await moveBlocks(VOTING_PERIOD + 1);
+            console.log();
+            
+         
+            // queue & execute
+            // const descriptionHash = ethers.utils.keccak256(ethers.utils.toUtf8Bytes(PROPOSAL_DESCRIPTION))
+            const descriptionHash = ethers.utils.id(PROPOSAL_DESCRIPTION);
+            const queueTx = await governorContract.connect(user).queue(
+                [manager.address], 
+                [0], 
+                [encodedFunctionCall], 
+                descriptionHash
+            );
+            await queueTx.wait(1);
+
+            await moveTime(MIN_DELAY + 1);
+            await moveBlocks(1);
+            console.log();
+
+            proposalState = await governorContract.state(proposalId);
+            // assert.equal(proposalState.toString(), "5")
+            expect(proposalState.toString()).to.eq('5');
+
+            //5 - Queued
+            console.log(`Queued! Current Proposal State: ${proposalState}`);
+
+            //获取票数
+            const votes = await governorContract.getVotes(userAddress, 60);
+            console.log("votes", votes); 
+            console.log(`Checkpoints: ${await sbtContract.numCheckpoints(userAddress)}`);
+            
+            //(token.getPastTotalSupply(blockNumber) * quorumNumerator(blockNumber)) / quorumDenominator();
+            //900000 * 10 / 100
+            const quorum = await governorContract.quorum(63);
+            console.log("quorum: ", quorum);
+            
+            console.log("\n Executing...");
+            console.log
+
+            const exTx = await governorContract.execute([manager.address], [0], [encodedFunctionCall], descriptionHash);
+            const exReceipt = await exTx.wait(1);
+            
+            // console.log((await manager.retrieve()).toString());
+
+            balanceOfUserTwo =(await sbtContract['balanceOf(uint256)'](THIRD_PROFILE_ID)).toNumber();
+            console.log('Executing finished! balance of userTwo: ', balanceOfUserTwo);
+
+            proposalState = await governorContract.state(proposalId);
+
             // assert.equal(proposalState.toString(), "7")
             expect(proposalState.toString()).to.eq('7');
             console.log();

@@ -41,9 +41,10 @@ import {
     Template,
     Template__factory,
     MarketPlace__factory,
+    TimeLock__factory,
 
 } from "../typechain";
-import { metadataDescriptors } from "../typechain/contracts";
+import { TimeLock, metadataDescriptors } from "../typechain/contracts";
 
 export const DEFAULT_CONFIG_PATH = "./deployments/networks.json";
 export const DEFAULT_LOCALHOST_CONFIG_PATH =
@@ -53,6 +54,8 @@ export type ContractName =
   | "ManagerImpl"
   | "Manager"
   | "SBT"
+  | "TimeLock"
+  | "GovernorContract"
   | "BankTreasury"
   | "MarketPlace"
   | "Voucher"
@@ -67,6 +70,8 @@ export type DAOContract =
   | Manager
   | NFTDerivativeProtocolTokenV1
   | BankTreasury
+  | TimeLock
+  | GovernorContract
   | MarketPlace
   | Voucher
   | Template
@@ -136,6 +141,8 @@ type ContractFactory =
   | typeof Manager__factory
   | typeof NFTDerivativeProtocolTokenV1__factory
   | typeof BankTreasury__factory
+  | typeof GovernorContract__factory
+  | typeof TimeLock__factory
   | typeof MarketPlace__factory
   | typeof Voucher__factory
   | typeof FeeCollectModule__factory
@@ -196,6 +203,10 @@ export async function loadContractByName(
       return Manager__factory.connect(address, deployer);
     case "SBT":
       return NFTDerivativeProtocolTokenV1__factory.connect(address, deployer);
+    case "TimeLock":
+      return TimeLock__factory.connect(address, deployer);
+    case "GovernorContract":
+      return GovernorContract__factory.connect(address, deployer);
     case "BankTreasury":
       return BankTreasury__factory.connect(address, deployer);
     case "MarketPlace":

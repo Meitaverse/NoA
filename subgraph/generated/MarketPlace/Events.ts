@@ -122,32 +122,6 @@ export class BurnSBT__Params {
   }
 }
 
-export class BurnSBTValue extends ethereum.Event {
-  get params(): BurnSBTValue__Params {
-    return new BurnSBTValue__Params(this);
-  }
-}
-
-export class BurnSBTValue__Params {
-  _event: BurnSBTValue;
-
-  constructor(event: BurnSBTValue) {
-    this._event = event;
-  }
-
-  get soulBoundTokenId(): BigInt {
-    return this._event.parameters[0].value.toBigInt();
-  }
-
-  get value(): BigInt {
-    return this._event.parameters[1].value.toBigInt();
-  }
-
-  get timestamp(): BigInt {
-    return this._event.parameters[2].value.toBigInt();
-  }
-}
-
 export class CollectModuleWhitelisted extends ethereum.Event {
   get params(): CollectModuleWhitelisted__Params {
     return new CollectModuleWhitelisted__Params(this);
@@ -193,6 +167,62 @@ export class ConfirmTransaction__Params {
 
   get txIndex(): BigInt {
     return this._event.parameters[1].value.toBigInt();
+  }
+}
+
+export class DelegateChanged extends ethereum.Event {
+  get params(): DelegateChanged__Params {
+    return new DelegateChanged__Params(this);
+  }
+}
+
+export class DelegateChanged__Params {
+  _event: DelegateChanged;
+
+  constructor(event: DelegateChanged) {
+    this._event = event;
+  }
+
+  get delegator(): Address {
+    return this._event.parameters[0].value.toAddress();
+  }
+
+  get fromDelegate(): Address {
+    return this._event.parameters[1].value.toAddress();
+  }
+
+  get toDelegate(): Address {
+    return this._event.parameters[2].value.toAddress();
+  }
+
+  get tokeId_delegator(): BigInt {
+    return this._event.parameters[3].value.toBigInt();
+  }
+}
+
+export class DelegateVotesChanged extends ethereum.Event {
+  get params(): DelegateVotesChanged__Params {
+    return new DelegateVotesChanged__Params(this);
+  }
+}
+
+export class DelegateVotesChanged__Params {
+  _event: DelegateVotesChanged;
+
+  constructor(event: DelegateVotesChanged) {
+    this._event = event;
+  }
+
+  get delegate(): Address {
+    return this._event.parameters[0].value.toAddress();
+  }
+
+  get previousBalance(): BigInt {
+    return this._event.parameters[1].value.toBigInt();
+  }
+
+  get newBalance(): BigInt {
+    return this._event.parameters[2].value.toBigInt();
   }
 }
 
@@ -1284,32 +1314,6 @@ export class ProfileCreatorWhitelisted__Params {
   }
 }
 
-export class ProfileImageURISet extends ethereum.Event {
-  get params(): ProfileImageURISet__Params {
-    return new ProfileImageURISet__Params(this);
-  }
-}
-
-export class ProfileImageURISet__Params {
-  _event: ProfileImageURISet;
-
-  constructor(event: ProfileImageURISet) {
-    this._event = event;
-  }
-
-  get soulBoundTokenId(): BigInt {
-    return this._event.parameters[0].value.toBigInt();
-  }
-
-  get imageURI(): string {
-    return this._event.parameters[1].value.toString();
-  }
-
-  get timestamp(): BigInt {
-    return this._event.parameters[2].value.toBigInt();
-  }
-}
-
 export class PublishCreated extends ethereum.Event {
   get params(): PublishCreated__Params {
     return new PublishCreated__Params(this);
@@ -2023,6 +2027,28 @@ export class UserAmountLimitSet__Params {
 
   get timestamp(): BigInt {
     return this._event.parameters[2].value.toBigInt();
+  }
+}
+
+export class ValueChanged extends ethereum.Event {
+  get params(): ValueChanged__Params {
+    return new ValueChanged__Params(this);
+  }
+}
+
+export class ValueChanged__Params {
+  _event: ValueChanged;
+
+  constructor(event: ValueChanged) {
+    this._event = event;
+  }
+
+  get newValue(): BigInt {
+    return this._event.parameters[0].value.toBigInt();
+  }
+
+  get caller(): Address {
+    return this._event.parameters[1].value.toAddress();
   }
 }
 

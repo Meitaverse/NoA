@@ -148,6 +148,32 @@ export class BurnTokenWithSig__Params {
   }
 }
 
+export class DerivativeNFTImageURISet extends ethereum.Event {
+  get params(): DerivativeNFTImageURISet__Params {
+    return new DerivativeNFTImageURISet__Params(this);
+  }
+}
+
+export class DerivativeNFTImageURISet__Params {
+  _event: DerivativeNFTImageURISet;
+
+  constructor(event: DerivativeNFTImageURISet) {
+    this._event = event;
+  }
+
+  get tokenId(): BigInt {
+    return this._event.parameters[0].value.toBigInt();
+  }
+
+  get imageURI(): string {
+    return this._event.parameters[1].value.toString();
+  }
+
+  get timestamp(): BigInt {
+    return this._event.parameters[2].value.toBigInt();
+  }
+}
+
 export class Initialized extends ethereum.Event {
   get params(): Initialized__Params {
     return new Initialized__Params(this);
@@ -269,8 +295,12 @@ export class DerivativeNFTV1__getSlotDetailResultValue0Struct extends ethereum.T
     >(this[0].toTuple());
   }
 
+  get imageURI(): string {
+    return this[1].toString();
+  }
+
   get timestamp(): BigInt {
-    return this[1].toBigInt();
+    return this[2].toBigInt();
   }
 }
 
@@ -592,7 +622,7 @@ export class DerivativeNFTV1 extends ethereum.SmartContract {
   ): DerivativeNFTV1__getSlotDetailResultValue0Struct {
     let result = super.call(
       "getSlotDetail",
-      "getSlotDetail(uint256):(((uint256,uint256,uint256,uint256,uint256,uint256,string,string,string[],uint256[],address,bytes,address,bytes),uint256))",
+      "getSlotDetail(uint256):(((uint256,uint256,uint256,uint256,uint256,uint256,string,string,string[],uint256[],address,bytes,address,bytes),string,uint256))",
       [ethereum.Value.fromUnsignedBigInt(slot_)]
     );
 
@@ -606,7 +636,7 @@ export class DerivativeNFTV1 extends ethereum.SmartContract {
   ): ethereum.CallResult<DerivativeNFTV1__getSlotDetailResultValue0Struct> {
     let result = super.tryCall(
       "getSlotDetail",
-      "getSlotDetail(uint256):(((uint256,uint256,uint256,uint256,uint256,uint256,string,string,string[],uint256[],address,bytes,address,bytes),uint256))",
+      "getSlotDetail(uint256):(((uint256,uint256,uint256,uint256,uint256,uint256,string,string,string[],uint256[],address,bytes,address,bytes),string,uint256))",
       [ethereum.Value.fromUnsignedBigInt(slot_)]
     );
     if (result.reverted) {
@@ -1924,6 +1954,40 @@ export class SetStateCall__Outputs {
   _call: SetStateCall;
 
   constructor(call: SetStateCall) {
+    this._call = call;
+  }
+}
+
+export class SetTokenImageURICall extends ethereum.Call {
+  get inputs(): SetTokenImageURICall__Inputs {
+    return new SetTokenImageURICall__Inputs(this);
+  }
+
+  get outputs(): SetTokenImageURICall__Outputs {
+    return new SetTokenImageURICall__Outputs(this);
+  }
+}
+
+export class SetTokenImageURICall__Inputs {
+  _call: SetTokenImageURICall;
+
+  constructor(call: SetTokenImageURICall) {
+    this._call = call;
+  }
+
+  get tokenId(): BigInt {
+    return this._call.inputValues[0].value.toBigInt();
+  }
+
+  get imageURI(): string {
+    return this._call.inputValues[1].value.toString();
+  }
+}
+
+export class SetTokenImageURICall__Outputs {
+  _call: SetTokenImageURICall;
+
+  constructor(call: SetTokenImageURICall) {
     this._call = call;
   }
 }

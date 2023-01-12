@@ -501,67 +501,6 @@ export class BurnSBTHistory extends Entity {
   }
 }
 
-export class BurnSBTValueHistory extends Entity {
-  constructor(id: string) {
-    super();
-    this.set("id", Value.fromString(id));
-  }
-
-  save(): void {
-    let id = this.get("id");
-    assert(id != null, "Cannot save BurnSBTValueHistory entity without an ID");
-    if (id) {
-      assert(
-        id.kind == ValueKind.STRING,
-        `Entities of type BurnSBTValueHistory must have an ID of type String but the id '${id.displayData()}' is of type ${id.displayKind()}`
-      );
-      store.set("BurnSBTValueHistory", id.toString(), this);
-    }
-  }
-
-  static load(id: string): BurnSBTValueHistory | null {
-    return changetype<BurnSBTValueHistory | null>(
-      store.get("BurnSBTValueHistory", id)
-    );
-  }
-
-  get id(): string {
-    let value = this.get("id");
-    return value!.toString();
-  }
-
-  set id(value: string) {
-    this.set("id", Value.fromString(value));
-  }
-
-  get soulBoundTokenId(): BigInt {
-    let value = this.get("soulBoundTokenId");
-    return value!.toBigInt();
-  }
-
-  set soulBoundTokenId(value: BigInt) {
-    this.set("soulBoundTokenId", Value.fromBigInt(value));
-  }
-
-  get value(): BigInt {
-    let value = this.get("value");
-    return value!.toBigInt();
-  }
-
-  set value(value: BigInt) {
-    this.set("value", Value.fromBigInt(value));
-  }
-
-  get timestamp(): BigInt {
-    let value = this.get("timestamp");
-    return value!.toBigInt();
-  }
-
-  set timestamp(value: BigInt) {
-    this.set("timestamp", Value.fromBigInt(value));
-  }
-}
-
 export class ApprovalRecord extends Entity {
   constructor(id: string) {
     super();
@@ -770,7 +709,7 @@ export class ApprovalValueRecord extends Entity {
   }
 }
 
-export class ProfileImageURISetHistory extends Entity {
+export class DerivativeNFTImageURISetHistory extends Entity {
   constructor(id: string) {
     super();
     this.set("id", Value.fromString(id));
@@ -780,20 +719,20 @@ export class ProfileImageURISetHistory extends Entity {
     let id = this.get("id");
     assert(
       id != null,
-      "Cannot save ProfileImageURISetHistory entity without an ID"
+      "Cannot save DerivativeNFTImageURISetHistory entity without an ID"
     );
     if (id) {
       assert(
         id.kind == ValueKind.STRING,
-        `Entities of type ProfileImageURISetHistory must have an ID of type String but the id '${id.displayData()}' is of type ${id.displayKind()}`
+        `Entities of type DerivativeNFTImageURISetHistory must have an ID of type String but the id '${id.displayData()}' is of type ${id.displayKind()}`
       );
-      store.set("ProfileImageURISetHistory", id.toString(), this);
+      store.set("DerivativeNFTImageURISetHistory", id.toString(), this);
     }
   }
 
-  static load(id: string): ProfileImageURISetHistory | null {
-    return changetype<ProfileImageURISetHistory | null>(
-      store.get("ProfileImageURISetHistory", id)
+  static load(id: string): DerivativeNFTImageURISetHistory | null {
+    return changetype<DerivativeNFTImageURISetHistory | null>(
+      store.get("DerivativeNFTImageURISetHistory", id)
     );
   }
 

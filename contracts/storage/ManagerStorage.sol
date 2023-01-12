@@ -99,6 +99,7 @@ abstract contract ManagerStorage {
     // address public  TREASURY;
     address internal MODULE_GLOBALS;
     address internal _governance;
+    address internal _timeLock; //TimeLock address
 
     uint256 internal _profileCounter;
     address internal _soulBoundToken;

@@ -7,10 +7,10 @@ import "@solvprotocol/erc-3525/contracts/ERC3525Upgradeable.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
 import {Errors} from "./libraries/Errors.sol";
 import {DataTypes} from './libraries/DataTypes.sol';
-import {Events} from "./libraries/Events.sol";
 import {IManager} from "./interfaces/IManager.sol";
 import {IDerivativeNFTV1} from "./interfaces/IDerivativeNFTV1.sol";
 import "./base/DerivativeNFTMultiState.sol";
+import {Constants} from './libraries/Constants.sol';
 
 /**
  *  @title Derivative NFT
@@ -43,6 +43,19 @@ contract DerivativeNFTV1 is
     bytes32 internal constant PERMIT_VALUE_TYPEHASH =
         keccak256('PermitValue(address spender,uint256 tokenId,uint256 value,uint256 nonce,uint256 deadline)');
     
+
+    /**
+     * @dev Emitted when a derivativeNFT's URI is set.
+     *
+     * @param tokenId The token ID of the derivativeNFT for which the URI is set.
+     * @param imageURI The URI set for the given derivativeNFT.
+     * @param timestamp The current block timestamp.
+     */
+    event DerivativeNFTImageURISet(
+        uint256 indexed tokenId, 
+        string imageURI, 
+        uint256 timestamp
+    );
 
     /**
      * @dev Emitted when a dNFT is burned.
@@ -230,7 +243,7 @@ contract DerivativeNFTV1 is
 
         _slotDetails[slot] = DataTypes.SlotDetail({
             publication: publication,
-            // projectId:  _projectId,
+            imageURI:  "",
             timestamp: block.timestamp 
         });
 
@@ -257,6 +270,13 @@ contract DerivativeNFTV1 is
         ERC3525Upgradeable._transferValue(fromTokenId_, newTokenId, value_);
 
         return newTokenId;
+    }
+
+    function setTokenImageURI(uint256 tokenId, string calldata imageURI)
+        external
+        whenNotPaused
+    { 
+        _setTokenImageURI(tokenId, imageURI);
     }
 
     function permit(
@@ -481,13 +501,6 @@ contract DerivativeNFTV1 is
         );
     }
 
-    // function setApprovalForAll(
-    //     address operator_, 
-    //     bool approved_
-    // ) public virtual override onlyManager whenNotPaused{
-    //     super._setApprovalForAll(_msgSender(), operator_, approved_);
-    // }
-
     function setApprovalForSlot(
         address owner_,
         uint256 slot_,
@@ -680,4 +693,23 @@ contract DerivativeNFTV1 is
         }
         return digest;
     }    
+
+
+
+    function _setTokenImageURI(uint256 tokenId, string calldata imageURI) internal {
+        if (bytes(imageURI).length > Constants.MAX_PROFILE_IMAGE_URI_LENGTH)
+            revert Errors.ProfileImageURILengthInvalid(); 
+
+        address owner = ERC3525Upgradeable.ownerOf(tokenId);
+
+        if (_msgSender() != owner) {
+            revert Errors.NotOwner();
+        }
+
+        DataTypes.SlotDetail storage detail = _slotDetails[tokenId];
+        detail.imageURI = imageURI;
+
+        emit DerivativeNFTImageURISet(tokenId, imageURI, block.timestamp);
+    }
+
 }

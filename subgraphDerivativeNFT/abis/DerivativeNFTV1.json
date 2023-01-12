@@ -42,6 +42,11 @@
     },
     {
       "inputs": [],
+      "name": "NotOwner",
+      "type": "error"
+    },
+    {
+      "inputs": [],
       "name": "NotOwnerNorApproved",
       "type": "error"
     },
@@ -53,6 +58,11 @@
     {
       "inputs": [],
       "name": "Paused",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "ProfileImageURILengthInvalid",
       "type": "error"
     },
     {
@@ -215,6 +225,31 @@
         }
       ],
       "name": "BurnTokenWithSig",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "uint256",
+          "name": "tokenId",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "internalType": "string",
+          "name": "imageURI",
+          "type": "string"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "timestamp",
+          "type": "uint256"
+        }
+      ],
+      "name": "DerivativeNFTImageURISet",
       "type": "event"
     },
     {
@@ -640,6 +675,11 @@
               "internalType": "struct DataTypes.Publication",
               "name": "publication",
               "type": "tuple"
+            },
+            {
+              "internalType": "string",
+              "name": "imageURI",
+              "type": "string"
             },
             {
               "internalType": "uint256",
@@ -1261,6 +1301,24 @@
           "type": "uint256"
         },
         {
+          "internalType": "string",
+          "name": "imageURI",
+          "type": "string"
+        }
+      ],
+      "name": "setTokenImageURI",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "tokenId",
+          "type": "uint256"
+        },
+        {
           "internalType": "address",
           "name": "recipient",
           "type": "address"
@@ -1585,4 +1643,4 @@
       "stateMutability": "view",
       "type": "function"
     }
-]
+  ]

@@ -19,10 +19,16 @@ interface IManager {
     function initialize(    
        address governance_
     ) external;
-   
-  function getGlobalModule() external returns(address);
+    
+    function getGlobalModule() external returns(address);
 
-  function getGovernance() external returns(address);
+    function setGovernance(address newGovernance) external;
+
+    function setTimeLock(address timeLock) external;
+
+    function getGovernance() external returns(address);
+    
+    function getTimeLock() external returns(address);
 
     /**
      * @notice Sets a soulBoundTokenId's dispatcher via signature with the specified parameters.
@@ -75,11 +81,6 @@ interface IManager {
    function burnSBT(
         uint256 soulBoundTokenId
    )external;
-
-    // function burnSBTValue(
-    //     uint256 soulBoundTokenId,
-    //     uint256 value
-    // ) external;
 
     /**
      * @notice Creates a profile with the specified parameters, minting a profile NFT to the given recipient. This

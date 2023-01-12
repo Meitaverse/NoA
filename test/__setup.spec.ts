@@ -220,20 +220,6 @@ before(async function () {
   timeLock = await new TimeLock__factory(deployer).deploy(MIN_DELAY, [], [], deployerAddress);
   console.log("timeLock address: ", timeLock.address);
 
-  // const timeLock = await deploy("TimeLock", {
-  //   from: deployer,
-  //   /**
-  //    * Here we can set any address in admin role also zero address.
-  //    * previously In tutorial deployer has given admin role then
-  //    * renounced as well. in later section so we are doing the same by giving admin role to
-  //    * deployer and then renounced to keep the tutorial same.
-  //    */
-  //   args: [MIN_DELAY, [], [], deployer],
-  //   log: true,
-  //   // we need to wait if on a live network so we can verify properly
-  //   waitConfirmations: networkConfig[network.name].blockConfirmations || 1,
-  // })
-
 
   receiverMock = await new ERC3525ReceiverMock__factory(deployer).deploy(RECEIVER_MAGIC_VALUE, Error.None);
 
@@ -300,19 +286,24 @@ before(async function () {
   );
   sbtContract = new NFTDerivativeProtocolTokenV1__factory(deployer).attach(sbtProxy.address);
 
+  const governorImpl = await new GovernorContract__factory(deployer).deploy();
+  let initializeDataGovrnor = governorImpl.interface.encodeFunctionData("initialize", [
+    sbtContract.address,
+    timeLock.address,
+    QUORUM_PERCENTAGE, 
+    VOTING_PERIOD,
+    VOTING_DELAY,
+  ]);
 
-  // governorContract = await new GovernorContract__factory(deployer).deploy(
-  //   sbtContract.address,
-  //   timeLock.address,
-  //   QUORUM_PERCENTAGE, 
-  //   VOTING_PERIOD,
-  //   VOTING_DELAY,
-  // );
-  // console.log("governorContract address: ", governorContract.address);
-
-
+  const gonvernorProxy = await new ERC1967Proxy__factory(deployer).deploy(
+    governorImpl.address,
+    initializeDataGovrnor
+    );
+  governorContract = new GovernorContract__factory(deployer).attach(gonvernorProxy.address);
+  console.log("governorContract address: ", governorContract.address);
+  
   const soulBoundTokenIdOfBankTreaury = FIRST_PROFILE_ID;
-  bankTreasuryImpl = await new BankTreasury__factory(deployer).deploy( );
+  bankTreasuryImpl = await new BankTreasury__factory(deployer).deploy();
   let initializeData = bankTreasuryImpl.interface.encodeFunctionData("initialize", [
     governanceAddress,
     soulBoundTokenIdOfBankTreaury,
@@ -326,7 +317,6 @@ before(async function () {
   );
   bankTreasuryContract = new BankTreasury__factory(deployer).attach(bankTreasuryProxy.address);
   
-
   //market place
   marketPlaceImpl = await new MarketPlace__factory(deployer).deploy( );
   let marketPlaceData = marketPlaceImpl.interface.encodeFunctionData("initialize", [
@@ -383,6 +373,7 @@ before(async function () {
   expect(publishModule).to.not.be.undefined;
   expect(moduleGlobals).to.not.be.undefined;
 
+
   // Add to module whitelist
   await expect(
     moduleGlobals.connect(governance).whitelistPublishModule(publishModule.address, true)
@@ -397,6 +388,7 @@ before(async function () {
   ).to.not.be.reverted;    
 
   expect((await moduleGlobals.getSBT()).toUpperCase()).to.eq(sbtContract.address.toUpperCase());
+
 
   //manager set moduleGlobals
   await manager.connect(governance).setGlobalModule(moduleGlobals.address);

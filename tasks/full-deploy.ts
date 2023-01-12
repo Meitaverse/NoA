@@ -4,6 +4,12 @@ import fs from 'fs';
 import { task } from 'hardhat/config';
 // import { readFile, writeFile } from "fs/promises";
 import { exportAddress } from "./config";
+import {
+    MIN_DELAY,
+    QUORUM_PERCENTAGE,
+    VOTING_PERIOD,
+    VOTING_DELAY,
+  } from "../helper-hardhat-config"
 
 import {
     ERC1967Proxy__factory,
@@ -15,6 +21,10 @@ import {
     FeeCollectModule__factory,
     Helper,
     Helper__factory,
+    Box,
+    Box__factory,
+    TimeLock,
+    TimeLock__factory,
     InteractionLogic__factory,
     PublishLogic__factory,
     ModuleGlobals,
@@ -55,7 +65,9 @@ import {
   const INITIAL_SUPPLY = 1000000;  //SBT初始发行总量
   const VOUCHER_AMOUNT_LIMIT = 100;  //用户用SBT兑换Voucher的最低数量 
   
-  
+   let box: Box;
+   let timeLock: TimeLock;
+
   const SBT_NAME = 'NFT Derivative Protocol';
   const SBT_SYMBOL = 'SBT';
   const SBT_DECIMALS = 18;
@@ -111,7 +123,12 @@ import {
         console.log('\t-- template: ', template.address);
         await exportAddress(hre, template, 'Template');
 
-
+        box = await new Box__factory(deployer).deploy();
+        console.log("box address: ", box.address);
+      
+        timeLock = await new TimeLock__factory(deployer).deploy(MIN_DELAY, [], [], deployer.address);
+        console.log("timeLock address: ", timeLock.address);
+      
         console.log('\n\t-- Deploying receiver  --');
         const receiverMock = await deployContract(
             new ERC3525ReceiverMock__factory(deployer).deploy(
@@ -233,6 +250,24 @@ import {
         const sbtContract = new NFTDerivativeProtocolTokenV1__factory(deployer).attach(sbtProxy.address);
         console.log('\t-- sbtContract: ', sbtContract.address);
         await exportAddress(hre, sbtContract, 'SBT');
+
+
+        const governorImpl = await new GovernorContract__factory(deployer).deploy();
+        let initializeDataGovrnor = governorImpl.interface.encodeFunctionData("initialize", [
+            sbtContract.address,
+            timeLock.address,
+            QUORUM_PERCENTAGE, 
+            VOTING_PERIOD,
+            VOTING_DELAY,
+        ]);
+
+        const gonvernorProxy = await new ERC1967Proxy__factory(deployer).deploy(
+            governorImpl.address,
+            initializeDataGovrnor
+            );
+        const governorContract = new GovernorContract__factory(deployer).attach(gonvernorProxy.address);
+        console.log("governorContract address: ", governorContract.address);
+        await exportAddress(hre, sbtContract, 'GovernorContract');
 
         console.log('\n\t-- Deploying bank treasury --');
         const soulBoundTokenIdOfBankTreaury = 1;

@@ -17,6 +17,13 @@ type DerivativeNFTAsset @entity {
   timestamp: BigInt!
 }
 
+type DerivativeNFTImageURI @entity {
+  id: ID!
+  tokenId: BigInt!
+  imageURI: String!
+  timestamp: BigInt!
+}
+
 #  DerivativeNFT transfer value history    
 type DerivativeNFTTransferValueHistory @entity {
   id: ID!

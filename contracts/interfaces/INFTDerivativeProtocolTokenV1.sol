@@ -22,52 +22,33 @@ interface INFTDerivativeProtocolTokenV1  {
         address manager
     ) external ;
 
+    /**
+     * @notice Return the version of current contract
+     *
+     * @return version number
+     */
     function version() external view returns(uint256);
-    // function getManager() external view returns(address);
-    // function getBankTreasury() external view returns(address);
 
-    // function isContractWhitelisted(address contract_) external view returns (bool);
-
+    /**
+     * @notice Set whitelist with a contract 
+     *  Only admin can execute.
+     *
+     * @param contract_ is the contract
+     * @param toWhitelist_ true of false
+     */
     function whitelistContract(address contract_, bool toWhitelist_) external;
 
-    // function setProfileImageURI(uint256 soulBoundTokenId, string calldata imageURI) external;
-    
-    // function setApprovalForSlot(
-    //     address _owner,
-    //     uint256 _slot,
-    //     address _operator,
-    //     bool _approved
-    // ) external payable;
-
-   
-    // function isApprovedForSlot(
-    //     address _owner,
-    //     uint256 _slot,
-    //     address _operator
-    // ) external view returns (bool);
-
-    // /**
-    //  * @notice Mint to a address spec tokenId.
-    //  *  Only admin can execute.
-    //  *
-    //  * @param mintTo to address 
-    //  * @param slot is the lost of tokenId
-    //  * @param value is the value of tokenId
-    //  */
-    // function mint(
-    //     address mintTo,
-    //     uint256 slot,
-    //     uint256 value
-    // ) external payable returns(uint256 tokenId);
-  
+    /**
+     * @notice Create a profile
+     *
+     * @param creator The creator
+     * @param vars CreateProfileData struct
+     */
     function createProfile(
         address creator,
        DataTypes.CreateProfileData calldata vars
     ) external returns(uint256);
 
-    // function version() external view returns (uint256);
-
-    
     /**
      * @notice Mint value to a soulBoundTokenId.
      *  Only admin can execute.
@@ -88,16 +69,14 @@ interface INFTDerivativeProtocolTokenV1  {
      */
     function burn(uint256 tokenId) external;
 
-    // /**
-    //  * @notice Burn value of a tokenId.
-    //  *  Only admin can execute.
-    //  *
-    //  * @param tokenId is the tokenId of ERC3525 Token
-    //  * @param value is the valueof the tokenId 
-    //  */
-    // function burnValue(uint256 tokenId, uint256 value) external;
-
-
+    /**
+     * @notice Transfer value from a tokenId to tokenId.
+     *  Only whitelist contract can execute.
+     *
+     * @param fromTokenId_ is the from tokenId of ERC3525 Token
+     * @param toTokenId_ is the to tokenId of ERC3525 Token
+     * @param value_ value to be transfer
+     */
     function transferValue(
         uint256 fromTokenId_,
         uint256 toTokenId_,

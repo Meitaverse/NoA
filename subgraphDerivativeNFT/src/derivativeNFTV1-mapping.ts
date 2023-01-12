@@ -10,6 +10,7 @@ import {
     Approval,
     ApprovalForAll,
     ApprovalValue,
+    DerivativeNFTImageURISet,
 } from "../generated/DerivativeNFTV1/DerivativeNFTV1"
 
 import {
@@ -22,6 +23,7 @@ import {
     ApprovalRecord,
     ApprovalForAllRecord,
     ApprovalValueRecord,
+    DerivativeNFTImageURI,
 } from "../generated/schema"
 
 export function handleTransfer(event: Transfer): void {
@@ -215,6 +217,22 @@ export function handleApprovalValue(event: ApprovalValue): void {
         approvalValueRecord.value = event.params._value
         approvalValueRecord.timestamp = event.block.timestamp
         approvalValueRecord.save()
+    
+    } 
+}
+
+
+export function handleDerivativeNFTImageURISet(event: DerivativeNFTImageURISet): void {
+    log.info("handleDerivativeNFTImageURISet, event.address: {}", [event.address.toHexString()])
+
+    let _idString = event.params.tokenId.toString()
+    const derivativeNFTImageURI = DerivativeNFTImageURI.load(_idString) || new DerivativeNFTImageURI(_idString)
+
+    if (derivativeNFTImageURI) {
+        derivativeNFTImageURI.tokenId = event.params.tokenId
+        derivativeNFTImageURI.imageURI = event.params.imageURI
+        derivativeNFTImageURI.timestamp = event.block.timestamp
+        derivativeNFTImageURI.save()
     
     } 
 }

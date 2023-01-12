@@ -146,20 +146,6 @@ contract NFTDerivativeProtocolTokenV2 is
         emit Events.BurnSBT(tokenId, block.timestamp);
     }
 
-    function burnValue(
-        uint256 tokenId,
-        uint256 value
-    )
-        external
-        // whenNotPaused
-        onlyManager
-    {
-        //nonReentrant
-        require(_isApprovedOrOwner(_msgSender(), tokenId), "ERC3525: caller is not token owner nor approved");
-        ERC3525Upgradeable._burnValue(tokenId, value);
-        emit Events.BurnSBTValue(tokenId, value, block.timestamp);
-    }
-
     function transferValue(uint256 fromTokenId_, uint256 toTokenId_, uint256 value_) external {
         //nonReentrant
         //call only by BankTreasury or FeeCollectModule or publishModule  or Voucher
