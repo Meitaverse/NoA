@@ -21,7 +21,7 @@ contract SBTStorage  {
     // address internal _PublishModule;
 
     // @dev owner => slot => operator => approved
-    // mapping(address => mapping(uint256 => mapping(address => bool))) internal _slotApprovals;
+    mapping(address => mapping(uint256 => mapping(address => bool))) internal _slotApprovals;
     
     mapping(address => bool) internal _contractWhitelisted;
 }

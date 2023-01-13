@@ -52,7 +52,7 @@ contract Voucher is
     string public name;
     string public symbol;
 
-    string private _uriBase; //"https://api.bitsoul.xyz/v1/metadata/"
+    string private _uriBase; //"https://api.bitsoul/v1/metadata/"
 
     modifier onlyBankTreasury() {
         _validateCallerIsBankTreasury();

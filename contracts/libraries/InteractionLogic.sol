@@ -16,7 +16,7 @@ import {Clones} from '@openzeppelin/contracts/proxy/Clones.sol';
 
 /**
  * @title InteractionLogic
- * @author bitsoul.xyz
+ * @author bitsoul
  *
  * @notice This is the library that contains the logic for follows & collects. 
  

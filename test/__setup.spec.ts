@@ -57,6 +57,7 @@ import {
   MultirecipientFeeCollectModule__factory,
   MarketPlace,
   MarketPlace__factory,
+  SBTLogic__factory,
 } from '../typechain';
 
 import { ManagerLibraryAddresses } from '../typechain/factories/contracts/Manager__factory';
@@ -75,6 +76,7 @@ import {
 // } from '../typechain/Template';
 
 import { DataTypes } from '../typechain/contracts/modules/template/Template';
+import { NFTDerivativeProtocolTokenV1LibraryAddresses } from '../typechain/factories/contracts/NFTDerivativeProtocolTokenV1__factory';
 
 use(solidity);
 
@@ -138,6 +140,7 @@ export let timeLock: TimeLock;
 export let abiCoder: AbiCoder;
 export let mockModuleData: BytesLike;
 export let managerLibs: ManagerLibraryAddresses;
+export let sbtLibs: NFTDerivativeProtocolTokenV1LibraryAddresses;
 export let eventsLib: Events;
 export let moduleGlobals: ModuleGlobals;
 export let helper: Helper;
@@ -229,6 +232,7 @@ before(async function () {
     'contracts/libraries/InteractionLogic.sol:InteractionLogic': interactionLogic.address,
     'contracts/libraries/PublishLogic.sol:PublishLogic': publishLogic.address,
   };
+  
 
   // Here, we pre-compute the nonces and addresses used to deploy the contracts.
   const nonce = await deployer.getTransactionCount();
@@ -265,7 +269,7 @@ before(async function () {
 
   voucherImpl = await new Voucher__factory(deployer).deploy();
   let initializeVoucherData = voucherImpl.interface.encodeFunctionData("initialize", [
-      "https://api.bitsoul.xyz/v1/metadata/",
+      "https://api.bitsoul/v1/metadata/",
   ]);
   const voucherProxy = await new ERC1967Proxy__factory(deployer).deploy(
     voucherImpl.address,
@@ -273,7 +277,11 @@ before(async function () {
   );
   voucherContract = new Voucher__factory(deployer).attach(voucherProxy.address);
 
-  sbtImpl = await new NFTDerivativeProtocolTokenV1__factory(deployer).deploy();
+  const sbtLogic = await new SBTLogic__factory(deployer).deploy();
+  sbtLibs = {
+    'contracts/libraries/SBTLogic.sol:SBTLogic': sbtLogic.address,
+  };
+  sbtImpl = await new NFTDerivativeProtocolTokenV1__factory(sbtLibs, deployer).deploy();
   let initializeSBTData = sbtImpl.interface.encodeFunctionData("initialize", [
       SBT_NAME, 
       SBT_SYMBOL, 
@@ -284,7 +292,7 @@ before(async function () {
     sbtImpl.address,
     initializeSBTData
   );
-  sbtContract = new NFTDerivativeProtocolTokenV1__factory(deployer).attach(sbtProxy.address);
+  sbtContract = new NFTDerivativeProtocolTokenV1__factory(sbtLibs, deployer).attach(sbtProxy.address);
 
   const governorImpl = await new GovernorContract__factory(deployer).deploy();
   let initializeDataGovrnor = governorImpl.interface.encodeFunctionData("initialize", [

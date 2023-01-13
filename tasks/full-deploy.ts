@@ -19,6 +19,7 @@ import {
     PublishModule__factory,
     FeeCollectModule,
     FeeCollectModule__factory,
+    SBTLogic__factory,
     Helper,
     Helper__factory,
     Box,
@@ -57,6 +58,7 @@ import {
   import { ManagerLibraryAddresses } from '../typechain/factories/contracts/Manager__factory';
   
   import { DataTypes } from '../typechain/contracts/modules/template/Template';
+import { NFTDerivativeProtocolTokenV1LibraryAddresses } from '../typechain/factories/contracts/NFTDerivativeProtocolTokenV1__factory';
   
   const TREASURY_FEE_BPS = 50;
   const  RECEIVER_MAGIC_VALUE = '0x009ce20b';
@@ -75,6 +77,7 @@ import {
   const PublishRoyaltySBT = 100;
   
   let managerLibs: ManagerLibraryAddresses;
+  let sbtLibs: NFTDerivativeProtocolTokenV1LibraryAddresses;
 
   // yarn full-deploy-local
 
@@ -231,7 +234,7 @@ import {
         );
 
         let initializeVoucherData = voucherImpl.interface.encodeFunctionData("initialize", [
-            "https://api.bitsoul.xyz/v1/metadata/",
+            "https://api.bitsoul/v1/metadata/",
         ]);
         const voucherProxy = await new ERC1967Proxy__factory(deployer).deploy(
             voucherImpl.address,
@@ -243,8 +246,17 @@ import {
         await exportAddress(hre, voucherContract, 'Voucher');
 
         console.log('\n\t-- Deploying SBT --');
+
+        const sbtLogic = await new SBTLogic__factory(deployer).deploy(
+            { nonce: deployerNonce++ }
+        );
+        sbtLibs = {
+            'contracts/libraries/SBTLogic.sol:SBTLogic': sbtLogic.address,
+        };
         const sbtImpl = await deployContract(
-            new NFTDerivativeProtocolTokenV1__factory(deployer).deploy({ nonce: deployerNonce++ })
+            new NFTDerivativeProtocolTokenV1__factory(sbtLibs, deployer).deploy(
+                { nonce: deployerNonce++ }
+                )
         );
 
         let initializeSBTData = sbtImpl.interface.encodeFunctionData("initialize", [
@@ -258,7 +270,7 @@ import {
             initializeSBTData,
             { nonce: deployerNonce++ }
         );
-        const sbtContract = new NFTDerivativeProtocolTokenV1__factory(deployer).attach(sbtProxy.address);
+        const sbtContract = new NFTDerivativeProtocolTokenV1__factory(sbtLibs, deployer).attach(sbtProxy.address);
         console.log('\t-- sbtContract: ', sbtContract.address);
         await exportAddress(hre, sbtContract, 'SBT');
 

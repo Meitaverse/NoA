@@ -11,6 +11,7 @@ import "@solvprotocol/erc-3525/contracts/ERC3525Upgradeable.sol";
 import {Errors} from "./libraries/Errors.sol";
 import {Events} from "./libraries/Events.sol";
 import {Constants} from './libraries/Constants.sol';
+import {SBTLogic} from './libraries/SBTLogic.sol';
 import {IManager} from "./interfaces/IManager.sol";
 import {ERC3525Votes} from "./extensions/ERC3525Votes.sol";
 import "./storage/SBTStorage.sol";
@@ -87,25 +88,18 @@ contract NFTDerivativeProtocolTokenV1 is
         _unpause();
     }
 
-    // function isContractWhitelisted(address contract_) external view override returns (bool) {
-    //     return _contractWhitelisted[contract_];
-    // }
-
     function whitelistContract(address contract_, bool toWhitelist_) external  { 
         if (!hasRole(DEFAULT_ADMIN_ROLE, _msgSender())) revert Errors.Unauthorized();
         _whitelistContract(contract_, toWhitelist_);
     }
 
      function _whitelistContract(address contract_, bool toWhitelist_) internal {
-        if (contract_ == address(0)) revert Errors.InitParamsInvalid();
-        bool prevWhitelisted = _contractWhitelisted[contract_];
-        _contractWhitelisted[contract_] = toWhitelist_;
-        emit Events.SetContractWhitelisted(
+
+        SBTLogic.contractWhitelistedSet(
             contract_,
-            prevWhitelisted,
             toWhitelist_,
-            block.timestamp
-        ); 
+            _contractWhitelisted
+        );
     }
 
     function createProfile(
@@ -121,20 +115,14 @@ contract NFTDerivativeProtocolTokenV1 is
         if (balanceOf(vars.wallet) > 0) revert Errors.TokenIsClaimed(); 
         
         uint256 tokenId_ = _mint(vars.wallet, 1, 0);
-
-        _sbtDetails[tokenId_] = DataTypes.SoulBoundTokenDetail({
-            nickName: vars.nickName,
-            imageURI: vars.imageURI,
-            locked: true
-        });
-
-        emit Events.ProfileCreated(
+        
+        SBTLogic.createProfile(
             tokenId_,
             creator,
             vars.wallet,    
             vars.nickName,
             vars.imageURI,
-            block.timestamp
+            _sbtDetails
         );
 
         return tokenId_;
@@ -221,7 +209,6 @@ contract NFTDerivativeProtocolTokenV1 is
 
     function setBankTreasury(address bankTreasury, uint256 initialSupply) 
         external  
-        
         whenNotPaused
     {
         if (!hasRole(DEFAULT_ADMIN_ROLE, _msgSender())) revert Errors.Unauthorized();
@@ -237,32 +224,17 @@ contract NFTDerivativeProtocolTokenV1 is
         //create profile for bankTreasury, tokenId is 1, not vote power
         uint256 tokenId_ = ERC3525Upgradeable._mint(_banktreasury, 1, initialSupply);
 
-        _sbtDetails[tokenId_] = DataTypes.SoulBoundTokenDetail({
-            nickName: "Bank Treasury",
-            imageURI: "",
-            locked: true
-        });
-
-        emit Events.ProfileCreated(
+        SBTLogic.createProfile(
             tokenId_,
             _msgSender(),
             _banktreasury,    
-            "bank treasury",
+            "Bank Treasury",
             "",
-            block.timestamp
+            _sbtDetails
         );
 
-        // emit Events.BankTreasurySet(
-        //     tokenId_, 
-        //     bankTreasury,
-        //     initialSupply,
-        //     block.timestamp);
-    }
-    
-    // function getBankTreasury() external view returns(address) {
-    //     return _banktreasury;
-    // }
 
+    }
 
 
     /// ****************************
@@ -272,16 +244,6 @@ contract NFTDerivativeProtocolTokenV1 is
     function _setManager(address manager) internal {
         _manager = manager;
     }   
-        
-    // function _validateCallerIsSoulBoundTokenOwnerOrDispathcher(uint256 soulBoundTokenId_) internal view {
-
-    //     if (ownerOf(soulBoundTokenId_) == msg.sender || 
-    //         IManager(_manager).getDispatcher(soulBoundTokenId_) == msg.sender) {
-    //         return;
-    //     }
-
-    //     revert Errors.NotProfileOwnerOrDispatcher();
-    // }
 
     function _validateCallerIsManager() internal view {
         if (msg.sender != _manager) revert Errors.NotManager();

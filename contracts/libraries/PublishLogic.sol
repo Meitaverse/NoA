@@ -12,7 +12,7 @@ import {ICollectModule} from '../interfaces/ICollectModule.sol';
 import {IPublishModule} from '../interfaces/IPublishModule.sol';
 /**
  * @title PublishLogic
- * @author bitsoul.xyz
+ * @author bitsoul
  *
  * @notice This is the library that contains the logic for public & send to market place. 
  
