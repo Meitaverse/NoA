@@ -68,7 +68,7 @@ task("create-profile", "create-profile function")
     );
   
   //add profile creator to whilelist
-   await waitForTx( moduleGlobals.connect(governance).whitelistProfileCreator(user.address, true));
+   await waitForTx( moduleGlobals.connect(governance).whitelistProfileCreator(profileCreator.address, true));
 
   console.log(
     "\n\t--- moduleGlobals isWhitelistProfileCreator address: ", await moduleGlobals.isWhitelistProfileCreator(profileCreator.address)
