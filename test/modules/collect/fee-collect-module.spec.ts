@@ -554,66 +554,6 @@ makeSuiteCleanRoom('Fee Collect Module', function () {
   
       });
 
-      it('Transfer dNFT to a soulBoundTokenId ', async function () {
-        
-        expect(
-          await derivativeNFT.ownerOf(FIRST_DNFT_TOKEN_ID)
-        ).to.eq(userAddress);
-
-        //approve manager contract
-        await derivativeNFT.connect(user)['approve(address,uint256)'](manager.address, FIRST_DNFT_TOKEN_ID);
-
-        await expect(manager.connect(user).transferDerivativeNFT(
-          FIRST_PROJECT_ID,
-          SECOND_PROFILE_ID,
-          THIRD_PROFILE_ID,
-          FIRST_DNFT_TOKEN_ID,
-        )).to.not.be.reverted;
-
-        expect(
-          await derivativeNFT.ownerOf(FIRST_DNFT_TOKEN_ID)
-        ).to.eq(userTwoAddress);
-
-        expect(
-          await derivativeNFT['balanceOf(uint256)'](FIRST_DNFT_TOKEN_ID)
-        ).to.eq(11);
-
-      });      
-
-      it('Transfer dNFT value to a soulBoundTokenId ', async function () {
-        
-        expect(
-          await derivativeNFT.ownerOf(FIRST_DNFT_TOKEN_ID)
-        ).to.eq(userAddress);
-
-        //approve manager contract
-        await derivativeNFT.connect(user)['approve(address,uint256)'](manager.address, FIRST_DNFT_TOKEN_ID);
-
-        await expect(manager.connect(user).transferValueDerivativeNFT(
-          FIRST_PROJECT_ID,
-          SECOND_PROFILE_ID,
-          THIRD_PROFILE_ID,
-          FIRST_DNFT_TOKEN_ID,
-          1
-        )).to.not.be.reverted;
-
-        expect(
-          await derivativeNFT.ownerOf(FIRST_DNFT_TOKEN_ID)
-        ).to.eq(userAddress);
-
-        expect(
-          await derivativeNFT.ownerOf(SECOND_DNFT_TOKEN_ID)
-        ).to.eq(userTwoAddress);
-
-        expect(
-          await derivativeNFT['balanceOf(uint256)'](FIRST_DNFT_TOKEN_ID)
-        ).to.eq(10);
-
-        expect(
-          await derivativeNFT['balanceOf(uint256)'](SECOND_DNFT_TOKEN_ID)
-        ).to.eq(1);
-
-      });      
       
     });
 

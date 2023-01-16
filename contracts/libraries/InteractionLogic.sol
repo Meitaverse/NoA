@@ -53,6 +53,30 @@ library InteractionLogic {
         );
 
     }
+    
+    function updateHub(
+        uint256 hubId,
+        string memory name,
+        string memory description,
+        string memory imageURI,
+        mapping(uint256 => DataTypes.HubData) storage _hubInfos
+    ) external {
+        
+        if (hubId == 0) revert Errors.HubIdIsZero();
+        DataTypes.HubData storage hubData = _hubInfos[hubId];
+        hubData.name = name;
+        hubData.description = description;
+        hubData.imageURI = imageURI;
+ 
+        emit Events.HubUpdated(
+            hubId,
+            name,
+            description,
+            imageURI,
+            uint32(block.timestamp)
+        );
+
+    }
 
     function createProject(
         address derivativeImpl,

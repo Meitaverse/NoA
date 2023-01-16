@@ -67,24 +67,24 @@ task("create-profile", "create-profile function")
       "\t--- ModuleGlobals governance address: ", await moduleGlobals.getGovernance()
     );
   
-  // full-deploy had called.
-  //  await waitForTx( moduleGlobals.connect(governance).whitelistProfileCreator(user.address, true));
+  //add profile creator to whilelist
+   await waitForTx( moduleGlobals.connect(governance).whitelistProfileCreator(user.address, true));
 
-    console.log(
-      "\n\t--- moduleGlobals isWhitelistProfileCreator address: ", await moduleGlobals.isWhitelistProfileCreator(profileCreator.address)
-    );
+  console.log(
+    "\n\t--- moduleGlobals isWhitelistProfileCreator address: ", await moduleGlobals.isWhitelistProfileCreator(profileCreator.address)
+  );
       
-    await waitForTx(
-        manager.connect(profileCreator).createProfile({
-          wallet: profileCreator.address,
-          nickName: 'user' + `${accountid}`,
-          imageURI: 'https://ipfs.io/ipfs/QmVnu7JQVoDRqSgHBzraYp7Hy78HwJtLFi6nUFCowTGdzp/' + `${accountid}` + '.png',
-        })
-    );
+  await waitForTx(
+      manager.connect(profileCreator).createProfile({
+        wallet: profileCreator.address,
+        nickName: 'user' + `${accountid}`,
+        imageURI: 'https://ipfs.io/ipfs/QmVnu7JQVoDRqSgHBzraYp7Hy78HwJtLFi6nUFCowTGdzp/' + `${accountid}` + '.png',
+      })
+  );
 
     console.log(
-      "\n\t--- soulBoundToken address: ", await manager.connect(user).getWalletBySoulBoundTokenId(accountid)
+      "\n\t--- createProfile success! the soulBoundToken address: ", await manager.connect(user).getWalletBySoulBoundTokenId(accountid)
     );
-  
+
 
 });

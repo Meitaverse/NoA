@@ -42,7 +42,6 @@ library DataTypes {
     }
     
     struct HubData {
-        // address creator;
         uint256 soulBoundTokenId;
         string name;
         string description;

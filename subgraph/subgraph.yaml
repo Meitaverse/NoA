@@ -16,27 +16,22 @@ dataSources:
       apiVersion: 0.0.6
       language: wasm/assemblyscript
       entities:
-        - BankTreasurySet
         - ProfileCreated
         - MintSBTValue
         - BurnSBT
-        - ApprovalForSlot
       abis:
         - name: Events
           file: ./abis/Events.json
         - name: SBT
           file: ./abis/SBT.json          
       eventHandlers:
-        - event: BankTreasurySet(indexed uint256,indexed address,indexed uint256,uint256)
-          handler: handleBankTreasurySet
         - event: ProfileCreated(indexed uint256,indexed address,indexed address,string,string,uint256)
           handler: handleProfileCreated
-        - event: MintSBTValue(uint256,uint256,uint256)
+        - event: MintSBTValue(indexed address,indexed uint256,indexed uint256,uint256)
           handler: handleMintSBTValue
-        - event: BurnSBT(uint256,uint256)
+        - event: BurnSBT(indexed address,indexed uint256,indexed uint256,uint256)
           handler: handleBurnSBT
-        - event: ApprovalForSlot(indexed address,indexed uint256,indexed address,bool)
-          handler: handleApprovalForSlot
+
       file: ./src/sbt-mapping.ts
 
   - kind: ethereum/contract
@@ -66,7 +61,7 @@ dataSources:
         - event: ApprovalForAll(indexed address,indexed address,bool)
           handler: handleApprovalForAll
         - event: ApprovalValue(indexed uint256,indexed address,uint256)
-          handler: handleApprovalValue      
+          handler: handleApprovalValue             
         - event: Transfer(indexed address,indexed address,indexed uint256)
           handler: handleSBTTransfer
         - event: TransferValue(indexed uint256,indexed uint256,uint256)
@@ -88,10 +83,11 @@ dataSources:
       language: wasm/assemblyscript
       entities:
         - EmergencyAdminSet
-        - TransferDerivativeNFT
-        - TransferValueDerivativeNFT
+        - ManagerGovernanceSet
         - HubCreated
+        - HubUpdated
         - PublishPrepared
+        - PublishUpdated
         - PublishCreated
         - DerivativeNFTDeployed
         - DerivativeNFTCollected
@@ -105,21 +101,23 @@ dataSources:
       eventHandlers:
         - event: EmergencyAdminSet(indexed address,indexed address,indexed address,uint256)
           handler: handleEmergencyAdminSet
-        - event: TransferDerivativeNFT(uint256,uint256,uint256,uint256,uint256)
-          handler: handleTransferDerivativeNFT
-        - event: TransferValueDerivativeNFT(uint256,uint256,uint256,uint256,uint256,uint256,uint256)
-          handler: handleTransferValueDerivativeNFT
+        - event: ManagerGovernanceSet(indexed address,indexed address,indexed address,uint256)
+          handler: handleManagerGovernanceSet
         - event: HubCreated(indexed uint256,indexed address,indexed uint256,string,string,string,uint256)
           handler: handleHubCreated
+        - event: HubUpdated(indexed uint256,string,string,string,uint256)
+          handler: handleHubUpdated
         - event: PublishPrepared((uint256,uint256,uint256,uint256,uint256,uint256,string,string,string[],uint256[],address,bytes,address,bytes),uint256,uint256,uint256,uint256)
           handler: handlePublishPrepared
-        - event: PublishCreated(uint256,uint256,uint256,uint256,uint256,uint256,bytes,uint256)
+        - event: PublishUpdated(uint256,uint256,uint256,uint256,uint256,string,string,string[],uint256[],uint256,uint256)
+          handler: handlePublishUpdated
+        - event: PublishCreated(indexed uint256,indexed uint256,uint256,uint256,indexed uint256,uint256,bytes,uint256)
           handler: handlePublishCreated
         - event: DerivativeNFTDeployed(indexed uint256,indexed uint256,address,uint256)
           handler: handleDerivativeNFTDeployed
-        - event: DerivativeNFTCollected(uint256,address,uint256,uint256,uint256,uint256,uint256,uint256)
+        - event: DerivativeNFTCollected(uint256,address,indexed uint256,indexed uint256,indexed uint256,uint256,uint256,uint256)
           handler: handleDerivativeNFTCollected
-        - event: DerivativeNFTAirdroped(uint256,address,uint256,uint256,uint256[],uint256[],uint256[],uint256)
+        - event: DerivativeNFTAirdroped(uint256,address,indexed uint256,indexed uint256,uint256[],uint256[],uint256[],uint256)
           handler: handleDerivativeNFTAirdroped
         - event:  DispatcherSet(indexed uint256,indexed address,uint256)
           handler: handleDispatcherSet
@@ -141,6 +139,7 @@ dataSources:
       apiVersion: 0.0.6
       language: wasm/assemblyscript
       entities:
+        - Deposit
         - ERC3525Received
         - ExchangeSBTByEth
         - ExchangeEthBySBT
@@ -154,7 +153,9 @@ dataSources:
         - name: Events
           file: ./abis/Events.json
       eventHandlers:
-        - event: ERC3525Received(address,uint256,uint256,uint256,bytes,uint256)
+        - event: Deposit(indexed address,uint256,indexed address,uint256)
+          handler: handleDeposit
+        - event: ERC3525Received(indexed address,indexed uint256,indexed uint256,uint256,bytes,uint256)
           handler: handleERC3525Received
         - event: ExchangeSBTByEth(indexed uint256,indexed address,indexed uint256,uint256)
           handler: handleExchangeSBTByEth
@@ -237,25 +238,25 @@ dataSources:
       apiVersion: 0.0.6
       language: wasm/assemblyscript
       entities:
+        - CollectModuleWhitelisted
+        - PublishModuleWhitelisted
+        - TemplateWhitelisted
         - ProfileCreatorWhitelisted
         - HubCreatorWhitelisted
         - ModuleGlobalsTreasurySet
         - ModuleGlobalsVoucherSet
         - ModuleGlobalsManagerSet
         - ModuleGlobalsSBTSet
+        - ModuleGlobalsGovernanceSet
         - ModuleGlobalsPublishRoyaltySet
         - ModuleGlobalsTreasuryFeeSet
-        - ModuleGlobalsGovernanceSet
-        - CollectModuleWhitelisted
-        - PublishModuleWhitelisted
-        - TemplateWhitelisted
       abis:
         - name: Events
           file: ./abis/Events.json
       eventHandlers:
-        - event: ProfileCreatorWhitelisted(indexed address,indexed bool,uint256)
+        - event: ProfileCreatorWhitelisted(indexed address,indexed bool,indexed address,uint256)
           handler: handleProfileCreatorWhitelisted
-        - event: HubCreatorWhitelisted(indexed uint256,indexed bool,uint256)
+        - event: HubCreatorWhitelisted(indexed uint256,indexed bool,indexed address,uint256)
           handler: handleHubCreatorWhitelisted
         - event: ModuleGlobalsTreasurySet(indexed address,indexed address,uint256)
           handler: handleModuleGlobalsTreasurySet
@@ -317,7 +318,7 @@ dataSources:
         - name: Events
           file: ./abis/Events.json
       eventHandlers:
-        - event: ReceiverReceived(address,uint256,uint256,uint256,bytes,uint256)
+        - event: ReceiverReceived(indexed address,indexed uint256,indexed uint256,uint256,bytes,uint256)
           handler: handleReceiverReceived
       file: ./src/receiver-mapping.ts
 
@@ -344,15 +345,15 @@ dataSources:
         - name: Events
           file: ./abis/Events.json
       eventHandlers:
-        - event: MarketPlaceERC3525Received(address,uint256,uint256,uint256,bytes,uint256)
+        - event: MarketPlaceERC3525Received(indexed address,indexed uint256,indexed uint256,uint256,bytes,uint256)
           handler: handleMarketPlaceERC3525Received
-        - event: FixedPriceSet(uint256,uint128,uint128,uint128,uint256)
+        - event: FixedPriceSet(indexed uint256,indexed uint128,uint128,indexed uint128,uint256)
           handler: handleFixedPriceSet
         - event: AddMarket(address,uint8,uint8,uint16)
           handler: handleAddMarket
         - event: RemoveMarket(address)
           handler: handleRemoveMarket
-        - event: PublishSale((uint256,uint256,uint256,uint128,uint32,uint128,uint8,uint128,uint128),address,uint256,uint128)
+        - event: PublishSale((uint256,uint256,uint256,uint128,uint32,uint128,uint8,uint128,uint128),indexed address,indexed uint256,indexed uint128)
           handler: handlePublishSale
         - event: RemoveSale(uint256,uint128,uint256,uint256)
           handler: handleRemoveSale

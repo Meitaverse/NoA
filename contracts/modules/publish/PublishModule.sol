@@ -73,11 +73,13 @@ contract PublishModule is FeeModuleBase, IPublishModule, ModuleBase {
         } else {
 
             uint256 publishTaxes;
-            if (publication.amount >1) publishTaxes = (publication.amount - 1) * _publishCurrencyTax();
             
-            if ( publishTaxes > 0){
+            if (publication.amount >1) 
+                publishTaxes = (publication.amount - 1) * _publishCurrencyTax();
+            
+            if ( publishTaxes > 0)
                 INFTDerivativeProtocolTokenV1(_sbt()).transferValue(publication.soulBoundTokenId, treasuryOfSoulBoundTokenId, publishTaxes);
-            } 
+            
             
             _dataPublishdNFTByProject[publishId].publication = publication;
             _dataPublishdNFTByProject[publishId].previousPublishId = previousPublishId;

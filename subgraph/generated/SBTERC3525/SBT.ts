@@ -1279,7 +1279,7 @@ export class BurnCall__Inputs {
     this._call = call;
   }
 
-  get tokenId(): BigInt {
+  get soulBoundTokenId(): BigInt {
     return this._call.inputValues[0].value.toBigInt();
   }
 }

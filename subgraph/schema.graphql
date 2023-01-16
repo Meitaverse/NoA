@@ -49,6 +49,7 @@ type SBTSlotChangedHistory @entity {
 # Mint SBTValue history    
 type MintSBTValueHistory @entity {
   id: ID!
+  caller: Bytes!
   soulBoundTokenId: BigInt!
   value: BigInt!
   timestamp: BigInt!
@@ -57,7 +58,9 @@ type MintSBTValueHistory @entity {
 # burn SBT history    
 type BurnSBTHistory @entity {
   id: ID!
+  caller: Bytes!
   soulBoundTokenId: BigInt!
+  balance: BigInt!
   timestamp: BigInt!
 }    
 
@@ -142,8 +145,8 @@ type Project @entity {
   timestamp: BigInt!
 }
 
-# Publish Created history
-type PublishCreatedHistory @entity {
+# Publish Record
+type PublishRecord @entity {
   id: ID!
   publishId: BigInt!
   soulBoundTokenId: BigInt!
@@ -162,28 +165,6 @@ type DerivativeNFTCollectedHistory @entity {
   derivativeNFT: Bytes!
   fromSoulBoundTokenId: BigInt!
   toSoulBoundTokenId: BigInt!
-  tokenId: BigInt!
-  value: BigInt!
-  newTokenId: BigInt!
-  timestamp: BigInt!
-}
-
-# Derivative NFT transfer token history
-type DerivativeNFTTransferHistory @entity {
-  id: ID!
-  fromSoulBoundTokenId: BigInt!
-  toSoulBoundTokenId: BigInt!
-  projectId: BigInt!
-  tokenId: BigInt!
-  timestamp: BigInt!
-}
-
-# Derivative NFT transfer value history
-type DerivativeNFTTransferValueHistory @entity {
-  id: ID!
-  fromSoulBoundTokenId: BigInt!
-  toSoulBoundTokenId: BigInt!
-  projectId: BigInt!
   tokenId: BigInt!
   value: BigInt!
   newTokenId: BigInt!
@@ -270,13 +251,15 @@ type VoucherRecord @entity {
 }
 
 
-# ModuleGlobals
-type ProfileCreatorWhitelistedHistory @entity {
+# ProfileCreator Whitelisted Record
+type ProfileCreatorWhitelistedRecord @entity {
   id: ID!
   profileCreator: Bytes!
   whitelisted: Boolean!
+  caller: Bytes!
   timestamp: BigInt!
 }
+
 
 # FeeCollectModule
 type FeesForCollectHistory @entity {
@@ -326,16 +309,6 @@ type DispatcherSetHistory @entity {
   timestamp: BigInt!
 }
 
-# ApprovalForSlot history
-type ApprovalForSlotHistory @entity {
-  id: ID!
-  owner: Bytes!
-  slot: BigInt!
-  operator: Bytes!
-  approved: Boolean!
-  timestamp: BigInt!
-}
-
 # StateSet history
 type StateSetHistory @entity {
   id: ID!
@@ -357,14 +330,6 @@ type ERC3525ReceivedHistory @entity {
   timestamp: BigInt!
 }
 
-# SBT contract BankTreasurySet history
-type BankTreasurySetHistory @entity {
-  id: ID!
-  soulBoundTokenId: BigInt!
-  bankTrerasury: Bytes!
-  initialSupply: BigInt!
-  timestamp: BigInt!
-}
 
 # Manager contract EmergencyAdminSet history
 type EmergencyAdminSetHistory @entity {
@@ -375,13 +340,24 @@ type EmergencyAdminSetHistory @entity {
   timestamp: BigInt!
 }
 
-# ModuleGlbals hub creator set whitelist history
-type HubCreatorWhitelistedHistory @entity {
+
+# Manager contract ManagerGovernanceSet history
+type ManagerGovernanceSetHistory @entity {
+  id: ID!
+  caller: Bytes!
+  prevGovernance: Bytes!
+  newGovernance: Bytes!
+  timestamp: BigInt!
+}
+
+# ModuleGlbals hub creator set whitelist 
+type HubCreatorWhitelistedRecord  @entity {
   id: ID!
   soulBoundTokenId: BigInt!
   whitelisted: Boolean!
   timestamp: BigInt!
 }
+
 
 # ModuleGlbals Treasury Set history
 type ModuleGlobalsTreasurySetHistory @entity {
@@ -422,22 +398,6 @@ type ModuleGlobalsSBTSetHistory @entity {
   timestamp: BigInt!
 }
 
-# ModuleGlbals PublishRoyalty Set history
-type ModuleGlobalsPublishRoyaltySetHistory @entity {
-  id: ID!
-  prevPublishRoyalty: BigInt!
-  newPublishRoyalty: BigInt!
-  timestamp: BigInt!
-}
-
-# ModuleGlbals Treasury Fee Set history
-type ModuleGlobalsTreasuryFeeSetHistory @entity {
-  id: ID!
-  prevTreasuryFee: Int!
-  newTreasuryFee: Int!
-  timestamp: BigInt!
-}
-
 # ModuleGlbals Governance Set history
 type ModuleGlobalsGovernanceSetHistory @entity {
   id: ID!
@@ -446,24 +406,46 @@ type ModuleGlobalsGovernanceSetHistory @entity {
   timestamp: BigInt!
 }
 
-# CollectModule Whitelisted history
-type CollectModuleWhitelistedHistory @entity {
+# PublishRoyalty setting
+type PublishRoyalty @entity {
+  id: ID!
+  publishRoyalty: BigInt!
+}
+
+#  Treasury Fee Setting
+type TreasuryFeeRecord @entity {
+  id: ID!
+  prevTreasuryFee: Int!
+  newTreasuryFee: Int!
+  timestamp: BigInt!
+}
+
+# ModuleGlbals PublishRoyalty Set record
+type PublishRoyaltyRecord @entity {
+  id: ID!
+  prevPublishRoyalty: BigInt!
+  newPublishRoyalty: BigInt!
+  timestamp: BigInt!
+}
+
+# CollectModule Whitelisted record
+type CollectModuleWhitelistedRecord @entity {
   id: ID!
   collectModule: Bytes!
   whitelisted: Boolean!
   timestamp: BigInt!
 }
 
-# PublishModule Whitelisted history
-type PublishModuleWhitelistedHistory @entity {
+# PublishModule Whitelisted record
+type PublishModuleWhitelistedRecord @entity {
   id: ID!
   publishModule: Bytes!
   whitelisted: Boolean!
   timestamp: BigInt!
 }
 
-# Template Whitelisted history
-type TemplateWhitelistedHistory @entity {
+# Template Whitelisted record
+type TemplateWhitelistedRecord @entity {
   id: ID!
   template: Bytes!
   whitelisted: Boolean!
@@ -512,7 +494,6 @@ type MarketPlaceERC3525ReceivedHistory @entity {
   timestamp: BigInt!
 }
 
-
 type PublishSaleRecord @entity {
   id: ID!
   soulBoundTokenId: BigInt!
@@ -546,4 +527,13 @@ type TradedHistory @entity {
   genesisAmount: BigInt!
   previousAmount: BigInt!
   adjustedAmount: BigInt!
+}
+
+type DepositHistory @entity {
+  id: ID!
+  sender: Bytes!
+  amount: BigInt!
+  receiver: Bytes!
+  balance: BigInt!
+  timestamp: BigInt!
 }

@@ -181,7 +181,7 @@ contract ModuleGlobals is IModuleGlobals, GlobalStorage {
 
     function whitelistProfileCreator(address profileCreator, bool whitelist) external override onlyGov {
         _profileCreatorWhitelisted[profileCreator] = whitelist;
-        emit Events.ProfileCreatorWhitelisted(profileCreator, whitelist, block.timestamp);
+        emit Events.ProfileCreatorWhitelisted(profileCreator, whitelist, msg.sender, block.timestamp);
     }
 
     function isWhitelistProfileCreator(address profileCreator) external view override returns (bool) {
@@ -190,7 +190,7 @@ contract ModuleGlobals is IModuleGlobals, GlobalStorage {
 
     function whitelistHubCreator(uint256 soulBoundTokenId, bool whitelist) external override onlyGov {
         _hubCreatorWhitelisted[soulBoundTokenId] = whitelist;
-        emit Events.HubCreatorWhitelisted(soulBoundTokenId, whitelist, block.timestamp);
+        emit Events.HubCreatorWhitelisted(soulBoundTokenId, whitelist, msg.sender, block.timestamp);
     }
 
     function isWhitelistHubCreator(uint256 soulBoundTokenId) external view override returns (bool) {

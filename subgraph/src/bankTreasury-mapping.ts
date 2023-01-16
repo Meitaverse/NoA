@@ -1,6 +1,7 @@
 import { log, Address, BigInt, Bytes, store, TypedMap } from "@graphprotocol/graph-ts";
 
 import {
+    Deposit,
     ERC3525Received,
     ExchangeSBTByEth,
     ExchangeEthBySBT,
@@ -14,6 +15,7 @@ import {
 } from "../generated/BankTreasury/Events"
 
 import {
+    DepositHistory,
     ERC3525ReceivedHistory,
     ExchangeSBTByEthHistory,
     ExchangeEthBySBTHistory,
@@ -22,6 +24,21 @@ import {
     ExecuteTransactionERC3525History,
     ExchangeVoucherHistory,
 } from "../generated/schema"
+
+export function handleDeposit(event: Deposit): void {
+    log.info("handleDeposit, event.address: {}", [event.address.toHexString()])
+
+    let _idString = event.params.sender.toHexString()+ "-" + event.block.timestamp.toString()
+    const history = DepositHistory.load(_idString) || new DepositHistory(_idString)
+    if (history) {
+        history.sender = event.params.sender
+        history.amount = event.params.amount
+        history.receiver = event.params.receiver
+        history.balance = event.params.balance
+        history.timestamp = event.block.timestamp
+        history.save()
+    } 
+}
 
 export function handleERC3525Received(event: ERC3525Received): void {
     log.info("handleERC3525Received, event.address: {}", [event.address.toHexString()])

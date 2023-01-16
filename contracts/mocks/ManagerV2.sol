@@ -66,10 +66,6 @@ contract ManagerV2 is IManagerV2, NFTDerivativeProtocolMultiState, MockManagerV2
         INFTDerivativeProtocolTokenV1(SBT).burn(tokenId);
     }
 
-    // function burnSBTValue(uint256 tokenId, uint256 value) external whenNotPaused onlyGov {
-    //     INFTDerivativeProtocolTokenV1(SBT).burnValue(tokenId, value);
-    // }
-
     function createProfile(
         DataTypes.CreateProfileData calldata vars
     ) external returns (uint256) {
@@ -180,27 +176,6 @@ contract ManagerV2 is IManagerV2, NFTDerivativeProtocolMultiState, MockManagerV2
         uint256[] memory values
     ) external whenNotPaused  {
         
-    }
-
-    function transferDerivativeNFT(
-        uint256 projectId,
-        uint256 fromSoulBoundTokenId,
-        uint256 toSoulBoundTokenId,
-        uint256 tokenId,
-        bytes calldata transferModuledata
-    ) external whenNotPaused  {
-
-    }
-
-    function transferValueDerivativeNFT(
-        uint256 projectId,
-        uint256 fromSoulBoundTokenId,
-        uint256 toSoulBoundTokenId,
-        uint256 tokenId,
-        uint256 value,
-        bytes calldata transferValueModuledata
-    ) external whenNotPaused  {
-     
     }
 
     /// ***********************

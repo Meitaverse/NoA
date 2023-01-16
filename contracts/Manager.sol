@@ -136,8 +136,13 @@ contract Manager is
     {
         _validateCallerIsSoulBoundTokenOwnerOrDispathcher(hub.soulBoundTokenId);
 
-        if (!IModuleGlobals(MODULE_GLOBALS).isWhitelistHubCreator(hub.soulBoundTokenId)) revert Errors.HubCreatorNotWhitelisted();
+        if (!IModuleGlobals(MODULE_GLOBALS).isWhitelistHubCreator(hub.soulBoundTokenId)) 
+            revert Errors.HubCreatorNotWhitelisted();
        
+        //only can create one hub
+        if (_hubIdBySoulBoundTokenId[hub.soulBoundTokenId] > 0)
+            revert Errors.HubOnlyCreateOne();
+
         uint256 hubId = _generateNextHubId();
         _hubIdBySoulBoundTokenId[hub.soulBoundTokenId] = hubId;
 
@@ -149,6 +154,32 @@ contract Manager is
         );
 
         return hubId; 
+    }
+
+    function updateHub(
+        uint256 soulBoundTokenId,
+        string memory name,
+        string memory description,
+        string memory imageURI
+    ) 
+        external 
+        nonReentrant
+        whenNotPaused 
+    {
+        _validateCallerIsSoulBoundTokenOwnerOrDispathcher(soulBoundTokenId);
+
+        if (!IModuleGlobals(MODULE_GLOBALS).isWhitelistHubCreator(soulBoundTokenId)) revert Errors.HubCreatorNotWhitelisted();
+       
+        uint256 hubId = _hubIdBySoulBoundTokenId[soulBoundTokenId];
+        if (hubId == 0) revert Errors.HubNotExists();
+
+        InteractionLogic.updateHub(
+            hubId,
+            name, 
+            description, 
+            imageURI, 
+            _hubInfos
+        );
     }
  
     function createProject(
@@ -188,6 +219,7 @@ contract Manager is
             defaultRoyaltyPoints: project.defaultRoyaltyPoints,
             feeShareType: project.feeShareType
         });
+        
         return projectId;
     }
 
@@ -213,7 +245,7 @@ contract Manager is
         return fraction;
     }
  
-    //prepare publish
+    //prepare publish, and transfer from SBT value to bank treasury while amount >1
     function prePublish(
         DataTypes.Publication memory publication
     ) 
@@ -228,13 +260,13 @@ contract Manager is
 
         if (publication.amount == 0) revert Errors.InvalidParameter();
 
-        //user combo 
         if (_hubIdBySoulBoundTokenId[publication.soulBoundTokenId] != publication.hubId && 
                 publication.fromTokenIds.length == 0)  {
             revert Errors.InsufficientDerivativeNFT();
         }
 
-        if (_derivativeNFTByProjectId[publication.projectId] == address(0)) revert Errors.InvalidParameter();
+        if (_derivativeNFTByProjectId[publication.projectId] == address(0)) 
+            revert Errors.InvalidParameter();
 
         uint256 previousPublishId;
         uint256 publishId = _generateNextPublishId();
@@ -396,69 +428,7 @@ contract Manager is
         );
     }
 
-    function transferDerivativeNFT(
-        uint256 projectId,
-        uint256 fromSoulBoundTokenId,
-        uint256 toSoulBoundTokenId,
-        uint256 tokenId
-    ) 
-        external 
-        whenNotPaused 
-        nonReentrant
-    {
-         _validateCallerIsSoulBoundTokenOwnerOrDispathcher(fromSoulBoundTokenId);
-        address derivativeNFT = _derivativeNFTByProjectId[projectId];
-        if (derivativeNFT == address(0)) revert Errors.InvalidParameter();
 
-        address fromWallet = _soulBoundTokenIdToWallet[fromSoulBoundTokenId];
-        if (fromWallet == address(0)) revert Errors.InvalidParameter();
-
-        address toWallet = _soulBoundTokenIdToWallet[toSoulBoundTokenId];
-        if (toWallet == address(0)) revert Errors.InvalidParameter();
-
-        //must approve manager before
-        IERC3525(derivativeNFT).transferFrom(fromWallet, toWallet, tokenId);
-
-        emit Events.TransferDerivativeNFT(
-            fromSoulBoundTokenId,
-            toSoulBoundTokenId,
-            projectId,
-            tokenId,
-            block.timestamp
-        );
-    } 
-
-    function transferValueDerivativeNFT(
-        uint256 projectId,
-        uint256 fromSoulBoundTokenId,
-        uint256 toSoulBoundTokenId,
-        uint256 tokenId,
-        uint256 value
-    ) 
-        external 
-        whenNotPaused 
-        nonReentrant
-    {
-         _validateCallerIsSoulBoundTokenOwnerOrDispathcher(fromSoulBoundTokenId);
-        address derivativeNFT = _derivativeNFTByProjectId[projectId];
-        if (derivativeNFT == address(0)) revert Errors.InvalidParameter();
-
-        address toWallet = _soulBoundTokenIdToWallet[toSoulBoundTokenId];
-        if (toWallet == address(0)) revert Errors.InvalidParameter();
-
-        //must approve manager before
-        uint256 newTokenId = IERC3525(derivativeNFT).transferFrom(tokenId, toWallet, value);
-
-        emit Events.TransferValueDerivativeNFT(
-            fromSoulBoundTokenId,
-            toSoulBoundTokenId,
-            projectId,
-            tokenId,
-            value,
-            newTokenId,
-            block.timestamp
-        );
-    }
 
     function getPublishInfo(uint256 publishId_) external view returns (DataTypes.PublishData memory) {
         return _projectDataByPublishId[publishId_];

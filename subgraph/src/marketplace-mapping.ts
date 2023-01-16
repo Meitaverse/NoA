@@ -81,6 +81,7 @@ export function handleRemoveMarket(event: RemoveMarket): void {
         market.isRemove = true
         market.timestamp = event.block.timestamp
         market.save()
+        // store.remove("Market", _idString);
     } 
 }
 
@@ -119,15 +120,13 @@ export function handleRemoveSale(event: RemoveSale): void {
     const publishSaleRecord = PublishSaleRecord.load(_idString) 
 
     if (publishSaleRecord) {
-        
         publishSaleRecord.onSellUnits = event.params.onSellUnits
         publishSaleRecord.saledUnits = event.params.saledUnits
         publishSaleRecord.isRemove = true
         publishSaleRecord.timestamp = event.block.timestamp
         publishSaleRecord.save()
-    } 
+    }
 }
-
 
 export function handleTraded(event: Traded): void {
     log.info("handleTraded, event.address: {}", [event.address.toHexString()])

@@ -191,28 +191,6 @@ contract ManagerV2_BadRevision is
          
     }
 
-    function transferDerivativeNFT(
-        uint256 projectId,
-        uint256 fromSoulBoundTokenId,
-        uint256 toSoulBoundTokenId,
-        uint256 tokenId,
-        bytes calldata transferModuledata
-    ) external whenNotPaused {
-
-       
-    }
-
-    function transferValueDerivativeNFT(
-        uint256 projectId,
-        uint256 fromSoulBoundTokenId,
-        uint256 toSoulBoundTokenId,
-        uint256 tokenId,
-        uint256 value,
-        bytes calldata transferValueModuledata
-    ) external whenNotPaused {
-    
-    }
-
     /// ***********************
     /// *****GOV FUNCTIONS*****
     /// ***********************

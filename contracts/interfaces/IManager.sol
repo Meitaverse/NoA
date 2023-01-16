@@ -37,7 +37,6 @@ interface IManager {
      */
     function setDispatcherWithSig(DataTypes.SetDispatcherWithSigData calldata vars) external;
 
-
     /**
      * @notice Returns the dispatcher associated with a soulBoundToken.
      *         usually get  approve
@@ -48,26 +47,26 @@ interface IManager {
      */
     function getDispatcher(uint256 soulBoundToken) external view returns (address);
 
-  /**
-   * @notice Sets the emergency admin, which is a permissioned role able to set the protocol state. This function
-   * can only be called by the governance address.
-   *
-   * @param newEmergencyAdmin The new emergency admin address to set.
-   */
-  function setEmergencyAdmin(address newEmergencyAdmin) external;
+    /**
+     * @notice Sets the emergency admin, which is a permissioned role able to set the protocol state. This function
+     * can only be called by the governance address.
+     *
+     * @param newEmergencyAdmin The new emergency admin address to set.
+     */
+    function setEmergencyAdmin(address newEmergencyAdmin) external;
 
-  /**
-   * @notice Sets the protocol state to either a global pause, a publishing pause or an unpaused state. This function
-   * can only be called by the governance address or the emergency admin address.
-   *
-   * Note that this reverts if the emergency admin calls it if:
-   *      1. The emergency admin is attempting to unpause.
-   *      2. The emergency admin is calling while the protocol is already paused.
-   *
-   * @param newState The state to set, as a member of the ProtocolState enum.
-   */
-   function setState(DataTypes.ProtocolState newState) external;
- 
+    /**
+     * @notice Sets the protocol state to either a global pause, a publishing pause or an unpaused state. This function
+     * can only be called by the governance address or the emergency admin address.
+     *
+     * Note that this reverts if the emergency admin calls it if:
+     *      1. The emergency admin is attempting to unpause.
+     *      2. The emergency admin is calling while the protocol is already paused.
+     *
+     * @param newState The state to set, as a member of the ProtocolState enum.
+    */
+    function setState(DataTypes.ProtocolState newState) external;
+    
     function setDerivativeNFTState(
         uint256 projectId,
         DataTypes.DerivativeNFTState newState
@@ -78,9 +77,9 @@ interface IManager {
         uint256 value
     ) external;
 
-   function burnSBT(
+    function burnSBT(
         uint256 soulBoundTokenId
-   )external;
+    )external;
 
     /**
      * @notice Creates a profile with the specified parameters, minting a profile NFT to the given recipient. This
@@ -108,14 +107,6 @@ interface IManager {
 
     function getProjectIdByContract(address contract_) external view returns (uint256);
 
-    function createHub(
-        DataTypes.HubData memory hub
-    ) external returns(uint256);
-
-    function createProject(
-        DataTypes.ProjectData memory project
-    ) external returns (uint256);
-
     /**
      * @notice get project infomation.
      * @param projectId_ The project Id
@@ -138,10 +129,45 @@ interface IManager {
 
     function getSoulBoundTokenIdByWallet(address wallet) external view returns(uint256);
 
+    function createHub(
+        DataTypes.HubData memory hub
+    ) external returns(uint256);
+
+    function updateHub(
+        uint256 soulBoundTokenId,
+        string memory name,
+        string memory description,
+        string memory imageURI
+    ) external;
+
+    function createProject(
+        DataTypes.ProjectData memory project
+    ) external returns (uint256);
+
+    /**
+     * @notice Prepare publish a Publication
+     *
+     * @param publication  Data of Publication
+     *
+     * @return The new publish id
+     */
     function prePublish(
         DataTypes.Publication memory publication
     ) external  returns (uint256);
 
+    /**
+     * @notice Update a prepare pubish 
+     *
+     * @param publishId  The prepare publish id
+     * @param salePrice  The new  sale price if need to update
+     * @param royaltyBasisPoints  The proyalty basis points
+     * @param amount  The new amount
+     * @param name  The new name
+     * @param description  The new description
+     * @param materialURIs  The new materialURIs
+     * @param fromTokenIds  The new fromTokenIds
+     *
+     */
     function updatePublish(
         uint256 publishId,
         uint256 salePrice,
@@ -188,30 +214,14 @@ interface IManager {
         DataTypes.AirdropData memory airdropData
     ) external;
 
+
     /**
-     * @notice Transfer a dNFT to a address.
+     * @notice calculate royalty for ERC2981 market place
      *
-     * @param projectId Event Id  
-     * @param fromSoulBoundTokenId From SBT Id  
-     * @param toSoulBoundTokenId  to
-     * @param tokenId The tokenId of dNFT.
+     * @param publishId The publish Id
      *
+     * @return The royalty taxes
      */
-    function transferDerivativeNFT(
-        uint256 projectId,
-        uint256 fromSoulBoundTokenId,
-        uint256 toSoulBoundTokenId,
-        uint256 tokenId
-    ) external;
-
-    function transferValueDerivativeNFT(
-        uint256 projectId,
-        uint256 fromSoulBoundTokenId,
-        uint256 toSoulBoundTokenId,
-        uint256 tokenId,
-        uint256 value
-    ) external;
-
     function calculateRoyalty(uint256 publishId) external view returns(uint96);
 
 }

@@ -543,7 +543,7 @@
       "inputs": [
         {
           "internalType": "uint256",
-          "name": "tokenId",
+          "name": "soulBoundTokenId",
           "type": "uint256"
         }
       ],

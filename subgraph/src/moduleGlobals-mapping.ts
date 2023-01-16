@@ -16,31 +16,32 @@ import {
 } from "../generated/ModuleGlobals/Events"
 
 import {
-    ProfileCreatorWhitelistedHistory,
-    HubCreatorWhitelistedHistory,
+    ProfileCreatorWhitelistedRecord,
+    HubCreatorWhitelistedRecord,
     ModuleGlobalsTreasurySetHistory,
     ModuleGlobalsVoucherSetHistory,
     ModuleGlobalsManagerSetHistory,
     ModuleGlobalsSBTSetHistory,
-    ModuleGlobalsPublishRoyaltySetHistory,
-    ModuleGlobalsTreasuryFeeSetHistory,
+    PublishRoyaltyRecord,
+    TreasuryFeeRecord,
     ModuleGlobalsGovernanceSetHistory,
-    CollectModuleWhitelistedHistory,
-    PublishModuleWhitelistedHistory,
-    TemplateWhitelistedHistory,
+    CollectModuleWhitelistedRecord,
+    PublishModuleWhitelistedRecord,
+    TemplateWhitelistedRecord,
 } from "../generated/schema"
 
 export function handleProfileCreatorWhitelisted(event: ProfileCreatorWhitelisted): void {
     log.info("handleProfileCreatorWhitelisted, event.address: {}", [event.address.toHexString()])
 
-    let _idString = event.params.profileCreator.toHexString() + "-" +  event.params.timestamp.toString()
-    const history = ProfileCreatorWhitelistedHistory.load(_idString) || new ProfileCreatorWhitelistedHistory(_idString)
+    let _idString = event.params.profileCreator.toHexString()
+    const record = ProfileCreatorWhitelistedRecord.load(_idString) || new ProfileCreatorWhitelistedRecord(_idString)
 
-    if (history) {
-        history.profileCreator = event.params.profileCreator
-        history.whitelisted = event.params.whitelisted
-        history.timestamp = event.params.timestamp
-        history.save()
+    if (record) {
+        record.profileCreator = event.params.profileCreator
+        record.whitelisted = event.params.whitelisted
+        record.caller = event.params.caller
+        record.timestamp = event.params.timestamp
+        record.save()
         
     } 
 }
@@ -48,16 +49,16 @@ export function handleProfileCreatorWhitelisted(event: ProfileCreatorWhitelisted
 export function handleHubCreatorWhitelisted(event: HubCreatorWhitelisted): void {
     log.info("handleHubCreatorWhitelisted, event.address: {}", [event.address.toHexString()])
 
-    let _idString = event.params.soulBoundTokenId.toString() + "-" +  event.params.timestamp.toString()
-    const history = HubCreatorWhitelistedHistory.load(_idString) || new HubCreatorWhitelistedHistory(_idString)
+    let _idStringRecord = event.params.soulBoundTokenId.toString()
+    const record = HubCreatorWhitelistedRecord.load(_idStringRecord) || new HubCreatorWhitelistedRecord(_idStringRecord)
 
-    if (history) {
-        history.soulBoundTokenId = event.params.soulBoundTokenId
-        history.whitelisted = event.params.whitelisted
-        history.timestamp = event.params.timestamp
-        history.save()
-        
+    if (record) {
+        record.soulBoundTokenId = event.params.soulBoundTokenId
+        record.whitelisted = event.params.whitelisted
+        record.timestamp = event.params.timestamp
+        record.save()
     } 
+
 }
 
 export function handleModuleGlobalsTreasurySet(event: ModuleGlobalsTreasurySet): void {
@@ -121,29 +122,31 @@ export function handleModuleGlobalsSBTSet(event: ModuleGlobalsSBTSet): void {
 export function handleModuleGlobalsPublishRoyaltySet(event: ModuleGlobalsPublishRoyaltySet): void {
     log.info("handleModuleGlobalsPublishRoyaltySet, event.address: {}", [event.address.toHexString()])
 
-    let _idString = event.params.newPublishRoyalty.toString() + "-" +  event.params.timestamp.toString()
-    const history = ModuleGlobalsPublishRoyaltySetHistory.load(_idString) || new ModuleGlobalsPublishRoyaltySetHistory(_idString)
+    let _idStringPublishRoyalty = 'PublishRoyaltySetting';
+    const publishRoyalty = PublishRoyaltyRecord.load(_idStringPublishRoyalty) || new PublishRoyaltyRecord(_idStringPublishRoyalty)
+    
+    if (publishRoyalty) {
+        publishRoyalty.prevPublishRoyalty = event.params.prevPublishRoyalty
+        publishRoyalty.newPublishRoyalty = event.params.newPublishRoyalty
+        publishRoyalty.timestamp = event.block.timestamp
+        publishRoyalty.save()
+    }
 
-    if (history) {
-        history.prevPublishRoyalty = event.params.prevPublishRoyalty
-        history.newPublishRoyalty = event.params.newPublishRoyalty
-        history.timestamp = event.params.timestamp
-        history.save()
-    } 
 }
 
 export function handleModuleGlobalsTreasuryFeeSet(event: ModuleGlobalsTreasuryFeeSet): void {
     log.info("handleModuleGlobalsTreasuryFeeSet, event.address: {}", [event.address.toHexString()])
 
-    let _idString = event.params.newTreasuryFee.toString() + "-" +  event.params.timestamp.toString()
-    const history = ModuleGlobalsTreasuryFeeSetHistory.load(_idString) || new ModuleGlobalsTreasuryFeeSetHistory(_idString)
+    let _idStringTreasuryFee = 'TreasuryFeeSetting';
+    const treasuryFeeSetting = TreasuryFeeRecord.load(_idStringTreasuryFee) || new TreasuryFeeRecord(_idStringTreasuryFee)
+    
+    if (treasuryFeeSetting) {
+        treasuryFeeSetting.prevTreasuryFee = event.params.prevTreasuryFee
+        treasuryFeeSetting.newTreasuryFee = event.params.newTreasuryFee
+        treasuryFeeSetting.timestamp = event.block.timestamp
+        treasuryFeeSetting.save()
+    }
 
-    if (history) {
-        history.prevTreasuryFee = event.params.prevTreasuryFee
-        history.newTreasuryFee = event.params.newTreasuryFee
-        history.timestamp = event.params.timestamp
-        history.save()
-    } 
 }
 
 export function handleModuleGlobalsGovernanceSet(event: ModuleGlobalsGovernanceSet): void {
@@ -164,13 +167,13 @@ export function handleCollectModuleWhitelisted(event: CollectModuleWhitelisted):
     log.info("handleCollectModuleWhitelisted, event.address: {}", [event.address.toHexString()])
 
     let _idString = event.params.collectModule.toHexString() + "-" +  event.params.timestamp.toString()
-    const history = CollectModuleWhitelistedHistory.load(_idString) || new CollectModuleWhitelistedHistory(_idString)
+    const record = CollectModuleWhitelistedRecord.load(_idString) || new CollectModuleWhitelistedRecord(_idString)
 
-    if (history) {
-        history.collectModule = event.params.collectModule
-        history.whitelisted = event.params.whitelisted
-        history.timestamp = event.params.timestamp
-        history.save()
+    if (record) {
+        record.collectModule = event.params.collectModule
+        record.whitelisted = event.params.whitelisted
+        record.timestamp = event.params.timestamp
+        record.save()
     } 
 }
 
@@ -178,13 +181,13 @@ export function handlePublishModuleWhitelisted(event: PublishModuleWhitelisted):
     log.info("handlePublishModuleWhitelisted, event.address: {}", [event.address.toHexString()])
 
     let _idString = event.params.publishModule.toHexString() + "-" +  event.params.timestamp.toString()
-    const history = PublishModuleWhitelistedHistory.load(_idString) || new PublishModuleWhitelistedHistory(_idString)
+    const record = PublishModuleWhitelistedRecord.load(_idString) || new PublishModuleWhitelistedRecord(_idString)
 
-    if (history) {
-        history.publishModule = event.params.publishModule
-        history.whitelisted = event.params.whitelisted
-        history.timestamp = event.params.timestamp
-        history.save()
+    if (record) {
+        record.publishModule = event.params.publishModule
+        record.whitelisted = event.params.whitelisted
+        record.timestamp = event.params.timestamp
+        record.save()
     } 
 }
 
@@ -192,12 +195,12 @@ export function handleTemplateWhitelisted(event: TemplateWhitelisted): void {
     log.info("handleTemplateWhitelisted, event.address: {}", [event.address.toHexString()])
 
     let _idString = event.params.template.toHexString() + "-" +  event.params.timestamp.toString()
-    const history = TemplateWhitelistedHistory.load(_idString) || new TemplateWhitelistedHistory(_idString)
+    const record = TemplateWhitelistedRecord.load(_idString) || new TemplateWhitelistedRecord(_idString)
 
-    if (history) {
-        history.template = event.params.template
-        history.whitelisted = event.params.whitelisted
-        history.timestamp = event.params.timestamp
-        history.save()
+    if (record) {
+        record.template = event.params.template
+        record.whitelisted = event.params.whitelisted
+        record.timestamp = event.params.timestamp
+        record.save()
     } 
 }

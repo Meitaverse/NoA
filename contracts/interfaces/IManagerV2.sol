@@ -112,31 +112,5 @@ interface IManagerV2 {
         uint256[] memory values
     ) external;
 
-    /**
-     * @notice Transfer a dNFT to a address from the fromSoulBoundTokenId to toSoulBoundTokenId
-     *
-     * @param projectId Event Id  
-     * @param fromSoulBoundTokenId From SBT Id  
-     * @param toSoulBoundTokenId  to
-     * @param tokenId The tokenId of dNFT.
-     * @param transferModuledata The arbitrary data  to pass.
-     *
-     */
-    function transferDerivativeNFT(
-        uint256 projectId,
-        uint256 fromSoulBoundTokenId,
-        uint256 toSoulBoundTokenId,
-        uint256 tokenId,
-        bytes calldata transferModuledata
-    ) external;
-
-    function transferValueDerivativeNFT(
-        uint256 projectId,
-        uint256 fromSoulBoundTokenId,
-        uint256 toSoulBoundTokenId,
-        uint256 tokenId,
-        uint256 value,
-        bytes calldata transferValueModuledata
-    ) external;
-
+    
 }

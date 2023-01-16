@@ -74,6 +74,8 @@ library Errors {
   error SignatureInvalid();
   error ProfileCreatorNotWhitelisted();
   error HubCreatorNotWhitelisted();
+  error HubOnlyCreateOne();
+  error HubNotExists();
   error CallerNotWhitelistedModule();
   error CollectModuleNotWhitelisted();
   error FollowModuleNotWhitelisted();

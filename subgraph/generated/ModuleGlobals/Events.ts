@@ -40,66 +40,6 @@ export class AddMarket__Params {
   }
 }
 
-export class ApprovalForSlot extends ethereum.Event {
-  get params(): ApprovalForSlot__Params {
-    return new ApprovalForSlot__Params(this);
-  }
-}
-
-export class ApprovalForSlot__Params {
-  _event: ApprovalForSlot;
-
-  constructor(event: ApprovalForSlot) {
-    this._event = event;
-  }
-
-  get owner(): Address {
-    return this._event.parameters[0].value.toAddress();
-  }
-
-  get slot(): BigInt {
-    return this._event.parameters[1].value.toBigInt();
-  }
-
-  get operator(): Address {
-    return this._event.parameters[2].value.toAddress();
-  }
-
-  get approved(): boolean {
-    return this._event.parameters[3].value.toBoolean();
-  }
-}
-
-export class BankTreasurySet extends ethereum.Event {
-  get params(): BankTreasurySet__Params {
-    return new BankTreasurySet__Params(this);
-  }
-}
-
-export class BankTreasurySet__Params {
-  _event: BankTreasurySet;
-
-  constructor(event: BankTreasurySet) {
-    this._event = event;
-  }
-
-  get soulBoundTokenId(): BigInt {
-    return this._event.parameters[0].value.toBigInt();
-  }
-
-  get bankTrerasury(): Address {
-    return this._event.parameters[1].value.toAddress();
-  }
-
-  get initialSupply(): BigInt {
-    return this._event.parameters[2].value.toBigInt();
-  }
-
-  get timestamp(): BigInt {
-    return this._event.parameters[3].value.toBigInt();
-  }
-}
-
 export class BurnSBT extends ethereum.Event {
   get params(): BurnSBT__Params {
     return new BurnSBT__Params(this);
@@ -113,12 +53,20 @@ export class BurnSBT__Params {
     this._event = event;
   }
 
+  get caller(): Address {
+    return this._event.parameters[0].value.toAddress();
+  }
+
   get soulBoundTokenId(): BigInt {
-    return this._event.parameters[0].value.toBigInt();
+    return this._event.parameters[1].value.toBigInt();
+  }
+
+  get balance(): BigInt {
+    return this._event.parameters[2].value.toBigInt();
   }
 
   get timestamp(): BigInt {
-    return this._event.parameters[1].value.toBigInt();
+    return this._event.parameters[3].value.toBigInt();
   }
 }
 
@@ -247,8 +195,12 @@ export class Deposit__Params {
     return this._event.parameters[1].value.toBigInt();
   }
 
+  get receiver(): Address {
+    return this._event.parameters[2].value.toAddress();
+  }
+
   get balance(): BigInt {
-    return this._event.parameters[2].value.toBigInt();
+    return this._event.parameters[3].value.toBigInt();
   }
 }
 
@@ -887,8 +839,46 @@ export class HubCreatorWhitelisted__Params {
     return this._event.parameters[1].value.toBoolean();
   }
 
+  get caller(): Address {
+    return this._event.parameters[2].value.toAddress();
+  }
+
   get timestamp(): BigInt {
-    return this._event.parameters[2].value.toBigInt();
+    return this._event.parameters[3].value.toBigInt();
+  }
+}
+
+export class HubUpdated extends ethereum.Event {
+  get params(): HubUpdated__Params {
+    return new HubUpdated__Params(this);
+  }
+}
+
+export class HubUpdated__Params {
+  _event: HubUpdated;
+
+  constructor(event: HubUpdated) {
+    this._event = event;
+  }
+
+  get hubId(): BigInt {
+    return this._event.parameters[0].value.toBigInt();
+  }
+
+  get name(): string {
+    return this._event.parameters[1].value.toString();
+  }
+
+  get description(): string {
+    return this._event.parameters[2].value.toString();
+  }
+
+  get imageURI(): string {
+    return this._event.parameters[3].value.toString();
+  }
+
+  get timestamp(): BigInt {
+    return this._event.parameters[4].value.toBigInt();
   }
 }
 
@@ -1011,16 +1001,20 @@ export class MintSBTValue__Params {
     this._event = event;
   }
 
-  get soulBoundTokenId(): BigInt {
-    return this._event.parameters[0].value.toBigInt();
+  get caller(): Address {
+    return this._event.parameters[0].value.toAddress();
   }
 
-  get value(): BigInt {
+  get soulBoundTokenId(): BigInt {
     return this._event.parameters[1].value.toBigInt();
   }
 
-  get timestamp(): BigInt {
+  get value(): BigInt {
     return this._event.parameters[2].value.toBigInt();
+  }
+
+  get timestamp(): BigInt {
+    return this._event.parameters[3].value.toBigInt();
   }
 }
 
@@ -1309,8 +1303,12 @@ export class ProfileCreatorWhitelisted__Params {
     return this._event.parameters[1].value.toBoolean();
   }
 
+  get caller(): Address {
+    return this._event.parameters[2].value.toAddress();
+  }
+
   get timestamp(): BigInt {
-    return this._event.parameters[2].value.toBigInt();
+    return this._event.parameters[3].value.toBigInt();
   }
 }
 
@@ -1899,82 +1897,6 @@ export class TradedRoyaltyAmountsStruct extends ethereum.Tuple {
 
   get adjustedAmount(): BigInt {
     return this[3].toBigInt();
-  }
-}
-
-export class TransferDerivativeNFT extends ethereum.Event {
-  get params(): TransferDerivativeNFT__Params {
-    return new TransferDerivativeNFT__Params(this);
-  }
-}
-
-export class TransferDerivativeNFT__Params {
-  _event: TransferDerivativeNFT;
-
-  constructor(event: TransferDerivativeNFT) {
-    this._event = event;
-  }
-
-  get fromSoulBoundTokenId(): BigInt {
-    return this._event.parameters[0].value.toBigInt();
-  }
-
-  get toSoulBoundTokenId(): BigInt {
-    return this._event.parameters[1].value.toBigInt();
-  }
-
-  get projectId(): BigInt {
-    return this._event.parameters[2].value.toBigInt();
-  }
-
-  get tokenId(): BigInt {
-    return this._event.parameters[3].value.toBigInt();
-  }
-
-  get timestamp(): BigInt {
-    return this._event.parameters[4].value.toBigInt();
-  }
-}
-
-export class TransferValueDerivativeNFT extends ethereum.Event {
-  get params(): TransferValueDerivativeNFT__Params {
-    return new TransferValueDerivativeNFT__Params(this);
-  }
-}
-
-export class TransferValueDerivativeNFT__Params {
-  _event: TransferValueDerivativeNFT;
-
-  constructor(event: TransferValueDerivativeNFT) {
-    this._event = event;
-  }
-
-  get fromSoulBoundTokenId(): BigInt {
-    return this._event.parameters[0].value.toBigInt();
-  }
-
-  get toSoulBoundTokenId(): BigInt {
-    return this._event.parameters[1].value.toBigInt();
-  }
-
-  get projectId(): BigInt {
-    return this._event.parameters[2].value.toBigInt();
-  }
-
-  get tokenId(): BigInt {
-    return this._event.parameters[3].value.toBigInt();
-  }
-
-  get value(): BigInt {
-    return this._event.parameters[4].value.toBigInt();
-  }
-
-  get newTokenId(): BigInt {
-    return this._event.parameters[5].value.toBigInt();
-  }
-
-  get timestamp(): BigInt {
-    return this._event.parameters[6].value.toBigInt();
   }
 }
 

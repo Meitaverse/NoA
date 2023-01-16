@@ -423,6 +423,15 @@ export class MintSBTValueHistory extends Entity {
     this.set("id", Value.fromString(value));
   }
 
+  get caller(): Bytes {
+    let value = this.get("caller");
+    return value!.toBytes();
+  }
+
+  set caller(value: Bytes) {
+    this.set("caller", Value.fromBytes(value));
+  }
+
   get soulBoundTokenId(): BigInt {
     let value = this.get("soulBoundTokenId");
     return value!.toBigInt();
@@ -482,6 +491,15 @@ export class BurnSBTHistory extends Entity {
     this.set("id", Value.fromString(value));
   }
 
+  get caller(): Bytes {
+    let value = this.get("caller");
+    return value!.toBytes();
+  }
+
+  set caller(value: Bytes) {
+    this.set("caller", Value.fromBytes(value));
+  }
+
   get soulBoundTokenId(): BigInt {
     let value = this.get("soulBoundTokenId");
     return value!.toBigInt();
@@ -489,6 +507,15 @@ export class BurnSBTHistory extends Entity {
 
   set soulBoundTokenId(value: BigInt) {
     this.set("soulBoundTokenId", Value.fromBigInt(value));
+  }
+
+  get balance(): BigInt {
+    let value = this.get("balance");
+    return value!.toBigInt();
+  }
+
+  set balance(value: BigInt) {
+    this.set("balance", Value.fromBigInt(value));
   }
 
   get timestamp(): BigInt {
@@ -1130,7 +1157,7 @@ export class Project extends Entity {
   }
 }
 
-export class PublishCreatedHistory extends Entity {
+export class PublishRecord extends Entity {
   constructor(id: string) {
     super();
     this.set("id", Value.fromString(id));
@@ -1138,23 +1165,18 @@ export class PublishCreatedHistory extends Entity {
 
   save(): void {
     let id = this.get("id");
-    assert(
-      id != null,
-      "Cannot save PublishCreatedHistory entity without an ID"
-    );
+    assert(id != null, "Cannot save PublishRecord entity without an ID");
     if (id) {
       assert(
         id.kind == ValueKind.STRING,
-        `Entities of type PublishCreatedHistory must have an ID of type String but the id '${id.displayData()}' is of type ${id.displayKind()}`
+        `Entities of type PublishRecord must have an ID of type String but the id '${id.displayData()}' is of type ${id.displayKind()}`
       );
-      store.set("PublishCreatedHistory", id.toString(), this);
+      store.set("PublishRecord", id.toString(), this);
     }
   }
 
-  static load(id: string): PublishCreatedHistory | null {
-    return changetype<PublishCreatedHistory | null>(
-      store.get("PublishCreatedHistory", id)
-    );
+  static load(id: string): PublishRecord | null {
+    return changetype<PublishRecord | null>(store.get("PublishRecord", id));
   }
 
   get id(): string {
@@ -1309,188 +1331,6 @@ export class DerivativeNFTCollectedHistory extends Entity {
 
   set toSoulBoundTokenId(value: BigInt) {
     this.set("toSoulBoundTokenId", Value.fromBigInt(value));
-  }
-
-  get tokenId(): BigInt {
-    let value = this.get("tokenId");
-    return value!.toBigInt();
-  }
-
-  set tokenId(value: BigInt) {
-    this.set("tokenId", Value.fromBigInt(value));
-  }
-
-  get value(): BigInt {
-    let value = this.get("value");
-    return value!.toBigInt();
-  }
-
-  set value(value: BigInt) {
-    this.set("value", Value.fromBigInt(value));
-  }
-
-  get newTokenId(): BigInt {
-    let value = this.get("newTokenId");
-    return value!.toBigInt();
-  }
-
-  set newTokenId(value: BigInt) {
-    this.set("newTokenId", Value.fromBigInt(value));
-  }
-
-  get timestamp(): BigInt {
-    let value = this.get("timestamp");
-    return value!.toBigInt();
-  }
-
-  set timestamp(value: BigInt) {
-    this.set("timestamp", Value.fromBigInt(value));
-  }
-}
-
-export class DerivativeNFTTransferHistory extends Entity {
-  constructor(id: string) {
-    super();
-    this.set("id", Value.fromString(id));
-  }
-
-  save(): void {
-    let id = this.get("id");
-    assert(
-      id != null,
-      "Cannot save DerivativeNFTTransferHistory entity without an ID"
-    );
-    if (id) {
-      assert(
-        id.kind == ValueKind.STRING,
-        `Entities of type DerivativeNFTTransferHistory must have an ID of type String but the id '${id.displayData()}' is of type ${id.displayKind()}`
-      );
-      store.set("DerivativeNFTTransferHistory", id.toString(), this);
-    }
-  }
-
-  static load(id: string): DerivativeNFTTransferHistory | null {
-    return changetype<DerivativeNFTTransferHistory | null>(
-      store.get("DerivativeNFTTransferHistory", id)
-    );
-  }
-
-  get id(): string {
-    let value = this.get("id");
-    return value!.toString();
-  }
-
-  set id(value: string) {
-    this.set("id", Value.fromString(value));
-  }
-
-  get fromSoulBoundTokenId(): BigInt {
-    let value = this.get("fromSoulBoundTokenId");
-    return value!.toBigInt();
-  }
-
-  set fromSoulBoundTokenId(value: BigInt) {
-    this.set("fromSoulBoundTokenId", Value.fromBigInt(value));
-  }
-
-  get toSoulBoundTokenId(): BigInt {
-    let value = this.get("toSoulBoundTokenId");
-    return value!.toBigInt();
-  }
-
-  set toSoulBoundTokenId(value: BigInt) {
-    this.set("toSoulBoundTokenId", Value.fromBigInt(value));
-  }
-
-  get projectId(): BigInt {
-    let value = this.get("projectId");
-    return value!.toBigInt();
-  }
-
-  set projectId(value: BigInt) {
-    this.set("projectId", Value.fromBigInt(value));
-  }
-
-  get tokenId(): BigInt {
-    let value = this.get("tokenId");
-    return value!.toBigInt();
-  }
-
-  set tokenId(value: BigInt) {
-    this.set("tokenId", Value.fromBigInt(value));
-  }
-
-  get timestamp(): BigInt {
-    let value = this.get("timestamp");
-    return value!.toBigInt();
-  }
-
-  set timestamp(value: BigInt) {
-    this.set("timestamp", Value.fromBigInt(value));
-  }
-}
-
-export class DerivativeNFTTransferValueHistory extends Entity {
-  constructor(id: string) {
-    super();
-    this.set("id", Value.fromString(id));
-  }
-
-  save(): void {
-    let id = this.get("id");
-    assert(
-      id != null,
-      "Cannot save DerivativeNFTTransferValueHistory entity without an ID"
-    );
-    if (id) {
-      assert(
-        id.kind == ValueKind.STRING,
-        `Entities of type DerivativeNFTTransferValueHistory must have an ID of type String but the id '${id.displayData()}' is of type ${id.displayKind()}`
-      );
-      store.set("DerivativeNFTTransferValueHistory", id.toString(), this);
-    }
-  }
-
-  static load(id: string): DerivativeNFTTransferValueHistory | null {
-    return changetype<DerivativeNFTTransferValueHistory | null>(
-      store.get("DerivativeNFTTransferValueHistory", id)
-    );
-  }
-
-  get id(): string {
-    let value = this.get("id");
-    return value!.toString();
-  }
-
-  set id(value: string) {
-    this.set("id", Value.fromString(value));
-  }
-
-  get fromSoulBoundTokenId(): BigInt {
-    let value = this.get("fromSoulBoundTokenId");
-    return value!.toBigInt();
-  }
-
-  set fromSoulBoundTokenId(value: BigInt) {
-    this.set("fromSoulBoundTokenId", Value.fromBigInt(value));
-  }
-
-  get toSoulBoundTokenId(): BigInt {
-    let value = this.get("toSoulBoundTokenId");
-    return value!.toBigInt();
-  }
-
-  set toSoulBoundTokenId(value: BigInt) {
-    this.set("toSoulBoundTokenId", Value.fromBigInt(value));
-  }
-
-  get projectId(): BigInt {
-    let value = this.get("projectId");
-    return value!.toBigInt();
-  }
-
-  set projectId(value: BigInt) {
-    this.set("projectId", Value.fromBigInt(value));
   }
 
   get tokenId(): BigInt {
@@ -2219,7 +2059,7 @@ export class VoucherRecord extends Entity {
   }
 }
 
-export class ProfileCreatorWhitelistedHistory extends Entity {
+export class ProfileCreatorWhitelistedRecord extends Entity {
   constructor(id: string) {
     super();
     this.set("id", Value.fromString(id));
@@ -2229,20 +2069,20 @@ export class ProfileCreatorWhitelistedHistory extends Entity {
     let id = this.get("id");
     assert(
       id != null,
-      "Cannot save ProfileCreatorWhitelistedHistory entity without an ID"
+      "Cannot save ProfileCreatorWhitelistedRecord entity without an ID"
     );
     if (id) {
       assert(
         id.kind == ValueKind.STRING,
-        `Entities of type ProfileCreatorWhitelistedHistory must have an ID of type String but the id '${id.displayData()}' is of type ${id.displayKind()}`
+        `Entities of type ProfileCreatorWhitelistedRecord must have an ID of type String but the id '${id.displayData()}' is of type ${id.displayKind()}`
       );
-      store.set("ProfileCreatorWhitelistedHistory", id.toString(), this);
+      store.set("ProfileCreatorWhitelistedRecord", id.toString(), this);
     }
   }
 
-  static load(id: string): ProfileCreatorWhitelistedHistory | null {
-    return changetype<ProfileCreatorWhitelistedHistory | null>(
-      store.get("ProfileCreatorWhitelistedHistory", id)
+  static load(id: string): ProfileCreatorWhitelistedRecord | null {
+    return changetype<ProfileCreatorWhitelistedRecord | null>(
+      store.get("ProfileCreatorWhitelistedRecord", id)
     );
   }
 
@@ -2271,6 +2111,15 @@ export class ProfileCreatorWhitelistedHistory extends Entity {
 
   set whitelisted(value: boolean) {
     this.set("whitelisted", Value.fromBoolean(value));
+  }
+
+  get caller(): Bytes {
+    let value = this.get("caller");
+    return value!.toBytes();
+  }
+
+  set caller(value: Bytes) {
+    this.set("caller", Value.fromBytes(value));
   }
 
   get timestamp(): BigInt {
@@ -2688,88 +2537,6 @@ export class DispatcherSetHistory extends Entity {
   }
 }
 
-export class ApprovalForSlotHistory extends Entity {
-  constructor(id: string) {
-    super();
-    this.set("id", Value.fromString(id));
-  }
-
-  save(): void {
-    let id = this.get("id");
-    assert(
-      id != null,
-      "Cannot save ApprovalForSlotHistory entity without an ID"
-    );
-    if (id) {
-      assert(
-        id.kind == ValueKind.STRING,
-        `Entities of type ApprovalForSlotHistory must have an ID of type String but the id '${id.displayData()}' is of type ${id.displayKind()}`
-      );
-      store.set("ApprovalForSlotHistory", id.toString(), this);
-    }
-  }
-
-  static load(id: string): ApprovalForSlotHistory | null {
-    return changetype<ApprovalForSlotHistory | null>(
-      store.get("ApprovalForSlotHistory", id)
-    );
-  }
-
-  get id(): string {
-    let value = this.get("id");
-    return value!.toString();
-  }
-
-  set id(value: string) {
-    this.set("id", Value.fromString(value));
-  }
-
-  get owner(): Bytes {
-    let value = this.get("owner");
-    return value!.toBytes();
-  }
-
-  set owner(value: Bytes) {
-    this.set("owner", Value.fromBytes(value));
-  }
-
-  get slot(): BigInt {
-    let value = this.get("slot");
-    return value!.toBigInt();
-  }
-
-  set slot(value: BigInt) {
-    this.set("slot", Value.fromBigInt(value));
-  }
-
-  get operator(): Bytes {
-    let value = this.get("operator");
-    return value!.toBytes();
-  }
-
-  set operator(value: Bytes) {
-    this.set("operator", Value.fromBytes(value));
-  }
-
-  get approved(): boolean {
-    let value = this.get("approved");
-    return value!.toBoolean();
-  }
-
-  set approved(value: boolean) {
-    this.set("approved", Value.fromBoolean(value));
-  }
-
-  get timestamp(): BigInt {
-    let value = this.get("timestamp");
-    return value!.toBigInt();
-  }
-
-  set timestamp(value: BigInt) {
-    this.set("timestamp", Value.fromBigInt(value));
-  }
-}
-
 export class StateSetHistory extends Entity {
   constructor(id: string) {
     super();
@@ -2938,79 +2705,6 @@ export class ERC3525ReceivedHistory extends Entity {
   }
 }
 
-export class BankTreasurySetHistory extends Entity {
-  constructor(id: string) {
-    super();
-    this.set("id", Value.fromString(id));
-  }
-
-  save(): void {
-    let id = this.get("id");
-    assert(
-      id != null,
-      "Cannot save BankTreasurySetHistory entity without an ID"
-    );
-    if (id) {
-      assert(
-        id.kind == ValueKind.STRING,
-        `Entities of type BankTreasurySetHistory must have an ID of type String but the id '${id.displayData()}' is of type ${id.displayKind()}`
-      );
-      store.set("BankTreasurySetHistory", id.toString(), this);
-    }
-  }
-
-  static load(id: string): BankTreasurySetHistory | null {
-    return changetype<BankTreasurySetHistory | null>(
-      store.get("BankTreasurySetHistory", id)
-    );
-  }
-
-  get id(): string {
-    let value = this.get("id");
-    return value!.toString();
-  }
-
-  set id(value: string) {
-    this.set("id", Value.fromString(value));
-  }
-
-  get soulBoundTokenId(): BigInt {
-    let value = this.get("soulBoundTokenId");
-    return value!.toBigInt();
-  }
-
-  set soulBoundTokenId(value: BigInt) {
-    this.set("soulBoundTokenId", Value.fromBigInt(value));
-  }
-
-  get bankTrerasury(): Bytes {
-    let value = this.get("bankTrerasury");
-    return value!.toBytes();
-  }
-
-  set bankTrerasury(value: Bytes) {
-    this.set("bankTrerasury", Value.fromBytes(value));
-  }
-
-  get initialSupply(): BigInt {
-    let value = this.get("initialSupply");
-    return value!.toBigInt();
-  }
-
-  set initialSupply(value: BigInt) {
-    this.set("initialSupply", Value.fromBigInt(value));
-  }
-
-  get timestamp(): BigInt {
-    let value = this.get("timestamp");
-    return value!.toBigInt();
-  }
-
-  set timestamp(value: BigInt) {
-    this.set("timestamp", Value.fromBigInt(value));
-  }
-}
-
 export class EmergencyAdminSetHistory extends Entity {
   constructor(id: string) {
     super();
@@ -3084,7 +2778,7 @@ export class EmergencyAdminSetHistory extends Entity {
   }
 }
 
-export class HubCreatorWhitelistedHistory extends Entity {
+export class ManagerGovernanceSetHistory extends Entity {
   constructor(id: string) {
     super();
     this.set("id", Value.fromString(id));
@@ -3094,20 +2788,93 @@ export class HubCreatorWhitelistedHistory extends Entity {
     let id = this.get("id");
     assert(
       id != null,
-      "Cannot save HubCreatorWhitelistedHistory entity without an ID"
+      "Cannot save ManagerGovernanceSetHistory entity without an ID"
     );
     if (id) {
       assert(
         id.kind == ValueKind.STRING,
-        `Entities of type HubCreatorWhitelistedHistory must have an ID of type String but the id '${id.displayData()}' is of type ${id.displayKind()}`
+        `Entities of type ManagerGovernanceSetHistory must have an ID of type String but the id '${id.displayData()}' is of type ${id.displayKind()}`
       );
-      store.set("HubCreatorWhitelistedHistory", id.toString(), this);
+      store.set("ManagerGovernanceSetHistory", id.toString(), this);
     }
   }
 
-  static load(id: string): HubCreatorWhitelistedHistory | null {
-    return changetype<HubCreatorWhitelistedHistory | null>(
-      store.get("HubCreatorWhitelistedHistory", id)
+  static load(id: string): ManagerGovernanceSetHistory | null {
+    return changetype<ManagerGovernanceSetHistory | null>(
+      store.get("ManagerGovernanceSetHistory", id)
+    );
+  }
+
+  get id(): string {
+    let value = this.get("id");
+    return value!.toString();
+  }
+
+  set id(value: string) {
+    this.set("id", Value.fromString(value));
+  }
+
+  get caller(): Bytes {
+    let value = this.get("caller");
+    return value!.toBytes();
+  }
+
+  set caller(value: Bytes) {
+    this.set("caller", Value.fromBytes(value));
+  }
+
+  get prevGovernance(): Bytes {
+    let value = this.get("prevGovernance");
+    return value!.toBytes();
+  }
+
+  set prevGovernance(value: Bytes) {
+    this.set("prevGovernance", Value.fromBytes(value));
+  }
+
+  get newGovernance(): Bytes {
+    let value = this.get("newGovernance");
+    return value!.toBytes();
+  }
+
+  set newGovernance(value: Bytes) {
+    this.set("newGovernance", Value.fromBytes(value));
+  }
+
+  get timestamp(): BigInt {
+    let value = this.get("timestamp");
+    return value!.toBigInt();
+  }
+
+  set timestamp(value: BigInt) {
+    this.set("timestamp", Value.fromBigInt(value));
+  }
+}
+
+export class HubCreatorWhitelistedRecord extends Entity {
+  constructor(id: string) {
+    super();
+    this.set("id", Value.fromString(id));
+  }
+
+  save(): void {
+    let id = this.get("id");
+    assert(
+      id != null,
+      "Cannot save HubCreatorWhitelistedRecord entity without an ID"
+    );
+    if (id) {
+      assert(
+        id.kind == ValueKind.STRING,
+        `Entities of type HubCreatorWhitelistedRecord must have an ID of type String but the id '${id.displayData()}' is of type ${id.displayKind()}`
+      );
+      store.set("HubCreatorWhitelistedRecord", id.toString(), this);
+    }
+  }
+
+  static load(id: string): HubCreatorWhitelistedRecord | null {
+    return changetype<HubCreatorWhitelistedRecord | null>(
+      store.get("HubCreatorWhitelistedRecord", id)
     );
   }
 
@@ -3468,134 +3235,6 @@ export class ModuleGlobalsSBTSetHistory extends Entity {
   }
 }
 
-export class ModuleGlobalsPublishRoyaltySetHistory extends Entity {
-  constructor(id: string) {
-    super();
-    this.set("id", Value.fromString(id));
-  }
-
-  save(): void {
-    let id = this.get("id");
-    assert(
-      id != null,
-      "Cannot save ModuleGlobalsPublishRoyaltySetHistory entity without an ID"
-    );
-    if (id) {
-      assert(
-        id.kind == ValueKind.STRING,
-        `Entities of type ModuleGlobalsPublishRoyaltySetHistory must have an ID of type String but the id '${id.displayData()}' is of type ${id.displayKind()}`
-      );
-      store.set("ModuleGlobalsPublishRoyaltySetHistory", id.toString(), this);
-    }
-  }
-
-  static load(id: string): ModuleGlobalsPublishRoyaltySetHistory | null {
-    return changetype<ModuleGlobalsPublishRoyaltySetHistory | null>(
-      store.get("ModuleGlobalsPublishRoyaltySetHistory", id)
-    );
-  }
-
-  get id(): string {
-    let value = this.get("id");
-    return value!.toString();
-  }
-
-  set id(value: string) {
-    this.set("id", Value.fromString(value));
-  }
-
-  get prevPublishRoyalty(): BigInt {
-    let value = this.get("prevPublishRoyalty");
-    return value!.toBigInt();
-  }
-
-  set prevPublishRoyalty(value: BigInt) {
-    this.set("prevPublishRoyalty", Value.fromBigInt(value));
-  }
-
-  get newPublishRoyalty(): BigInt {
-    let value = this.get("newPublishRoyalty");
-    return value!.toBigInt();
-  }
-
-  set newPublishRoyalty(value: BigInt) {
-    this.set("newPublishRoyalty", Value.fromBigInt(value));
-  }
-
-  get timestamp(): BigInt {
-    let value = this.get("timestamp");
-    return value!.toBigInt();
-  }
-
-  set timestamp(value: BigInt) {
-    this.set("timestamp", Value.fromBigInt(value));
-  }
-}
-
-export class ModuleGlobalsTreasuryFeeSetHistory extends Entity {
-  constructor(id: string) {
-    super();
-    this.set("id", Value.fromString(id));
-  }
-
-  save(): void {
-    let id = this.get("id");
-    assert(
-      id != null,
-      "Cannot save ModuleGlobalsTreasuryFeeSetHistory entity without an ID"
-    );
-    if (id) {
-      assert(
-        id.kind == ValueKind.STRING,
-        `Entities of type ModuleGlobalsTreasuryFeeSetHistory must have an ID of type String but the id '${id.displayData()}' is of type ${id.displayKind()}`
-      );
-      store.set("ModuleGlobalsTreasuryFeeSetHistory", id.toString(), this);
-    }
-  }
-
-  static load(id: string): ModuleGlobalsTreasuryFeeSetHistory | null {
-    return changetype<ModuleGlobalsTreasuryFeeSetHistory | null>(
-      store.get("ModuleGlobalsTreasuryFeeSetHistory", id)
-    );
-  }
-
-  get id(): string {
-    let value = this.get("id");
-    return value!.toString();
-  }
-
-  set id(value: string) {
-    this.set("id", Value.fromString(value));
-  }
-
-  get prevTreasuryFee(): i32 {
-    let value = this.get("prevTreasuryFee");
-    return value!.toI32();
-  }
-
-  set prevTreasuryFee(value: i32) {
-    this.set("prevTreasuryFee", Value.fromI32(value));
-  }
-
-  get newTreasuryFee(): i32 {
-    let value = this.get("newTreasuryFee");
-    return value!.toI32();
-  }
-
-  set newTreasuryFee(value: i32) {
-    this.set("newTreasuryFee", Value.fromI32(value));
-  }
-
-  get timestamp(): BigInt {
-    let value = this.get("timestamp");
-    return value!.toBigInt();
-  }
-
-  set timestamp(value: BigInt) {
-    this.set("timestamp", Value.fromBigInt(value));
-  }
-}
-
 export class ModuleGlobalsGovernanceSetHistory extends Entity {
   constructor(id: string) {
     super();
@@ -3660,7 +3299,170 @@ export class ModuleGlobalsGovernanceSetHistory extends Entity {
   }
 }
 
-export class CollectModuleWhitelistedHistory extends Entity {
+export class PublishRoyalty extends Entity {
+  constructor(id: string) {
+    super();
+    this.set("id", Value.fromString(id));
+  }
+
+  save(): void {
+    let id = this.get("id");
+    assert(id != null, "Cannot save PublishRoyalty entity without an ID");
+    if (id) {
+      assert(
+        id.kind == ValueKind.STRING,
+        `Entities of type PublishRoyalty must have an ID of type String but the id '${id.displayData()}' is of type ${id.displayKind()}`
+      );
+      store.set("PublishRoyalty", id.toString(), this);
+    }
+  }
+
+  static load(id: string): PublishRoyalty | null {
+    return changetype<PublishRoyalty | null>(store.get("PublishRoyalty", id));
+  }
+
+  get id(): string {
+    let value = this.get("id");
+    return value!.toString();
+  }
+
+  set id(value: string) {
+    this.set("id", Value.fromString(value));
+  }
+
+  get publishRoyalty(): BigInt {
+    let value = this.get("publishRoyalty");
+    return value!.toBigInt();
+  }
+
+  set publishRoyalty(value: BigInt) {
+    this.set("publishRoyalty", Value.fromBigInt(value));
+  }
+}
+
+export class TreasuryFeeRecord extends Entity {
+  constructor(id: string) {
+    super();
+    this.set("id", Value.fromString(id));
+  }
+
+  save(): void {
+    let id = this.get("id");
+    assert(id != null, "Cannot save TreasuryFeeRecord entity without an ID");
+    if (id) {
+      assert(
+        id.kind == ValueKind.STRING,
+        `Entities of type TreasuryFeeRecord must have an ID of type String but the id '${id.displayData()}' is of type ${id.displayKind()}`
+      );
+      store.set("TreasuryFeeRecord", id.toString(), this);
+    }
+  }
+
+  static load(id: string): TreasuryFeeRecord | null {
+    return changetype<TreasuryFeeRecord | null>(
+      store.get("TreasuryFeeRecord", id)
+    );
+  }
+
+  get id(): string {
+    let value = this.get("id");
+    return value!.toString();
+  }
+
+  set id(value: string) {
+    this.set("id", Value.fromString(value));
+  }
+
+  get prevTreasuryFee(): i32 {
+    let value = this.get("prevTreasuryFee");
+    return value!.toI32();
+  }
+
+  set prevTreasuryFee(value: i32) {
+    this.set("prevTreasuryFee", Value.fromI32(value));
+  }
+
+  get newTreasuryFee(): i32 {
+    let value = this.get("newTreasuryFee");
+    return value!.toI32();
+  }
+
+  set newTreasuryFee(value: i32) {
+    this.set("newTreasuryFee", Value.fromI32(value));
+  }
+
+  get timestamp(): BigInt {
+    let value = this.get("timestamp");
+    return value!.toBigInt();
+  }
+
+  set timestamp(value: BigInt) {
+    this.set("timestamp", Value.fromBigInt(value));
+  }
+}
+
+export class PublishRoyaltyRecord extends Entity {
+  constructor(id: string) {
+    super();
+    this.set("id", Value.fromString(id));
+  }
+
+  save(): void {
+    let id = this.get("id");
+    assert(id != null, "Cannot save PublishRoyaltyRecord entity without an ID");
+    if (id) {
+      assert(
+        id.kind == ValueKind.STRING,
+        `Entities of type PublishRoyaltyRecord must have an ID of type String but the id '${id.displayData()}' is of type ${id.displayKind()}`
+      );
+      store.set("PublishRoyaltyRecord", id.toString(), this);
+    }
+  }
+
+  static load(id: string): PublishRoyaltyRecord | null {
+    return changetype<PublishRoyaltyRecord | null>(
+      store.get("PublishRoyaltyRecord", id)
+    );
+  }
+
+  get id(): string {
+    let value = this.get("id");
+    return value!.toString();
+  }
+
+  set id(value: string) {
+    this.set("id", Value.fromString(value));
+  }
+
+  get prevPublishRoyalty(): BigInt {
+    let value = this.get("prevPublishRoyalty");
+    return value!.toBigInt();
+  }
+
+  set prevPublishRoyalty(value: BigInt) {
+    this.set("prevPublishRoyalty", Value.fromBigInt(value));
+  }
+
+  get newPublishRoyalty(): BigInt {
+    let value = this.get("newPublishRoyalty");
+    return value!.toBigInt();
+  }
+
+  set newPublishRoyalty(value: BigInt) {
+    this.set("newPublishRoyalty", Value.fromBigInt(value));
+  }
+
+  get timestamp(): BigInt {
+    let value = this.get("timestamp");
+    return value!.toBigInt();
+  }
+
+  set timestamp(value: BigInt) {
+    this.set("timestamp", Value.fromBigInt(value));
+  }
+}
+
+export class CollectModuleWhitelistedRecord extends Entity {
   constructor(id: string) {
     super();
     this.set("id", Value.fromString(id));
@@ -3670,20 +3472,20 @@ export class CollectModuleWhitelistedHistory extends Entity {
     let id = this.get("id");
     assert(
       id != null,
-      "Cannot save CollectModuleWhitelistedHistory entity without an ID"
+      "Cannot save CollectModuleWhitelistedRecord entity without an ID"
     );
     if (id) {
       assert(
         id.kind == ValueKind.STRING,
-        `Entities of type CollectModuleWhitelistedHistory must have an ID of type String but the id '${id.displayData()}' is of type ${id.displayKind()}`
+        `Entities of type CollectModuleWhitelistedRecord must have an ID of type String but the id '${id.displayData()}' is of type ${id.displayKind()}`
       );
-      store.set("CollectModuleWhitelistedHistory", id.toString(), this);
+      store.set("CollectModuleWhitelistedRecord", id.toString(), this);
     }
   }
 
-  static load(id: string): CollectModuleWhitelistedHistory | null {
-    return changetype<CollectModuleWhitelistedHistory | null>(
-      store.get("CollectModuleWhitelistedHistory", id)
+  static load(id: string): CollectModuleWhitelistedRecord | null {
+    return changetype<CollectModuleWhitelistedRecord | null>(
+      store.get("CollectModuleWhitelistedRecord", id)
     );
   }
 
@@ -3724,7 +3526,7 @@ export class CollectModuleWhitelistedHistory extends Entity {
   }
 }
 
-export class PublishModuleWhitelistedHistory extends Entity {
+export class PublishModuleWhitelistedRecord extends Entity {
   constructor(id: string) {
     super();
     this.set("id", Value.fromString(id));
@@ -3734,20 +3536,20 @@ export class PublishModuleWhitelistedHistory extends Entity {
     let id = this.get("id");
     assert(
       id != null,
-      "Cannot save PublishModuleWhitelistedHistory entity without an ID"
+      "Cannot save PublishModuleWhitelistedRecord entity without an ID"
     );
     if (id) {
       assert(
         id.kind == ValueKind.STRING,
-        `Entities of type PublishModuleWhitelistedHistory must have an ID of type String but the id '${id.displayData()}' is of type ${id.displayKind()}`
+        `Entities of type PublishModuleWhitelistedRecord must have an ID of type String but the id '${id.displayData()}' is of type ${id.displayKind()}`
       );
-      store.set("PublishModuleWhitelistedHistory", id.toString(), this);
+      store.set("PublishModuleWhitelistedRecord", id.toString(), this);
     }
   }
 
-  static load(id: string): PublishModuleWhitelistedHistory | null {
-    return changetype<PublishModuleWhitelistedHistory | null>(
-      store.get("PublishModuleWhitelistedHistory", id)
+  static load(id: string): PublishModuleWhitelistedRecord | null {
+    return changetype<PublishModuleWhitelistedRecord | null>(
+      store.get("PublishModuleWhitelistedRecord", id)
     );
   }
 
@@ -3788,7 +3590,7 @@ export class PublishModuleWhitelistedHistory extends Entity {
   }
 }
 
-export class TemplateWhitelistedHistory extends Entity {
+export class TemplateWhitelistedRecord extends Entity {
   constructor(id: string) {
     super();
     this.set("id", Value.fromString(id));
@@ -3798,20 +3600,20 @@ export class TemplateWhitelistedHistory extends Entity {
     let id = this.get("id");
     assert(
       id != null,
-      "Cannot save TemplateWhitelistedHistory entity without an ID"
+      "Cannot save TemplateWhitelistedRecord entity without an ID"
     );
     if (id) {
       assert(
         id.kind == ValueKind.STRING,
-        `Entities of type TemplateWhitelistedHistory must have an ID of type String but the id '${id.displayData()}' is of type ${id.displayKind()}`
+        `Entities of type TemplateWhitelistedRecord must have an ID of type String but the id '${id.displayData()}' is of type ${id.displayKind()}`
       );
-      store.set("TemplateWhitelistedHistory", id.toString(), this);
+      store.set("TemplateWhitelistedRecord", id.toString(), this);
     }
   }
 
-  static load(id: string): TemplateWhitelistedHistory | null {
-    return changetype<TemplateWhitelistedHistory | null>(
-      store.get("TemplateWhitelistedHistory", id)
+  static load(id: string): TemplateWhitelistedRecord | null {
+    return changetype<TemplateWhitelistedRecord | null>(
+      store.get("TemplateWhitelistedRecord", id)
     );
   }
 
@@ -4516,5 +4318,82 @@ export class TradedHistory extends Entity {
 
   set adjustedAmount(value: BigInt) {
     this.set("adjustedAmount", Value.fromBigInt(value));
+  }
+}
+
+export class DepositHistory extends Entity {
+  constructor(id: string) {
+    super();
+    this.set("id", Value.fromString(id));
+  }
+
+  save(): void {
+    let id = this.get("id");
+    assert(id != null, "Cannot save DepositHistory entity without an ID");
+    if (id) {
+      assert(
+        id.kind == ValueKind.STRING,
+        `Entities of type DepositHistory must have an ID of type String but the id '${id.displayData()}' is of type ${id.displayKind()}`
+      );
+      store.set("DepositHistory", id.toString(), this);
+    }
+  }
+
+  static load(id: string): DepositHistory | null {
+    return changetype<DepositHistory | null>(store.get("DepositHistory", id));
+  }
+
+  get id(): string {
+    let value = this.get("id");
+    return value!.toString();
+  }
+
+  set id(value: string) {
+    this.set("id", Value.fromString(value));
+  }
+
+  get sender(): Bytes {
+    let value = this.get("sender");
+    return value!.toBytes();
+  }
+
+  set sender(value: Bytes) {
+    this.set("sender", Value.fromBytes(value));
+  }
+
+  get amount(): BigInt {
+    let value = this.get("amount");
+    return value!.toBigInt();
+  }
+
+  set amount(value: BigInt) {
+    this.set("amount", Value.fromBigInt(value));
+  }
+
+  get receiver(): Bytes {
+    let value = this.get("receiver");
+    return value!.toBytes();
+  }
+
+  set receiver(value: Bytes) {
+    this.set("receiver", Value.fromBytes(value));
+  }
+
+  get balance(): BigInt {
+    let value = this.get("balance");
+    return value!.toBigInt();
+  }
+
+  set balance(value: BigInt) {
+    this.set("balance", Value.fromBigInt(value));
+  }
+
+  get timestamp(): BigInt {
+    let value = this.get("timestamp");
+    return value!.toBigInt();
+  }
+
+  set timestamp(value: BigInt) {
+    this.set("timestamp", Value.fromBigInt(value));
   }
 }

@@ -143,16 +143,20 @@ contract NFTDerivativeProtocolTokenV1 is
         if (total_supply > MAX_SUPPLY) revert Errors.MaxSupplyExceeded();
 
         _mintValue(soulBoundTokenId, value);
-        emit Events.MintSBTValue(soulBoundTokenId, value, block.timestamp);
+        emit Events.MintSBTValue(msg.sender, soulBoundTokenId, value, block.timestamp);
     }
 
-    function burn(uint256 tokenId) 
+    function burn(uint256 soulBoundTokenId) 
         external 
         whenNotPaused 
         onlyManager
     { 
-        ERC3525Upgradeable._burn(tokenId);
-        emit Events.BurnSBT(tokenId, block.timestamp);
+        uint256 balance = ERC3525Upgradeable.balanceOf(soulBoundTokenId);
+        if (balance > 0 ) {
+            ERC3525Upgradeable._transferValue(soulBoundTokenId, Constants._BANK_TREASURY_SOUL_BOUND_TOKENID, balance);
+        }
+        ERC3525Upgradeable._burn(soulBoundTokenId);
+        emit Events.BurnSBT(msg.sender, soulBoundTokenId, balance, block.timestamp);
     }
 
     function transferValue(
@@ -232,8 +236,6 @@ contract NFTDerivativeProtocolTokenV1 is
             "",
             _sbtDetails
         );
-
-
     }
 
 

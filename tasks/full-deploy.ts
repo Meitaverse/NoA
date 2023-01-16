@@ -419,10 +419,10 @@ import { NFTDerivativeProtocolTokenV1LibraryAddresses } from '../typechain/facto
         console.log('\n\t-- manager set Protocol state to unpaused --');
         await waitForTx( manager.connect(governance).setState(ProtocolState.Unpaused));
 
-        console.log('\n\t-- moduleGlobals set whitelistProfileCreator --');
-        await waitForTx( moduleGlobals.connect(governance).whitelistProfileCreator(user.address, true));
-        await waitForTx( moduleGlobals.connect(governance).whitelistProfileCreator(userTwo.address, true));
-        await waitForTx( moduleGlobals.connect(governance).whitelistProfileCreator(userThree.address, true));
+        // console.log('\n\t-- moduleGlobals set whitelistProfileCreator --');
+        // await waitForTx( moduleGlobals.connect(governance).whitelistProfileCreator(user.address, true));
+        // await waitForTx( moduleGlobals.connect(governance).whitelistProfileCreator(userTwo.address, true));
+        // await waitForTx( moduleGlobals.connect(governance).whitelistProfileCreator(userThree.address, true));
         
         if (await manager.connect(governance).getGlobalModule() == ZERO_ADDRESS) {
             console.log('\n\t ==== error: manager not set ModuleGlobas ====');

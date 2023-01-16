@@ -2,10 +2,11 @@ import { log, Address, BigInt, Bytes, store, TypedMap } from "@graphprotocol/gra
 
 import {
     EmergencyAdminSet,
-    TransferDerivativeNFT,
-    TransferValueDerivativeNFT,
+    ManagerGovernanceSet,
     HubCreated,
+    HubUpdated,
     PublishPrepared,
+    PublishUpdated,
     PublishCreated,
     DerivativeNFTCollected,
     DerivativeNFTDeployed,
@@ -17,17 +18,15 @@ import {
 
 import {
     EmergencyAdminSetHistory,
-    DerivativeNFTTransferHistory,
-    DerivativeNFTTransferValueHistory,
+    ManagerGovernanceSetHistory,
     Hub,
     Publication,
-    PublishCreatedHistory,
+    PublishRecord,
     DerivativeNFTCollectedHistory,
     Project,
     DerivativeNFTAirdropedHistory,
     DispatcherSetHistory,
     StateSetHistory,
-    
 } from "../generated/schema"
 
 export function handleEmergencyAdminSet(event: EmergencyAdminSet): void {
@@ -42,35 +41,17 @@ export function handleEmergencyAdminSet(event: EmergencyAdminSet): void {
         history.timestamp = event.block.timestamp
         history.save()
     } 
-
-}
-export function handleTransferDerivativeNFT(event: TransferDerivativeNFT): void {
-    log.info("handleTransferDerivativeNFT, event.address: {}", [event.address.toHexString()])
-
-    let _idString = event.params.tokenId.toString() + "-" +  event.params.timestamp.toString()
-    const history = DerivativeNFTTransferHistory.load(_idString) || new DerivativeNFTTransferHistory(_idString)
-    if (history) {
-        history.fromSoulBoundTokenId = event.params.fromSoulBoundTokenId
-        history.toSoulBoundTokenId = event.params.toSoulBoundTokenId
-        history.projectId = event.params.projectId
-        history.tokenId = event.params.tokenId
-        history.timestamp = event.block.timestamp
-        history.save()
-    } 
 }
 
-export function handleTransferValueDerivativeNFT(event: TransferValueDerivativeNFT): void {
-    log.info("handleTransferValueDerivativeNFT, event.address: {}", [event.address.toHexString()])
+export function handleManagerGovernanceSet(event: ManagerGovernanceSet): void {
+    log.info("handleManagerGovernanceSet, event.address: {}", [event.address.toHexString()])
 
-    let _idString = event.params.tokenId.toString() + "-" +  event.params.timestamp.toString()
-    const history = DerivativeNFTTransferValueHistory.load(_idString) || new DerivativeNFTTransferValueHistory(_idString)
+    let _idString = event.params.caller.toHexString() + "-" +  event.params.timestamp.toString()
+    const history = ManagerGovernanceSetHistory.load(_idString) || new ManagerGovernanceSetHistory(_idString)
     if (history) {
-        history.fromSoulBoundTokenId = event.params.fromSoulBoundTokenId
-        history.toSoulBoundTokenId = event.params.toSoulBoundTokenId
-        history.projectId = event.params.projectId
-        history.tokenId = event.params.tokenId
-        history.value = event.params.value
-        history.newTokenId = event.params.newTokenId    
+        history.caller = event.params.caller
+        history.prevGovernance = event.params.prevGovernance
+        history.newGovernance = event.params.newGovernance
         history.timestamp = event.block.timestamp
         history.save()
     } 
@@ -79,7 +60,7 @@ export function handleTransferValueDerivativeNFT(event: TransferValueDerivativeN
 export function handleHubCreated(event: HubCreated): void {
     log.info("handleHubCreated, event.address: {}", [event.address.toHexString()])
 
-    let _idString = event.params.soulBoundTokenId.toString() + "-" +  event.params.hubId.toString()
+    let _idString = event.params.hubId.toString()
     const hub = Hub.load(_idString) || new Hub(_idString)
     if (hub) {
         hub.soulBoundTokenId = event.params.soulBoundTokenId
@@ -93,10 +74,25 @@ export function handleHubCreated(event: HubCreated): void {
     } 
 }
 
+export function handleHubUpdated(event: HubUpdated): void {
+    log.info("handleHubUpdated, event.address: {}", [event.address.toHexString()])
+
+    let _idString =  event.params.hubId.toString()
+    const hub = Hub.load(_idString)
+    if (hub) {
+        hub.hubId = event.params.hubId
+        hub.name = event.params.name
+        hub.description = event.params.description
+        hub.imageURI = event.params.imageURI
+        hub.timestamp = event.block.timestamp
+        hub.save()
+    } 
+}
+
 export function handlePublishPrepared(event: PublishPrepared): void {
     log.info("handlePublishPrepared, event.address: {}", [event.address.toHexString()])
 
-    let _idString = event.params.publication.soulBoundTokenId.toString() + "-" + event.params.publication.hubId.toString() + "-" + event.params.publishId.toString()
+    let _idString = event.params.publishId.toString()
     const publication = Publication.load(_idString) || new Publication(_idString)
     if (publication) {
         publication.soulBoundTokenId = event.params.publication.soulBoundTokenId
@@ -122,6 +118,27 @@ export function handlePublishPrepared(event: PublishPrepared): void {
 
 }
 
+export function handlePublishUpdated(event: PublishUpdated): void {
+    log.info("handlePublishUpdated, event.address: {}", [event.address.toHexString()])
+
+    let _idString = event.params.publishId.toString()
+    const publication = Publication.load(_idString)
+    if (publication) {
+        publication.salePrice = event.params.salePrice
+        publication.royaltyBasisPoints = event.params.royaltyBasisPoints
+        publication.amount = event.params.amount
+        publication.name = event.params.name
+        publication.description = event.params.description
+        publication.materialURIs = event.params.materialURIs
+        publication.fromTokenIds = event.params.fromTokenIds
+        publication.publishId = event.params.publishId
+        publication.publishTaxAmount = publication.publishTaxAmount.plus(event.params.addedPublishTaxes)
+        publication.timestamp = event.params.timestamp
+        publication.save()
+    } 
+
+}
+
 export function handleDerivativeNFTDeployed(event: DerivativeNFTDeployed): void {
     log.info("handleDerivativeNFTDeployed, event.address: {}", [event.address.toHexString()])
 
@@ -139,8 +156,8 @@ export function handleDerivativeNFTDeployed(event: DerivativeNFTDeployed): void 
 export function handlePublishCreated(event: PublishCreated): void {
     log.info("handlePublishCreated, event.address: {}", [event.address.toHexString()])
 
-    let _idString = event.params.soulBoundTokenId.toString() + "-" +  event.params.publishId.toString()
-    const history = PublishCreatedHistory.load(_idString) || new PublishCreatedHistory(_idString)
+    let _idString =  event.params.publishId.toString()
+    const history = PublishRecord.load(_idString) || new PublishRecord(_idString)
     if (history) {
         history.publishId = event.params.publishId
         history.soulBoundTokenId = event.params.soulBoundTokenId

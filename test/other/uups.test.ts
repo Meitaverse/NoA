@@ -42,7 +42,7 @@ import {
   sbtContract,
   bankTreasuryContract,
   bankTreasuryImpl,
-  
+  sbtLibs,
 } from '../__setup.spec';
 
 export let mockManagerV2Impl: ManagerV2;
@@ -79,7 +79,8 @@ makeSuiteCleanRoom('UUPS ability', function () {
 
     describe("#upgrade", () => {
       beforeEach(async () => {
-        sbtImplV2 = await new NFTDerivativeProtocolTokenV2__factory(deployer).deploy();
+
+        sbtImplV2 = await new NFTDerivativeProtocolTokenV2__factory(sbtLibs, deployer).deploy();
         bankTreasuryImplV2 = await new BankTreasuryV2__factory(deployer).deploy();
         console.log("\t BankTreasury v1 getGovernance(): ", (await bankTreasuryContract.getGovernance()).toUpperCase());
       });
@@ -115,7 +116,7 @@ makeSuiteCleanRoom('UUPS ability', function () {
           .connect(deployer)
           .upgradeToAndCall(sbtImplV2.address, data);
 
-        const v2 = new NFTDerivativeProtocolTokenV2__factory(deployer).attach(sbtContract.address);
+        const v2 = new NFTDerivativeProtocolTokenV2__factory(sbtLibs, deployer).attach(sbtContract.address);
          expect(await v2.version()).to.eq(2);
          expect(await v2.getSigner()).to.eq(userAddress);
 
