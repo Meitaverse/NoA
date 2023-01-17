@@ -22,28 +22,7 @@ contract DerivativeNFTV1 is
     DerivativeNFTMultiState, 
     ERC3525Upgradeable
 {
-    bytes32 internal constant EIP712_REVISION_HASH = keccak256('1');
-    bytes32 internal constant SET_DISPATCHER_WITH_SIG_TYPEHASH =
-        keccak256(
-            'SetDispatcherWithSig(uint256 profileId,address dispatcher,uint256 nonce,uint256 deadline)'
-        );
-    bytes32 internal constant BURN_WITH_SIG_TYPEHASH =
-        keccak256('BurnWithSig(uint256 tokenId,uint256 nonce,uint256 deadline)');
-    bytes32 internal constant EIP712_DOMAIN_TYPEHASH =
-        keccak256(
-            'EIP712Domain(string name,string version,uint256 chainId,address verifyingContract)'
-        );
-    bytes32 internal constant PERMIT_TYPEHASH =
-        keccak256('Permit(address spender,uint256 tokenId,uint256 nonce,uint256 deadline)');
-    bytes32 internal constant PERMIT_FOR_ALL_TYPEHASH =
-        keccak256(
-            'PermitForAll(address owner,address operator,bool approved,uint256 nonce,uint256 deadline)'
-        );
-    // solhint-disable-next-line private-vars-leading-underscore
-    bytes32 internal constant PERMIT_VALUE_TYPEHASH =
-        keccak256('PermitValue(address spender,uint256 tokenId,uint256 value,uint256 nonce,uint256 deadline)');
-    
-
+  
     /**
      * @dev Emitted when a derivativeNFT's URI is set.
      *
@@ -72,21 +51,7 @@ contract DerivativeNFTV1 is
         uint256 timestamp
     );
 
-    /**
-     * @dev Emitted when a dNFT is burned with sig.
-     *
-     * @param projectId The newly created profile's token ID.
-     * @param tokenId The profile creator, who created the token with the given profile ID.
-     * @param owner The image uri set for the profile.
-     * @param timestamp The current block timestamp.
-     */
-    event BurnTokenWithSig(
-        uint256 projectId, 
-        uint256 tokenId, 
-        address owner,
-        uint256 timestamp
-    );
-        
+
     using Counters for Counters.Counter;
     // using SafeMathUpgradeable for uint256;
 
@@ -97,7 +62,6 @@ contract DerivativeNFTV1 is
     uint256 internal _projectId;  //one derivativeNFT include one projectId
     uint256 internal _soulBoundTokenId;
 
-    address internal _emergencyAdmin;
     address internal _receiver;
     DataTypes.FeeShareType internal _feeShareType;
 
@@ -107,13 +71,14 @@ contract DerivativeNFTV1 is
 
     uint96 internal _royaltyBasisPoints; //版税佣金点数, 本协议将版税的10%及金库固定税收5%设置为
 
-    mapping(uint256 => uint256) internal _tokenIdToPublishId;
+    //tokenId => publishId
+    mapping(uint256 => uint256) internal _tokenIdByPublishId;
 
     // bytes4(keccak256('royaltyInfo(uint256,uint256)')) == 0x2a55205a
     bytes4 internal constant _INTERFACE_ID_ERC2981 = 0x2a55205a;
     uint16 internal constant _BASIS_POINTS = 10000;
 
-     struct RoyaltyInfo {
+    struct RoyaltyInfo {
         address receiver;
         uint96 royaltyFraction;
     }
@@ -219,6 +184,10 @@ contract DerivativeNFTV1 is
         _deleteDefaultRoyalty();
     }
 
+    function getPublishIdByTokenId(uint256 tokenId) external view returns (uint256) {
+        return _tokenIdByPublishId[tokenId];
+    }
+
     // Publication only can publish once
     function publish(
         uint256 publishId,
@@ -233,9 +202,8 @@ contract DerivativeNFTV1 is
         }
         
         for (uint256 i = 0; i < publication.fromTokenIds.length; ++i) {
-            if (!(_isApprovedOrOwner(msg.sender, publication.fromTokenIds[i])))  revert Errors.NotOwnerNorApproved();
 
-            //cant not burn, must approve caller(manager contract address)
+            //must approve this contract address or setApprovalForAll
             this.transferFrom(publication.fromTokenIds[i], _receiver, 1);
         }
 
@@ -248,10 +216,10 @@ contract DerivativeNFTV1 is
         });
 
         _publicationNameHashBySlot[keccak256(bytes(publication.name))] = slot;
+        
         uint256 newTokenId = ERC3525Upgradeable._createOriginalTokenId();
-        _tokenIdToPublishId[newTokenId] = publishId;
-        //TODO
-        ERC3525Upgradeable.setApprovalForAll(address(this), true);
+        _tokenIdByPublishId[newTokenId] = publishId;
+
         _mint(publisher, newTokenId, slot, publication.amount);
         
         return newTokenId;
@@ -265,7 +233,7 @@ contract DerivativeNFTV1 is
     ) external whenNotPaused onlyManager returns(uint256) {
         uint256 newTokenId = ERC3525Upgradeable._createDerivedTokenId(fromTokenId_);
       
-        _tokenIdToPublishId[newTokenId] = publishId_;
+        _tokenIdByPublishId[newTokenId] = publishId_;
         _mint(to_, newTokenId, ERC3525Upgradeable.slotOf(fromTokenId_), 0);
 
         ERC3525Upgradeable._transferValue(fromTokenId_, newTokenId, value_);
@@ -280,92 +248,6 @@ contract DerivativeNFTV1 is
         _setTokenImageURI(tokenId, imageURI);
     }
 
-    function permit(
-        address spender,
-        uint256 tokenId,
-        DataTypes.EIP712Signature calldata sig
-    ) external override whenNotPaused {
-        if (spender == address(0)) revert Errors.ZeroSpender();
-        address owner = ownerOf(tokenId);
-        unchecked {
-            _validateRecoveredAddress(
-                _calculateDigest(
-                    keccak256(
-                        abi.encode(
-                            PERMIT_TYPEHASH,
-                            spender,
-                            tokenId,
-                            sigNonces[owner]++,
-                            sig.deadline
-                        )
-                    )
-                ),
-                owner,
-                sig
-            );
-        }
-        _approve(spender, tokenId);
-    }
-    
-    function permitValue(
-        address spender,
-        uint256 tokenId,
-        uint256 value,
-        DataTypes.EIP712Signature calldata sig
-    ) external override whenNotPaused {
-        if (spender == address(0)) revert Errors.ZeroSpender();
-        
-        address owner = ownerOf(tokenId);
-
-        unchecked {
-            _validateRecoveredAddress(
-                _calculateDigest(
-                    keccak256(
-                        abi.encode(
-                            PERMIT_VALUE_TYPEHASH,
-                            spender,
-                            tokenId,
-                            value,
-                            sigNonces[owner]++,
-                            sig.deadline
-                        )
-                    )
-                ),
-                owner,
-                sig
-            );
-        }
-        approve(tokenId, spender, value);
-    }
-
-    function permitForAll(
-        address owner,
-        address operator,
-        bool approved,
-        DataTypes.EIP712Signature calldata sig
-    ) external override whenNotPaused {
-        if (operator == address(0)) revert Errors.ZeroSpender();
-        unchecked {
-            _validateRecoveredAddress(
-                _calculateDigest(
-                    keccak256(
-                        abi.encode(
-                            PERMIT_FOR_ALL_TYPEHASH,
-                            owner,
-                            operator,
-                            approved,
-                            sigNonces[owner]++,
-                            sig.deadline
-                        )
-                    )
-                ),
-                owner,
-                sig
-            );
-        }
-        _setApprovalForAll(owner, operator, approved);
-    }
-
     function burn(uint256 tokenId_) external virtual whenNotPaused {
         uint256 slot = slotOf(tokenId_);
         if (!_isApprovedOrOwner(msg.sender, tokenId_)) {
@@ -374,36 +256,6 @@ contract DerivativeNFTV1 is
         ERC3525Upgradeable._burn(tokenId_);
         _resetTokenRoyalty(tokenId_);
         emit BurnToken(slot, tokenId_, msg.sender, block.timestamp);
-    }
-
-    function burnWithSig(uint256 tokenId, DataTypes.EIP712Signature calldata sig)
-        public
-        virtual
-        override
-        whenNotPaused
-    {
-        address owner = ownerOf(tokenId);
-        unchecked {
-            _validateRecoveredAddress(
-                _calculateDigest(
-                    keccak256(
-                        abi.encode(
-                            BURN_WITH_SIG_TYPEHASH,
-                            tokenId,
-                            sigNonces[owner]++,
-                            sig.deadline
-                        )
-                    )
-                ),
-                owner,
-                sig
-            );
-        }
-        uint256 slot = slotOf(tokenId);
-        ERC3525Upgradeable._burn(tokenId);
-        _resetTokenRoyalty(tokenId);
-        
-        emit BurnTokenWithSig(slot, tokenId, owner, block.timestamp);
     }
 
     function getSlotDetail(uint256 slot_) external view returns (DataTypes.SlotDetail memory) {
@@ -432,7 +284,9 @@ contract DerivativeNFTV1 is
         uint256 newTokenId = super.transferFrom(fromTokenId_, to_, value_);
       
         //set royalty
-        uint256 publishId = _tokenIdToPublishId[fromTokenId_];
+        uint256 publishId = _tokenIdByPublishId[fromTokenId_];
+        _tokenIdByPublishId[newTokenId] = publishId;
+
         uint96 _fraction;
         if (_feeShareType == DataTypes.FeeShareType.LEVEL_TWO) {
             _fraction = IManager(MANAGER).calculateRoyalty(publishId);
@@ -486,7 +340,7 @@ contract DerivativeNFTV1 is
     function _mint(address to_, uint256 tokenId_, uint256 slot_, uint256 value_) internal virtual override {
         super._mint(to_, tokenId_, slot_, value_);
 
-        uint256 publishId = _tokenIdToPublishId[tokenId_];
+        uint256 publishId = _tokenIdByPublishId[tokenId_];
         uint96 _fraction;
         if (_feeShareType == DataTypes.FeeShareType.LEVEL_TWO) {
             _fraction = IManager(MANAGER).calculateRoyalty(publishId);
@@ -501,6 +355,7 @@ contract DerivativeNFTV1 is
             _fraction
         );
     }
+
 
     function setApprovalForSlot(
         address owner_,
@@ -643,59 +498,6 @@ contract DerivativeNFTV1 is
         _nextSlotId.increment();
         return uint24(_nextSlotId.current());
     }
-
-    function getDomainSeparator() external view override returns (bytes32) {
-        return _calculateDomainSeparator();
-    }
-
-    /**
-     * @dev Wrapper for ecrecover to reduce code size, used in meta-tx specific functions.
-     */
-    function _validateRecoveredAddress(
-        bytes32 digest,
-        address expectedAddress,
-        DataTypes.EIP712Signature calldata sig
-    ) internal view {
-        if (sig.deadline < block.timestamp) revert Errors.SignatureExpired();
-        address recoveredAddress = ecrecover(digest, sig.v, sig.r, sig.s);
-        if (recoveredAddress == address(0) || recoveredAddress != expectedAddress)
-            revert Errors.SignatureInvalid();
-    }
-
-    /**
-     * @dev Calculates EIP712 DOMAIN_SEPARATOR based on the current contract and chain ID.
-     */
-    function _calculateDomainSeparator() internal view returns (bytes32) {
-        return
-            keccak256(
-                abi.encode(
-                    EIP712_DOMAIN_TYPEHASH,
-                    keccak256(bytes(name())),
-                    EIP712_REVISION_HASH,
-                    block.chainid,
-                    address(this)
-                )
-            );
-    }
-
-    /**
-     * @dev Calculates EIP712 digest based on the current DOMAIN_SEPARATOR.
-     *
-     * @param hashedMessage The message hash from which the digest should be calculated.
-     *
-     * @return bytes32 A 32-byte output representing the EIP712 digest.
-     */
-    function _calculateDigest(bytes32 hashedMessage) internal view returns (bytes32) {
-        bytes32 digest;
-        unchecked {
-            digest = keccak256(
-                abi.encodePacked('\x19\x01', _calculateDomainSeparator(), hashedMessage)
-            );
-        }
-        return digest;
-    }    
-
-
 
     function _setTokenImageURI(uint256 tokenId, string calldata imageURI) internal {
         if (bytes(imageURI).length > Constants.MAX_PROFILE_IMAGE_URI_LENGTH)

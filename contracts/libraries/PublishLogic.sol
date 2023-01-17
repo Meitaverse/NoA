@@ -252,7 +252,6 @@ library PublishLogic {
         address derivativeNFT, 
         DataTypes.AirdropData memory airdropData,
         mapping(uint256 => address) storage _soulBoundTokenIdToWallet,
-        mapping(uint256 => uint256) storage _tokenIdByPublishId,
         mapping(uint256 => DataTypes.PublishData) storage _projectDataByPublishId
     ) external {
         if (derivativeNFT == address(0)) revert Errors.InvalidParameter();
@@ -272,7 +271,7 @@ library PublishLogic {
             address toWallet = _soulBoundTokenIdToWallet[airdropData.toSoulBoundTokenIds[i]];
             if (toWallet == address(0)) revert Errors.ToWalletIsZero();
             uint256 newTokenId = IDerivativeNFTV1(derivativeNFT).split(
-                _tokenIdByPublishId[airdropData.tokenId],
+                airdropData.publishId,
                 airdropData.tokenId, 
                 toWallet,
                 airdropData.values[i]
@@ -283,7 +282,7 @@ library PublishLogic {
             unchecked {
                 ++i;
             }
-        } 
+        }
 
         emit Events.DerivativeNFTAirdroped(
             _projectDataByPublishId[airdropData.publishId].publication.projectId,

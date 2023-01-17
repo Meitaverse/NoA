@@ -123,7 +123,7 @@ interface IManager {
 
     function getDerivativeNFT(uint256 projectId) external view returns (address);
 
-    function getPublicationByTokenId(uint256 tokenId_) external view returns (uint256, DataTypes.Publication memory);
+    function getPublicationByTokenId(uint256 projectId_, uint256 tokenId_) external view returns (uint256, DataTypes.Publication memory);
     
     function getWalletBySoulBoundTokenId(uint256 soulBoundTokenId) external view returns(address);
 

@@ -186,6 +186,7 @@ contract FeeCollectModule is FeeModuleBase, ModuleBase, ICollectModule {
                 previousSoulBoundTokenId: _dataByPublicationByProfile[publishId].previousSoulBoundTokenId
             });
 
+//TODO
             emit Events.FeesForCollect(
                 publishId,
                 collectFeeUsers,

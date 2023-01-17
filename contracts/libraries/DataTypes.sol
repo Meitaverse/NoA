@@ -157,6 +157,13 @@ library DataTypes {
         uint256[] values;
     }    
 
+    /**
+     * @notice Data of the Publish
+     * @param publication The Publication struct
+     * @param previousPublishId The previous Publish Id 
+     * @param isMinted bool of minted 
+     * @param tokenId The token Id of publish
+     */
     struct PublishData {
         Publication publication;
         uint256 previousPublishId;

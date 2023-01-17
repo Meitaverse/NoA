@@ -71,16 +71,17 @@ Private Key: 0x2a871d0798f97d79848a013d4936a73bf4cc922c825d33c1cf7073dff6d409c6
 
 ```
 
-## deploy
+## full deploy  
 ```
 $ yarn hardhat full-deploy
   	
 ```
 
 
-### 执行 Graph Node 相关命令
+## 部署主合约的subgraph
+### 1. 执行 Graph Node 相关命令
 ```
-$  yarn graph-local-codegen && yarn graph-local-build
+$ yarn graph-local-codegen && yarn graph-local-build
 
 $ yarn create-local-subgraph-node && yarn deploy-local-subgraph-node
 
@@ -90,9 +91,14 @@ Subgraph endpoints:
 Queries (HTTP):     http://localhost:8000/subgraphs/name/NoA/MySubgraph
 ```
 
+### 2. 查询相关子图数据
+```
+main.schema.graphql.md
+```
+
 
 ## 部署DerivativeNFT subgraph
-### 获取DerivativeNFT 合约地址
+### 1. 获取DerivativeNFT 合约地址
 ```
 $ yarn hardhat getDerivativeNFT --projectid 1 --network local
 
@@ -101,7 +107,7 @@ $ yarn hardhat getDerivativeNFT --projectid 1 --network local
 	---derivativeNFT address:  0x3B02fF1e626Ed7a8fd6eC5299e2C54e1421B626B
 ```
 
-### 将上一步骤输出的derivativeNFT address合约地址替换
+### 2. 将上一步骤输出的derivativeNFT address合约地址替换
 文件: subgraphDerivativeNFT/subgraph.yaml
 ```
 ...
@@ -113,17 +119,21 @@ $ yarn hardhat getDerivativeNFT --projectid 1 --network local
 
 ```
 
-### 生成代码
+### 3. 生成代码
 
 ```
 $ yarn graph-derivativeNFT-codegen && yarn graph-derivativeNFT-build
 ```
 
-### 部署到graph node
+### 4. 部署到graph node
 ```
 $ yarn create-derivativeNFT-subgraph-node && yarn deploy-derivativeNFT-subgraph-node
 ```
 
+### 5. 查询相关子图数据
+```
+derivativeNFT.schema.graphql.md
+```
 
 ## Governance
 

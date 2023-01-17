@@ -84,19 +84,19 @@ abstract contract ManagerStorage {
     mapping(address => uint256) internal _projectIdToderivativeNFT;
 
     mapping(uint256 => address) internal _dispatcherByProfile;
+
     mapping(uint256 => mapping(uint256 => DataTypes.PublicationStruct)) internal _pubByIdByProfile;
+
+    //publication Name is exists
+    mapping(bytes32 => bool) internal _publicationNameHashExists;
+
 
     //projectId => publishId
     mapping(uint256 => uint256) internal _genesisPublishIdByProjectId;
 
     //publishId => publishData
     mapping(uint256 => DataTypes.PublishData) internal _projectDataByPublishId;
-    
-    //tokenId => publishId
-    mapping(uint256 => uint256) internal _tokenIdByPublishId;
 
-    // address public  SBT;
-    // address public  TREASURY;
     address internal MODULE_GLOBALS;
     address internal _governance;
     address internal _timeLock; //TimeLock address
@@ -106,14 +106,10 @@ abstract contract ManagerStorage {
     address internal _emergencyAdmin;
     address internal _owner;
 
-
     Counters.Counter internal _nextHubId;
     Counters.Counter internal _nextProjectId;
     Counters.Counter internal _nextPublishId;
     
     string internal _svgLogo;
 
-    
-    //MultiRecipient
-  
 }

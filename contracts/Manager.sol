@@ -268,6 +268,12 @@ contract Manager is
         if (_derivativeNFTByProjectId[publication.projectId] == address(0)) 
             revert Errors.InvalidParameter();
 
+        //valid publication's name is exists?
+        if (_publicationNameHashExists[keccak256(bytes(publication.name))]) 
+            revert Errors.PublicationIsExisted();    
+        
+        _publicationNameHashExists[keccak256(bytes(publication.name))] = true;
+
         uint256 previousPublishId;
         uint256 publishId = _generateNextPublishId();
         if (publication.fromTokenIds.length == 0){
@@ -276,7 +282,9 @@ contract Manager is
             _genesisPublishIdByProjectId[publication.projectId] = publishId;
 
         } else{
-            previousPublishId = _tokenIdByPublishId[publication.fromTokenIds[0]];
+            //TODO
+            address derivativeNFT =  _derivativeNFTByProjectId[publication.projectId];
+            previousPublishId = IDerivativeNFTV1(derivativeNFT).getPublishIdByTokenId(publication.fromTokenIds[0]);
         }
         
         if (!IModuleGlobals(MODULE_GLOBALS).isWhitelistPublishModule(publication.publishModule))
@@ -370,7 +378,6 @@ contract Manager is
             {
                 _projectDataByPublishId[publishId].isMinted = true;
                 _projectDataByPublishId[publishId].tokenId = newTokenId;
-                _tokenIdByPublishId[newTokenId] = publishId;
             }
 
             return newTokenId;
@@ -423,7 +430,6 @@ contract Manager is
             derivativeNFT, 
             airdropData,
             _soulBoundTokenIdToWallet,
-            _tokenIdByPublishId,
             _projectDataByPublishId
         );
     }
@@ -438,8 +444,9 @@ contract Manager is
         return _derivativeNFTByProjectId[projectId];
     }
 
-    function getPublicationByTokenId(uint256 tokenId_) external view returns (uint256, DataTypes.Publication memory) {
-       uint256 publishId = _tokenIdByPublishId[tokenId_];
+    function getPublicationByTokenId(uint256 projectId_, uint256 tokenId_) external view returns (uint256, DataTypes.Publication memory) {
+      address derivativeNFT =  _derivativeNFTByProjectId[projectId_];
+      uint256 publishId = IDerivativeNFTV1(derivativeNFT).getPublishIdByTokenId(tokenId_);
        return (publishId, _projectDataByPublishId[publishId].publication);
     } 
 

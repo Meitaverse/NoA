@@ -184,7 +184,7 @@ contract MarketPlace is
         DataTypes.ProjectData memory genesisProjectData = IManager(IModuleGlobals(MODULE_GLOBALS).getManager()).getProjectInfo(saleParam.projectId);
    
         //previous 
-        (uint256 publishId, )  = IManager(IModuleGlobals(MODULE_GLOBALS).getManager()).getPublicationByTokenId(saleParam.tokenId);
+        (uint256 publishId, )  = IManager(IModuleGlobals(MODULE_GLOBALS).getManager()).getPublicationByTokenId(saleParam.projectId, saleParam.tokenId);
         DataTypes.PublishData memory publishData  = IManager(IModuleGlobals(MODULE_GLOBALS).getManager()).getPublishInfo(publishId);
         
         DataTypes.PublishData memory previousPublishData = IManager(IModuleGlobals(MODULE_GLOBALS).getManager()).getPublishInfo(publishData.previousPublishId);

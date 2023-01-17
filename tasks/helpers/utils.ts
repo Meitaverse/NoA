@@ -26,7 +26,7 @@ export function getAddrs(): any {
 }
 
 export async function waitForTx(tx: Promise<ContractTransaction>) {
-  await (await tx).wait();
+ return  await (await tx).wait();
 }
 
 export async function deployContract(tx: any): Promise<Contract> {

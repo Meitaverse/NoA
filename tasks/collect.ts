@@ -32,12 +32,12 @@ import { deployContract, waitForTx , ProtocolState, Error} from './helpers/utils
 
 export let runtimeHRE: HardhatRuntimeEnvironment;
 
-// yarn hardhat collect --collectorid 3 --nftid 1 --network local
+// yarn hardhat collect --collectorid 3 --publishid 1 --network local
 
 task("collect", "collect a dNFT function")
 .addParam("collectorid", "soul bound token id ")
-.addParam("nftid", "derivative nft id to collect")
-.setAction(async ({collectorid, nftid}: {collectorid:number, nftid: number}, hre) =>  {
+.addParam("publishid", "publish id")
+.setAction(async ({collectorid, publishid}: {collectorid:number, publishid:number}, hre) =>  {
   runtimeHRE = hre;
   const ethers = hre.ethers;
   const accounts = await ethers.getSigners();
@@ -46,10 +46,7 @@ task("collect", "collect a dNFT function")
   const user = accounts[2];
   const userTwo = accounts[3];
   const userThree = accounts[4];
-
-  const userAddress = user.address;
-  const userTwoAddress = userTwo.address;
-  const userThreeAddress = userThree.address;
+  const userFour = accounts[5];
 
   const managerImpl = await loadContract(hre, Manager__factory, "ManagerImpl");
   const manager = await loadContract(hre, Manager__factory, "Manager");
@@ -66,6 +63,7 @@ task("collect", "collect a dNFT function")
   console.log('\t-- user: ', user.address);
   console.log('\t-- userTwo: ', userTwo.address);
   console.log('\t-- userThree: ', userThree.address);
+  console.log('\t-- userFour: ', userFour.address);
 
   console.log(
       "\t--- ModuleGlobals governance address: ", await moduleGlobals.getGovernance()
@@ -75,27 +73,36 @@ task("collect", "collect a dNFT function")
     console.log('\n\t-- collector: ', collector.address);
     let balance =(await sbt["balanceOf(uint256)"](collectorid)).toNumber();
     if (balance == 0) {
-      //mint 1000Value to user
-      await manager.connect(governance).mintSBTValue(collectorid, 1000);
+      //mint 10000000 Value to user
+      await manager.connect(governance).mintSBTValue(collectorid, 10000000);
     }
     console.log('\t--- balance of collector: ', (await sbt["balanceOf(uint256)"](collectorid)).toNumber());
 
 
     const FIRST_PROJECT_ID =1; 
-    const FIRST_PUBLISH_ID =1; 
+    // const FIRST_PUBLISH_ID =1; 
    
     console.log(
       "\n\t--- Collet  ..."
     );
 
-    await waitForTx(
+    const receipt = await waitForTx(
       manager.connect(collector).collect({
-        publishId: FIRST_PUBLISH_ID,
+        publishId: publishid,
         collectorSoulBoundTokenId: collectorid,
         collectValue: 1,
         data: [],
       })
     );
+
+    let nftid = 1;
+    const events = receipt.logs;
+    if (events != undefined) {
+      for (let emittedEvent of events) {
+        // const event = eventContract.interface.parseLog(emittedEvent);
+      }
+    }
+
 
     let derivativeNFT: DerivativeNFTV1;
     derivativeNFT = DerivativeNFTV1__factory.connect(

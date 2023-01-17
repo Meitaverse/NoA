@@ -29,14 +29,17 @@ import {
 import { loadContract } from "./config";
 
 import { deployContract, waitForTx , ProtocolState, Error} from './helpers/utils';
+import { BigNumber } from "ethers";
 
 export let runtimeHRE: HardhatRuntimeEnvironment;
 
-// yarn hardhat publish --projectid 1 --network local
+// yarn hardhat publish-derivative --projectid 1 --sbtid 4 --fromtokenid 3 --network local
 
-task("publish", "publish function")
+task("publish-derivative", "publish-derivative function")
 .addParam("projectid", "project id to publish")
-.setAction(async ({projectid}: {projectid: number}, hre) =>  {
+.addParam("sbtid", "creator SBT id ")
+.addParam("fromtokenid", "from derivative token id ")
+.setAction(async ({projectid, sbtid, fromtokenid}: {projectid: number, sbtid:number, fromtokenid:number}, hre) =>  {
   runtimeHRE = hre;
   const ethers = hre.ethers;
   const accounts = await ethers.getSigners();
@@ -50,8 +53,6 @@ task("publish", "publish function")
   const userTwoAddress = userTwo.address;
   const userThreeAddress = userThree.address;
   
-
-
   const managerImpl = await loadContract(hre, Manager__factory, "ManagerImpl");
   const manager = await loadContract(hre, Manager__factory, "Manager");
   const bankTreasury = await loadContract(hre, BankTreasury__factory, "BankTreasury");
@@ -73,12 +74,55 @@ task("publish", "publish function")
     );
   
     let abiCoder = ethers.utils.defaultAbiCoder;
+    const FIRST_PROFILE_ID =1;
     const SECOND_PROFILE_ID =2; 
+    const THIRD_PROFILE_ID =3;  
+    const FOUR_PROFILE_ID =4;  
     const FIRST_HUB_ID =1; 
     const DEFAULT_COLLECT_PRICE = 10; // parseEther('10');
     const Default_royaltyBasisPoints = 50; //
     const GENESIS_FEE_BPS = 100;
     const DEFAULT_TEMPLATE_NUMBER = 1;
+
+    console.log('\n\t-- sbtid: ', sbtid);
+
+
+    let creator = accounts[sbtid];
+    
+    console.log('\n\t-- creator: ', creator.address);
+  
+    let derivativeNFT: DerivativeNFTV1;
+    derivativeNFT = DerivativeNFTV1__factory.connect(
+      await manager.connect(user).getDerivativeNFT(projectid),
+      user
+      );
+      
+    console.log('\n\t--- ownerOf fromtokenid:',fromtokenid ,' is ', await derivativeNFT.ownerOf(fromtokenid));
+    console.log('\t--- balanceOf fromtokenid: ', (await derivativeNFT["balanceOf(uint256)"](fromtokenid)).toNumber());
+   
+   
+    // approve derivativeNFT
+    // console.log('\t--- approve derivativeNFT: ', derivativeNFT.address, ' fromtokenid: ', fromtokenid);
+    // await waitForTx(
+    //   derivativeNFT.connect(creator)["approve(address,uint256)"](derivativeNFT.address, fromtokenid)
+    // );
+
+    //or setApprovalForAll 
+    console.log('\t--- setApprovalForAll derivativeNFT: ',derivativeNFT.address, ' fromtokenid: ', fromtokenid);
+    await waitForTx(
+      derivativeNFT.connect(creator).setApprovalForAll(derivativeNFT.address, true)
+    );
+
+    let balance_bank =(await sbt["balanceOf(uint256)"](FIRST_PROFILE_ID)).toNumber();
+    console.log('\n\t--- balance of bank : ', balance_bank);
+ 
+    let balance_sbtid =(await sbt["balanceOf(uint256)"](sbtid)).toNumber();
+    if (balance_sbtid == 0) {
+      //mint 10000000 Value to creator
+      await manager.connect(governance).mintSBTValue(sbtid, 10000000);
+    }
+    console.log('\t--- balance of sbtid: ', (await sbt["balanceOf(uint256)"](sbtid)).toNumber());
+
 
     const collectModuleInitData = abiCoder.encode(
       ['uint256', 'uint16', 'uint256', 'uint256'],
@@ -89,43 +133,35 @@ task("publish", "publish function")
         ['address', 'uint256'],
         [template.address, DEFAULT_TEMPLATE_NUMBER],
     );
-    const FIRST_PROFILE_ID =1;
-    let balance_bank =(await sbt["balanceOf(uint256)"](FIRST_PROFILE_ID)).toNumber();
-    console.log('\n\t--- balance of bank : ', balance_bank);
-
- 
-    let balance =(await sbt["balanceOf(uint256)"](SECOND_PROFILE_ID)).toNumber();
-    if (balance == 0) {
-      //mint 10000000 Value to user
-      await manager.connect(governance).mintSBTValue(SECOND_PROFILE_ID, 10000000);
-    }
-    console.log('\t--- balance of user: ', (await sbt["balanceOf(uint256)"](SECOND_PROFILE_ID)).toNumber());
 
     await waitForTx(
-      manager.connect(user).prePublish({
-        soulBoundTokenId: SECOND_PROFILE_ID,
+      manager.connect(creator).prePublish({ 
+        soulBoundTokenId: sbtid, //对应的SBT Id
         hubId: FIRST_HUB_ID,
-        projectId: projectid,
-        amount: 11,
+        projectId: projectid,               //projectid不变
+        amount: 4,                          //二创数量
         salePrice: DEFAULT_COLLECT_PRICE,
         royaltyBasisPoints: Default_royaltyBasisPoints,
-        name: "Dollar",
-        description: "Hand draw",
+        name: `Secondary creation from #${fromtokenid}`,  //注意，不能重复
+        description: `Secondary creation description`,
         materialURIs: [],
-        fromTokenIds: [],
+        fromTokenIds: [fromtokenid],  //必须先collect
         collectModule: feeCollectModule.address,
         collectModuleInitData: collectModuleInitData,
         publishModule: publishModule.address,
         publishModuleInitData: publishModuleinitData,
       })
     );
-
-
-    const FIRST_PUBLISH_ID = 1;
-    let publishInfo = await manager.connect(user).getPublishInfo(FIRST_PUBLISH_ID);
+  
+    //上面执行成功之后，会生成一个publishId，=4
+    const NEW_PUBLISH_ID = 4;
+    let publishInfo = await manager.connect(creator).getPublishInfo(NEW_PUBLISH_ID);
 
     console.log(
-      "\n\t--- soulBoundTokenId: ", publishInfo.publication.soulBoundTokenId.toNumber()
+      "\n\tgetPublishInfo of publishId=", NEW_PUBLISH_ID, ' is:'
+    );
+    console.log(
+      "\t--- soulBoundTokenId: ", publishInfo.publication.soulBoundTokenId.toNumber()
     );
     console.log(
       "\t--- hubId: ", publishInfo.publication.hubId.toNumber()
@@ -149,50 +185,14 @@ task("publish", "publish function")
       "\t--- royaltyBasisPoints: ", publishInfo.publication.royaltyBasisPoints.toNumber()
     );
 
-    //updatePublish
-/*
-    await waitForTx(
-      manager.connect(user).updatePublish(
-        FIRST_PUBLISH_ID,
-        DEFAULT_COLLECT_PRICE + 10,
-        50 + 50,
-        11,
-        "USA Dollar",
-        "Hand draw USD",
-        [],
-        [],
-      )
-    );
-    console.log(
-      "\n\t--- After update publish..."
-    );
-
-    publishInfo = await manager.connect(user).getPublishInfo(FIRST_PUBLISH_ID);
-    console.log(
-      "\n\t--- salePrice: ", publishInfo.publication.salePrice
-    );
-    console.log(
-      "\t--- royaltyBasisPoints: ", publishInfo.publication.royaltyBasisPoints
-    );
-    console.log(
-      "\t--- amount: ", publishInfo.publication.amount
-    );
-    console.log(
-      "\t--- name: ", publishInfo.publication.name
-    );
-    console.log(
-      "\t--- description: ", publishInfo.publication.description
-    );
-*/
-
 
     console.log(
-      "\n\t--- Publish  ..."
+      "\n\t--- Secondary creation  ..."
     );
 
     await waitForTx(
-      manager.connect(user).publish(
-        FIRST_PUBLISH_ID,
+      manager.connect(creator).publish(
+        NEW_PUBLISH_ID,
       )
     );
 
@@ -200,17 +200,11 @@ task("publish", "publish function")
     balance_bank =(await sbt["balanceOf(uint256)"](FIRST_PROFILE_ID)).toNumber();
     console.log('\n\t--- balance of bank : ', balance_bank);
 
-    let balance_left =(await sbt["balanceOf(uint256)"](SECOND_PROFILE_ID)).toNumber();
-    console.log('\t--- balance of user after publish : ', balance_left);
+    let balance_user =(await sbt["balanceOf(uint256)"](SECOND_PROFILE_ID)).toNumber();
+    console.log('\t--- balance of user after publish : ', balance_user);
     
-    let derivativeNFT: DerivativeNFTV1;
-    derivativeNFT = DerivativeNFTV1__factory.connect(
-      await manager.connect(user).getDerivativeNFT(projectid),
-      user
-      );
-      
-    const FIRST_DNFT_TOKEN_ID = 1;
-    console.log('\n\t--- ownerOf FIRST_DNFT_TOKEN_ID : ', await derivativeNFT.ownerOf(FIRST_DNFT_TOKEN_ID));
-    console.log('\t--- balanceOf FIRST_DNFT_TOKEN_ID : ', (await derivativeNFT["balanceOf(uint256)"](FIRST_DNFT_TOKEN_ID)).toNumber());
-
+    balance_sbtid =(await sbt["balanceOf(uint256)"](sbtid)).toNumber();
+    console.log('\t--- balance of sbtid after publish : ', balance_sbtid);
+    
+   
   });
