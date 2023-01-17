@@ -2213,6 +2213,24 @@ export class FeesForCollectHistory extends Entity {
     this.set("publishId", Value.fromBigInt(value));
   }
 
+  get tokenId(): BigInt {
+    let value = this.get("tokenId");
+    return value!.toBigInt();
+  }
+
+  set tokenId(value: BigInt) {
+    this.set("tokenId", Value.fromBigInt(value));
+  }
+
+  get collectUnits(): BigInt {
+    let value = this.get("collectUnits");
+    return value!.toBigInt();
+  }
+
+  set collectUnits(value: BigInt) {
+    this.set("collectUnits", Value.fromBigInt(value));
+  }
+
   get treasuryAmount(): BigInt {
     let value = this.get("treasuryAmount");
     return value!.toBigInt();

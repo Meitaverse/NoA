@@ -61,13 +61,13 @@ abstract contract BaseFeeCollectModule is
         uint256 ownershipSoulBoundTokenId,
         uint256 collectorSoulBoundTokenId,
         uint256 publishId,
-        uint256 collectValue,     
+        uint256 collectUnits,     
         bytes calldata data
     ) external virtual onlyManager {
 
-        _validateAndStoreCollect(collectorSoulBoundTokenId, ownershipSoulBoundTokenId, publishId, collectValue, data);
+        _validateAndStoreCollect(collectorSoulBoundTokenId, ownershipSoulBoundTokenId, publishId, collectUnits, data);
 
-        _processCollect(collectorSoulBoundTokenId, publishId, collectValue, data);
+        _processCollect(collectorSoulBoundTokenId, publishId, collectUnits, data);
     }
 
     // This function is not implemented because each Collect module has its own return data type
@@ -131,7 +131,7 @@ abstract contract BaseFeeCollectModule is
         uint256 collectorSoulBoundTokenId,
         uint256 ownershipSoulBoundTokenId,
         uint256 publishId,
-        uint256 collectValue,
+        uint256 collectUnits,
         bytes calldata data
     ) internal virtual {
 
@@ -142,7 +142,7 @@ abstract contract BaseFeeCollectModule is
 
          if (collectorSoulBoundTokenId == 0 || 
             ownershipSoulBoundTokenId == 0 || 
-            collectValue == 0 || 
+            collectUnits == 0 || 
             collectData.recipients.length > 5 || 
             publishId == 0 ) revert Errors.InitParamsInvalid();
 
@@ -156,13 +156,13 @@ abstract contract BaseFeeCollectModule is
      *
      * @param collectorSoulBoundTokenId The token ID  that will collect the post.
      * @param projectId The  publication ID associated with the publication being collected.
-     * @param collectValue The value being collected.
+     * @param collectUnits The value being collected.
      * @param data Arbitrary data __passed from the collector!__ to be decoded.
      */
     function _processCollect(
         uint256 collectorSoulBoundTokenId,
         uint256 projectId,
-        uint256 collectValue,
+        uint256 collectUnits,
         bytes calldata data
     ) internal virtual {
         
@@ -174,7 +174,7 @@ abstract contract BaseFeeCollectModule is
         address derivativeNFT = IManager(MANAGER).getDerivativeNFT(projectId);
         uint96 fraction = IDerivativeNFTV1(derivativeNFT).getDefaultRoyalty();
          
-        uint256 payFees = collectValue * fraction;
+        uint256 payFees = collectUnits * fraction;
 
         //社区金库地址及税点
         (address treasury, uint16 treasuryFee) = _treasuryData();

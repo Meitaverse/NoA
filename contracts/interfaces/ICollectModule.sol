@@ -33,14 +33,14 @@ interface ICollectModule {
      * @param ownershipSoulBoundTokenId The owner of  the profile associated with the publication being collected.
      * @param collectorSoulBoundTokenId The collector token ID of the profile associated with the publication being collected.
      * @param publishId The publish Id.
-     * @param collectValue The value
+     * @param collectUnits The units will be collected
      * @param data Arbitrary data __passed from the collector!__ to be decoded.
      */
     function processCollect(
         uint256 ownershipSoulBoundTokenId,
         uint256 collectorSoulBoundTokenId,
         uint256 publishId,
-        uint256 collectValue,
+        uint256 collectUnits,
          bytes calldata data
     ) external;
 }

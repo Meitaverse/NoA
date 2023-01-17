@@ -23,7 +23,6 @@ dataSources:
         - TransferValue
         - SlotChanged
         - BurnToken
-        - BurnTokenWithSig
         - DerivativeNFTImageURISet
       abis:
         - name: DerivativeNFTV1
@@ -43,8 +42,6 @@ dataSources:
           handler: handleSlotChanged
         - event: BurnToken(uint256,uint256,address,uint256)
           handler: handleBurnToken
-        - event: BurnTokenWithSig(uint256,uint256,address,uint256)
-          handler: handleBurnTokenWithSig
         - event: DerivativeNFTImageURISet(indexed uint256,string,uint256)
           handler: handleDerivativeNFTImageURISet
       file: ./src/derivativeNFTV1-mapping.ts

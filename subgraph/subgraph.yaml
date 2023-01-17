@@ -297,7 +297,7 @@ dataSources:
         - name: Events
           file: ./abis/Events.json
       eventHandlers:
-        - event: FeesForCollect(uint256,(uint256,uint256,uint256,uint256),(uint256,uint256,uint256,uint256))
+        - event: FeesForCollect(uint256,uint256,(uint256,uint256,uint256,uint256),(uint256,uint256,uint256,uint256,uint256))
           handler: handleFeesForCollect
       file: ./src/feeCollectModule-mapping.ts
 
@@ -357,6 +357,6 @@ dataSources:
           handler: handlePublishSale
         - event: RemoveSale(uint256,uint128,uint256,uint256)
           handler: handleRemoveSale
-        - event: Traded(indexed uint24,indexed address,uint256,uint32,uint128,uint256,uint128,(uint256,uint256,uint256,uint256))
+        - event: Traded(indexed uint24,indexed address,uint256,uint32,uint128,uint256,uint128,(uint256,uint256,uint256,uint256,uint256))
           handler: handleTraded
       file: ./src/marketplace-mapping.ts

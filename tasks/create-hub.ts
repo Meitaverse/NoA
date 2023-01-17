@@ -20,11 +20,12 @@ import {
   DerivativeMetadataDescriptor__factory,
   Template,
   Template__factory,
+  Events__factory,
 } from '../typechain';
 
 import { loadContract } from "./config";
 
-import { deployContract, waitForTx , ProtocolState, Error} from './helpers/utils';
+import { deployContract, waitForTx , ProtocolState, Error, findEvent} from './helpers/utils';
 
 export let runtimeHRE: HardhatRuntimeEnvironment;
 
@@ -60,39 +61,52 @@ task("create-hub", "create-hub function")
 
   console.log(
       "\t--- ModuleGlobals governance address: ", await moduleGlobals.getGovernance()
-    );
+  );
   
-   // permit user to create a hub
-   const SECOND_PROFILE_ID =2;
-   await waitForTx( moduleGlobals.connect(governance).whitelistHubCreator(SECOND_PROFILE_ID, true));
+  // permit user to create a hub
+  const SECOND_PROFILE_ID =2;
+  await waitForTx( moduleGlobals.connect(governance).whitelistHubCreator(SECOND_PROFILE_ID, true));
 
-    console.log(
-      "\n\t--- moduleGlobals whitelistHubCreator set true for user: ", userAddress
-    );
-      
-    await waitForTx(
-        manager.connect(user).createHub({
-          soulBoundTokenId: SECOND_PROFILE_ID,
-          name: "bitsoul",
-          description: "Hub for bitsoul",
-          imageURI: "https://ipfs.io/ipfs/QmVnu7JQVoDRqSgHBzraYp7Hy78HwJtLFi6nUFCowTGdzp/11.png",
-        })
-    );
+  console.log(
+    "\n\t--- moduleGlobals whitelistHubCreator set true for user: ", userAddress
+  );
+    
+  const receipt = await waitForTx(
+      manager.connect(user).createHub({
+        soulBoundTokenId: SECOND_PROFILE_ID,
+        name: "bitsoul",
+        description: "Hub for bitsoul",
+        imageURI: "https://ipfs.io/ipfs/QmVnu7JQVoDRqSgHBzraYp7Hy78HwJtLFi6nUFCowTGdzp/11.png",
+      })
+  );
 
-    let hubInfo = await manager.connect(user).getHubInfo(1);
+  let eventsLib = await new Events__factory(deployer).deploy();
+  // console.log('\n\t--- eventsLib address: ', eventsLib.address);
 
-    console.log(
-      "\n\t--- hub info - soulBoundTokenId:  ", hubInfo.soulBoundTokenId.toNumber()
-    );
-    console.log(
-      "\t--- hub info - name:  ", hubInfo.name
-    );
-    console.log(
-      "\t--- hub info - description:  ", hubInfo.description
-    );
-    console.log(
-      "\t--- hub info - imageURI:  ", hubInfo.imageURI
-    );
+  const event = findEvent(receipt, 'HubCreated', eventsLib);
+  console.log(
+    "\n\t--- createHub success! Event HubCreated emited ..."
+  );
+
+  let hubId = event.args.hubId.toNumber();
+  console.log(
+    "\t\t--- HubCreated, hubId: ", hubId
+  );
+
+  let hubInfo = await manager.connect(user).getHubInfo(hubId);
+
+  console.log(
+    "\n\t--- hub info - soulBoundTokenId:  ", hubInfo.soulBoundTokenId.toNumber()
+  );
+  console.log(
+    "\t--- hub info - name:  ", hubInfo.name
+  );
+  console.log(
+    "\t--- hub info - description:  ", hubInfo.description
+  );
+  console.log(
+    "\t--- hub info - imageURI:  ", hubInfo.imageURI
+  );
 
 
 });

@@ -101,14 +101,14 @@ contract FeeCollectModule is FeeModuleBase, ModuleBase, ICollectModule {
         uint256 ownershipSoulBoundTokenId,
         uint256 collectorSoulBoundTokenId,
         uint256 publishId,
-        uint256 collectValue,
+        uint256 collectUnits,
         bytes calldata data
     ) external virtual override onlyManager {
         _processCollect(
             ownershipSoulBoundTokenId, 
             collectorSoulBoundTokenId, 
             publishId, 
-            collectValue,
+            collectUnits,
             data
         );
     }
@@ -129,14 +129,14 @@ contract FeeCollectModule is FeeModuleBase, ModuleBase, ICollectModule {
 
     function getFees(
         uint256 publishId, 
-        uint256 collectValue
+        uint256 collectUnits
     ) external view returns (
         uint16 treasuryFee, 
         uint256 genesisSoulBoundTokenId, 
         DataTypes.RoyaltyAmounts memory royaltyAmounts
     ) {
 
-        uint256 payValue = collectValue.mul(_dataByPublicationByProfile[publishId].salePrice);
+        uint256 payValue = collectUnits.mul(_dataByPublicationByProfile[publishId].salePrice);
         (,  treasuryFee) = _treasuryData();
         genesisSoulBoundTokenId = _dataByPublicationByProfile[publishId].genesisSoulBoundTokenId;
         royaltyAmounts.treasuryAmount = payValue.mul(treasuryFee).div(BPS_MAX);
@@ -155,11 +155,12 @@ contract FeeCollectModule is FeeModuleBase, ModuleBase, ICollectModule {
         uint256 ownershipSoulBoundTokenId,
         uint256 collectorSoulBoundTokenId,
         uint256 publishId, 
-        uint256 collectValue,
-        bytes calldata data
+        uint256 collectUnits,
+        bytes calldata
     ) internal {
         DataTypes.RoyaltyAmounts memory royaltyAmounts;
-        uint256 payValue = collectValue.mul(_dataByPublicationByProfile[publishId].salePrice);
+        royaltyAmounts.collectUnits = collectUnits;
+        uint256 payValue = collectUnits.mul(_dataByPublicationByProfile[publishId].salePrice);
         uint256 genesisSoulBoundTokenId = _dataByPublicationByProfile[publishId].genesisSoulBoundTokenId;
         
         //获取交易税点
@@ -189,6 +190,7 @@ contract FeeCollectModule is FeeModuleBase, ModuleBase, ICollectModule {
 //TODO
             emit Events.FeesForCollect(
                 publishId,
+                _dataByPublicationByProfile[publishId].tokenId,
                 collectFeeUsers,
                 royaltyAmounts
             );

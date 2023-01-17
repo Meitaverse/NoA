@@ -655,15 +655,19 @@ export class FeesForCollect__Params {
     return this._event.parameters[0].value.toBigInt();
   }
 
+  get tokenId(): BigInt {
+    return this._event.parameters[1].value.toBigInt();
+  }
+
   get collectFeeUsers(): FeesForCollectCollectFeeUsersStruct {
     return changetype<FeesForCollectCollectFeeUsersStruct>(
-      this._event.parameters[1].value.toTuple()
+      this._event.parameters[2].value.toTuple()
     );
   }
 
   get royaltyAmounts(): FeesForCollectRoyaltyAmountsStruct {
     return changetype<FeesForCollectRoyaltyAmountsStruct>(
-      this._event.parameters[2].value.toTuple()
+      this._event.parameters[3].value.toTuple()
     );
   }
 }
@@ -687,20 +691,24 @@ export class FeesForCollectCollectFeeUsersStruct extends ethereum.Tuple {
 }
 
 export class FeesForCollectRoyaltyAmountsStruct extends ethereum.Tuple {
-  get treasuryAmount(): BigInt {
+  get collectUnits(): BigInt {
     return this[0].toBigInt();
   }
 
-  get genesisAmount(): BigInt {
+  get treasuryAmount(): BigInt {
     return this[1].toBigInt();
   }
 
-  get previousAmount(): BigInt {
+  get genesisAmount(): BigInt {
     return this[2].toBigInt();
   }
 
-  get adjustedAmount(): BigInt {
+  get previousAmount(): BigInt {
     return this[3].toBigInt();
+  }
+
+  get adjustedAmount(): BigInt {
+    return this[4].toBigInt();
   }
 }
 
@@ -1883,20 +1891,24 @@ export class Traded__Params {
 }
 
 export class TradedRoyaltyAmountsStruct extends ethereum.Tuple {
-  get treasuryAmount(): BigInt {
+  get collectUnits(): BigInt {
     return this[0].toBigInt();
   }
 
-  get genesisAmount(): BigInt {
+  get treasuryAmount(): BigInt {
     return this[1].toBigInt();
   }
 
-  get previousAmount(): BigInt {
+  get genesisAmount(): BigInt {
     return this[2].toBigInt();
   }
 
-  get adjustedAmount(): BigInt {
+  get previousAmount(): BigInt {
     return this[3].toBigInt();
+  }
+
+  get adjustedAmount(): BigInt {
+    return this[4].toBigInt();
   }
 }
 

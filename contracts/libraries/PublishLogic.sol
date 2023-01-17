@@ -215,7 +215,7 @@ library PublishLogic {
     ) external {
         if (collectData.publishId == 0) revert Errors.InitParamsInvalid();
         if (collectData.collectorSoulBoundTokenId == 0) revert Errors.InitParamsInvalid();
-        if (collectData.collectValue == 0) revert Errors.InitParamsInvalid();
+        if (collectData.collectUnits == 0) revert Errors.InitParamsInvalid();
 
         if ( derivativeNFT== address(0)) 
             revert Errors.DerivativeNFTIsZero();
@@ -232,7 +232,7 @@ library PublishLogic {
             ownershipSoulBoundTokenId,
             collectData.collectorSoulBoundTokenId,
             collectData.publishId,
-            collectData.collectValue,
+            collectData.collectUnits,
             collectData.data 
         );
 
@@ -242,7 +242,7 @@ library PublishLogic {
             ownershipSoulBoundTokenId,
             collectData.collectorSoulBoundTokenId,
             tokenId,
-            collectData.collectValue,
+            collectData.collectUnits,
             newTokenId,
             block.timestamp
         );

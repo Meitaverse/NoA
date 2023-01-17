@@ -6,7 +6,6 @@ import {
     TransferValue,
     SlotChanged,
     BurnToken,
-    BurnTokenWithSig,
     Approval,
     ApprovalForAll,
     ApprovalValue,
@@ -43,6 +42,16 @@ export function handleTransfer(event: Transfer): void {
         const derivativeNFTAsset = DerivativeNFTAsset.load(_idStringAsset) || new DerivativeNFTAsset(_idStringAsset)
 
         if (derivativeNFTAsset) {
+            const derivativeNFTV1 = DerivativeNFTV1.bind(event.address) 
+            const result = derivativeNFTV1.try_getPublishIdByTokenId(event.params._tokenId)
+        
+            if (result.reverted) {
+                log.warning('try_getPublishIdByTokenId, result.reverted is true', [])
+            } else {
+                log.info("try_getPublishIdByTokenId, result.value: {}", [result.value.toString()])
+                derivativeNFTAsset.publishId = result.value
+            }
+
             derivativeNFTAsset.wallet = event.params._to
             derivativeNFTAsset.tokenId = event.params._tokenId
             if (event.params._from.toHexString() == '0x0000000000000000000000000000000000000000') {
@@ -145,21 +154,6 @@ export function handleSlotChanged(event: SlotChanged): void {
 
 export function handleBurnToken(event: BurnToken): void {
     log.info("handleBurnToken, event.address: {}", [event.address.toHexString()])
-
-    let _idString = event.params.tokenId.toString() + "-" + event.block.timestamp.toString()
-    const history = BurnDerivativeNFTHistory.load(_idString) || new BurnDerivativeNFTHistory(_idString)
-
-    if (history) {
-        history.projectId = event.params.projectId
-        history.tokenId = event.params.tokenId
-        history.owner = event.params.owner
-        history.timestamp = event.block.timestamp
-        history.save()
-    } 
-}
-
-export function handleBurnTokenWithSig(event: BurnTokenWithSig): void {
-    log.info("handleBurnTokenWithSig, event.address: {}", [event.address.toHexString()])
 
     let _idString = event.params.tokenId.toString() + "-" + event.block.timestamp.toString()
     const history = BurnDerivativeNFTHistory.load(_idString) || new BurnDerivativeNFTHistory(_idString)

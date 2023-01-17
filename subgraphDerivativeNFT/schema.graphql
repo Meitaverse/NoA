@@ -12,6 +12,7 @@ type DerivativeNFTTransferHistory @entity {
 type DerivativeNFTAsset @entity {
   id: ID!
   wallet: Bytes!
+  publishId: BigInt!
   tokenId: BigInt!
   value: BigInt!
   timestamp: BigInt!

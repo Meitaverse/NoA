@@ -23,11 +23,12 @@ import {
   MarketPlace__factory,
   DerivativeNFTV1,
   DerivativeNFTV1__factory,
+  Events__factory,
 } from '../typechain';
 
 import { loadContract } from "./config";
 
-import { deployContract, waitForTx , ProtocolState, Error} from './helpers/utils';
+import { deployContract, waitForTx , ProtocolState, Error, findEvent} from './helpers/utils';
 
 export let runtimeHRE: HardhatRuntimeEnvironment;
 
@@ -70,7 +71,7 @@ task("create-project", "create-project function")
   
     const SECOND_PROFILE_ID =2; 
     const FIRST_HUB_ID =1; 
-    await waitForTx(
+    const receipt = await waitForTx(
         manager.connect(user).createProject({
           soulBoundTokenId: SECOND_PROFILE_ID,
           hubId: FIRST_HUB_ID,
@@ -84,9 +85,18 @@ task("create-project", "create-project function")
         })
     );
 
-    const FIRST_PROJECT_ID =1;
 
-    let projectInfo = await manager.connect(user).getProjectInfo(FIRST_PROJECT_ID);
+    let eventsLib = await new Events__factory(deployer).deploy();
+    // console.log('\n\t--- eventsLib address: ', eventsLib.address);
+
+    const event = findEvent(receipt, 'DerivativeNFTDeployed', eventsLib);
+    console.log(
+      "\n\t--- createProject success! Event DerivativeNFTDeployed emited ..."
+    );
+
+    let projectId = event.args.projectId.toNumber();
+
+    let projectInfo = await manager.connect(user).getProjectInfo(projectId);
     console.log(
       "\n\t--- projectInfo info - hubId: ", projectInfo.hubId.toNumber()
     );
@@ -118,7 +128,7 @@ task("create-project", "create-project function")
   //   let derivativeNFT: DerivativeNFTV1;
 
   //   derivativeNFT = DerivativeNFTV1__factory.connect(
-  //     await manager.connect(user).getDerivativeNFT(FIRST_PROJECT_ID),
+  //     await manager.connect(user).getDerivativeNFT(projectId),
   //     user
   //   );
 

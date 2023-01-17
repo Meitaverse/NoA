@@ -145,7 +145,7 @@ library DataTypes {
     struct CollectData {
         uint256 publishId;
         uint256 collectorSoulBoundTokenId;
-        uint256 collectValue;
+        uint256 collectUnits;
         bytes data;
     }    
 
@@ -324,6 +324,7 @@ library DataTypes {
     }
 
     struct RoyaltyAmounts {
+       uint256 collectUnits;
        uint256 treasuryAmount;
        uint256 genesisAmount;
        uint256 previousAmount;

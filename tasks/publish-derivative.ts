@@ -24,16 +24,17 @@ import {
   Template,
   Template__factory,
   PublishModule__factory,
+  Events__factory,
 } from '../typechain';
 
 import { loadContract } from "./config";
 
-import { deployContract, waitForTx , ProtocolState, Error} from './helpers/utils';
+import { deployContract, waitForTx , ProtocolState, Error, findEvent} from './helpers/utils';
 import { BigNumber } from "ethers";
 
 export let runtimeHRE: HardhatRuntimeEnvironment;
 
-// yarn hardhat publish-derivative --projectid 1 --sbtid 4 --fromtokenid 3 --network local
+// yarn hardhat publish-derivative --projectid 1 --sbtid 3 --fromtokenid 9 --network local
 
 task("publish-derivative", "publish-derivative function")
 .addParam("projectid", "project id to publish")
@@ -134,7 +135,7 @@ task("publish-derivative", "publish-derivative function")
         [template.address, DEFAULT_TEMPLATE_NUMBER],
     );
 
-    await waitForTx(
+    const receipt = await waitForTx(
       manager.connect(creator).prePublish({ 
         soulBoundTokenId: sbtid, //对应的SBT Id
         hubId: FIRST_HUB_ID,
@@ -153,12 +154,17 @@ task("publish-derivative", "publish-derivative function")
       })
     );
   
-    //上面执行成功之后，会生成一个publishId，=4
-    const NEW_PUBLISH_ID = 4;
+    //上面执行成功之后，事件PublishPrepared会出块，解析logs可以获取
+
+    let eventsLib = await new Events__factory(deployer).deploy();
+
+    const event = findEvent(receipt, 'PublishPrepared', eventsLib);
+    const NEW_PUBLISH_ID = event.args.publishId.toNumber();
+
     let publishInfo = await manager.connect(creator).getPublishInfo(NEW_PUBLISH_ID);
 
     console.log(
-      "\n\tgetPublishInfo of publishId=", NEW_PUBLISH_ID, ' is:'
+      "\n\t getPublishInfo of publishId=", NEW_PUBLISH_ID, ' is:'
     );
     console.log(
       "\t--- soulBoundTokenId: ", publishInfo.publication.soulBoundTokenId.toNumber()
@@ -190,10 +196,23 @@ task("publish-derivative", "publish-derivative function")
       "\n\t--- Secondary creation  ..."
     );
 
-    await waitForTx(
+    const receipt2 = await waitForTx(
       manager.connect(creator).publish(
         NEW_PUBLISH_ID,
       )
+    );
+
+    const event2 = findEvent(receipt2, 'PublishCreated', eventsLib);
+    const newTokenId = event2.args.newTokenId.toNumber();
+    const amount = event2.args.amount.toNumber();
+    console.log(
+      "\n\t--- publish success! Event PublishCreated emited ..."
+    );
+    console.log(
+      "\t\t---newTokenId: ", newTokenId
+    );
+    console.log(
+      "\t\t---amount: ", amount
     );
 
 

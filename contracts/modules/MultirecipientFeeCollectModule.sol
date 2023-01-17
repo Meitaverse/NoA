@@ -201,21 +201,21 @@ contract MultirecipientFeeCollectModule is BaseFeeCollectModule {
      * initialized with this module.
      *
      * @param projectId The project ID 
-     * @param collectValue The value to calculate.
+     * @param collectUnits The value to calculate.
      * @param recipients The array of the publication to query.
      *
      * @return RoyaltyInfoData 
      */
     function getFees(
         uint256 projectId, 
-        uint256 collectValue,
+        uint256 collectUnits,
         uint256[] memory recipients
     ) external view returns (
         RoyaltyInfoData memory
     ) {
         uint96 fraction = IDerivativeNFTV1(IManager(MANAGER).getDerivativeNFT(projectId)).getDefaultRoyalty();
          
-        uint256 payFees = collectValue.mul(_dataByPublicationByProfile[projectId].salePrice) * fraction;
+        uint256 payFees = collectUnits.mul(_dataByPublicationByProfile[projectId].salePrice) * fraction;
 
         //社区金库地址及税点
         (address treasury, uint16 treasuryFee) = _treasuryData();

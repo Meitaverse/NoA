@@ -20,11 +20,12 @@ import {
   DerivativeMetadataDescriptor__factory,
   Template,
   Template__factory,
+  Events__factory,
 } from '../typechain';
 
 import { loadContract } from "./config";
 
-import { deployContract, waitForTx , ProtocolState, Error} from './helpers/utils';
+import { deployContract, waitForTx , ProtocolState, Error, findEvent} from './helpers/utils';
 
 export let runtimeHRE: HardhatRuntimeEnvironment;
 
@@ -41,11 +42,9 @@ task("create-profile", "create-profile function")
   const user = accounts[2];
   const userTwo = accounts[3];
   const userThree = accounts[4];
+  const userFour = accounts[5];
+  const userFive = accounts[6];
 
-
-  const userAddress = user.address;
-  const userTwoAddress = userTwo.address;
-  const userThreeAddress = userThree.address;
 
   const managerImpl = await loadContract(hre, Manager__factory, "ManagerImpl");
   const manager = await loadContract(hre, Manager__factory, "Manager");
@@ -54,19 +53,16 @@ task("create-profile", "create-profile function")
   const voucher = await loadContract(hre, Voucher__factory, "Voucher");
   const moduleGlobals = await loadContract(hre, ModuleGlobals__factory, "ModuleGlobals");
 
-  console.log('\t-- deployer: ', deployer.address);
-  console.log('\t-- governance: ', governance.address);
-  console.log('\t-- user: ', user.address);
-  console.log('\t-- userTwo: ', userTwo.address);
-  console.log('\t-- userThree: ', userThree.address);
+  // console.log('\t-- deployer: ', deployer.address);
+  // console.log('\t-- governance: ', governance.address);
+  // console.log('\t-- user: ', user.address);
+  // console.log('\t-- userTwo: ', userTwo.address);
+  // console.log('\t-- userThree: ', userThree.address);
+  // console.log('\t-- userFour: ', userFour.address);
 
   let profileCreator = accounts[accountid];
-  console.log('\t-- profileCreator: ', profileCreator.address);
+  console.log('\n\t-- profileCreator: ', profileCreator.address);
 
-  console.log(
-      "\t--- ModuleGlobals governance address: ", await moduleGlobals.getGovernance()
-    );
-  
   //add profile creator to whilelist
    await waitForTx( moduleGlobals.connect(governance).whitelistProfileCreator(profileCreator.address, true));
 
@@ -74,7 +70,7 @@ task("create-profile", "create-profile function")
     "\n\t--- moduleGlobals isWhitelistProfileCreator address: ", await moduleGlobals.isWhitelistProfileCreator(profileCreator.address)
   );
       
-  await waitForTx(
+  const receipt = await waitForTx(
       manager.connect(profileCreator).createProfile({
         wallet: profileCreator.address,
         nickName: 'user' + `${accountid}`,
@@ -82,9 +78,31 @@ task("create-profile", "create-profile function")
       })
   );
 
-    console.log(
-      "\n\t--- createProfile success! the soulBoundToken address: ", await manager.connect(user).getWalletBySoulBoundTokenId(accountid)
-    );
 
+  let eventsLib = await new Events__factory(deployer).deploy();
+  // console.log('\n\t--- eventsLib address: ', eventsLib.address);
+
+  const event = findEvent(receipt, 'ProfileCreated', eventsLib);
+  console.log(
+    "\n\t--- CreateProfile success! Event ProfileCreated emited ..."
+  );
+  console.log(
+    "\t\t--- ProfileCreated, soulBoundTokenId: ", event.args.soulBoundTokenId.toNumber()
+  );
+  console.log(
+    "\t\t--- ProfileCreated, creator: ", event.args.creator
+  );
+  console.log(
+    "\t\t--- ProfileCreated, wallet: ", event.args.wallet
+  );
+  console.log(
+    "\t\t--- ProfileCreated, nickName: ", event.args.nickName
+  );
+  console.log(
+    "\t\t--- ProfileCreated, imageURI: ", event.args.imageURI
+  );
+  console.log(
+    "\t\t--- ProfileCreated, timestamp: ", event.args.timestamp.toNumber()
+  );
 
 });

@@ -331,7 +331,7 @@ makeSuiteCleanRoom('Fee Collect Module', function () {
         const tx = manager.connect(userTwo).collect({
             publishId: FIRST_PUBLISH_ID,
             collectorSoulBoundTokenId: THIRD_PROFILE_ID,
-            collectValue: 1,
+            collectUnits: 1,
             data: [],
         });
         const receipt = await waitForTx(tx);
@@ -381,7 +381,7 @@ makeSuiteCleanRoom('Fee Collect Module', function () {
               vars: {
                 publishId: FIRST_PUBLISH_ID,
                 collectorSoulBoundTokenId: THIRD_PROFILE_ID,
-                collectValue: 1,
+                collectUnits: 1,
                 data : [],
               },
           }) 

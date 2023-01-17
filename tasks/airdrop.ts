@@ -24,11 +24,12 @@ import {
   Template,
   Template__factory,
   PublishModule__factory,
+  Events__factory,
 } from '../typechain';
 
 import { loadContract } from "./config";
 
-import { deployContract, waitForTx , ProtocolState, Error} from './helpers/utils';
+import { deployContract, waitForTx , ProtocolState, Error, findEvent} from './helpers/utils';
 
 export let runtimeHRE: HardhatRuntimeEnvironment;
 
@@ -74,14 +75,13 @@ task("airdrop", "airdrop array of dNFTs to many users function")
     console.log('\n\t-- owner: ', owner.address);
 
 
-    const FIRST_PROJECT_ID =1; 
     const FIRST_PUBLISH_ID =1; 
    
     console.log(
       "\n\t--- Airdrop to [userTwo(3), userThree(4)] ..."
     );
 
-    await waitForTx(
+    const receipt =  await waitForTx(
       manager.connect(owner).airdrop({
         publishId: FIRST_PUBLISH_ID,
         ownershipSoulBoundTokenId: ownerid,
@@ -90,22 +90,19 @@ task("airdrop", "airdrop array of dNFTs to many users function")
         values: [1, 2],
       })
     );
-    
 
-    let derivativeNFT: DerivativeNFTV1;
-    derivativeNFT = DerivativeNFTV1__factory.connect(
-      await manager.connect(userTwo).getDerivativeNFT(FIRST_PROJECT_ID),
-      user
+    //
+    let eventsLib = await new Events__factory(deployer).deploy();
+    // console.log('\n\t--- eventsLib address: ', eventsLib.address);
+
+    const event = findEvent(receipt, 'DerivativeNFTAirdroped', eventsLib);
+    const newTokenIds = event.args.newTokenIds;
+    console.log(
+      "\n\t--- airdrop success! Event DerivativeNFTAirdroped emited ..."
     );
-      
-    console.log('\n\t--- ownerOf nftid(1) : ', await derivativeNFT.ownerOf(nftid));
-    console.log('\t--- balanceOf nftid(1): ', (await derivativeNFT["balanceOf(uint256)"](nftid)).toNumber());
     
-      
-    console.log('\n\t--- ownerOf nftid(2) : ', await derivativeNFT.ownerOf(2));
-    console.log('\t--- balanceOf nftid(2): ', (await derivativeNFT["balanceOf(uint256)"](2)).toNumber());
-    
-    console.log('\n\t--- ownerOf nftid(3) : ', await derivativeNFT.ownerOf(3));
-    console.log('\t--- balanceOf nftid(3): ', (await derivativeNFT["balanceOf(uint256)"](3)).toNumber());
-    
+    console.log(
+      "\t\t--- newTokenIds:", newTokenIds
+    );
+
 });

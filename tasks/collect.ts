@@ -24,11 +24,12 @@ import {
   Template,
   Template__factory,
   PublishModule__factory,
+  Events__factory,
 } from '../typechain';
 
 import { loadContract } from "./config";
 
-import { deployContract, waitForTx , ProtocolState, Error} from './helpers/utils';
+import { deployContract, waitForTx , ProtocolState, Error, findEvent} from './helpers/utils';
 
 export let runtimeHRE: HardhatRuntimeEnvironment;
 
@@ -90,18 +91,47 @@ task("collect", "collect a dNFT function")
       manager.connect(collector).collect({
         publishId: publishid,
         collectorSoulBoundTokenId: collectorid,
-        collectValue: 1,
+        collectUnits: 1,
         data: [],
       })
     );
 
-    let nftid = 1;
-    const events = receipt.logs;
-    if (events != undefined) {
-      for (let emittedEvent of events) {
-        // const event = eventContract.interface.parseLog(emittedEvent);
-      }
-    }
+    let eventsLib = await new Events__factory(deployer).deploy();
+    // console.log('\n\t--- eventsLib address: ', eventsLib.address);
+
+    const event = findEvent(receipt, 'DerivativeNFTCollected', eventsLib);
+    const projectId = event.args.projectId.toNumber();
+    const derivativeNFTAddress = event.args.derivativeNFT;
+    const fromSoulBoundTokenId = event.args.fromSoulBoundTokenId.toNumber();
+    const toSoulBoundTokenId = event.args.toSoulBoundTokenId.toNumber();
+    const tokenId = event.args.tokenId.toNumber();
+    const value = event.args.value.toNumber();
+    const newTokenId = event.args.newTokenId.toNumber();
+
+    console.log(
+      "\n\t--- Event DerivativeNFTCollected emited ..."
+    );
+    console.log(
+      "\t--- DerivativeNFTCollected, projectId: ", projectId
+    );
+    console.log(
+      "\t--- DerivativeNFTCollected, derivativeNFT address: ", derivativeNFTAddress
+    );
+    console.log(
+      "\t--- DerivativeNFTCollected, fromSoulBoundTokenId: ", fromSoulBoundTokenId
+    );
+    console.log(
+      "\t--- DerivativeNFTCollected, toSoulBoundTokenId: ", toSoulBoundTokenId
+    );
+    console.log(
+      "\t--- DerivativeNFTCollected, tokenId: ", tokenId
+    );
+    console.log(
+      "\t--- DerivativeNFTCollected, collect value: ", value
+    );
+    console.log(
+      "\t--- DerivativeNFTCollected, newTokenId: ", newTokenId
+    );
 
 
     let derivativeNFT: DerivativeNFTV1;
@@ -110,7 +140,7 @@ task("collect", "collect a dNFT function")
       user
     );
       
-    console.log('\n\t--- ownerOf nftid : ', await derivativeNFT.ownerOf(nftid));
-    console.log('\t--- balanceOf nftid : ', (await derivativeNFT["balanceOf(uint256)"](nftid)).toNumber());
+    console.log('\n\t--- ownerOf newTokenId : ', await derivativeNFT.ownerOf(newTokenId));
+    console.log('\t--- balanceOf newTokenId : ', (await derivativeNFT["balanceOf(uint256)"](newTokenId)).toNumber());
     
 });

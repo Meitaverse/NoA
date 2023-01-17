@@ -400,7 +400,7 @@ contract Manager is
             collectData.publishId, 
             _projectDataByPublishId[collectData.publishId].tokenId, 
             _soulBoundTokenIdToWallet[collectData.collectorSoulBoundTokenId],
-            collectData.collectValue
+            collectData.collectUnits
         );
 
         PublishLogic.collectDerivativeNFT(

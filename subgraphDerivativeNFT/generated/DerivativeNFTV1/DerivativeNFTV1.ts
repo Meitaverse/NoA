@@ -118,36 +118,6 @@ export class BurnToken__Params {
   }
 }
 
-export class BurnTokenWithSig extends ethereum.Event {
-  get params(): BurnTokenWithSig__Params {
-    return new BurnTokenWithSig__Params(this);
-  }
-}
-
-export class BurnTokenWithSig__Params {
-  _event: BurnTokenWithSig;
-
-  constructor(event: BurnTokenWithSig) {
-    this._event = event;
-  }
-
-  get projectId(): BigInt {
-    return this._event.parameters[0].value.toBigInt();
-  }
-
-  get tokenId(): BigInt {
-    return this._event.parameters[1].value.toBigInt();
-  }
-
-  get owner(): Address {
-    return this._event.parameters[2].value.toAddress();
-  }
-
-  get timestamp(): BigInt {
-    return this._event.parameters[3].value.toBigInt();
-  }
-}
-
 export class DerivativeNFTImageURISet extends ethereum.Event {
   get params(): DerivativeNFTImageURISet__Params {
     return new DerivativeNFTImageURISet__Params(this);
@@ -594,27 +564,27 @@ export class DerivativeNFTV1 extends ethereum.SmartContract {
     return ethereum.CallResult.fromValue(value[0].toBigInt());
   }
 
-  getDomainSeparator(): Bytes {
+  getPublishIdByTokenId(tokenId: BigInt): BigInt {
     let result = super.call(
-      "getDomainSeparator",
-      "getDomainSeparator():(bytes32)",
-      []
+      "getPublishIdByTokenId",
+      "getPublishIdByTokenId(uint256):(uint256)",
+      [ethereum.Value.fromUnsignedBigInt(tokenId)]
     );
 
-    return result[0].toBytes();
+    return result[0].toBigInt();
   }
 
-  try_getDomainSeparator(): ethereum.CallResult<Bytes> {
+  try_getPublishIdByTokenId(tokenId: BigInt): ethereum.CallResult<BigInt> {
     let result = super.tryCall(
-      "getDomainSeparator",
-      "getDomainSeparator():(bytes32)",
-      []
+      "getPublishIdByTokenId",
+      "getPublishIdByTokenId(uint256):(uint256)",
+      [ethereum.Value.fromUnsignedBigInt(tokenId)]
     );
     if (result.reverted) {
       return new ethereum.CallResult();
     }
     let value = result.value;
-    return ethereum.CallResult.fromValue(value[0].toBytes());
+    return ethereum.CallResult.fromValue(value[0].toBigInt());
   }
 
   getSlotDetail(
@@ -1248,60 +1218,6 @@ export class BurnCall__Outputs {
   }
 }
 
-export class BurnWithSigCall extends ethereum.Call {
-  get inputs(): BurnWithSigCall__Inputs {
-    return new BurnWithSigCall__Inputs(this);
-  }
-
-  get outputs(): BurnWithSigCall__Outputs {
-    return new BurnWithSigCall__Outputs(this);
-  }
-}
-
-export class BurnWithSigCall__Inputs {
-  _call: BurnWithSigCall;
-
-  constructor(call: BurnWithSigCall) {
-    this._call = call;
-  }
-
-  get tokenId(): BigInt {
-    return this._call.inputValues[0].value.toBigInt();
-  }
-
-  get sig(): BurnWithSigCallSigStruct {
-    return changetype<BurnWithSigCallSigStruct>(
-      this._call.inputValues[1].value.toTuple()
-    );
-  }
-}
-
-export class BurnWithSigCall__Outputs {
-  _call: BurnWithSigCall;
-
-  constructor(call: BurnWithSigCall) {
-    this._call = call;
-  }
-}
-
-export class BurnWithSigCallSigStruct extends ethereum.Tuple {
-  get v(): i32 {
-    return this[0].toI32();
-  }
-
-  get r(): Bytes {
-    return this[1].toBytes();
-  }
-
-  get s(): Bytes {
-    return this[2].toBytes();
-  }
-
-  get deadline(): BigInt {
-    return this[3].toBigInt();
-  }
-}
-
 export class DeleteDefaultRoyaltyCall extends ethereum.Call {
   get inputs(): DeleteDefaultRoyaltyCall__Inputs {
     return new DeleteDefaultRoyaltyCall__Inputs(this);
@@ -1391,188 +1307,6 @@ export class InitializeCall__Outputs {
 
   constructor(call: InitializeCall) {
     this._call = call;
-  }
-}
-
-export class PermitCall extends ethereum.Call {
-  get inputs(): PermitCall__Inputs {
-    return new PermitCall__Inputs(this);
-  }
-
-  get outputs(): PermitCall__Outputs {
-    return new PermitCall__Outputs(this);
-  }
-}
-
-export class PermitCall__Inputs {
-  _call: PermitCall;
-
-  constructor(call: PermitCall) {
-    this._call = call;
-  }
-
-  get spender(): Address {
-    return this._call.inputValues[0].value.toAddress();
-  }
-
-  get tokenId(): BigInt {
-    return this._call.inputValues[1].value.toBigInt();
-  }
-
-  get sig(): PermitCallSigStruct {
-    return changetype<PermitCallSigStruct>(
-      this._call.inputValues[2].value.toTuple()
-    );
-  }
-}
-
-export class PermitCall__Outputs {
-  _call: PermitCall;
-
-  constructor(call: PermitCall) {
-    this._call = call;
-  }
-}
-
-export class PermitCallSigStruct extends ethereum.Tuple {
-  get v(): i32 {
-    return this[0].toI32();
-  }
-
-  get r(): Bytes {
-    return this[1].toBytes();
-  }
-
-  get s(): Bytes {
-    return this[2].toBytes();
-  }
-
-  get deadline(): BigInt {
-    return this[3].toBigInt();
-  }
-}
-
-export class PermitForAllCall extends ethereum.Call {
-  get inputs(): PermitForAllCall__Inputs {
-    return new PermitForAllCall__Inputs(this);
-  }
-
-  get outputs(): PermitForAllCall__Outputs {
-    return new PermitForAllCall__Outputs(this);
-  }
-}
-
-export class PermitForAllCall__Inputs {
-  _call: PermitForAllCall;
-
-  constructor(call: PermitForAllCall) {
-    this._call = call;
-  }
-
-  get owner(): Address {
-    return this._call.inputValues[0].value.toAddress();
-  }
-
-  get operator(): Address {
-    return this._call.inputValues[1].value.toAddress();
-  }
-
-  get approved(): boolean {
-    return this._call.inputValues[2].value.toBoolean();
-  }
-
-  get sig(): PermitForAllCallSigStruct {
-    return changetype<PermitForAllCallSigStruct>(
-      this._call.inputValues[3].value.toTuple()
-    );
-  }
-}
-
-export class PermitForAllCall__Outputs {
-  _call: PermitForAllCall;
-
-  constructor(call: PermitForAllCall) {
-    this._call = call;
-  }
-}
-
-export class PermitForAllCallSigStruct extends ethereum.Tuple {
-  get v(): i32 {
-    return this[0].toI32();
-  }
-
-  get r(): Bytes {
-    return this[1].toBytes();
-  }
-
-  get s(): Bytes {
-    return this[2].toBytes();
-  }
-
-  get deadline(): BigInt {
-    return this[3].toBigInt();
-  }
-}
-
-export class PermitValueCall extends ethereum.Call {
-  get inputs(): PermitValueCall__Inputs {
-    return new PermitValueCall__Inputs(this);
-  }
-
-  get outputs(): PermitValueCall__Outputs {
-    return new PermitValueCall__Outputs(this);
-  }
-}
-
-export class PermitValueCall__Inputs {
-  _call: PermitValueCall;
-
-  constructor(call: PermitValueCall) {
-    this._call = call;
-  }
-
-  get spender(): Address {
-    return this._call.inputValues[0].value.toAddress();
-  }
-
-  get tokenId(): BigInt {
-    return this._call.inputValues[1].value.toBigInt();
-  }
-
-  get value(): BigInt {
-    return this._call.inputValues[2].value.toBigInt();
-  }
-
-  get sig(): PermitValueCallSigStruct {
-    return changetype<PermitValueCallSigStruct>(
-      this._call.inputValues[3].value.toTuple()
-    );
-  }
-}
-
-export class PermitValueCall__Outputs {
-  _call: PermitValueCall;
-
-  constructor(call: PermitValueCall) {
-    this._call = call;
-  }
-}
-
-export class PermitValueCallSigStruct extends ethereum.Tuple {
-  get v(): i32 {
-    return this[0].toI32();
-  }
-
-  get r(): Bytes {
-    return this[1].toBytes();
-  }
-
-  get s(): Bytes {
-    return this[2].toBytes();
-  }
-
-  get deadline(): BigInt {
-    return this[3].toBigInt();
   }
 }
 

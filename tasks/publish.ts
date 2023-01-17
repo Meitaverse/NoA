@@ -24,11 +24,12 @@ import {
   Template,
   Template__factory,
   PublishModule__factory,
+  Events__factory,
 } from '../typechain';
 
 import { loadContract } from "./config";
 
-import { deployContract, waitForTx , ProtocolState, Error} from './helpers/utils';
+import { deployContract, waitForTx , ProtocolState, Error, findEvent} from './helpers/utils';
 
 export let runtimeHRE: HardhatRuntimeEnvironment;
 
@@ -101,7 +102,7 @@ task("publish", "publish function")
     }
     console.log('\t--- balance of user: ', (await sbt["balanceOf(uint256)"](SECOND_PROFILE_ID)).toNumber());
 
-    await waitForTx(
+    const receipt = await waitForTx(
       manager.connect(user).prePublish({
         soulBoundTokenId: SECOND_PROFILE_ID,
         hubId: FIRST_HUB_ID,
@@ -120,9 +121,23 @@ task("publish", "publish function")
       })
     );
 
+    let eventsLib = await new Events__factory(deployer).deploy();
 
-    const FIRST_PUBLISH_ID = 1;
-    let publishInfo = await manager.connect(user).getPublishInfo(FIRST_PUBLISH_ID);
+    const event = findEvent(receipt, 'PublishPrepared', eventsLib);
+    const NEW_PUBLISH_ID = event.args.publishId.toNumber();
+    const previousPublishId = event.args.previousPublishId.toNumber();
+    console.log(
+      "\n\t--- prePublish success! Event PublishPrepared emited ..."
+    );
+    console.log(
+      "\t\t--- new publishId: ", NEW_PUBLISH_ID
+    );
+    console.log(
+      "\t\t--- previousPublishId: ", previousPublishId
+    );
+
+
+    let publishInfo = await manager.connect(user).getPublishInfo(NEW_PUBLISH_ID);
 
     console.log(
       "\n\t--- soulBoundTokenId: ", publishInfo.publication.soulBoundTokenId.toNumber()
@@ -153,7 +168,7 @@ task("publish", "publish function")
 /*
     await waitForTx(
       manager.connect(user).updatePublish(
-        FIRST_PUBLISH_ID,
+        NEW_PUBLISH_ID,
         DEFAULT_COLLECT_PRICE + 10,
         50 + 50,
         11,
@@ -190,12 +205,23 @@ task("publish", "publish function")
       "\n\t--- Publish  ..."
     );
 
-    await waitForTx(
+    const receipt2 =  await waitForTx(
       manager.connect(user).publish(
-        FIRST_PUBLISH_ID,
+        NEW_PUBLISH_ID,
       )
     );
-
+    const event2 = findEvent(receipt2, 'PublishCreated', eventsLib);
+    const newTokenId = event2.args.newTokenId.toNumber();
+    const amount = event2.args.amount.toNumber();
+    console.log(
+      "\n\t--- publish success! Event PublishCreated emited ..."
+    );
+    console.log(
+      "\t\t---newTokenId: ", newTokenId
+    );
+    console.log(
+      "\t\t---amount: ", amount
+    );
 
     balance_bank =(await sbt["balanceOf(uint256)"](FIRST_PROFILE_ID)).toNumber();
     console.log('\n\t--- balance of bank : ', balance_bank);
@@ -209,8 +235,7 @@ task("publish", "publish function")
       user
       );
       
-    const FIRST_DNFT_TOKEN_ID = 1;
-    console.log('\n\t--- ownerOf FIRST_DNFT_TOKEN_ID : ', await derivativeNFT.ownerOf(FIRST_DNFT_TOKEN_ID));
-    console.log('\t--- balanceOf FIRST_DNFT_TOKEN_ID : ', (await derivativeNFT["balanceOf(uint256)"](FIRST_DNFT_TOKEN_ID)).toNumber());
+    console.log('\n\t--- ownerOf newTokenId : ', await derivativeNFT.ownerOf(newTokenId));
+    console.log('\t--- balanceOf newTokenId : ', (await derivativeNFT["balanceOf(uint256)"](newTokenId)).toNumber());
 
   });

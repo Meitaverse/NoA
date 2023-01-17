@@ -823,12 +823,14 @@ library Events {
     /**
      * @dev Emitted when pay fees for collect
      *
-     * @param publishId  The contract address
+     * @param publishId  The publishId 
+     * @param tokenId  The tokenId collected
      * @param collectFeeUsers The collectFeeUsers data
      * @param royaltyAmounts  The royaltyAmounts data
      */
     event FeesForCollect (
         uint256 publishId, 
+        uint256 tokenId, 
         DataTypes.CollectFeeUsers collectFeeUsers,
         DataTypes.RoyaltyAmounts royaltyAmounts
     );

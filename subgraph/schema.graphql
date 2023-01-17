@@ -269,6 +269,8 @@ type FeesForCollectHistory @entity {
   genesisSoulBoundTokenId: BigInt!
   previousSoulBoundTokenId: BigInt!
   publishId: BigInt!
+  tokenId: BigInt!
+  collectUnits: BigInt!
   treasuryAmount: BigInt!
   genesisAmount: BigInt!
   previousAmount: BigInt!

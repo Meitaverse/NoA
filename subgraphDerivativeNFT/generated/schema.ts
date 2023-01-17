@@ -126,6 +126,15 @@ export class DerivativeNFTAsset extends Entity {
     this.set("wallet", Value.fromBytes(value));
   }
 
+  get publishId(): BigInt {
+    let value = this.get("publishId");
+    return value!.toBigInt();
+  }
+
+  set publishId(value: BigInt) {
+    this.set("publishId", Value.fromBigInt(value));
+  }
+
   get tokenId(): BigInt {
     let value = this.get("tokenId");
     return value!.toBigInt();
