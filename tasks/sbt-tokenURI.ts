@@ -1,7 +1,10 @@
 import { task } from "hardhat/config";
 import { HardhatRuntimeEnvironment } from 'hardhat/types';
+import { parseEther } from '@ethersproject/units';
 
 import {
+  DerivativeNFTV1,
+  DerivativeNFTV1__factory,
   FeeCollectModule,
   FeeCollectModule__factory,
   PublishLogic__factory,
@@ -20,25 +23,32 @@ import {
   DerivativeMetadataDescriptor__factory,
   Template,
   Template__factory,
+  PublishModule__factory,
 } from '../typechain';
 
 import { loadContract } from "./config";
 
+import { deployContract, waitForTx , ProtocolState, Error} from './helpers/utils';
+
 export let runtimeHRE: HardhatRuntimeEnvironment;
 
-task("manager-verify", "manager-verify function")
-.setAction(async ({}: {}, hre) =>  {
+// yarn hardhat sbt-tokenURI --tokenid 2 --network local
+
+task("sbt-tokenURI", "get sbt tokenURI function")
+.addParam("tokenid", "token id")
+.setAction(async ({tokenid}: {tokenid: number}, hre) =>  {
   runtimeHRE = hre;
   const ethers = hre.ethers;
   const accounts = await ethers.getSigners();
   const deployer = accounts[0];
-  const governance = accounts[1];
+  const governance = accounts[1];  //治理合约地址
   const user = accounts[2];
   const userTwo = accounts[3];
   const userThree = accounts[4];
-  
+
   const userAddress = user.address;
   const userTwoAddress = userTwo.address;
+  const userThreeAddress = userThree.address;
 
   const managerImpl = await loadContract(hre, Manager__factory, "ManagerImpl");
   const manager = await loadContract(hre, Manager__factory, "Manager");
@@ -46,50 +56,18 @@ task("manager-verify", "manager-verify function")
   const sbt = await loadContract(hre, NFTDerivativeProtocolTokenV1__factory, "SBT");
   const voucher = await loadContract(hre, Voucher__factory, "Voucher");
   const moduleGlobals = await loadContract(hre, ModuleGlobals__factory, "ModuleGlobals");
+  const feeCollectModule = await loadContract(hre, FeeCollectModule__factory, "FeeCollectModule");
+  const publishModule = await loadContract(hre, PublishModule__factory, "PublishModule");
+  const template = await loadContract(hre, Template__factory, "Template");
 
-  console.log(
-    "---\t manager version: ", (await managerImpl.version()).toNumber()
-    );
-  console.log(
-      "---\t manager governance address: ", await manager.connect(user).getGovernance()
-    );
-  console.log(
-    "---\t sbt contract version: ", (await sbt.version()).toNumber()
-  );
-  // console.log(
-  //   "---\t sbt getManager(): ", (await sbt.getManager())
-  // );
-  // console.log(
-  //   "---\t sbt getBankTreasury(): ", (await sbt.getBankTreasury())
-  // );
+  const contractURI = await sbt.contractURI();
+  console.log('\n\t--- contractURI: \n', contractURI);
 
-  console.log(
-    "---\t bankTreasury getManager(): ",(await bankTreasury.getManager())
-  );
+  const svg = await sbt.tokenURI(tokenid);
 
-  console.log(
-    "---\t bankTreasury name: ", (await bankTreasury.name())
-  );
+  console.log('\n\t--- tokenURI of tokenId(', tokenid, '): \n', svg);
 
-  console.log(
-    "---\t bankTreasury getSBT(): ", (await bankTreasury.getSBT())
-  );
+  const slotURI = await sbt.slotURI(1);
+  console.log('\n\t--- slotURI of slot(1): \n', slotURI);
 
-  console.log(
-    "---\t moduleGlobals getGovernance(): ", await moduleGlobals.getGovernance()
-  );
-
-  console.log(
-    "---\t moduleGlobals tax: ", (await moduleGlobals.getPublishCurrencyTax()).toNumber()
-  );
-    
-
-  console.log(
-    "---\t voucher name: ", (await voucher.name())
-  );
-
-  console.log(
-    "---\t voucher symbol: ", (await voucher.symbol())
-  );
-
-});
+  });

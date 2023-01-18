@@ -26,6 +26,11 @@ export enum ProtocolState {
   PublishingPaused,
   Paused,
 }
+export enum DerivativeNFTState {
+  Unpaused, 
+  Paused,
+}
+
 export enum Error {
   None,
   RevertWithMessage,
@@ -254,296 +259,17 @@ export async function takeSnapshot() {
 export async function revertToSnapshot() {
   await hre.ethers.provider.send('evm_revert', [snapshotId]);
 }
-/*
-export async function cancelWithPermitForAll(nft: string = manager.address) {
-  const nftContract = Manager__factory.connect(nft, testWallet);
-  const name = await nftContract.name();
-  const nonce = (await nftContract.sigNonces(testWallet.address)).toNumber();
-  const { v, r, s } = await getPermitForAllParts(
-    nft,
-    name,
-    testWallet.address,
-    testWallet.address,
-    false,
-    nonce,
-    MAX_UINT256
-  );
-  await nftContract.permitForAll(testWallet.address, testWallet.address, false, {
-    v,
-    r,
-    s,
-    deadline: MAX_UINT256,
-  });
-}
-
-export async function getPermitParts(
-  nft: string,
-  name: string,
-  spender: string,
-  tokenId: BigNumberish,
-  nonce: number,
-  deadline: string
-): Promise<{ v: number; r: string; s: string }> {
-  const msgParams = buildPermitParams(nft, name, spender, tokenId, nonce, deadline);
-  return await getSig(msgParams);
-}
-
-export async function getPermitForAllParts(
-  nft: string,
-  name: string,
-  owner: string,
-  operator: string,
-  approved: boolean,
-  nonce: number,
-  deadline: string
-): Promise<{ v: number; r: string; s: string }> {
-  const msgParams = buildPermitForAllParams(nft, name, owner, operator, approved, nonce, deadline);
-  return await getSig(msgParams);
-}
-
-export async function getBurnWithSigparts(
-  nft: string,
-  name: string,
-  tokenId: BigNumberish,
-  nonce: number,
-  deadline: string
-): Promise<{ v: number; r: string; s: string }> {
-  const msgParams = buildBurnWithSigParams(nft, name, tokenId, nonce, deadline);
-  return await getSig(msgParams);
-}
-
-export async function getDelegateBySigParts(
-  nft: string,
-  name: string,
-  delegator: string,
-  delegatee: string,
-  nonce: number,
-  deadline: string
-): Promise<{ v: number; r: string; s: string }> {
-  const msgParams = buildDelegateBySigParams(nft, name, delegator, delegatee, nonce, deadline);
-  return await getSig(msgParams);
-}
-
-const buildDelegateBySigParams = (
-  nft: string,
-  name: string,
-  delegator: string,
-  delegatee: string,
-  nonce: number,
-  deadline: string
-) => ({
-  types: {
-    DelegateBySig: [
-      { name: 'delegator', type: 'address' },
-      { name: 'delegatee', type: 'address' },
-      { name: 'nonce', type: 'uint256' },
-      { name: 'deadline', type: 'uint256' },
-    ],
-  },
-  domain: {
-    name: name,
-    version: '1',
-    chainId: getChainId(),
-    verifyingContract: nft,
-  },
-  value: {
-    delegator: delegator,
-    delegatee: delegatee,
-    nonce: nonce,
-    deadline: deadline,
-  },
-});
-
-export async function getSetFollowModuleWithSigParts(
-  profileId: BigNumberish,
-  followModule: string,
-  followModuleInitData: Bytes | string,
-  nonce: number,
-  deadline: string
-): Promise<{ v: number; r: string; s: string }> {
-  const msgParams = buildSetFollowModuleWithSigParams(
-    profileId,
-    followModule,
-    followModuleInitData,
-    nonce,
-    deadline
-  );
-  return await getSig(msgParams);
-}
 
 export async function getSetDispatcherWithSigParts(
-  profileId: BigNumberish,
+  soulBoundTokenId: BigNumberish,
   dispatcher: string,
   nonce: number,
   deadline: string
 ): Promise<{ v: number; r: string; s: string }> {
-  const msgParams = buildSetDispatcherWithSigParams(profileId, dispatcher, nonce, deadline);
+  const msgParams = buildSetDispatcherWithSigParams(soulBoundTokenId, dispatcher, nonce, deadline);
   return await getSig(msgParams);
 }
 
-export async function getSetProfileImageURIWithSigParts(
-  profileId: BigNumberish,
-  imageURI: string,
-  nonce: number,
-  deadline: string
-): Promise<{ v: number; r: string; s: string }> {
-  const msgParams = buildSetProfileImageURIWithSigParams(profileId, imageURI, nonce, deadline);
-  return await getSig(msgParams);
-}
-
-export async function getSetDefaultProfileWithSigParts(
-  wallet: string,
-  profileId: BigNumberish,
-  nonce: number,
-  deadline: string
-): Promise<{ v: number; r: string; s: string }> {
-  const msgParams = buildSetDefaultProfileWithSigParams(profileId, wallet, nonce, deadline);
-  return await getSig(msgParams);
-}
-
-export async function getSetFollowNFTURIWithSigParts(
-  profileId: BigNumberish,
-  followNFTURI: string,
-  nonce: number,
-  deadline: string
-): Promise<{ v: number; r: string; s: string }> {
-  const msgParams = buildSetFollowNFTURIWithSigParams(profileId, followNFTURI, nonce, deadline);
-  return await getSig(msgParams);
-}
-
-export async function getPostWithSigParts(
-  profileId: BigNumberish,
-  contentURI: string,
-  collectModule: string,
-  collectModuleInitData: Bytes | string,
-  referenceModule: string,
-  referenceModuleInitData: Bytes | string,
-  nonce: number,
-  deadline: string
-): Promise<{ v: number; r: string; s: string }> {
-  const msgParams = buildPostWithSigParams(
-    profileId,
-    contentURI,
-    collectModule,
-    collectModuleInitData,
-    referenceModule,
-    referenceModuleInitData,
-    nonce,
-    deadline
-  );
-  return await getSig(msgParams);
-}
-
-export async function getCommentWithSigParts(
-  profileId: BigNumberish,
-  contentURI: string,
-  profileIdPointed: BigNumberish,
-  pubIdPointed: string,
-  referenceModuleData: Bytes | string,
-  collectModule: string,
-  collectModuleInitData: Bytes | string,
-  referenceModule: string,
-  referenceModuleInitData: Bytes | string,
-  nonce: number,
-  deadline: string
-): Promise<{ v: number; r: string; s: string }> {
-  const msgParams = buildCommentWithSigParams(
-    profileId,
-    contentURI,
-    profileIdPointed,
-    pubIdPointed,
-    referenceModuleData,
-    collectModule,
-    collectModuleInitData,
-    referenceModule,
-    referenceModuleInitData,
-    nonce,
-    deadline
-  );
-  return await getSig(msgParams);
-}
-
-export async function getMirrorWithSigParts(
-  profileId: BigNumberish,
-  profileIdPointed: BigNumberish,
-  pubIdPointed: string,
-  referenceModuleData: Bytes | string,
-  referenceModule: string,
-  referenceModuleInitData: Bytes | string,
-  nonce: number,
-  deadline: string
-): Promise<{ v: number; r: string; s: string }> {
-  const msgParams = buildMirrorWithSigParams(
-    profileId,
-    profileIdPointed,
-    pubIdPointed,
-    referenceModuleData,
-    referenceModule,
-    referenceModuleInitData,
-    nonce,
-    deadline
-  );
-  return await getSig(msgParams);
-}
-
-export async function getFollowWithSigParts(
-  profileIds: string[] | number[],
-  datas: Bytes[] | string[],
-  nonce: number,
-  deadline: string
-): Promise<{ v: number; r: string; s: string }> {
-  const msgParams = buildFollowWithSigParams(profileIds, datas, nonce, deadline);
-  return await getSig(msgParams);
-}
-
-export async function getToggleFollowWithSigParts(
-  profileIds: string[] | number[],
-  enables: boolean[],
-  nonce: number,
-  deadline: string
-): Promise<{ v: number; r: string; s: string }> {
-  const msgParams = buildToggleFollowWithSigParams(profileIds, enables, nonce, deadline);
-  return await getSig(msgParams);
-}
-
-export async function getSetProfileMetadataURIWithSigParts(
-  profileId: string | number,
-  metadata: string,
-  nonce: number,
-  deadline: string
-): Promise<{ v: number; r: string; s: string }> {
-  const msgParams = buildSetProfileMetadataURIWithSigParams(profileId, metadata, nonce, deadline);
-  return await getSig(msgParams);
-}
-
-export async function getCollectWithSigParts(
-  profileId: BigNumberish,
-  pubId: string,
-  data: Bytes | string,
-  nonce: number,
-  deadline: string
-): Promise<{ v: number; r: string; s: string }> {
-  const msgParams = buildCollectWithSigParams(profileId, pubId, data, nonce, deadline);
-  return await getSig(msgParams);
-}
-
-export function expectEqualArrays(actual: BigNumberish[], expected: BigNumberish[]) {
-  if (actual.length != expected.length) {
-    logger.throwError(
-      `${actual} length ${actual.length} does not match ${expected} length ${expect.length}`
-    );
-  }
-
-  let areEquals = true;
-  for (let i = 0; areEquals && i < actual.length; i++) {
-    areEquals = BigNumber.from(actual[i]).eq(BigNumber.from(expected[i]));
-  }
-
-  if (!areEquals) {
-    logger.throwError(`${actual} does not match ${expected}`);
-  }
-}
-*/
 export interface CreateProfileReturningTokenIdStruct {
   sender?: Signer;
   vars: DataTypes.CreateProfileDataStruct;
@@ -604,4 +330,46 @@ export async function collectReturningTokenId({
       .reverted;
   
   return tokenId;
+}
+
+const buildSetDispatcherWithSigParams = (
+  soulBoundTokenId: BigNumberish,
+  dispatcher: string,
+  nonce: number,
+  deadline: string
+) => ({
+  types: {
+    SetDispatcherWithSig: [
+      { name: 'soulBoundTokenId', type: 'uint256' },
+      { name: 'dispatcher', type: 'address' },
+      { name: 'nonce', type: 'uint256' },
+      { name: 'deadline', type: 'uint256' },
+    ],
+  },
+  domain: domain(),
+  value: {
+    soulBoundTokenId: soulBoundTokenId,
+    dispatcher: dispatcher,
+    nonce: nonce,
+    deadline: deadline,
+  },
+});
+
+
+async function getSig(msgParams: {
+  domain: any;
+  types: any;
+  value: any;
+}): Promise<{ v: number; r: string; s: string }> {
+  const sig = await testWallet._signTypedData(msgParams.domain, msgParams.types, msgParams.value);
+  return utils.splitSignature(sig);
+}
+
+function domain(): { name: string; version: string; chainId: number; verifyingContract: string } {
+  return {
+    name: 'Manager',
+    version: '1',
+    chainId: getChainId(),
+    verifyingContract: manager.address,
+  };
 }

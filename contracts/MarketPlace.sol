@@ -199,7 +199,6 @@ contract MarketPlace is
             previousPublishData.publication.soulBoundTokenId,
             previousPublishData.publication.royaltyBasisPoints
         ); 
-
     }
 
     function fixedPriceSet(uint24 saleId, uint128 newSalePrice) 

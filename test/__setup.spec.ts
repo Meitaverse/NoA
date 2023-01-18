@@ -58,6 +58,8 @@ import {
   MarketPlace,
   MarketPlace__factory,
   SBTLogic__factory,
+  SBTMetadataDescriptor,
+  SBTMetadataDescriptor__factory,
 } from '../typechain';
 
 import { ManagerLibraryAddresses } from '../typechain/factories/contracts/Manager__factory';
@@ -114,7 +116,7 @@ export const TreasuryFee = 50;
 export const INITIAL_SUPPLY = 1000000;  //SBT初始发行总量
 export const VOUCHER_AMOUNT_LIMIT = 100;  //用户用SBT兑换Voucher的最低数量 
 
-export const DEFAULT_COLLECT_PRICE = parseEther('10');
+export const DEFAULT_COLLECT_PRICE = 10;
 export const DEFAULT_TEMPLATE_NUMBER = 1;
 export const NickName = 'BitsoulUser';
 export const NickName3 = 'BitsoulUser3';
@@ -153,6 +155,7 @@ export let sbtImpl: NFTDerivativeProtocolTokenV1;
 export let sbtContract: NFTDerivativeProtocolTokenV1;
 export let derivativeNFTV1Impl: DerivativeNFTV1;
 export let metadataDescriptor: DerivativeMetadataDescriptor;
+export let sbtMetadataDescriptor: SBTMetadataDescriptor;
 
 export let voucherImpl: Voucher;
 export let voucherContract: Voucher
@@ -277,6 +280,11 @@ before(async function () {
   );
   voucherContract = new Voucher__factory(deployer).attach(voucherProxy.address);
 
+  //SBT descriptor
+  sbtMetadataDescriptor = await new SBTMetadataDescriptor__factory(deployer).deploy(
+    manager.address
+  );
+  
   const sbtLogic = await new SBTLogic__factory(deployer).deploy();
   sbtLibs = {
     'contracts/libraries/SBTLogic.sol:SBTLogic': sbtLogic.address,
@@ -287,6 +295,7 @@ before(async function () {
       SBT_SYMBOL, 
       SBT_DECIMALS,
       manager.address,
+      sbtMetadataDescriptor.address,
   ]);
   const sbtProxy = await new ERC1967Proxy__factory(deployer).deploy(
     sbtImpl.address,
@@ -363,7 +372,7 @@ before(async function () {
     moduleGlobals.address
   );
 
-  //descriptor
+  //DerivativeNFT descriptor
   metadataDescriptor = await new DerivativeMetadataDescriptor__factory(deployer).deploy(
     moduleGlobals.address
   );
@@ -413,11 +422,26 @@ before(async function () {
     INITIAL_SUPPLY
   )).to.not.be.reverted;
   
-  await expect(sbtContract.connect(deployer).whitelistContract(publishModule.address, true)).to.not.be.reverted;
-  await expect(sbtContract.connect(deployer).whitelistContract(feeCollectModule.address, true)).to.not.be.reverted;
-  await expect(sbtContract.connect(deployer).whitelistContract(multirecipientFeeCollectModule.address, true)).to.not.be.reverted;
-  await expect(sbtContract.connect(deployer).whitelistContract(bankTreasuryContract.address, true)).to.not.be.reverted;
-  await expect(sbtContract.connect(deployer).whitelistContract(voucherContract.address, true)).to.not.be.reverted;
+  const transferValueRole = await sbtContract.TRANSFER_VALUE_ROLE();
+
+  await expect(
+    sbtContract.connect(deployer).grantRole(transferValueRole, publishModule.address)
+  ).to.not.be.reverted;
+
+  await expect(
+    sbtContract.connect(deployer).grantRole(transferValueRole, feeCollectModule.address)
+  ).to.not.be.reverted;
+  
+  await expect(
+    sbtContract.connect(deployer).grantRole(transferValueRole, multirecipientFeeCollectModule.address)
+  ).to.not.be.reverted;
+  await expect(
+    sbtContract.connect(deployer).grantRole(transferValueRole, bankTreasuryContract.address)
+  ).to.not.be.reverted;
+  await expect(
+    sbtContract.connect(deployer).grantRole(transferValueRole, voucherContract.address)
+  ).to.not.be.reverted;
+
 
   await expect(voucherContract.connect(deployer).setGlobalModule(moduleGlobals.address)).to.not.be.reverted;
   console.log('voucherContract setGlobalModule ok ');

@@ -71,19 +71,6 @@ contract NFTDerivativeProtocolTokenV2 is
         _unpause();
     }
 
-    function whitelistContract(address contract_, bool toWhitelist_) external  { 
-        if (!hasRole(DEFAULT_ADMIN_ROLE, _msgSender())) revert Errors.Unauthorized();
-        _whitelistContract(contract_, toWhitelist_);
-    }
-
-     function _whitelistContract(address contract_, bool toWhitelist_) internal {
-
-        SBTLogic.contractWhitelistedSet(
-            contract_,
-            toWhitelist_,
-            _contractWhitelisted
-        );
-    }
 
     function createProfile(
         address creator,
@@ -149,11 +136,8 @@ contract NFTDerivativeProtocolTokenV2 is
         uint256 value_
     ) external  { 
          //call only by BankTreasury or FeeCollectModule or publishModule  or Voucher
-        if (_contractWhitelisted[msg.sender]) {
-            ERC3525Upgradeable._transferValue(fromTokenId_, toTokenId_, value_);
-            return;
-        }
-        revert Errors.NotTransferValueAuthorised();
+        ERC3525Upgradeable._transferValue(fromTokenId_, toTokenId_, value_);
+        
     }
 
     //-- orverride -- //

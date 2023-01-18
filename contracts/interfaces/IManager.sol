@@ -67,9 +67,28 @@ interface IManager {
     */
     function setState(DataTypes.ProtocolState newState) external;
     
+    /**
+     * @notice Sets the derivativeNFT state to either a global pause, a publishing pause or an unpaused state. This function
+     * can only be called by the governance address
+     *
+     * @param projectId The project Id of derivativeNFT contract
+     * @param newState The state to set, as a member of the DerivativeNFTState enum.
+    */    
     function setDerivativeNFTState(
         uint256 projectId,
         DataTypes.DerivativeNFTState newState
+    ) external;
+    
+    /**
+     * @notice Sets the metadata descriptor of derivativeNFT contract. This function
+     * can only be called by the governance address
+     *
+     * @param projectId The project Id of derivativeNFT contract
+     * @param metadataDescriptor The state to set, as a member of the DerivativeNFTState enum.
+    */   
+    function setDerivativeNFTMetadataDescriptor(
+       uint256 projectId, 
+       address metadataDescriptor
     ) external;
 
     function mintSBTValue(
@@ -128,6 +147,15 @@ interface IManager {
     function getWalletBySoulBoundTokenId(uint256 soulBoundTokenId) external view returns(address);
 
     function getSoulBoundTokenIdByWallet(address wallet) external view returns(uint256);
+
+    /**
+     * @notice Sets a profile's dispatcher, giving that dispatcher rights to publish to that profile.
+     *
+     * @param profileId The token ID of the profile of the profile to set the dispatcher for.
+     * @param dispatcher The dispatcher address to set for the given profile ID.
+     */
+    function setDispatcher(uint256 profileId, address dispatcher) external;
+
 
     function createHub(
         DataTypes.HubData memory hub

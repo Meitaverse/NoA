@@ -461,13 +461,15 @@ makeSuiteCleanRoom('Fee Collect Module', function () {
           await derivativeNFT.ownerOf(FIRST_DNFT_TOKEN_ID)
         ).to.eq(userAddress);
 
-        await expect(manager.connect(user).airdrop({
+        await expect(
+          manager.connect(user).airdrop({
           publishId: FIRST_PROJECT_ID,
           ownershipSoulBoundTokenId: SECOND_PROFILE_ID,
           toSoulBoundTokenIds: [THIRD_PROFILE_ID],
           tokenId: FIRST_DNFT_TOKEN_ID,
           values: [1],
-        })).to.not.be.reverted;
+        })
+        ).to.not.be.reverted;
 
         expect(
           await derivativeNFT.ownerOf(SECOND_DNFT_TOKEN_ID)

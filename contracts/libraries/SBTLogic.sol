@@ -3,6 +3,7 @@
 pragma solidity ^0.8.13;
 
 import {IERC3525} from "@solvprotocol/erc-3525/contracts/IERC3525.sol";
+import {ERC3525Upgradeable} from "@solvprotocol/erc-3525/contracts/ERC3525Upgradeable.sol";
 import {DataTypes} from './DataTypes.sol';
 import {Errors} from './Errors.sol';
 import {Events} from './Events.sol';
@@ -60,4 +61,16 @@ library SBTLogic {
             block.timestamp
         ); 
     }
+
+     function burnProcess(
+        address caller,
+        uint256 balance,
+        uint256 soulBoundTokenId,
+        mapping(uint256 => DataTypes.SoulBoundTokenDetail) storage _sbtDetails
+    ) external {
+    
+        delete _sbtDetails[soulBoundTokenId];
+        emit Events.BurnSBT(caller, soulBoundTokenId, balance, block.timestamp);
+    }
+
 }    

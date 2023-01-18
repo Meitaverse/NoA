@@ -2,7 +2,6 @@ import '@nomiclabs/hardhat-ethers';
 import { expect } from 'chai';
 import { BigNumber } from 'ethers';
 import { parseEther } from '@ethersproject/units';
-// import { HubDataStruct } from '../../../typechain/IManager';
 import { DataTypes } from '../../../typechain/contracts/interfaces/IManager';
 import { ZERO_ADDRESS } from '../../helpers/constants';
 import { ERRORS } from '../../helpers/errors';

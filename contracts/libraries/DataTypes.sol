@@ -135,6 +135,10 @@ library DataTypes {
 
     /**
      * @notice Properties of the slot, which determine the value of slot.
+     * 
+     * @param publication The Publication infomantion
+     * @param imageURI The image url of product or preview image
+     * @param timestamp The current timestamp
      */
     struct SlotDetail {
         Publication publication;
@@ -218,17 +222,11 @@ library DataTypes {
      *
      * @param Unpaused The fully unpaused state.
      * @param PublishingPaused The state where only publication creation functions are paused.
-     * @param ProfilePaused The state where only profile creation functions are paused.
-     * @param HubPaused The state where only hub creation functions are paused.
-     * @param ProjectPaused The state where only project creation functions are paused.
      * @param Paused The fully paused state.
      */
     enum ProtocolState {
         Unpaused,
         PublishingPaused,
-        ProfilePaused,
-        HubPaused,
-        ProjectPaused,
         Paused
     }
     

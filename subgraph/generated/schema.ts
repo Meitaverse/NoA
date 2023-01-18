@@ -2494,7 +2494,7 @@ export class ReceiverReceivedHistory extends Entity {
   }
 }
 
-export class DispatcherSetHistory extends Entity {
+export class Dispatcher extends Entity {
   constructor(id: string) {
     super();
     this.set("id", Value.fromString(id));
@@ -2502,20 +2502,18 @@ export class DispatcherSetHistory extends Entity {
 
   save(): void {
     let id = this.get("id");
-    assert(id != null, "Cannot save DispatcherSetHistory entity without an ID");
+    assert(id != null, "Cannot save Dispatcher entity without an ID");
     if (id) {
       assert(
         id.kind == ValueKind.STRING,
-        `Entities of type DispatcherSetHistory must have an ID of type String but the id '${id.displayData()}' is of type ${id.displayKind()}`
+        `Entities of type Dispatcher must have an ID of type String but the id '${id.displayData()}' is of type ${id.displayKind()}`
       );
-      store.set("DispatcherSetHistory", id.toString(), this);
+      store.set("Dispatcher", id.toString(), this);
     }
   }
 
-  static load(id: string): DispatcherSetHistory | null {
-    return changetype<DispatcherSetHistory | null>(
-      store.get("DispatcherSetHistory", id)
-    );
+  static load(id: string): Dispatcher | null {
+    return changetype<Dispatcher | null>(store.get("Dispatcher", id));
   }
 
   get id(): string {

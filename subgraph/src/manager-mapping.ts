@@ -25,7 +25,7 @@ import {
     DerivativeNFTCollectedHistory,
     Project,
     DerivativeNFTAirdropedHistory,
-    DispatcherSetHistory,
+    Dispatcher,
     StateSetHistory,
 } from "../generated/schema"
 
@@ -211,13 +211,13 @@ export function handleDerivativeNFTAirdroped(event: DerivativeNFTAirdroped): voi
 export function handleDispatcherSet(event: DispatcherSet): void {
     log.info("handleDispatcherSet, event.address: {}", [event.address.toHexString()])
 
-    let _idString = event.params.soulBoundTokenId.toString() + "-" + event.params.timestamp.toString()
-    const history = DispatcherSetHistory.load(_idString) || new DispatcherSetHistory(_idString)
-    if (history) {
-        history.soulBoundTokenId = event.params.soulBoundTokenId
-        history.dispatcher = event.params.dispatcher
-        history.timestamp = event.params.timestamp
-        history.save()
+    let _idString = event.params.soulBoundTokenId.toString()
+    const dispatcher = Dispatcher.load(_idString) || new Dispatcher(_idString)
+    if (dispatcher) {
+        dispatcher.soulBoundTokenId = event.params.soulBoundTokenId
+        dispatcher.dispatcher = event.params.dispatcher
+        dispatcher.timestamp = event.params.timestamp
+        dispatcher.save()
     } 
 }
 

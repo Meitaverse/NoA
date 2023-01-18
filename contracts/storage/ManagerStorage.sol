@@ -15,46 +15,17 @@ import "@openzeppelin/contracts/utils/Counters.sol";
  * storage variables should be done solely at the bottom of this contract.
  */
 abstract contract ManagerStorage {
-    bytes32 internal constant SET_DEFAULT_PROFILE_WITH_SIG_TYPEHASH =
-        keccak256(
-            'SetDefaultProfileWithSig(address wallet,uint256 profileId,uint256 nonce,uint256 deadline)'
-        );
-    bytes32 internal constant SET_FOLLOW_MODULE_WITH_SIG_TYPEHASH =
-        keccak256(
-            'SetFollowModuleWithSig(uint256 profileId,address followModule,bytes followModuleInitData,uint256 nonce,uint256 deadline)'
-        );
-    bytes32 internal constant SET_FOLLOW_NFT_URI_WITH_SIG_TYPEHASH =
-        keccak256(
-            'SetFollowNFTURIWithSig(uint256 profileId,string followNFTURI,uint256 nonce,uint256 deadline)'
-        );
-
-    bytes32 internal constant SET_PROFILE_IMAGE_URI_WITH_SIG_TYPEHASH =
-        keccak256(
-            'SetProfileImageURIWithSig(uint256 profileId,string imageURI,uint256 nonce,uint256 deadline)'
-        );
-
-
     bytes32 internal constant EIP712_REVISION_HASH = keccak256('1');
     bytes32 internal constant SET_DISPATCHER_WITH_SIG_TYPEHASH =
         keccak256(
-            'SetDispatcherWithSig(uint256 profileId,address dispatcher,uint256 nonce,uint256 deadline)'
+            'SetDispatcherWithSig(uint256 soulBoundTokenId,address dispatcher,uint256 nonce,uint256 deadline)'
         );
-    bytes32 internal constant BURN_WITH_SIG_TYPEHASH =
-        keccak256('BurnWithSig(uint256 tokenId,uint256 nonce,uint256 deadline)');
+
     bytes32 internal constant EIP712_DOMAIN_TYPEHASH =
         keccak256(
             'EIP712Domain(string name,string version,uint256 chainId,address verifyingContract)'
         );
-    bytes32 internal constant PERMIT_TYPEHASH =
-        keccak256('Permit(address spender,uint256 tokenId,uint256 nonce,uint256 deadline)');
-    bytes32 internal constant PERMIT_FOR_ALL_TYPEHASH =
-        keccak256(
-            'PermitForAll(address owner,address operator,bool approved,uint256 nonce,uint256 deadline)'
-        );
-    // solhint-disable-next-line private-vars-leading-underscore
-    bytes32 internal constant PERMIT_VALUE_TYPEHASH =
-        keccak256('PermitValue(address spender,uint256 tokenId,uint256 value,uint256 nonce,uint256 deadline)');
-    
+
     
     // hubId => HubData
     mapping(uint256 => DataTypes.HubData) internal _hubInfos;

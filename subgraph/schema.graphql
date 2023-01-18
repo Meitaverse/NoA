@@ -303,8 +303,8 @@ type ReceiverReceivedHistory @entity {
   timestamp: BigInt!
 }
 
-# DispatcherSet history
-type DispatcherSetHistory @entity {
+# Dispatcher Set history
+type Dispatcher @entity {
   id: ID!
   soulBoundTokenId: BigInt!
   dispatcher: Bytes!

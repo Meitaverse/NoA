@@ -53,6 +53,7 @@ import {
     Template__factory,
     MarketPlace,
     MarketPlace__factory,
+    SBTMetadataDescriptor__factory,
   } from '../typechain';
   import { deployContract, waitForTx , ProtocolState, Error, ZERO_ADDRESS} from './helpers/utils';
   import { ManagerLibraryAddresses } from '../typechain/factories/contracts/Manager__factory';
@@ -247,6 +248,12 @@ import { NFTDerivativeProtocolTokenV1LibraryAddresses } from '../typechain/facto
 
         console.log('\n\t-- Deploying SBT --');
 
+        //SBT descriptor
+        const  sbtMetadataDescriptor = await new SBTMetadataDescriptor__factory(deployer).deploy(
+                manager.address,
+                { nonce: deployerNonce++ }
+        );
+            
         const sbtLogic = await new SBTLogic__factory(deployer).deploy(
             { nonce: deployerNonce++ }
         );
@@ -264,6 +271,7 @@ import { NFTDerivativeProtocolTokenV1LibraryAddresses } from '../typechain/facto
             SBT_SYMBOL, 
             SBT_DECIMALS,
             manager.address,
+            sbtMetadataDescriptor.address,
         ]);
         const sbtProxy = await new ERC1967Proxy__factory(deployer).deploy(
             sbtImpl.address,
@@ -395,10 +403,11 @@ import { NFTDerivativeProtocolTokenV1LibraryAddresses } from '../typechain/facto
         console.log('\t-- INITIAL SUPPLY of the first soul bound token id:', balance.toNumber());
         
         console.log('\n\t-- Whitelisting sbtContract Contract address --');
-        await waitForTx( sbtContract.connect(deployer).whitelistContract(publishModule.address, true));
-        await waitForTx( sbtContract.connect(deployer).whitelistContract(feeCollectModule.address, true));
-        await waitForTx( sbtContract.connect(deployer).whitelistContract(bankTreasuryContract.address, true));
-        await waitForTx( sbtContract.connect(deployer).whitelistContract(voucherContract.address, true));
+        const transferValueRole = await sbtContract.TRANSFER_VALUE_ROLE();
+        await waitForTx( sbtContract.connect(deployer).grantRole(transferValueRole, publishModule.address));
+        await waitForTx( sbtContract.connect(deployer).grantRole(transferValueRole, feeCollectModule.address));
+        await waitForTx( sbtContract.connect(deployer).grantRole(transferValueRole, bankTreasuryContract.address));
+        await waitForTx( sbtContract.connect(deployer).grantRole(transferValueRole, voucherContract.address));
             
         console.log('\n\t-- Add publishModule,feeCollectModule,template to moduleGlobals whitelists --');
         await waitForTx( moduleGlobals.connect(governance).whitelistPublishModule(publishModule.address, true));

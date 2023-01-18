@@ -92,8 +92,11 @@ contract DerivativeNFTV1 is
     // slot => slotDetail
     mapping(uint256 => DataTypes.SlotDetail) private _slotDetails;
 
-    //publication Name to Slot
+    //publication Name => Slot
     mapping(bytes32 => uint256) internal _publicationNameHashBySlot;
+
+    //publishId => Slot
+    mapping(uint256 => uint256) internal _publishIdBySlot;
 
     mapping(address => uint256) public sigNonces;
 
@@ -155,7 +158,7 @@ contract DerivativeNFTV1 is
 
     }
 
-    //only owner
+    //only manager
     function setMetadataDescriptor(address metadataDescriptor_) external onlyManager {
         _setMetadataDescriptor(metadataDescriptor_);
     }
@@ -216,6 +219,7 @@ contract DerivativeNFTV1 is
         });
 
         _publicationNameHashBySlot[keccak256(bytes(publication.name))] = slot;
+        _publishIdBySlot[publishId] = slot;
         
         uint256 newTokenId = ERC3525Upgradeable._createOriginalTokenId();
         _tokenIdByPublishId[newTokenId] = publishId;
@@ -260,6 +264,10 @@ contract DerivativeNFTV1 is
 
     function getSlotDetail(uint256 slot_) external view returns (DataTypes.SlotDetail memory) {
         return _slotDetails[slot_];
+    }
+
+    function getSlot(uint256 publishId) external view returns (uint256) {
+        return _publishIdBySlot[publishId];
     }
 
     function transferValue(
@@ -316,7 +324,7 @@ contract DerivativeNFTV1 is
         address from_,
         address to_,
         uint256 tokenId_
-    ) public payable virtual override  whenNotPaused {
+    ) public payable virtual override whenNotPaused {
         super.transferFrom(from_, to_, tokenId_);
     }
 
@@ -355,7 +363,6 @@ contract DerivativeNFTV1 is
             _fraction
         );
     }
-
 
     function setApprovalForSlot(
         address owner_,
@@ -490,10 +497,6 @@ contract DerivativeNFTV1 is
         if (msg.sender != MANAGER) revert Errors.NotManager();
     }
 
-    function _validateCallerIsSoulBoundTokenOwner(uint256 soulBoundTokenId_) internal view {
-        if (IERC3525(_SBT).ownerOf(soulBoundTokenId_) != msg.sender) revert Errors.NotProfileOwner();
-    }
-
     function _generateNextSlotId() internal returns (uint256) {
         _nextSlotId.increment();
         return uint24(_nextSlotId.current());
@@ -514,5 +517,7 @@ contract DerivativeNFTV1 is
 
         emit DerivativeNFTImageURISet(tokenId, imageURI, block.timestamp);
     }
+
+
 
 }

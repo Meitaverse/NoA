@@ -76,7 +76,7 @@ task("publish", "publish function")
     let abiCoder = ethers.utils.defaultAbiCoder;
     const SECOND_PROFILE_ID =2; 
     const FIRST_HUB_ID =1; 
-    const DEFAULT_COLLECT_PRICE = 10; // parseEther('10');
+    const DEFAULT_COLLECT_PRICE = 10;
     const Default_royaltyBasisPoints = 50; //
     const GENESIS_FEE_BPS = 100;
     const DEFAULT_TEMPLATE_NUMBER = 1;

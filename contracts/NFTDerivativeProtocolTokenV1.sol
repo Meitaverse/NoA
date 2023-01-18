@@ -4,7 +4,6 @@ pragma solidity ^0.8.13;
 
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import "@openzeppelin/contracts-upgradeable/access/AccessControlUpgradeable.sol";
-import "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
 import "@solvprotocol/erc-3525/contracts/ERC3525Upgradeable.sol";
 
@@ -23,17 +22,14 @@ import {INFTDerivativeProtocolTokenV1} from "./interfaces/INFTDerivativeProtocol
 contract NFTDerivativeProtocolTokenV1 is
     Initializable,
     AccessControlUpgradeable,
-    PausableUpgradeable,
     ERC3525Votes,
     SBTStorage,
     INFTDerivativeProtocolTokenV1, 
     UUPSUpgradeable
 {
-    // using SafeMathUpgradeable for uint256;
-
     uint256 internal constant VERSION = 1;
     uint256 public constant MAX_SUPPLY = 100000000 * 1e18;
-    bytes32 public constant PAUSER_ROLE = keccak256("PAUSER_ROLE");
+    bytes32 public constant TRANSFER_VALUE_ROLE = keccak256("TRANSFER_VALUE_ROLE");
     bytes32 public constant UPGRADER_ROLE = keccak256("UPGRADER_ROLE");
 
     //===== Modifiers =====//
@@ -60,160 +56,28 @@ contract NFTDerivativeProtocolTokenV1 is
         string memory name,
         string memory symbol,
         uint8 decimals,
-        address manager
+        address manager,
+        address metadataDescriptor_
     ) external override initializer {
 
         __ERC3525_init_unchained(name, symbol, decimals);
         __AccessControl_init();
-        __Pausable_init();
         __UUPSUpgradeable_init();
 
         _setupRole(DEFAULT_ADMIN_ROLE, _msgSender());
         _grantRole(UPGRADER_ROLE, _msgSender());
-        _grantRole(PAUSER_ROLE, _msgSender());
+        // _grantRole(TRANSFER_VALUE_ROLE, _msgSender());
 
         if (manager == address(0)) revert Errors.InitParamsInvalid();
         _setManager(manager);
+
+        if (metadataDescriptor_ == address(0x0)) revert Errors.ZeroAddress();
+        _setMetadataDescriptor(metadataDescriptor_);
+
     }
-    
-    function version() external pure returns(uint256) {
-        return VERSION;
-    }
-
-    function pause() public onlyRole(PAUSER_ROLE) {
-        _pause();
-    }
-
-    function unpause() public onlyRole(PAUSER_ROLE) {
-        _unpause();
-    }
-
-    function whitelistContract(address contract_, bool toWhitelist_) external  { 
-        if (!hasRole(DEFAULT_ADMIN_ROLE, _msgSender())) revert Errors.Unauthorized();
-        _whitelistContract(contract_, toWhitelist_);
-    }
-
-     function _whitelistContract(address contract_, bool toWhitelist_) internal {
-
-        SBTLogic.contractWhitelistedSet(
-            contract_,
-            toWhitelist_,
-            _contractWhitelisted
-        );
-    }
-
-    function createProfile(
-        address creator,
-        DataTypes.CreateProfileData calldata vars
-    ) 
-        external 
-        whenNotPaused
-        onlyManager  
-        returns (uint256) 
-    { 
-
-        if (balanceOf(vars.wallet) > 0) revert Errors.TokenIsClaimed(); 
-        
-        uint256 tokenId_ = _mint(vars.wallet, 1, 0);
-        
-        SBTLogic.createProfile(
-            tokenId_,
-            creator,
-            vars.wallet,    
-            vars.nickName,
-            vars.imageURI,
-            _sbtDetails
-        );
-
-        return tokenId_;
-    }
-
-    function mintValue(
-        uint256 soulBoundTokenId, 
-        uint256 value
-    ) 
-        external 
-        payable 
-        whenNotPaused 
-        onlyManager 
-    { 
-        if (value == 0) revert Errors.InvalidParameter();
-
-        total_supply += value;
-        if (total_supply > MAX_SUPPLY) revert Errors.MaxSupplyExceeded();
-
-        _mintValue(soulBoundTokenId, value);
-        emit Events.MintSBTValue(msg.sender, soulBoundTokenId, value, block.timestamp);
-    }
-
-    function burn(uint256 soulBoundTokenId) 
-        external 
-        whenNotPaused 
-        onlyManager
-    { 
-        uint256 balance = ERC3525Upgradeable.balanceOf(soulBoundTokenId);
-        if (balance > 0 ) {
-            ERC3525Upgradeable._transferValue(soulBoundTokenId, Constants._BANK_TREASURY_SOUL_BOUND_TOKENID, balance);
-        }
-        ERC3525Upgradeable._burn(soulBoundTokenId);
-        emit Events.BurnSBT(msg.sender, soulBoundTokenId, balance, block.timestamp);
-    }
-
-    function transferValue(
-        uint256 fromTokenId_,
-        uint256 toTokenId_,
-        uint256 value_
-    ) external  { 
-         //call only by BankTreasury or FeeCollectModule or publishModule  or Voucher
-        if (_contractWhitelisted[msg.sender]) {
-            ERC3525Upgradeable._transferValue(fromTokenId_, toTokenId_, value_);
-            return;
-        }
-        revert Errors.NotTransferValueAuthorised();
-    }
-
-    //-- orverride -- //
-
-    function transferFrom(
-        address from_,
-        address to_,
-        uint256 tokenId_
-    ) 
-        public 
-        payable 
-        virtual 
-        whenNotPaused
-        override
-        isTransferAllowed(tokenId_)  //Soul bound token can not transfer
-    {
-        super.transferFrom(from_, to_, tokenId_);
-    }
-
-    function safeTransferFrom(
-        address from_,
-        address to_,
-        uint256 tokenId_,
-        bytes memory data_
-    ) 
-        public 
-        payable 
-        virtual 
-        whenNotPaused
-        override 
-        isTransferAllowed(tokenId_) 
-    {
-        super.safeTransferFrom(from_, to_, tokenId_, data_);
-    }
-
-    function supportsInterface(bytes4 interfaceId) public view virtual override(AccessControlUpgradeable, ERC3525Upgradeable) returns (bool) {
-        return
-            interfaceId == type(AccessControlUpgradeable).interfaceId || 
-            super.supportsInterface(interfaceId);
-    } 
 
     function setBankTreasury(address bankTreasury, uint256 initialSupply) 
         external  
-        whenNotPaused
     {
         if (!hasRole(DEFAULT_ADMIN_ROLE, _msgSender())) revert Errors.Unauthorized();
         
@@ -237,8 +101,116 @@ contract NFTDerivativeProtocolTokenV1 is
             _sbtDetails
         );
     }
+    
+    function version() external pure returns(uint256) {
+        return VERSION;
+    }
 
+    function createProfile(
+        address creator,
+        DataTypes.CreateProfileData calldata vars
+    ) 
+        external 
+        onlyManager  
+        returns (uint256) 
+    { 
+        if (balanceOf(vars.wallet) > 0) revert Errors.TokenIsClaimed(); 
+        
+        uint256 tokenId_ = _mint(vars.wallet, 1, 0);
+        
+        SBTLogic.createProfile(
+            tokenId_,
+            creator,
+            vars.wallet,    
+            vars.nickName,
+            vars.imageURI,
+            _sbtDetails
+        );
 
+        return tokenId_;
+    }
+
+    function getProfileDetail(uint256 soulBoundTokenId) external view returns (DataTypes.SoulBoundTokenDetail memory){
+        return _sbtDetails[soulBoundTokenId];
+    }
+
+    function mintValue(
+        uint256 soulBoundTokenId, 
+        uint256 value
+    ) 
+        external 
+        payable 
+        onlyManager 
+    { 
+        if (value == 0) revert Errors.InvalidParameter();
+
+        total_supply += value;
+        if (total_supply > MAX_SUPPLY) revert Errors.MaxSupplyExceeded();
+
+        _mintValue(soulBoundTokenId, value);
+        emit Events.MintSBTValue(msg.sender, soulBoundTokenId, value, block.timestamp);
+    }
+
+    function burn(uint256 soulBoundTokenId) 
+        external 
+        onlyManager
+    { 
+        uint256 balance = ERC3525Upgradeable.balanceOf(soulBoundTokenId);
+        if (balance > 0 ) {
+            ERC3525Upgradeable._transferValue(soulBoundTokenId, Constants._BANK_TREASURY_SOUL_BOUND_TOKENID, balance);
+        }
+        ERC3525Upgradeable._burn(soulBoundTokenId);
+        SBTLogic.burnProcess(msg.sender, balance, soulBoundTokenId, _sbtDetails);
+    }
+
+    function transferValue(
+        uint256 fromTokenId_,
+        uint256 toTokenId_,
+        uint256 value_
+    ) external  { 
+        if (!hasRole(TRANSFER_VALUE_ROLE, _msgSender())) revert Errors.NotTransferValueAuthorised();
+        //call only by BankTreasury or FeeCollectModule or publishModule  or Voucher
+        ERC3525Upgradeable._transferValue(fromTokenId_, toTokenId_, value_);
+    }
+
+    //-- orverride -- //
+    
+    function transferFrom(
+        address from_,
+        address to_,
+        uint256 tokenId_
+    ) 
+        public 
+        payable 
+        virtual 
+        override
+        isTransferAllowed(tokenId_)  //Soul bound token can not transfer
+    {
+        super.transferFrom(from_, to_, tokenId_);
+    }
+
+    function safeTransferFrom(
+        address from_,
+        address to_,
+        uint256 tokenId_,
+        bytes memory data_
+    ) 
+        public 
+        payable 
+        virtual 
+        override 
+        isTransferAllowed(tokenId_) 
+    {
+        super.safeTransferFrom(from_, to_, tokenId_, data_);
+    }
+
+    function supportsInterface(bytes4 interfaceId) public view virtual override(AccessControlUpgradeable, ERC3525Upgradeable) returns (bool) {
+        return
+            interfaceId == type(AccessControlUpgradeable).interfaceId || 
+            super.supportsInterface(interfaceId);
+    } 
+
+    
     /// ****************************
     /// *****INTERNAL FUNCTIONS*****
     /// ****************************
@@ -256,5 +228,4 @@ contract NFTDerivativeProtocolTokenV1 is
         if (!hasRole(UPGRADER_ROLE, _msgSender())) revert Errors.Unauthorized();
     }
    
-
 }

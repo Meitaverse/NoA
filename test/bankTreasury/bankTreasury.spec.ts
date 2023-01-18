@@ -71,7 +71,6 @@ const FIRST_VOUCHER_TOKEN_ID = 1;
 const SECOND_VOUCHER_TOKEN_ID = 2;
 
 makeSuiteCleanRoom('Bank Treasury', function () {
-  const DEFAULT_COLLECT_PRICE = parseEther('10');
 
   beforeEach(async function () {
  

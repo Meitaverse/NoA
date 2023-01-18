@@ -8,7 +8,7 @@ dataSources:
     name: SBT
     network: mainnet
     source:
-      address: "0xA51c1fc2f0D1a1b8494Ed1FE312d7C3a78Ed91C0"
+      address: "0x0DCd1Bf9A1b36cE34237eEaFef220932846BCD82"
       abi: Events
       startBlock: 0
     mapping:
@@ -38,7 +38,7 @@ dataSources:
     name: SBTERC3525
     network: mainnet
     source:
-      address: "0xA51c1fc2f0D1a1b8494Ed1FE312d7C3a78Ed91C0"
+      address: "0x0DCd1Bf9A1b36cE34237eEaFef220932846BCD82"
       abi: SBT
       startBlock: 0
     mapping:
@@ -131,7 +131,7 @@ dataSources:
     name: BankTreasury
     network: mainnet
     source:
-      address: "0x959922bE3CAee4b8Cd9a407cc3ac1C251C2007B1"
+      address: "0x9A9f2CCfdE556A7E9Ff0848998Aa4a0CFD8863AE"
       abi: Events
       startBlock: 0
     mapping:
@@ -230,7 +230,7 @@ dataSources:
     name: ModuleGlobals
     network: mainnet
     source:
-      address: "0x3Aa5ebB10DC797CAC828524e59A333d0A371443c"
+      address: "0xc6e7DF5E7b4f2A278906862b61205850344D4e7d"
       abi: Events
       startBlock: 0
     mapping:
@@ -284,7 +284,7 @@ dataSources:
     name: FeeCollectModule
     network: mainnet
     source:
-      address: "0x59b670e9fA9D0A427751Af201D676719a970857b"
+      address: "0x4ed7c70F96B99c776995fB64377f0d4aB3B0e1C1"
       abi: Events
       startBlock: 0
     mapping:
@@ -326,7 +326,7 @@ dataSources:
     name: MarketPlace
     network: mainnet
     source:
-      address: "0x68B1D87F95878fE05B998F19b66F4baba5De1aed"
+      address: "0x3Aa5ebB10DC797CAC828524e59A333d0A371443c"
       abi: Events
       startBlock: 0
     mapping:

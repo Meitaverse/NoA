@@ -146,24 +146,6 @@ export class Initialized__Params {
   }
 }
 
-export class Paused extends ethereum.Event {
-  get params(): Paused__Params {
-    return new Paused__Params(this);
-  }
-}
-
-export class Paused__Params {
-  _event: Paused;
-
-  constructor(event: Paused) {
-    this._event = event;
-  }
-
-  get account(): Address {
-    return this._event.parameters[0].value.toAddress();
-  }
-}
-
 export class RoleAdminChanged extends ethereum.Event {
   get params(): RoleAdminChanged__Params {
     return new RoleAdminChanged__Params(this);
@@ -338,24 +320,6 @@ export class TransferValue__Params {
   }
 }
 
-export class Unpaused extends ethereum.Event {
-  get params(): Unpaused__Params {
-    return new Unpaused__Params(this);
-  }
-}
-
-export class Unpaused__Params {
-  _event: Unpaused;
-
-  constructor(event: Unpaused) {
-    this._event = event;
-  }
-
-  get account(): Address {
-    return this._event.parameters[0].value.toAddress();
-  }
-}
-
 export class Upgraded extends ethereum.Event {
   get params(): Upgraded__Params {
     return new Upgraded__Params(this);
@@ -395,6 +359,20 @@ export class SBT__createProfileInputVarsStruct extends ethereum.Tuple {
 
   get imageURI(): string {
     return this[2].toString();
+  }
+}
+
+export class SBT__getProfileDetailResultValue0Struct extends ethereum.Tuple {
+  get nickName(): string {
+    return this[0].toString();
+  }
+
+  get imageURI(): string {
+    return this[1].toString();
+  }
+
+  get locked(): boolean {
+    return this[2].toBoolean();
   }
 }
 
@@ -464,14 +442,22 @@ export class SBT extends ethereum.SmartContract {
     return ethereum.CallResult.fromValue(value[0].toBigInt());
   }
 
-  PAUSER_ROLE(): Bytes {
-    let result = super.call("PAUSER_ROLE", "PAUSER_ROLE():(bytes32)", []);
+  TRANSFER_VALUE_ROLE(): Bytes {
+    let result = super.call(
+      "TRANSFER_VALUE_ROLE",
+      "TRANSFER_VALUE_ROLE():(bytes32)",
+      []
+    );
 
     return result[0].toBytes();
   }
 
-  try_PAUSER_ROLE(): ethereum.CallResult<Bytes> {
-    let result = super.tryCall("PAUSER_ROLE", "PAUSER_ROLE():(bytes32)", []);
+  try_TRANSFER_VALUE_ROLE(): ethereum.CallResult<Bytes> {
+    let result = super.tryCall(
+      "TRANSFER_VALUE_ROLE",
+      "TRANSFER_VALUE_ROLE():(bytes32)",
+      []
+    );
     if (result.reverted) {
       return new ethereum.CallResult();
     }
@@ -744,6 +730,37 @@ export class SBT extends ethereum.SmartContract {
     return ethereum.CallResult.fromValue(value[0].toBigInt());
   }
 
+  getProfileDetail(
+    soulBoundTokenId: BigInt
+  ): SBT__getProfileDetailResultValue0Struct {
+    let result = super.call(
+      "getProfileDetail",
+      "getProfileDetail(uint256):((string,string,bool))",
+      [ethereum.Value.fromUnsignedBigInt(soulBoundTokenId)]
+    );
+
+    return changetype<SBT__getProfileDetailResultValue0Struct>(
+      result[0].toTuple()
+    );
+  }
+
+  try_getProfileDetail(
+    soulBoundTokenId: BigInt
+  ): ethereum.CallResult<SBT__getProfileDetailResultValue0Struct> {
+    let result = super.tryCall(
+      "getProfileDetail",
+      "getProfileDetail(uint256):((string,string,bool))",
+      [ethereum.Value.fromUnsignedBigInt(soulBoundTokenId)]
+    );
+    if (result.reverted) {
+      return new ethereum.CallResult();
+    }
+    let value = result.value;
+    return ethereum.CallResult.fromValue(
+      changetype<SBT__getProfileDetailResultValue0Struct>(value[0].toTuple())
+    );
+  }
+
   getRoleAdmin(role: Bytes): Bytes {
     let result = super.call("getRoleAdmin", "getRoleAdmin(bytes32):(bytes32)", [
       ethereum.Value.fromFixedBytes(role)
@@ -934,21 +951,6 @@ export class SBT extends ethereum.SmartContract {
     }
     let value = result.value;
     return ethereum.CallResult.fromValue(value[0].toAddress());
-  }
-
-  paused(): boolean {
-    let result = super.call("paused", "paused():(bool)", []);
-
-    return result[0].toBoolean();
-  }
-
-  try_paused(): ethereum.CallResult<boolean> {
-    let result = super.tryCall("paused", "paused():(bool)", []);
-    if (result.reverted) {
-      return new ethereum.CallResult();
-    }
-    let value = result.value;
-    return ethereum.CallResult.fromValue(value[0].toBoolean());
   }
 
   proxiableUUID(): Bytes {
@@ -1500,6 +1502,10 @@ export class InitializeCall__Inputs {
   get manager(): Address {
     return this._call.inputValues[3].value.toAddress();
   }
+
+  get metadataDescriptor_(): Address {
+    return this._call.inputValues[4].value.toAddress();
+  }
 }
 
 export class InitializeCall__Outputs {
@@ -1540,32 +1546,6 @@ export class MintValueCall__Outputs {
   _call: MintValueCall;
 
   constructor(call: MintValueCall) {
-    this._call = call;
-  }
-}
-
-export class PauseCall extends ethereum.Call {
-  get inputs(): PauseCall__Inputs {
-    return new PauseCall__Inputs(this);
-  }
-
-  get outputs(): PauseCall__Outputs {
-    return new PauseCall__Outputs(this);
-  }
-}
-
-export class PauseCall__Inputs {
-  _call: PauseCall;
-
-  constructor(call: PauseCall) {
-    this._call = call;
-  }
-}
-
-export class PauseCall__Outputs {
-  _call: PauseCall;
-
-  constructor(call: PauseCall) {
     this._call = call;
   }
 }
@@ -1996,32 +1976,6 @@ export class TransferValueCall__Outputs {
   }
 }
 
-export class UnpauseCall extends ethereum.Call {
-  get inputs(): UnpauseCall__Inputs {
-    return new UnpauseCall__Inputs(this);
-  }
-
-  get outputs(): UnpauseCall__Outputs {
-    return new UnpauseCall__Outputs(this);
-  }
-}
-
-export class UnpauseCall__Inputs {
-  _call: UnpauseCall;
-
-  constructor(call: UnpauseCall) {
-    this._call = call;
-  }
-}
-
-export class UnpauseCall__Outputs {
-  _call: UnpauseCall;
-
-  constructor(call: UnpauseCall) {
-    this._call = call;
-  }
-}
-
 export class UpgradeToCall extends ethereum.Call {
   get inputs(): UpgradeToCall__Inputs {
     return new UpgradeToCall__Inputs(this);
@@ -2082,40 +2036,6 @@ export class UpgradeToAndCallCall__Outputs {
   _call: UpgradeToAndCallCall;
 
   constructor(call: UpgradeToAndCallCall) {
-    this._call = call;
-  }
-}
-
-export class WhitelistContractCall extends ethereum.Call {
-  get inputs(): WhitelistContractCall__Inputs {
-    return new WhitelistContractCall__Inputs(this);
-  }
-
-  get outputs(): WhitelistContractCall__Outputs {
-    return new WhitelistContractCall__Outputs(this);
-  }
-}
-
-export class WhitelistContractCall__Inputs {
-  _call: WhitelistContractCall;
-
-  constructor(call: WhitelistContractCall) {
-    this._call = call;
-  }
-
-  get contract_(): Address {
-    return this._call.inputValues[0].value.toAddress();
-  }
-
-  get toWhitelist_(): boolean {
-    return this._call.inputValues[1].value.toBoolean();
-  }
-}
-
-export class WhitelistContractCall__Outputs {
-  _call: WhitelistContractCall;
-
-  constructor(call: WhitelistContractCall) {
     this._call = call;
   }
 }

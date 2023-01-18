@@ -69,7 +69,6 @@ const SALE_ID = 1;
 const THIRD_DNFT_TOKEN_ID =3;
 
 makeSuiteCleanRoom('Market Place', function () {
-  const DEFAULT_COLLECT_PRICE = parseEther('10');
 
   beforeEach(async function () {
  

@@ -104,7 +104,6 @@ contract Manager is
         INFTDerivativeProtocolTokenV1(_sbt).burn(tokenId);
     }
 
-
     function createProfile(
         DataTypes.CreateProfileData calldata vars
     ) 
@@ -186,7 +185,7 @@ contract Manager is
         DataTypes.ProjectData memory project
     ) 
         external 
-        whenNotPaused 
+        whenPublishingEnabled 
         nonReentrant
         returns (uint256) 
     {
@@ -250,7 +249,7 @@ contract Manager is
         DataTypes.Publication memory publication
     ) 
         external 
-        whenNotPaused 
+        whenPublishingEnabled 
         nonReentrant
         returns (uint256) 
     { 
@@ -283,7 +282,7 @@ contract Manager is
 
         } else{
             //TODO
-            address derivativeNFT =  _derivativeNFTByProjectId[publication.projectId];
+            address derivativeNFT = _derivativeNFTByProjectId[publication.projectId];
             previousPublishId = IDerivativeNFTV1(derivativeNFT).getPublishIdByTokenId(publication.fromTokenIds[0]);
         }
         
@@ -317,7 +316,7 @@ contract Manager is
         uint256[] memory fromTokenIds
     ) 
         external 
-        whenNotPaused 
+        whenPublishingEnabled 
         nonReentrant
     {  
         if (publishId == 0) revert Errors.InvalidParameter();
@@ -350,7 +349,7 @@ contract Manager is
         uint256 publishId
     ) 
         external 
-        whenNotPaused 
+        whenPublishingEnabled 
         nonReentrant
         returns (uint256) 
     { 
@@ -388,7 +387,7 @@ contract Manager is
         DataTypes.CollectData memory collectData
     ) 
         external 
-        whenNotPaused 
+        whenPublishingEnabled 
         nonReentrant
         returns(uint256)
     {
@@ -419,7 +418,7 @@ contract Manager is
         DataTypes.AirdropData memory airdropData
     ) 
         external
-        whenNotPaused
+        whenPublishingEnabled
         nonReentrant
     {
          _validateCallerIsSoulBoundTokenOwnerOrDispathcher(airdropData.ownershipSoulBoundTokenId);
@@ -433,8 +432,6 @@ contract Manager is
             _projectDataByPublishId
         );
     }
-
-
 
     function getPublishInfo(uint256 publishId_) external view returns (DataTypes.PublishData memory) {
         return _projectDataByPublishId[publishId_];
@@ -474,7 +471,7 @@ contract Manager is
     /// *****GOV FUNCTIONS*****
     /// ***********************
 
-    function setEmergencyAdmin(address newEmergencyAdmin) external nonReentrant onlyGov {
+    function setEmergencyAdmin(address newEmergencyAdmin) external nonReentrant onlyOwner {
         address prevEmergencyAdmin = _emergencyAdmin;
         _emergencyAdmin = newEmergencyAdmin;
         emit Events.EmergencyAdminSet(msg.sender, prevEmergencyAdmin, newEmergencyAdmin, block.timestamp);
@@ -501,6 +498,17 @@ contract Manager is
     {
         address derivativeNFT = _derivativeNFTByProjectId[projectId];
         IDerivativeNFTV1(derivativeNFT).setState(newState);
+    }
+
+    function setDerivativeNFTMetadataDescriptor(
+        uint256 projectId, 
+        address metadataDescriptor
+    ) 
+        external 
+        onlyGov 
+    {
+        address derivativeNFT = _derivativeNFTByProjectId[projectId];
+        IDerivativeNFTV1(derivativeNFT).setMetadataDescriptor(metadataDescriptor);
     }
 
     function setGovernance(address newGovernance) external nonReentrant onlyGov {
@@ -531,6 +539,11 @@ contract Manager is
 
     function getDispatcher(uint256 soulBoundToken) external view override returns (address) {
         return _dispatcherByProfile[soulBoundToken];
+    }
+
+    function setDispatcher(uint256 soulBoundTokenId, address dispatcher) external override whenNotPaused {
+        _validateCallerIsSoulBoundTokenOwner(soulBoundTokenId);
+        _setDispatcher(soulBoundTokenId, dispatcher);
     }
 
     function setDispatcherWithSig(DataTypes.SetDispatcherWithSigData calldata vars)
@@ -573,6 +586,11 @@ contract Manager is
         if (!(msg.sender == _governance || msg.sender == _timeLock)) revert Errors.NotGovernance();
     }
     
+    function _validateCallerIsSoulBoundTokenOwner(uint256 soulBoundTokenId_) internal view {
+        address _sbt = IModuleGlobals(MODULE_GLOBALS).getSBT();
+        if (IERC3525(_sbt).ownerOf(soulBoundTokenId_) != msg.sender) revert Errors.NotProfileOwner();
+    }
+
     function _validateCallerIsOwner() internal view {
         if (msg.sender != _owner) revert Errors.NotOwner();
     }

@@ -27,6 +27,7 @@ contract DerivativeMetadataDescriptor is IERC3525MetadataDescriptor {
     MODULE_GLOBALS = moduleGlobals;
   }
 
+  //contractURI()
   function constructContractURI() external view override returns (string memory) {
     DataTypes.ProjectData memory projectData_ = _projectData();
     return 
@@ -37,13 +38,15 @@ contract DerivativeMetadataDescriptor is IERC3525MetadataDescriptor {
           Base64Upgradeable.encode(
             abi.encodePacked(
               '{"name":"', 
-              IERC3525Metadata(msg.sender).name(),
+              projectData_.name,
               '","description":"',
               projectData_.description,
               '","image":"',
               projectData_.image,
               '","valueDecimals":"', 
-              uint256(IERC3525Metadata(msg.sender).valueDecimals()).toString(),
+              '0',
+              '","properties":',
+              _contractProperties(projectData_),
               '"}'
             )
           )
@@ -52,8 +55,9 @@ contract DerivativeMetadataDescriptor is IERC3525MetadataDescriptor {
       );
   }
 
+  //slotURI(uint)
   function constructSlotURI(uint256 slot_) external view override returns (string memory) {
-     DataTypes.SlotDetail memory slotDetail = _slotDetail(slot_);
+    DataTypes.SlotDetail memory slotDetail = _slotDetail(slot_);
     return
       string(
         abi.encodePacked(
@@ -61,21 +65,15 @@ contract DerivativeMetadataDescriptor is IERC3525MetadataDescriptor {
           'data:application/json;base64,',
           Base64Upgradeable.encode(
             abi.encodePacked(
-              '{"name":"', 
-              slotDetail.publication.name,
-              '","description":"',
-              slotDetail.publication.description,
-              '","soulBoundTokenId":',
-              slotDetail.publication.soulBoundTokenId.toString(),
-              '","projectId":',
-              slotDetail.publication.projectId.toString(),
-              '","salePrice":',
-              slotDetail.publication.salePrice.toString(),
-              '","royaltyBasisPoints":',
-              slotDetail.publication.royaltyBasisPoints.toString(),
-              '","amount":',
-              slotDetail.publication.amount.toString(),
-              '}'
+                '{"name":"', 
+                slotDetail.publication.name,
+                '","description":"',
+                slotDetail.publication.description,
+                '","image":"',
+                slotDetail.imageURI,
+                '","properties":',
+                _slotProperties(slot_),
+                '}'
             )
           )
           /* solhint-enable */
@@ -83,9 +81,11 @@ contract DerivativeMetadataDescriptor is IERC3525MetadataDescriptor {
       );
   }
 
+  //tokenURI(uint)
   function constructTokenURI(uint256 tokenId_) external view override returns (string memory) {
-    DataTypes.ProjectData memory projectData_ = _projectData();
-    
+    uint256 slot_ = IERC3525(msg.sender).slotOf(tokenId_);
+    DataTypes.SlotDetail memory slotDetail = _slotDetail(slot_);
+
     return 
       string(
         abi.encodePacked(
@@ -94,15 +94,15 @@ contract DerivativeMetadataDescriptor is IERC3525MetadataDescriptor {
             abi.encodePacked(
               /* solhint-disable */
               '{"name":"',
-              _tokenName(projectData_.name, tokenId_),
+              _tokenName(slotDetail.publication.name, tokenId_),
               '","description":"',
-              projectData_.description,
+              slotDetail.publication.description,
              '","image":"',
-              projectData_.image, 
+              slotDetail.imageURI, 
               '","balance":"',
               IERC3525(msg.sender).balanceOf(tokenId_).toString(),
               '","slot":"',
-              IERC3525(msg.sender).slotOf(tokenId_).toString(),
+              slot_.toString(),
               '","properties":',
               _tokenProperties(tokenId_),
               "}"
@@ -118,29 +118,56 @@ contract DerivativeMetadataDescriptor is IERC3525MetadataDescriptor {
     return slotDetail;
   }
 
-  function _slotDescription(uint256 slot_) internal view returns (string memory) {
-    DataTypes.SlotDetail memory slotDetail = IDerivativeNFTV1(msg.sender).getSlotDetail(slot_);
-    return slotDetail.publication.description;
-  }
-
-  function _sloteventMetadataURI(uint256 slot_) internal view returns (string[] memory) {
-    DataTypes.SlotDetail memory slotDetail = IDerivativeNFTV1(msg.sender).getSlotDetail(slot_);
-
-    return slotDetail.publication.materialURIs;
-  }
-
    /**
      * @dev Generate the content of the `properties` field of `slotURI`.
      */
 
-  function _slotProperties(uint256 slot_) internal pure returns (string memory) {
-    // IDerivativeNFTV1 dao = IDerivativeNFTV1(msg.sender);
-    // DataTypes.SlotDetail memory slotDetail = dao.getSlotDetail(slot_);
-    slot_;
-    return "";
-            
+  function _slotProperties(uint256 slot_) internal view returns (string memory) {
+    string memory materialURIs = '[';
+    for (uint256 i = 0; i < _slotDetail(slot_).publication.materialURIs.length; ++i) {
+      materialURIs = string(abi.encodePacked(materialURIs, _slotDetail(slot_).publication.materialURIs[i], ','));
+    }
+    materialURIs = string(abi.encodePacked(materialURIs, ']'));
+
+    string memory fromTokenIds = '[';
+    for (uint256 i = 0; i < _slotDetail(slot_).publication.fromTokenIds.length; ++i) {
+      fromTokenIds = string(abi.encodePacked(fromTokenIds, _slotDetail(slot_).publication.fromTokenIds[i], ','));
+    }
+    fromTokenIds = string(abi.encodePacked(fromTokenIds, ']'));
+    string memory temp = string(
+        abi.encodePacked(
+          /* solhint-disable */
+          '{',
+            '"soulBoundTokenId":"',
+              _slotDetail(slot_).publication.soulBoundTokenId.toString(),
+            '"hubId":"',
+              _slotDetail(slot_).publication.hubId.toString() 
+        )
+      );
+    return 
+      string(
+        abi.encodePacked(
+          /* solhint-disable */
+            temp,
+            '"projectId":"',
+              _slotDetail(slot_).publication.projectId.toString(), 
+            '"salePrice":"',
+              _slotDetail(slot_).publication.salePrice.toString(), 
+            '"royaltyBasisPoints":"',
+              _slotDetail(slot_).publication.royaltyBasisPoints.toString(), 
+            '"amount":"',
+              _slotDetail(slot_).publication.amount.toString(), 
+            '"materialURIs":"',
+              materialURIs, 
+            '"fromTokenIds":"',
+              fromTokenIds, 
+          '"}'
+          /* solhint-enable */
+        )
+      );
   }
 
+  //publication name
   function _tokenName(string memory name, uint256 tokenId_) internal pure returns (string memory) {
     // solhint-disable-next-line
     return 
@@ -152,16 +179,72 @@ contract DerivativeMetadataDescriptor is IERC3525MetadataDescriptor {
       );
   }
 
-
   function _tokenProperties(uint256 tokenId_) internal view returns (string memory) {
+    address _manager = IModuleGlobals(MODULE_GLOBALS).getManager();
+    uint256 projectId = IManager(_manager).getProjectIdByContract(msg.sender);
     
-    uint256 value = IERC3525(msg.sender).balanceOf(tokenId_);
+    (uint256 publishId, )  = IManager(_manager).getPublicationByTokenId(projectId, tokenId_);
+
+    //genesis publishId
+    uint256 genesisPublishId = IManager(_manager).getGenesisPublishIdByProjectId(projectId);
+  
+    DataTypes.PublishData memory publishData = IManager(_manager).getPublishInfo(publishId);
+    DataTypes.PublishData memory gengesisPublishData = IManager(_manager).getPublishInfo(genesisPublishId);
+    DataTypes.PublishData memory previousPublishData = IManager(_manager).getPublishInfo(publishData.previousPublishId);
+
+    string memory genesis_temp = string(
+        abi.encodePacked(
+          /* solhint-disable */
+          '"genesis_sbt_id":"',
+              gengesisPublishData.publication.soulBoundTokenId.toString(), 
+          '"genesis_publish_id":"',
+              genesisPublishId.toString(), 
+          '"genesis_token_id":"',
+              gengesisPublishData.tokenId.toString(), 
+          '"genesis_sale_price":"',
+              gengesisPublishData.publication.salePrice.toString(), 
+          '"genesis_royalty_basis_points":"',
+              gengesisPublishData.publication.royaltyBasisPoints.toString()
+          /* solhint-enable */
+        )
+      );
+
+    string memory previous_temp = string(
+        abi.encodePacked(
+          /* solhint-disable */
+         '"previous_sbt_id":"',
+              publishData.publication.soulBoundTokenId.toString(), 
+         '"previous_publish_id":"',
+              publishData.previousPublishId.toString(), 
+          '"previous_token_id":"',
+              previousPublishData.tokenId.toString(), 
+          '"previous_sale_price":"',
+              previousPublishData.publication.salePrice.toString(), 
+          '"previous_royalty_basis_points":"',
+              previousPublishData.publication.royaltyBasisPoints.toString()
+          /* solhint-enable */
+        )
+      );
+
     return 
       string(
         abi.encodePacked(
           /* solhint-disable */
-          '{"value":"',
-              value.toString(), 
+          '{',
+            '"sbt_id":"',
+              publishData.publication.soulBoundTokenId.toString(), 
+            '"hub_id":"',
+              publishData.publication.hubId.toString(), 
+            '"project_id":"',
+              projectId.toString(), 
+            '"publish_id":"',
+              publishId.toString(), 
+            '"sale_price":"',
+              publishData.publication.salePrice.toString(), 
+            'royalty_basis_points":"',
+              publishData.publication.royaltyBasisPoints.toString(),             
+            genesis_temp, 
+            previous_temp,              
           '"}'
           /* solhint-enable */
         )
@@ -174,10 +257,32 @@ contract DerivativeMetadataDescriptor is IERC3525MetadataDescriptor {
     address _manager = IModuleGlobals(MODULE_GLOBALS).getManager();
 
     uint256 projectId = IManager(_manager).getProjectIdByContract(msg.sender);
-
+    
     DataTypes.ProjectData memory projectData_ = IManager(_manager).getProjectInfo(projectId);
+  
+    return projectData_; 
 
-    return projectData_;
+  }
+
+  function _contractProperties(DataTypes.ProjectData memory projectData_) internal pure returns(string memory) {
+    return string(
+          abi.encodePacked(
+            /* solhint-disable */
+            '{',
+            '"soulBoundTokenId":"',
+                projectData_.soulBoundTokenId.toString(), 
+            '"hubId":"',
+                projectData_.hubId.toString(), 
+            '"metadataURI":"',
+                projectData_.metadataURI, 
+            '"defaultRoyaltyPoints":"',
+                uint256(projectData_.defaultRoyaltyPoints).toString(), 
+            '"feeShareType":"',
+                uint256(projectData_.feeShareType).toString(), 
+            '"}'
+            /* solhint-enable */
+          )
+        );
   }
 
 }

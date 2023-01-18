@@ -14,12 +14,14 @@ interface INFTDerivativeProtocolTokenV1  {
      * @param symbol The symbol to set for the Token.
      * @param decimals The decimal to set for the Token.
      * @param manager The address of Manager contract
+     * @param metadataDescriptor The address of metadata descriptor
      */
     function initialize(
         string memory name,
         string memory symbol,
         uint8 decimals,
-        address manager
+        address manager,
+        address metadataDescriptor
     ) external ;
 
     /**
@@ -28,15 +30,6 @@ interface INFTDerivativeProtocolTokenV1  {
      * @return version number
      */
     function version() external view returns(uint256);
-
-    /**
-     * @notice Set whitelist with a contract 
-     *  Only admin can execute.
-     *
-     * @param contract_ is the contract
-     * @param toWhitelist_ true of false
-     */
-    function whitelistContract(address contract_, bool toWhitelist_) external;
 
     /**
      * @notice Create a profile
@@ -48,6 +41,14 @@ interface INFTDerivativeProtocolTokenV1  {
         address creator,
        DataTypes.CreateProfileData calldata vars
     ) external returns(uint256);
+    
+    /**
+     * @notice get a profile detail
+     *
+     * @param soulBoundTokenId The creator
+     * @return soulBoundTokenDetail detail of SoulBoundTokenDetail
+     */
+    function getProfileDetail(uint256 soulBoundTokenId) external view returns (DataTypes.SoulBoundTokenDetail memory);
 
     /**
      * @notice Mint value to a soulBoundTokenId.

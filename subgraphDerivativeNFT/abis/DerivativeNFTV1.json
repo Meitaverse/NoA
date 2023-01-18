@@ -506,6 +506,25 @@
       "inputs": [
         {
           "internalType": "uint256",
+          "name": "publishId",
+          "type": "uint256"
+        }
+      ],
+      "name": "getSlot",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
           "name": "slot_",
           "type": "uint256"
         }
@@ -1413,4 +1432,4 @@
       "stateMutability": "view",
       "type": "function"
     }
-  ]
+]

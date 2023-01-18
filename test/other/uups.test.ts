@@ -38,6 +38,7 @@ import {
   governance,
   derivativeNFTV1Impl,
   governanceAddress,
+  sbtMetadataDescriptor,
   sbtImpl,
   sbtContract,
   bankTreasuryContract,
@@ -73,7 +74,9 @@ makeSuiteCleanRoom('UUPS ability', function () {
           SBT_NAME, 
           SBT_SYMBOL, 
           8,
-          governanceAddress)
+          governanceAddress,
+          sbtMetadataDescriptor.address
+          )
         ).to.be.revertedWith(ERRORS.UUPSINITIALIZED);
     });
 

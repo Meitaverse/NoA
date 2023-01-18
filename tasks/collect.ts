@@ -80,8 +80,7 @@ task("collect", "collect a dNFT function")
     console.log('\t--- balance of collector: ', (await sbt["balanceOf(uint256)"](collectorid)).toNumber());
 
 
-    const FIRST_PROJECT_ID =1; 
-    // const FIRST_PUBLISH_ID =1; 
+    const FIRST_PROJECT_ID = 1; 
    
     console.log(
       "\n\t--- Collet  ..."

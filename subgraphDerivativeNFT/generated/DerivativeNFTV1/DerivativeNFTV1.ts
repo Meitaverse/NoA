@@ -587,6 +587,25 @@ export class DerivativeNFTV1 extends ethereum.SmartContract {
     return ethereum.CallResult.fromValue(value[0].toBigInt());
   }
 
+  getSlot(publishId: BigInt): BigInt {
+    let result = super.call("getSlot", "getSlot(uint256):(uint256)", [
+      ethereum.Value.fromUnsignedBigInt(publishId)
+    ]);
+
+    return result[0].toBigInt();
+  }
+
+  try_getSlot(publishId: BigInt): ethereum.CallResult<BigInt> {
+    let result = super.tryCall("getSlot", "getSlot(uint256):(uint256)", [
+      ethereum.Value.fromUnsignedBigInt(publishId)
+    ]);
+    if (result.reverted) {
+      return new ethereum.CallResult();
+    }
+    let value = result.value;
+    return ethereum.CallResult.fromValue(value[0].toBigInt());
+  }
+
   getSlotDetail(
     slot_: BigInt
   ): DerivativeNFTV1__getSlotDetailResultValue0Struct {

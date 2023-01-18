@@ -9,7 +9,6 @@ interface INFTDerivativeProtocolTokenV2  {
 
     function version() external view returns(uint256);
 
-    function whitelistContract(address contract_, bool toWhitelist_) external;
 
     function createProfile(
         address creator,
