@@ -136,7 +136,7 @@ contract BankTreasuryV2 is
     }
 
     fallback() external payable {
-        emit Events.DepositByFallback(msg.sender, msg.value, address(this), address(this).balance, msg.data);
+        emit Events.DepositByFallback(msg.sender, msg.value, msg.data, address(this), address(this).balance);
     }
 
     function supportsInterface(

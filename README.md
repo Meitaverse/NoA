@@ -8,21 +8,27 @@ Description:
 
 Run  `yarn install` in the root directory
 
+## Compile
+
+Run  `yarn compile` in the root directory to compile contracts
+
 ## Unit Tests
 
-Run `yarn test` to run the unit tests
+Run `yarn quick-test --network hardhat` to run the unit tests
 
 
 ## The Graph
 
 ### Login AWS Server: 
-http://54.251.169.181:8000/subgraphs/name/NoA/MySubgraph/graphq
-http://54.251.169.181:8000/subgraphs/name/NoA/MySubgraph
 
 Start docker-compose
 ```
-
 $ yarn graph-local-node-start
+```
+
+Stop docker-compose
+```
+$ yarn graph-local-node-stop
 ```
 
 ### 查看docker 日志
@@ -71,7 +77,7 @@ Private Key: 0x2a871d0798f97d79848a013d4936a73bf4cc922c825d33c1cf7073dff6d409c6
 
 ```
 
-## full deploy  
+## full deploy to local hardhat node
 ```
 $ yarn hardhat full-deploy
   	
