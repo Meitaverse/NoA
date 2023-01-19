@@ -1061,6 +1061,15 @@ export class Publication extends Entity {
     this.set("publishId", Value.fromBigInt(value));
   }
 
+  get genesisPublishId(): BigInt {
+    let value = this.get("genesisPublishId");
+    return value!.toBigInt();
+  }
+
+  set genesisPublishId(value: BigInt) {
+    this.set("genesisPublishId", Value.fromBigInt(value));
+  }
+
   get previousPublishId(): BigInt {
     let value = this.get("previousPublishId");
     return value!.toBigInt();
@@ -4402,6 +4411,23 @@ export class DepositHistory extends Entity {
 
   set balance(value: BigInt) {
     this.set("balance", Value.fromBigInt(value));
+  }
+
+  get data(): Bytes | null {
+    let value = this.get("data");
+    if (!value || value.kind == ValueKind.NULL) {
+      return null;
+    } else {
+      return value.toBytes();
+    }
+  }
+
+  set data(value: Bytes | null) {
+    if (!value) {
+      this.unset("data");
+    } else {
+      this.set("data", Value.fromBytes(<Bytes>value));
+    }
   }
 
   get timestamp(): BigInt {

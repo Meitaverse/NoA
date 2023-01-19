@@ -209,7 +209,40 @@ library Events {
     );
 
     
-
+/**
+     * @dev Emitted when ether send to  market place contract
+     *
+     * 
+     * @param sender The sender 
+     * @param amount The amount
+     * @param sender The receiver 
+     * @param balance balance of contract
+     */
+    event MarketPlaceDeposit(
+        address indexed sender, 
+        uint256 amount, 
+        address indexed receiver, 
+        uint256 balance
+    );
+    
+    /**
+     * @dev Emitted when ether send to market place contract
+     *
+     * 
+     * @param sender The sender 
+     * @param amount The amount
+     * @param sender The receiver 
+     * @param balance balance of contract
+     * @param data msg.data 
+     */
+    event MarketPlaceDepositByFallback(
+        address indexed sender, 
+        uint256 amount, 
+        address indexed receiver, 
+        uint256 balance,
+        bytes data
+    );
+    
     //Receiver
     /**
      * @dev Emitted when the Receiver contract receive ERC3525 tokens
@@ -591,7 +624,7 @@ library Events {
     //BankTreasury
     
     /**
-     * @dev Emitted when ether send to bank treasury or market place contract
+     * @dev Emitted when ether send to bank treasury contract
      *
      * 
      * @param sender The sender 
@@ -602,6 +635,24 @@ library Events {
     event Deposit(
         address indexed sender, 
         uint256 amount, 
+        address indexed receiver, 
+        uint256 balance
+    );
+    
+    /**
+     * @dev Emitted when ether send to bank treasury contract
+     *
+     * 
+     * @param sender The sender 
+     * @param amount The amount
+     * @param data msg.data 
+     * @param sender The receiver 
+     * @param balance balance of contract
+     */
+    event DepositByFallback(
+        address indexed sender, 
+        uint256 amount, 
+        bytes data,
         address indexed receiver, 
         uint256 balance
     );
@@ -912,6 +963,19 @@ library Events {
      *  just for governor contract test
      */
     event ValueChanged(uint256 newValue, address caller);
+
+    event RoyaltySet(
+        uint256 indexed soulBoundTokenId,
+        uint256 indexed projectId,
+        uint256 indexed royaltyBasisPoints
+    );
+
+    event DefaultRoyaltySet(
+        uint256 indexed soulBoundTokenId,
+        uint256 indexed projectId,
+        address indexed receiver,
+        uint96 feeNumerator
+    );
 
 }
 

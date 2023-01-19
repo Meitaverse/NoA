@@ -3,6 +3,7 @@
 pragma solidity ^0.8.10;
 
 import {Errors} from '../../libraries/Errors.sol';
+import {Constants} from '../../libraries/Constants.sol';
 import {FeeModuleBase} from '../FeeModuleBase.sol';
 import {ModuleBase} from "../ModuleBase.sol";
 import {ICollectModule} from '../../interfaces/ICollectModule.sol';
@@ -12,9 +13,7 @@ import {IManager} from "../../interfaces/IManager.sol";
 import {DataTypes} from '../../libraries/DataTypes.sol';
 import {IDerivativeNFTV1} from "../../interfaces/IDerivativeNFTV1.sol";
 
-
 import {IERC20} from '@openzeppelin/contracts/token/ERC20/IERC20.sol';
-// import {IERC721} from '@openzeppelin/contracts/token/ERC721/IERC721.sol';
 import {INFTDerivativeProtocolTokenV1} from "../../interfaces/INFTDerivativeProtocolTokenV1.sol";
 
 import {SafeERC20} from '@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol';
@@ -70,9 +69,6 @@ abstract contract BaseFeeCollectModule is
         _processCollect(collectorSoulBoundTokenId, publishId, collectUnits, data);
     }
 
-    // This function is not implemented because each Collect module has its own return data type
-    // function getPublicationData(uint256 projectId) external view returns (.....) {}
-
     /**
      * @notice Returns the Base publication data for a given publication, or an empty struct if that publication was not
      * initialized with this module.
@@ -89,8 +85,6 @@ abstract contract BaseFeeCollectModule is
     {
         return _dataByPublicationByProfile[projectId];
     }
-
-
 
     /**
      * @dev Stores the initial module parameters
@@ -176,14 +170,12 @@ abstract contract BaseFeeCollectModule is
          
         uint256 payFees = collectUnits * fraction;
 
-        //社区金库地址及税点
-        (address treasury, uint16 treasuryFee) = _treasuryData();
+        (, uint16 treasuryFee) = _treasuryData();
         uint256 treasuryAmount = (payFees * treasuryFee) / BPS_MAX;
-        uint256 treasuryOfSoulBoundTokenId = IBankTreasury(treasury).getSoulBoundTokenId();
         if (treasuryAmount > 0) 
             INFTDerivativeProtocolTokenV1(_sbt()).transferValue(
                 collectorSoulBoundTokenId, 
-                treasuryOfSoulBoundTokenId, 
+                Constants._BANK_TREASURY_SOUL_BOUND_TOKENID, 
                 treasuryAmount);
             
          if (payFees - treasuryAmount > 0) 
@@ -212,14 +204,6 @@ abstract contract BaseFeeCollectModule is
         uint256 salePrice,
         uint256[] memory recipients
     ) internal virtual {
-        /*
-        uint16[] memory royaltyPoints = _dataByPublicationByProfile[projectId].royaltyPoints;
-        
-        if (salePrice > 0){
-            INFTDerivativeProtocolTokenV1(_sbt()).transferValue(collectorSoulBoundTokenId, recipientSoulBoundTokenId, salePrice);
-
-        }
-        */
     }
 
 }

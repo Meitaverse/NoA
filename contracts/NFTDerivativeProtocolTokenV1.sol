@@ -15,6 +15,7 @@ import {IManager} from "./interfaces/IManager.sol";
 import {ERC3525Votes} from "./extensions/ERC3525Votes.sol";
 import "./storage/SBTStorage.sol";
 import {INFTDerivativeProtocolTokenV1} from "./interfaces/INFTDerivativeProtocolTokenV1.sol";
+import "hardhat/console.sol";
 
 /**
  *  @title NFT Derivative Protocol Token
@@ -168,8 +169,8 @@ contract NFTDerivativeProtocolTokenV1 is
         uint256 toTokenId_,
         uint256 value_
     ) external  { 
-        if (!hasRole(TRANSFER_VALUE_ROLE, _msgSender())) revert Errors.NotTransferValueAuthorised();
         //call only by BankTreasury or FeeCollectModule or publishModule  or Voucher
+        if (!hasRole(TRANSFER_VALUE_ROLE, _msgSender())) revert Errors.NotTransferValueAuthorised();
         ERC3525Upgradeable._transferValue(fromTokenId_, toTokenId_, value_);
     }
 

@@ -51,8 +51,6 @@ interface IBankTreasuryV2 {
 
     function getGovernance() external view returns(address);
 
-    function getSoulBoundTokenId() external view returns (uint256);
-
     function getSBT() external view returns(address);
 
     function getVoucher() external view returns(address);

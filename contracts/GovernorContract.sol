@@ -14,6 +14,7 @@ import "@openzeppelin/contracts-upgradeable/security/ReentrancyGuardUpgradeable.
 import "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
 import {Errors} from "./libraries/Errors.sol";
 import {Events} from "./libraries/Events.sol";
+import "hardhat/console.sol";
 
 // 治理合约：治理合约决定了法定人数所需的投票数量/百分比(例如，如果法定人数是4%，
 // 那么只有4%的选民需要投票支持提案通过)，投票期限，即投票持续多长时间，投票延迟，

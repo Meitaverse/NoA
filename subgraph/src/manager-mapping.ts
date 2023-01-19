@@ -17,6 +17,10 @@ import {
 } from "../generated/Manager/Events"
 
 import {
+    Manager
+} from "../generated/Manager/Manager"
+
+import {
     EmergencyAdminSetHistory,
     ManagerGovernanceSetHistory,
     Hub,
@@ -111,6 +115,18 @@ export function handlePublishPrepared(event: PublishPrepared): void {
         publication.publishModuleInitData = event.params.publication.publishModuleInitData
         publication.publishId = event.params.publishId
         publication.previousPublishId = event.params.previousPublishId
+        if (event.params.publication.fromTokenIds.length > 0 ) {
+            const manager = Manager.bind(event.address) 
+            const result = manager.try_getGenesisPublishIdByProjectId(event.params.publication.projectId)
+                if (result.reverted) {
+                    log.warning('try_getGenesisPublishIdByProjectId, result.reverted is true', [])
+                } else {
+                    log.info("try_getGenesisPublishIdByProjectId ok, result.value: {}", [result.value.toString()])
+                    publication.genesisPublishId = result.value
+                }
+        } else {
+            publication.genesisPublishId = event.params.publishId
+        }
         publication.publishTaxAmount = event.params.publishTaxAmount
         publication.timestamp = event.params.timestamp
         publication.save()
@@ -131,6 +147,19 @@ export function handlePublishUpdated(event: PublishUpdated): void {
         publication.description = event.params.description
         publication.materialURIs = event.params.materialURIs
         publication.fromTokenIds = event.params.fromTokenIds
+        if (event.params.fromTokenIds.length > 0 ) {
+            const manager = Manager.bind(event.address) 
+            const result = manager.try_getGenesisPublishIdByProjectId(publication.projectId)
+                if (result.reverted) {
+                    log.warning('try_getGenesisPublishIdByProjectId, result.reverted is true', [])
+                } else {
+                    log.info("try_getGenesisPublishIdByProjectId ok, result.value: {}", [result.value.toString()])
+                    publication.genesisPublishId = result.value
+                }
+        } else {
+            publication.genesisPublishId = event.params.publishId
+        }
+
         publication.publishId = event.params.publishId
         publication.publishTaxAmount = publication.publishTaxAmount.plus(event.params.addedPublishTaxes)
         publication.timestamp = event.params.timestamp
@@ -207,7 +236,6 @@ export function handleDerivativeNFTAirdroped(event: DerivativeNFTAirdroped): voi
     } 
 }
 
-
 export function handleDispatcherSet(event: DispatcherSet): void {
     log.info("handleDispatcherSet, event.address: {}", [event.address.toHexString()])
 
@@ -242,5 +270,4 @@ export function handleValueChanged(event: ValueChanged): void {
             event.params.newValue.toString(),
             event.params.caller.toHexString()
         ])
-
 }

@@ -136,7 +136,7 @@ contract BankTreasuryV2 is
     }
 
     fallback() external payable {
-        // revert();
+        emit Events.DepositByFallback(msg.sender, msg.value, address(this), address(this).balance, msg.data);
     }
 
     function supportsInterface(
@@ -491,10 +491,6 @@ contract BankTreasuryV2 is
     //-- orverride -- //
     function _authorizeUpgrade(address /*newImplementation*/) internal virtual override {
         if (!hasRole(UPGRADER_ROLE, _msgSender())) revert Errors.Unauthorized();
-    }
-
-    function getSoulBoundTokenId() external view returns (uint256) {
-        return _soulBoundTokenId;
     }
 
     function getDomainSeparator() external view override returns (bytes32) {

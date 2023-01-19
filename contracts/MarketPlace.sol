@@ -28,6 +28,7 @@ import {SafeMathUpgradeable} from "@openzeppelin/contracts-upgradeable/utils/mat
 import {IBankTreasury} from "./interfaces/IBankTreasury.sol";
 import {IModuleGlobals} from "./interfaces/IModuleGlobals.sol";
 import {IManager} from "./interfaces/IManager.sol";
+import "hardhat/console.sol";
 
 contract MarketPlace is
     Initializable,
@@ -92,11 +93,23 @@ contract MarketPlace is
     }
 
     receive() external payable {
-        emit Events.Deposit(msg.sender, msg.value, address(this), address(this).balance);
+        if (msg.value > 0) {
+            (address treasury, ) = IModuleGlobals(MODULE_GLOBALS).getTreasuryData();
+            address payable _to = payable(treasury);
+            (bool success, ) = _to.call{value: msg.value}("");
+            if (!success) revert Errors.TransferEtherToBankTreasuryFailed();
+        }
+        emit Events.MarketPlaceDeposit(msg.sender, msg.value, address(this), address(this).balance);
     }
 
     fallback() external payable {
-        // revert();
+        if (msg.value > 0) {
+            (address treasury, ) = IModuleGlobals(MODULE_GLOBALS).getTreasuryData();
+            address payable _to = payable(treasury);
+            (bool success, ) = _to.call{value: msg.value}("");
+            if (!success) revert Errors.TransferEtherToBankTreasuryFailed();
+        }        
+        emit Events.MarketPlaceDepositByFallback(msg.sender, msg.value, address(this), address(this).balance, msg.data);
     }
 
     function supportsInterface(
@@ -443,7 +456,7 @@ contract MarketPlace is
 
         if (!sale.isValid) revert Errors.InvalidSale();
 
-        //TODO transfer from tokenIdOfMarket to seller if units is not zero
+        //transfer from tokenIdOfMarket to seller if units is not zero
         if (sale.onSellUnits > 0) {
             IERC3525(sale.derivativeNFT).transferFrom(sale.tokenIdOfMarket, sale.tokenId, sale.onSellUnits);
         }

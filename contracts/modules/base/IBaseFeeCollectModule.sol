@@ -30,12 +30,12 @@ struct BaseProfilePublicationData {
  * @param royaltyPoints Royalty array of collect points.
  */
 struct BaseFeeCollectModuleInitData {
-    uint256 ownershipSoulBoundTokenId;     //owner soulBoundTokenId 
-    uint256 projectId;                     //项目id
-    uint256 publishId;                     //发行id
-    uint256 amount;                        //发行总量
-    uint256 salePrice;                     //发行单价    
-    uint16[] royaltyPoints;                 //税点数组, [0] - genesis, [1-4] collector的前4个用户的版税点
+    uint256 ownershipSoulBoundTokenId; 
+    uint256 projectId;                    
+    uint256 publishId;                    
+    uint256 amount;                       
+    uint256 salePrice;                    
+    uint16[] royaltyPoints;                
 }
 
 interface IBaseFeeCollectModule is ICollectModule {

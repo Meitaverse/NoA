@@ -73,7 +73,7 @@ interface IVoucher {
      */
     function useVoucher(address account, uint256 tokenId, uint256 soulBoundTokenId) external;
 
-     function burn(
+    function burn(
         address owner,
         uint256 id,
         uint256 value

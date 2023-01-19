@@ -2,6 +2,7 @@ import { log, Address, BigInt, Bytes, store, TypedMap } from "@graphprotocol/gra
 
 import {
     Deposit,
+    DepositByFallback,
     ERC3525Received,
     ExchangeSBTByEth,
     ExchangeEthBySBT,
@@ -35,6 +36,22 @@ export function handleDeposit(event: Deposit): void {
         history.amount = event.params.amount
         history.receiver = event.params.receiver
         history.balance = event.params.balance
+        history.timestamp = event.block.timestamp
+        history.save()
+    } 
+}
+
+export function handleDepositByFallback(event: DepositByFallback): void {
+    log.info("handleDepositByFallback, event.address: {}", [event.address.toHexString()])
+
+    let _idString = event.params.sender.toHexString()+ "-" + event.block.timestamp.toString()
+    const history = DepositHistory.load(_idString) || new DepositHistory(_idString)
+    if (history) {
+        history.sender = event.params.sender
+        history.amount = event.params.amount
+        history.receiver = event.params.receiver
+        history.balance = event.params.balance
+        history.data = event.params.data
         history.timestamp = event.block.timestamp
         history.save()
     } 

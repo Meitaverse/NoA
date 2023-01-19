@@ -131,6 +131,7 @@ type Publication @entity {
   publishModule: Bytes!
   publishModuleInitData: Bytes!
   publishId: BigInt!
+  genesisPublishId: BigInt!
   previousPublishId: BigInt!
   publishTaxAmount: BigInt!
   timestamp: BigInt!
@@ -537,5 +538,6 @@ type DepositHistory @entity {
   amount: BigInt!
   receiver: Bytes!
   balance: BigInt!
+  data: Bytes
   timestamp: BigInt!
 }

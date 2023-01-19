@@ -52,10 +52,6 @@ struct RoyaltyInfoData {
     uint256[] royalties;
 }
 
-error TooManyRecipients();
-error InvalidRecipientSplits();
-error RecipientSplitCannotBeZero();
-
 /**
  * @title MultirecipientCollectModule
  * @author Lens Protocol
@@ -73,9 +69,6 @@ contract MultirecipientFeeCollectModule is BaseFeeCollectModule {
     mapping(uint256 => uint16[]) internal _royaltyPointsByPublicationByProfile;
 
     constructor(address manager, address moduleGlobals) BaseFeeCollectModule(manager, moduleGlobals) {}
-
-    //projectId => level(0-4) => BPS 
-    // mapping(uint256 => mapping(uint8 => uint16)) internal _splitPoints;  
 
     /**
      * @inheritdoc ICollectModule
@@ -124,7 +117,7 @@ contract MultirecipientFeeCollectModule is BaseFeeCollectModule {
         uint256 len = royaltyPoints.length;
 
         // Check number of recipients is supported
-        if (len > MAX_RECIPIENTS) revert TooManyRecipients();
+        if (len > MAX_RECIPIENTS) revert Errors.TooManyRecipients();
         if (len == 0) revert Errors.InitParamsInvalid();
 
         // Check recipient splits sum to 10 000 BPS (100%)
@@ -142,7 +135,6 @@ contract MultirecipientFeeCollectModule is BaseFeeCollectModule {
         address derivativeNFT = IManager(MANAGER).getDerivativeNFT(projectId);
         uint96 fraction = IDerivativeNFTV1(derivativeNFT).getDefaultRoyalty();
         if (totalSplits != fraction) revert Errors.InvalidRecipientSplits();
-
     }
  
     /**

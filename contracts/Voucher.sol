@@ -18,6 +18,7 @@ import {SafeERC20Upgradeable} from "@openzeppelin/contracts-upgradeable/token/ER
 import {StringsUpgradeable} from "@openzeppelin/contracts-upgradeable/utils/StringsUpgradeable.sol";
 import {Base64Upgradeable} from "@openzeppelin/contracts-upgradeable/utils/Base64Upgradeable.sol";
 import {Errors} from "./libraries/Errors.sol";
+import {Constants} from './libraries/Constants.sol';
 import {IVoucher} from './interfaces/IVoucher.sol';
 import {Events} from "./libraries/Events.sol";
 import {DataTypes} from './libraries/DataTypes.sol';
@@ -26,6 +27,7 @@ import "./storage/VoucherStorage.sol";
 import {IModuleGlobals} from "./interfaces/IModuleGlobals.sol";
 import {IManager} from "./interfaces/IManager.sol";
 import {IBankTreasury} from './interfaces/IBankTreasury.sol';
+import "hardhat/console.sol";
 
 /**
  *  @title Voucher
@@ -131,11 +133,8 @@ contract Voucher is
             address _sbt =  IModuleGlobals(MODULE_GLOBALS).getSBT();
             address _bankTreasury = IModuleGlobals(MODULE_GLOBALS).getTreasury();
 
-            uint256 treasuryOfSoulBoundTokenId = IBankTreasury(_bankTreasury).getSoulBoundTokenId();
-            if (treasuryOfSoulBoundTokenId == 0)  revert Errors.Unauthorized();
-            
             //not need to approve this contract first 
-            INFTDerivativeProtocolTokenV1(_sbt).transferValue(soulBoundTokenId, treasuryOfSoulBoundTokenId, amountSBT);
+            INFTDerivativeProtocolTokenV1(_sbt).transferValue(soulBoundTokenId, Constants._BANK_TREASURY_SOUL_BOUND_TOKENID, amountSBT);
 
             _mint(account, _tokenId, amountSBT, "");
 
@@ -360,7 +359,6 @@ contract Voucher is
     /** @dev Contract-level metadata for OpenSea. */
     // Update for collection-specific metadata.
     function contractURI() public view returns (string memory) {
-        // return "ipfs://bafkreigpykz4r3z37nw7bfqh7wvly4ann7woll3eg5256d2i5huc5wrrdq"; // Contract-level metadata for Voucher contract
         return 
             string(
                 abi.encodePacked(

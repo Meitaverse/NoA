@@ -24,6 +24,7 @@ import "./libraries/EthAddressLib.sol";
 import "./storage/BankTreasuryStorage.sol";
 import {INFTDerivativeProtocolTokenV1} from "./interfaces/INFTDerivativeProtocolTokenV1.sol";
 import {IModuleGlobals} from "./interfaces/IModuleGlobals.sol";
+import "hardhat/console.sol";
 
 /**
  *  @title Bank Treasury
@@ -176,12 +177,14 @@ contract BankTreasury is
         _unpause();
     }
 
+    //receive matic from opensea or other nft market place when msg.data is empty
     receive() external payable {
         emit Events.Deposit(msg.sender, msg.value, address(this), address(this).balance);
     }
 
+    //receive matic from opensea or other nft market place when msg.data is NOT empty
     fallback() external payable {
-        // revert();
+        emit Events.DepositByFallback(msg.sender, msg.value, msg.data, address(this), address(this).balance);
     }
 
     function supportsInterface(
@@ -405,7 +408,6 @@ contract BankTreasury is
              amount,
              block.timestamp
          );
-
     }
 
     function exchangeEthBySBT(
@@ -538,14 +540,10 @@ contract BankTreasury is
         if (!hasRole(UPGRADER_ROLE, _msgSender())) revert Errors.Unauthorized();
     }
 
-    function getSoulBoundTokenId() external view returns (uint256) {
-        return _soulBoundTokenId;
-    }
-
     function getDomainSeparator() external view override returns (bytes32) {
         return _calculateDomainSeparator();
     }
-
+    
     /**
      * @dev Wrapper for ecrecover to reduce code size, used in meta-tx specific functions.
      */

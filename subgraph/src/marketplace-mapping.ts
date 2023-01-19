@@ -50,7 +50,6 @@ export function handleMarketPlaceERC3525Received(event: MarketPlaceERC3525Receiv
         history.gas = event.params.gas
         history.timestamp = event.block.timestamp
         history.save()
-        
     } 
 }
 
@@ -84,7 +83,6 @@ export function handleRemoveMarket(event: RemoveMarket): void {
         // store.remove("Market", _idString);
     } 
 }
-
 
 export function handlePublishSale(event: PublishSale): void {
     log.info("handlePublishSale, event.address: {}", [event.address.toHexString()])

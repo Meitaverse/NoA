@@ -38,6 +38,7 @@ interface IDerivativeNFTV1 {
     /**
      * @notice Approve or disapprove an operator to manage all of `_owner`'s tokens with the
      *  specified slot.
+     * 
      * @dev Caller SHOULD be `_owner` or an operator who has been authorized through
      *  `setApprovalForAll`.
      *  MUST emit ApprovalSlot event.
@@ -56,6 +57,7 @@ interface IDerivativeNFTV1 {
     /**
      * @notice Query if `_operator` is authorized to manage all of `_owner`'s tokens with the
      *  specified slot.
+     * 
      * @param _owner The address that owns the ERC3525 tokens
      * @param _slot The slot of tokens being queried approval of
      * @param _operator The address for whom to query approval
@@ -68,55 +70,84 @@ interface IDerivativeNFTV1 {
         address _operator
     ) external view returns (bool);
 
-  /**
-   * @notice get slot detail.
-   * @param slot_ The slot id
-   * @return Event.
-   */
-  function getSlotDetail(uint256 slot_) external view returns (DataTypes.SlotDetail memory);
+    /**
+     * @notice get slot detail.
+     * 
+     * @param slot_ The slot id
+     * @return Event.
+     */
+   function getSlotDetail(uint256 slot_) external view returns (DataTypes.SlotDetail memory);
 
-  /**
-   * @notice get slot by publish id.
-   * @param publishId The publish Id
-   * @return slot 
-   */
-  function getSlot(uint256 publishId) external view returns (uint256) ;
+    /**
+     * @notice get slot by publish id.
+     * 
+     * @param publishId The publish Id
+     * @return slot 
+     */
+   function getSlot(uint256 publishId) external view returns (uint256) ;
   
-  function setTokenImageURI(uint256 tokenId, string calldata imageURI) external;
+    /**
+     * @notice set token image URI.
+     * 
+     * @param tokenId The token Id
+     * @param imageURI The image URI
+     */
+   function setTokenImageURI(uint256 tokenId, string calldata imageURI) external;
 
-  function setMetadataDescriptor(address metadataDescriptor_) external;
+    /**
+     * @notice set the meta data descriptor of derivativeNFT contract
+     * 
+     * @param metadataDescriptor_ The descriptor contract address
+     */
+    function setMetadataDescriptor(address metadataDescriptor_) external;
+ 
+    /**
+     * @notice Sets the DerivativeNFT state to either a global pause or an unpaused state. This function
+     * can only be called by the manager address.
+     *
+     * @param newState The state to set, as a member of the DerivativeNFTState enum.
+     */
+    function setState(DataTypes.DerivativeNFTState newState) external;
+ 
+    /**
+    * @dev Sets the royalty information that all ids in this contract will default to.
+    *
+    * @param recipient The recipient of royalty to receive.
+    * @param fraction The default royalty points.
+    *
+    */
+    function setDefaultRoyalty(address recipient, uint96 fraction) external;
 
-  function setState(DataTypes.DerivativeNFTState newState) external;
+    /**
+     * @notice get the default royalty points of derivativeNFT contract
+     */
+    function getDefaultRoyalty() external view returns(uint96);
+    
+    /**
+     * @notice delete the default royalty setting
+     */
+    function deleteDefaultRoyalty() external;
 
-  function setDefaultRoyalty(address recipient, uint96 fraction) external;
-  
-  function getDefaultRoyalty() external view returns(uint96);
-  
-  function deleteDefaultRoyalty() external;
-  
-  function setTokenRoyalty(
-        uint256 tokenId,
-        address recipient,
-        uint96 fraction
-  ) external;
+    /**
+     * @notice get the publishId by tokenId 
+     */
+    function getPublishIdByTokenId(uint256 tokenId) external view returns (uint256);
 
-  function getPublishIdByTokenId(uint256 tokenId) external view returns (uint256);
+    /**
+     * @notice Publish some dNFT to a publisher wallet
+     *        
+     * @param publishId The publishId
+     * @param publication The publication
+     * @param publisher The publisher 
+     * @return uint256 The new tokenId.
+     */
+    function publish(
+        uint256 publishId,
+        DataTypes.Publication memory publication,
+        address publisher
+    ) external returns(uint256);
 
-  /**
-   * @notice Publish some dNFT to a publisher wallet
-   *        
-   * @param publishId The publishId
-   * @param publication The publication
-   * @param publisher The publisher 
-   * @return uint256 The new tokenId.
-   */
-  function publish(
-    uint256 publishId,
-    DataTypes.Publication memory publication,
-    address publisher
-  ) external returns(uint256);
-
-   /**
+    /**
      * @notice Split some value to a to_, only call by manager, not need approve before
      *
      * @param publishId_ The tokenId to be publish
@@ -129,13 +160,7 @@ interface IDerivativeNFTV1 {
         uint256 fromTokenId_, 
         address to_,
         uint256 value_
-    ) external returns(uint256) ;
-
-    function transferValue(
-        uint256 fromTokenId_,
-        uint256 toTokenId_,
-        uint256 value_
-    ) external;
+    ) external returns(uint256);
 
     /**
      * @notice Burns an NFT, removing it from circulation and essentially destroying it. This function can only

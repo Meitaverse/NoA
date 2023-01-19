@@ -235,7 +235,6 @@ contract Manager is
         uint256 previousPublishId = _projectDataByPublishId[publishId].previousPublishId;
         (, uint16 treasuryFee ) = IModuleGlobals(MODULE_GLOBALS).getTreasuryData();
 
-        // fraction = community treasuryFee + genesisFee + previous dNDT fee
         uint96 fraction = 
             uint96(treasuryFee) + 
             uint96(_projectDataByPublishId[_genesisPublishIdByProjectId[projectid]].publication.royaltyBasisPoints) +
@@ -281,7 +280,6 @@ contract Manager is
             _genesisPublishIdByProjectId[publication.projectId] = publishId;
 
         } else{
-            //TODO
             address derivativeNFT = _derivativeNFTByProjectId[publication.projectId];
             previousPublishId = IDerivativeNFTV1(derivativeNFT).getPublishIdByTokenId(publication.fromTokenIds[0]);
         }
@@ -289,12 +287,11 @@ contract Manager is
         if (!IModuleGlobals(MODULE_GLOBALS).isWhitelistPublishModule(publication.publishModule))
             revert Errors.PublishModuleNotWhitelisted();
 
-        uint256 treasuryOfSoulBoundTokenId = IBankTreasury(IModuleGlobals(MODULE_GLOBALS).getTreasury()).getSoulBoundTokenId();
         PublishLogic.prePublish(
             publication,
             publishId,
             previousPublishId,
-            treasuryOfSoulBoundTokenId,
+            Constants._BANK_TREASURY_SOUL_BOUND_TOKENID,
             _projectDataByPublishId
         );
 
@@ -442,9 +439,9 @@ contract Manager is
     }
 
     function getPublicationByTokenId(uint256 projectId_, uint256 tokenId_) external view returns (uint256, DataTypes.Publication memory) {
-      address derivativeNFT =  _derivativeNFTByProjectId[projectId_];
-      uint256 publishId = IDerivativeNFTV1(derivativeNFT).getPublishIdByTokenId(tokenId_);
-       return (publishId, _projectDataByPublishId[publishId].publication);
+        address derivativeNFT =  _derivativeNFTByProjectId[projectId_];
+        uint256 publishId = IDerivativeNFTV1(derivativeNFT).getPublishIdByTokenId(tokenId_);
+        return (publishId, _projectDataByPublishId[publishId].publication);
     } 
 
     function getProjectIdByContract(address contract_) external view returns (uint256) {
@@ -471,7 +468,7 @@ contract Manager is
     /// *****GOV FUNCTIONS*****
     /// ***********************
 
-    function setEmergencyAdmin(address newEmergencyAdmin) external nonReentrant onlyOwner {
+    function setEmergencyAdmin(address newEmergencyAdmin) external nonReentrant onlyGov {
         address prevEmergencyAdmin = _emergencyAdmin;
         _emergencyAdmin = newEmergencyAdmin;
         emit Events.EmergencyAdminSet(msg.sender, prevEmergencyAdmin, newEmergencyAdmin, block.timestamp);
@@ -509,6 +506,28 @@ contract Manager is
     {
         address derivativeNFT = _derivativeNFTByProjectId[projectId];
         IDerivativeNFTV1(derivativeNFT).setMetadataDescriptor(metadataDescriptor);
+    }
+
+    function setDefaultRoyalty(
+        uint256 projectId, 
+        address recipient, 
+        uint96 fraction
+    ) 
+        external 
+        whenNotPaused 
+        onlyGov 
+    {
+        address derivativeNFT = _derivativeNFTByProjectId[projectId];
+        IDerivativeNFTV1(derivativeNFT).setDefaultRoyalty(recipient, fraction);
+    }
+
+    function deleteDefaultRoyalty(uint256 projectId)  
+        external 
+        whenNotPaused 
+        onlyGov 
+    {
+        address derivativeNFT = _derivativeNFTByProjectId[projectId];
+        IDerivativeNFTV1(derivativeNFT).deleteDefaultRoyalty();
     }
 
     function setGovernance(address newGovernance) external nonReentrant onlyGov {
@@ -690,29 +709,27 @@ contract Manager is
             revert Errors.NickNameLengthInvalid();
     }
 
+    //Box for testing
+    uint256 private _value;
 
-    //Box
-  uint256 private _value;
+    // Stores a new value in the contract
+    // owner可以为合约地址，由合约来调用
+    function store(uint256 newValue) public onlyGov {
+        console.log('_timeLock: ', _timeLock);
+        console.log('manager store tx.origin: ', tx.origin);
+        console.log('manager store caller: ', msg.sender);
+        if (msg.sender == _governance || msg.sender == _timeLock)  {
+            console.log('store: caller is governance or governanor');
+        } else {
+            revert Errors.NotGovernance();
+        }
 
-
-  // Stores a new value in the contract
-  // owner可以为合约地址，由合约来调用
-  function store(uint256 newValue) public onlyGov {
-    console.log('_timeLock: ', _timeLock);
-    console.log('manager store tx.origin: ', tx.origin);
-    console.log('manager store caller: ', msg.sender);
-    if (msg.sender == _governance || msg.sender == _timeLock)  {
-        console.log('store: caller is governance or governanor');
-    } else {
-        revert Errors.NotGovernance();
+        _value = newValue;
+        emit Events.ValueChanged(newValue, msg.sender);
     }
 
-    _value = newValue;
-    emit Events.ValueChanged(newValue, msg.sender);
-  }
-
-  // Reads the last stored value
-  function retrieve() public view returns (uint256) {
-    return _value;
-  }
+    // Reads the last stored value
+    function retrieve() public view returns (uint256) {
+        return _value;
+    }
 }

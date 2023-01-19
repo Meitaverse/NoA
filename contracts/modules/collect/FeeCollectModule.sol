@@ -5,6 +5,7 @@ pragma solidity ^0.8.13;
 import {ICollectModule} from "../../interfaces/ICollectModule.sol";
 import {IBankTreasury} from "../../interfaces/IBankTreasury.sol";
 import {Errors} from "../../libraries/Errors.sol";
+import {Constants} from '../../libraries/Constants.sol';
 import {Events} from "../../libraries/Events.sol";
 import {DataTypes} from '../../libraries/DataTypes.sol';
 import {FeeModuleBase} from "../FeeModuleBase.sol";
@@ -25,15 +26,15 @@ import {IManager} from "../../interfaces/IManager.sol";
  * @param genesisFee The percentage of the fee that will be transferred to the genesis soulBoundTokenId of this publication.
  */
 struct ProfilePublicationData {
-    uint256 genesisSoulBoundTokenId;       //创世的soulBoundTokenId
-    uint256 previousSoulBoundTokenId;       //上级soulBoundTokenId
-    uint256 tokenId;                       //发行对应的tokenId
-    uint256 amount;                        //发行总量
-    uint256 salePrice;                     //发行单价
-    uint256 royaltyBasisPoints;            //二创及OpenSea税点
-    uint256 ownershipSoulBoundTokenId;     //发行人的灵魂币ID
-    uint16 genesisFee;                     //创世NFT版税点数，最多90%，以后每个衍生NFT都需要支付
-    uint16 previousFee;                    //上级版税点数
+    uint256 genesisSoulBoundTokenId;      
+    uint256 previousSoulBoundTokenId;     
+    uint256 tokenId;                       
+    uint256 amount;                        
+    uint256 salePrice;                     
+    uint256 royaltyBasisPoints;           
+    uint256 ownershipSoulBoundTokenId; 
+    uint16 genesisFee;                     
+    uint16 previousFee;              
 }
 
 /**
@@ -163,20 +164,16 @@ contract FeeCollectModule is FeeModuleBase, ModuleBase, ICollectModule {
         uint256 payValue = collectUnits.mul(_dataByPublicationByProfile[publishId].salePrice);
         uint256 genesisSoulBoundTokenId = _dataByPublicationByProfile[publishId].genesisSoulBoundTokenId;
         
-        //获取交易税点
-        (address treasury, uint16 treasuryFee) = _treasuryData();
+        (, uint16 treasuryFee) = _treasuryData();
         royaltyAmounts.treasuryAmount = payValue.mul(treasuryFee).div(BPS_MAX);
         royaltyAmounts.previousAmount = payValue.mul(_dataByPublicationByProfile[publishId].previousFee).div(BPS_MAX);
         royaltyAmounts.genesisAmount = payValue.mul(_dataByPublicationByProfile[publishId].genesisFee).div(BPS_MAX);
         {
-            // royaltyAmounts.adjustedAmount = payValue.sub(royaltyAmounts.treasuryAmount).sub(royaltyAmounts.genesisAmount);
             royaltyAmounts.adjustedAmount = payValue.sub(royaltyAmounts.treasuryAmount).sub(royaltyAmounts.genesisAmount).sub(royaltyAmounts.previousAmount);
             if ( royaltyAmounts.adjustedAmount > 0) 
                 INFTDerivativeProtocolTokenV1(_sbt()).transferValue(collectorSoulBoundTokenId, ownershipSoulBoundTokenId, royaltyAmounts.adjustedAmount);
             
-            uint256 treasuryOfSoulBoundTokenId = IBankTreasury(treasury).getSoulBoundTokenId();
-            
-            if (royaltyAmounts.treasuryAmount > 0) INFTDerivativeProtocolTokenV1(_sbt()).transferValue(collectorSoulBoundTokenId, treasuryOfSoulBoundTokenId, royaltyAmounts.treasuryAmount);
+            if (royaltyAmounts.treasuryAmount > 0) INFTDerivativeProtocolTokenV1(_sbt()).transferValue(collectorSoulBoundTokenId, Constants._BANK_TREASURY_SOUL_BOUND_TOKENID, royaltyAmounts.treasuryAmount);
             if (genesisSoulBoundTokenId >0 && royaltyAmounts.genesisAmount > 0) INFTDerivativeProtocolTokenV1(_sbt()).transferValue(collectorSoulBoundTokenId, genesisSoulBoundTokenId, royaltyAmounts.genesisAmount);
             if (royaltyAmounts.previousAmount > 0) INFTDerivativeProtocolTokenV1(_sbt()).transferValue(collectorSoulBoundTokenId, _dataByPublicationByProfile[publishId].previousSoulBoundTokenId, royaltyAmounts.previousAmount);
 
@@ -187,7 +184,6 @@ contract FeeCollectModule is FeeModuleBase, ModuleBase, ICollectModule {
                 previousSoulBoundTokenId: _dataByPublicationByProfile[publishId].previousSoulBoundTokenId
             });
 
-//TODO
             emit Events.FeesForCollect(
                 publishId,
                 _dataByPublicationByProfile[publishId].tokenId,

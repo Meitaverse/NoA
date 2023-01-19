@@ -118,6 +118,36 @@ export class ConfirmTransaction__Params {
   }
 }
 
+export class DefaultRoyaltySet extends ethereum.Event {
+  get params(): DefaultRoyaltySet__Params {
+    return new DefaultRoyaltySet__Params(this);
+  }
+}
+
+export class DefaultRoyaltySet__Params {
+  _event: DefaultRoyaltySet;
+
+  constructor(event: DefaultRoyaltySet) {
+    this._event = event;
+  }
+
+  get soulBoundTokenId(): BigInt {
+    return this._event.parameters[0].value.toBigInt();
+  }
+
+  get projectId(): BigInt {
+    return this._event.parameters[1].value.toBigInt();
+  }
+
+  get receiver(): Address {
+    return this._event.parameters[2].value.toAddress();
+  }
+
+  get feeNumerator(): BigInt {
+    return this._event.parameters[3].value.toBigInt();
+  }
+}
+
 export class DelegateChanged extends ethereum.Event {
   get params(): DelegateChanged__Params {
     return new DelegateChanged__Params(this);
@@ -201,6 +231,40 @@ export class Deposit__Params {
 
   get balance(): BigInt {
     return this._event.parameters[3].value.toBigInt();
+  }
+}
+
+export class DepositByFallback extends ethereum.Event {
+  get params(): DepositByFallback__Params {
+    return new DepositByFallback__Params(this);
+  }
+}
+
+export class DepositByFallback__Params {
+  _event: DepositByFallback;
+
+  constructor(event: DepositByFallback) {
+    this._event = event;
+  }
+
+  get sender(): Address {
+    return this._event.parameters[0].value.toAddress();
+  }
+
+  get amount(): BigInt {
+    return this._event.parameters[1].value.toBigInt();
+  }
+
+  get receiver(): Address {
+    return this._event.parameters[2].value.toAddress();
+  }
+
+  get balance(): BigInt {
+    return this._event.parameters[3].value.toBigInt();
+  }
+
+  get data(): Bytes {
+    return this._event.parameters[4].value.toBytes();
   }
 }
 
@@ -1719,6 +1783,32 @@ export class RevokeConfirmation__Params {
 
   get txIndex(): BigInt {
     return this._event.parameters[1].value.toBigInt();
+  }
+}
+
+export class RoyaltySet extends ethereum.Event {
+  get params(): RoyaltySet__Params {
+    return new RoyaltySet__Params(this);
+  }
+}
+
+export class RoyaltySet__Params {
+  _event: RoyaltySet;
+
+  constructor(event: RoyaltySet) {
+    this._event = event;
+  }
+
+  get soulBoundTokenId(): BigInt {
+    return this._event.parameters[0].value.toBigInt();
+  }
+
+  get projectId(): BigInt {
+    return this._event.parameters[1].value.toBigInt();
+  }
+
+  get royaltyBasisPoints(): BigInt {
+    return this._event.parameters[2].value.toBigInt();
   }
 }
 

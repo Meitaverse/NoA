@@ -11,6 +11,7 @@ import {IManager} from "./interfaces/IManager.sol";
 import {IDerivativeNFTV1} from "./interfaces/IDerivativeNFTV1.sol";
 import "./base/DerivativeNFTMultiState.sol";
 import {Constants} from './libraries/Constants.sol';
+import "hardhat/console.sol";
 
 /**
  *  @title Derivative NFT
@@ -159,23 +160,15 @@ contract DerivativeNFTV1 is
     }
 
     //only manager
-    function setMetadataDescriptor(address metadataDescriptor_) external onlyManager {
+    function setMetadataDescriptor(address metadataDescriptor_) external whenNotPaused onlyManager {
         _setMetadataDescriptor(metadataDescriptor_);
     }
 
     function setState(DataTypes.DerivativeNFTState newState) external override onlyManager{
         _setState(newState);
     }
-    
-    function setTokenRoyalty(
-        uint256 tokenId,
-        address recipient,
-        uint96 fraction
-    ) public onlyManager {
-        _setTokenRoyalty(tokenId, recipient, fraction);
-    }
 
-    function setDefaultRoyalty(address recipient, uint96 fraction) public onlyManager{
+    function setDefaultRoyalty(address recipient, uint96 fraction) public whenNotPaused onlyManager{
         _setDefaultRoyalty(recipient, fraction);
     }
 
@@ -183,7 +176,7 @@ contract DerivativeNFTV1 is
         return _defaultRoyaltyInfo.royaltyFraction;
     }
 
-    function deleteDefaultRoyalty() public onlyManager{
+    function deleteDefaultRoyalty() public whenNotPaused onlyManager{
         _deleteDefaultRoyalty();
     }
 
@@ -268,14 +261,6 @@ contract DerivativeNFTV1 is
 
     function getSlot(uint256 publishId) external view returns (uint256) {
         return _publishIdBySlot[publishId];
-    }
-
-    function transferValue(
-        uint256 fromTokenId_,
-        uint256 toTokenId_,
-        uint256 value_
-    ) external whenNotPaused onlyManager {
-        ERC3525Upgradeable._transferValue(fromTokenId_, toTokenId_, value_);
     }
     
     //------override------------//
@@ -369,7 +354,7 @@ contract DerivativeNFTV1 is
         uint256 slot_,
         address operator_,
         bool approved_
-    ) external payable virtual whenNotPaused onlyManager {
+    ) external payable virtual whenNotPaused {
         if (!(_msgSender() == owner_ || isApprovedForAll(owner_, _msgSender()))) {
             revert Errors.NotAllowed();
         }
@@ -394,7 +379,7 @@ contract DerivativeNFTV1 is
      * @param royaltyBasisPoints The royalty percentage meassured in basis points. Each basis point
      *                           represents 0.01%.
      */
-    function setRoyalty(uint96 royaltyBasisPoints) external whenNotPaused onlyManager {
+    function setRoyalty(uint96 royaltyBasisPoints) external whenNotPaused {
         if (IERC3525(_SBT).ownerOf(_soulBoundTokenId) == msg.sender) {
             if (royaltyBasisPoints > _BASIS_POINTS) {
                 revert Errors.InvalidParameter();
@@ -404,7 +389,11 @@ contract DerivativeNFTV1 is
         } else {
             revert Errors.NotSoulBoundTokenOwner();
         }
-        //TODO event RoyaltySet
+        emit Events.RoyaltySet(
+            _soulBoundTokenId,
+            _projectId,
+            royaltyBasisPoints
+        );
     }
 
     /**
@@ -457,7 +446,12 @@ contract DerivativeNFTV1 is
 
         _defaultRoyaltyInfo = RoyaltyInfo(receiver, feeNumerator);
 
-        //TODO event DefaultRoyaltySet
+       emit Events.DefaultRoyaltySet(
+            _soulBoundTokenId,
+            _projectId,
+            receiver,
+            feeNumerator
+        );
     }
 
     /**

@@ -218,8 +218,7 @@ abstract contract ERC3525Votes is IVotesUpgradeable, ERC3525PermitUpgradeable {
     function _delegate(address delegator, address delegatee, uint256 tokeId_delegator) internal virtual {
         address currentDelegate = delegates(delegator);
        
-        //TODO  ERC3525 
-        uint256 delegatorBalance = balanceOf(tokeId_delegator); //balanceOf(delegator);
+        uint256 delegatorBalance = balanceOf(tokeId_delegator);
         _delegates[delegator] = delegatee;
 
         emit Events.DelegateChanged(delegator, currentDelegate, delegatee, tokeId_delegator);

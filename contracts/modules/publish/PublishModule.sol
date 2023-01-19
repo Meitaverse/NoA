@@ -5,13 +5,13 @@ pragma solidity ^0.8.13;
 
 import {IPublishModule} from "../../interfaces/IPublishModule.sol";
 import {Errors} from "../../libraries/Errors.sol";
+import {Constants} from '../../libraries/Constants.sol';
 import {Events} from "../../libraries/Events.sol";
 import {FeeModuleBase} from "../FeeModuleBase.sol";
 import {DataTypes} from '../../libraries/DataTypes.sol';
 import {ModuleBase} from "../ModuleBase.sol";
 import {IBankTreasury} from '../../interfaces/IBankTreasury.sol';
 import {IERC20Upgradeable} from "@openzeppelin/contracts-upgradeable/token/ERC20/IERC20Upgradeable.sol";
-// import {SafeERC20Upgradeable} from "@openzeppelin/contracts-upgradeable/token/ERC20/utils/SafeERC20Upgradeable.sol";
 import {IERC3525} from "@solvprotocol/erc-3525/contracts/IERC3525.sol";
 import {IDerivativeNFTV1} from "../../interfaces/IDerivativeNFTV1.sol";
 import {StringsUpgradeable} from "@openzeppelin/contracts-upgradeable/utils/StringsUpgradeable.sol";
@@ -80,7 +80,6 @@ contract PublishModule is FeeModuleBase, IPublishModule, ModuleBase {
             if ( publishTaxes > 0)
                 INFTDerivativeProtocolTokenV1(_sbt()).transferValue(publication.soulBoundTokenId, treasuryOfSoulBoundTokenId, publishTaxes);
             
-            
             _dataPublishdNFTByProject[publishId].publication = publication;
             _dataPublishdNFTByProject[publishId].previousPublishId = previousPublishId;
 
@@ -105,10 +104,7 @@ contract PublishModule is FeeModuleBase, IPublishModule, ModuleBase {
             uint256 addedPublishTaxes = (amount - _dataPublishdNFTByProject[publishId].publication.amount) * _publishCurrencyTax();
             
             if ( addedPublishTaxes > 0){
-                (address treasury, ) = _treasuryData();
-                uint256 treasuryOfSoulBoundTokenId = IBankTreasury(treasury).getSoulBoundTokenId();
-                INFTDerivativeProtocolTokenV1(_sbt()).transferValue(_dataPublishdNFTByProject[publishId].publication.soulBoundTokenId, treasuryOfSoulBoundTokenId, addedPublishTaxes);
-
+                INFTDerivativeProtocolTokenV1(_sbt()).transferValue(_dataPublishdNFTByProject[publishId].publication.soulBoundTokenId, Constants._BANK_TREASURY_SOUL_BOUND_TOKENID, addedPublishTaxes);
             } 
 
             _dataPublishdNFTByProject[publishId].publication.salePrice = salePrice;
@@ -120,8 +116,9 @@ contract PublishModule is FeeModuleBase, IPublishModule, ModuleBase {
             _dataPublishdNFTByProject[publishId].publication.fromTokenIds = fromTokenIds;
 
             return addedPublishTaxes;
+        } else {
+            return 0;
         }
-            
     }
 
     /**

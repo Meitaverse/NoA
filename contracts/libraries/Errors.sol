@@ -58,6 +58,7 @@ library Errors {
   error AmountIsZero();
   error PaymentError();
   error TxFailed();
+  error TransferEtherToBankTreasuryFailed();
   error TxNotConfirmed();
   error TxAlreadyConfirmed();
   error SignersRequired();
@@ -124,6 +125,7 @@ library Errors {
   error CollectExpired();
 
   error InvalidRecipientSplits();
+  error TooManyRecipients();
 
   error AmountLimit();
   error AmountOnlyIncrease();

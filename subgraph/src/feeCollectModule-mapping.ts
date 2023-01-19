@@ -28,6 +28,5 @@ export function handleFeesForCollect(event: FeesForCollect): void {
         history.adjustedAmount = event.params.royaltyAmounts.adjustedAmount
         history.timestamp = event.block.timestamp
         history.save()
-        
     } 
 }
