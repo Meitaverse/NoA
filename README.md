@@ -152,3 +152,7 @@ derivativeNFT.schema.graphql.md
 ```
 
 ```
+
+## NFT Market Place support Royalty Registry
+
+[Royalty Registry](https://royaltyregistry.xyz/)

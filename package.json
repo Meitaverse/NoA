@@ -48,8 +48,8 @@
   "homepage": "https://github.com/MeitaVerse/derivative-nft-protocol#readme",
   "devDependencies": {
     "@graphprotocol/graph-cli": "^0.37.1",
-    "@graphprotocol/hardhat-graph": "https://github.com/graphprotocol/hardhat-graph",    
     "@graphprotocol/graph-ts": "^0.29.1",
+    "@graphprotocol/hardhat-graph": "https://github.com/graphprotocol/hardhat-graph",
     "@nomicfoundation/hardhat-network-helpers": "^1.0.4",
     "@nomicfoundation/hardhat-toolbox": "^1.0.2",
     "@nomiclabs/hardhat-ethers": "^2.2.1",

@@ -59,6 +59,7 @@ library DataTypes {
      * @param descriptor descriptor for SVG 
      * @param defaultRoyaltyPoints default royalty points
      * @param feeShareType fee share type, level two or five
+     * @param permitByHubOwner True: User prePublish will permit by hub owner, default false
      */
     struct ProjectData {
         uint256 hubId;
@@ -70,6 +71,7 @@ library DataTypes {
         address descriptor;
         uint96  defaultRoyaltyPoints;
         FeeShareType feeShareType;
+        bool permitByHubOwner;
     }
     
     /**

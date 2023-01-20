@@ -184,6 +184,19 @@ interface IManager {
     ) external  returns (uint256);
 
     /**
+     * @notice Hub owner set permit to publish
+     *
+     * @param publishId  The publish id
+     * @param isPermit  True is permit, false not permit
+     *
+     */
+    function hubOwnerPermitPublishId(
+        uint256 publishId, 
+        bool isPermit
+    ) external; 
+
+    
+    /**
      * @notice Update a prepare pubish 
      *
      * @param publishId  The prepare publish id

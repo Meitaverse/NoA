@@ -533,6 +533,29 @@ export class Voucher extends ethereum.SmartContract {
     return ethereum.CallResult.fromValue(value[0].toString());
   }
 
+  getGlobalModule(): Address {
+    let result = super.call(
+      "getGlobalModule",
+      "getGlobalModule():(address)",
+      []
+    );
+
+    return result[0].toAddress();
+  }
+
+  try_getGlobalModule(): ethereum.CallResult<Address> {
+    let result = super.tryCall(
+      "getGlobalModule",
+      "getGlobalModule():(address)",
+      []
+    );
+    if (result.reverted) {
+      return new ethereum.CallResult();
+    }
+    let value = result.value;
+    return ethereum.CallResult.fromValue(value[0].toAddress());
+  }
+
   getRoleAdmin(role: Bytes): Bytes {
     let result = super.call("getRoleAdmin", "getRoleAdmin(bytes32):(bytes32)", [
       ethereum.Value.fromFixedBytes(role)

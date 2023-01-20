@@ -117,7 +117,8 @@ contract ManagerV2 is IManagerV2, NFTDerivativeProtocolMultiState, MockManagerV2
             metadataURI: project.metadataURI,
             descriptor: project.descriptor,
             defaultRoyaltyPoints: project.defaultRoyaltyPoints,
-            feeShareType: project.feeShareType
+            feeShareType: project.feeShareType,
+            permitByHubOwner: project.permitByHubOwner
         });
         return projectId; 
     }

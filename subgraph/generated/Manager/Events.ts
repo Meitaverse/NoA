@@ -255,16 +255,16 @@ export class DepositByFallback__Params {
     return this._event.parameters[1].value.toBigInt();
   }
 
+  get data(): Bytes {
+    return this._event.parameters[2].value.toBytes();
+  }
+
   get receiver(): Address {
-    return this._event.parameters[2].value.toAddress();
+    return this._event.parameters[3].value.toAddress();
   }
 
   get balance(): BigInt {
-    return this._event.parameters[3].value.toBigInt();
-  }
-
-  get data(): Bytes {
-    return this._event.parameters[4].value.toBytes();
+    return this._event.parameters[4].value.toBigInt();
   }
 }
 
@@ -981,6 +981,70 @@ export class ManagerGovernanceSet__Params {
 
   get timestamp(): BigInt {
     return this._event.parameters[3].value.toBigInt();
+  }
+}
+
+export class MarketPlaceDeposit extends ethereum.Event {
+  get params(): MarketPlaceDeposit__Params {
+    return new MarketPlaceDeposit__Params(this);
+  }
+}
+
+export class MarketPlaceDeposit__Params {
+  _event: MarketPlaceDeposit;
+
+  constructor(event: MarketPlaceDeposit) {
+    this._event = event;
+  }
+
+  get sender(): Address {
+    return this._event.parameters[0].value.toAddress();
+  }
+
+  get amount(): BigInt {
+    return this._event.parameters[1].value.toBigInt();
+  }
+
+  get receiver(): Address {
+    return this._event.parameters[2].value.toAddress();
+  }
+
+  get balance(): BigInt {
+    return this._event.parameters[3].value.toBigInt();
+  }
+}
+
+export class MarketPlaceDepositByFallback extends ethereum.Event {
+  get params(): MarketPlaceDepositByFallback__Params {
+    return new MarketPlaceDepositByFallback__Params(this);
+  }
+}
+
+export class MarketPlaceDepositByFallback__Params {
+  _event: MarketPlaceDepositByFallback;
+
+  constructor(event: MarketPlaceDepositByFallback) {
+    this._event = event;
+  }
+
+  get sender(): Address {
+    return this._event.parameters[0].value.toAddress();
+  }
+
+  get amount(): BigInt {
+    return this._event.parameters[1].value.toBigInt();
+  }
+
+  get receiver(): Address {
+    return this._event.parameters[2].value.toAddress();
+  }
+
+  get balance(): BigInt {
+    return this._event.parameters[3].value.toBigInt();
+  }
+
+  get data(): Bytes {
+    return this._event.parameters[4].value.toBytes();
   }
 }
 

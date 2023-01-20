@@ -70,19 +70,7 @@ task("add-market", "add-market function")
   
     const SECOND_PROFILE_ID =2; 
     const FIRST_HUB_ID =1; 
-    // await waitForTx(
-    //     manager.connect(user).createProject({
-    //       soulBoundTokenId: SECOND_PROFILE_ID,
-    //       hubId: FIRST_HUB_ID,
-    //       name: "bitsoul",
-    //       description: "Hub for bitsoul",
-    //       image: "image",
-    //       metadataURI: "metadataURI",
-    //       descriptor: metadataDescriptor.address,
-    //       defaultRoyaltyPoints: 0,
-    //       feeShareType: 0,  
-    //     })
-    // );
+
 
     const FIRST_PROJECT_ID =1;
 

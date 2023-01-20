@@ -8,9 +8,9 @@ dataSources:
     name: SBT
     network: mainnet
     source:
-      address: "0x0DCd1Bf9A1b36cE34237eEaFef220932846BCD82"
       abi: Events
-      startBlock: 0
+      address: "0x0DCd1Bf9A1b36cE34237eEaFef220932846BCD82"
+      startBlock: 1
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.6
@@ -21,26 +21,25 @@ dataSources:
         - BurnSBT
       abis:
         - name: Events
-          file: ./abis/Events.json
+          file: ../artifacts/contracts/libraries/Events.sol/Events.json
         - name: SBT
-          file: ./abis/SBT.json          
+          file: ../artifacts/contracts/NFTDerivativeProtocolTokenV1.sol/NFTDerivativeProtocolTokenV1.json
       eventHandlers:
-        - event: ProfileCreated(indexed uint256,indexed address,indexed address,string,string,uint256)
+        - event: ProfileCreated(indexed uint256,indexed address,indexed
+            address,string,string,uint256)
           handler: handleProfileCreated
         - event: MintSBTValue(indexed address,indexed uint256,indexed uint256,uint256)
           handler: handleMintSBTValue
         - event: BurnSBT(indexed address,indexed uint256,indexed uint256,uint256)
           handler: handleBurnSBT
-
       file: ./src/sbt-mapping.ts
-
   - kind: ethereum/contract
     name: SBTERC3525
     network: mainnet
     source:
-      address: "0x0DCd1Bf9A1b36cE34237eEaFef220932846BCD82"
       abi: SBT
-      startBlock: 0
+      address: "0x0DCd1Bf9A1b36cE34237eEaFef220932846BCD82"
+      startBlock: 1
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.6
@@ -48,20 +47,20 @@ dataSources:
       entities:
         - Approval
         - ApprovalForAll
-        - ApprovalValue      
+        - ApprovalValue
         - Transfer
         - TransferValue
         - SlotChanged
       abis:
         - name: SBT
-          file: ./abis/SBT.json
+          file: ../artifacts/contracts/NFTDerivativeProtocolTokenV1.sol/NFTDerivativeProtocolTokenV1.json
       eventHandlers:
         - event: Approval(indexed address,indexed address,indexed uint256)
           handler: handleApproval
         - event: ApprovalForAll(indexed address,indexed address,bool)
           handler: handleApprovalForAll
         - event: ApprovalValue(indexed uint256,indexed address,uint256)
-          handler: handleApprovalValue             
+          handler: handleApprovalValue
         - event: Transfer(indexed address,indexed address,indexed uint256)
           handler: handleSBTTransfer
         - event: TransferValue(indexed uint256,indexed uint256,uint256)
@@ -69,14 +68,13 @@ dataSources:
         - event: SlotChanged(indexed uint256,indexed uint256,indexed uint256)
           handler: handleSBTSlotChanged
       file: ./src/sbt-mapping.ts
-
   - kind: ethereum/contract
     name: Manager
     network: mainnet
     source:
-      address: "0xa513E6E4b8f2a923D98304ec87F64353C4D5C853"
       abi: Events
-      startBlock: 0
+      address: "0xa513E6E4b8f2a923D98304ec87F64353C4D5C853"
+      startBlock: 1
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.6
@@ -97,15 +95,18 @@ dataSources:
         - ValueChanged
       abis:
         - name: Manager
-          file: ./abis/Manager.json      
+          file: ../artifacts/contracts/Manager.sol/Manager.json
         - name: Events
-          file: ./abis/Events.json
+          file: ../artifacts/contracts/libraries/Events.sol/Events.json
       eventHandlers:
-        - event: EmergencyAdminSet(indexed address,indexed address,indexed address,uint256)
+        - event: EmergencyAdminSet(indexed address,indexed address,indexed
+            address,uint256)
           handler: handleEmergencyAdminSet
-        - event: ManagerGovernanceSet(indexed address,indexed address,indexed address,uint256)
+        - event: ManagerGovernanceSet(indexed address,indexed address,indexed
+            address,uint256)
           handler: handleManagerGovernanceSet
-        - event: HubCreated(indexed uint256,indexed address,indexed uint256,string,string,string,uint256)
+        - event: HubCreated(indexed uint256,indexed address,indexed
+            uint256,string,string,string,uint256)
           handler: handleHubCreated
         - event: HubUpdated(indexed uint256,string,string,string,uint256)
           handler: handleHubUpdated
@@ -113,29 +114,31 @@ dataSources:
           handler: handlePublishPrepared
         - event: PublishUpdated(uint256,uint256,uint256,uint256,uint256,string,string,string[],uint256[],uint256,uint256)
           handler: handlePublishUpdated
-        - event: PublishCreated(indexed uint256,indexed uint256,uint256,uint256,indexed uint256,uint256,bytes,uint256)
+        - event: PublishCreated(indexed uint256,indexed uint256,uint256,uint256,indexed
+            uint256,uint256,bytes,uint256)
           handler: handlePublishCreated
         - event: DerivativeNFTDeployed(indexed uint256,indexed uint256,address,uint256)
           handler: handleDerivativeNFTDeployed
-        - event: DerivativeNFTCollected(uint256,address,indexed uint256,indexed uint256,indexed uint256,uint256,uint256,uint256)
+        - event: DerivativeNFTCollected(uint256,address,indexed uint256,indexed
+            uint256,indexed uint256,uint256,uint256,uint256)
           handler: handleDerivativeNFTCollected
-        - event: DerivativeNFTAirdroped(uint256,address,indexed uint256,indexed uint256,uint256[],uint256[],uint256[],uint256)
+        - event: DerivativeNFTAirdroped(uint256,address,indexed uint256,indexed
+            uint256,uint256[],uint256[],uint256[],uint256)
           handler: handleDerivativeNFTAirdroped
-        - event:  DispatcherSet(indexed uint256,indexed address,uint256)
+        - event: DispatcherSet(indexed uint256,indexed address,uint256)
           handler: handleDispatcherSet
-        - event:  StateSet(indexed address,indexed uint8,indexed uint8,uint256)
+        - event: StateSet(indexed address,indexed uint8,indexed uint8,uint256)
           handler: handleStateSet
-        - event:  ValueChanged(uint256,address)
+        - event: ValueChanged(uint256,address)
           handler: handleValueChanged
       file: ./src/manager-mapping.ts
-
   - kind: ethereum/contract
     name: BankTreasury
     network: mainnet
     source:
-      address: "0x9A9f2CCfdE556A7E9Ff0848998Aa4a0CFD8863AE"
       abi: Events
-      startBlock: 0
+      address: "0x9A9f2CCfdE556A7E9Ff0848998Aa4a0CFD8863AE"
+      startBlock: 1
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.6
@@ -154,39 +157,43 @@ dataSources:
         - ExchangeVoucher
       abis:
         - name: Events
-          file: ./abis/Events.json
+          file: ../artifacts/contracts/libraries/Events.sol/Events.json
       eventHandlers:
         - event: Deposit(indexed address,uint256,indexed address,uint256)
           handler: handleDeposit
-        - event: DepositByFallback(indexed address,uint256,indexed address,uint256,bytes)
+        - event: DepositByFallback(indexed address,uint256,bytes,indexed address,uint256)
           handler: handleDepositByFallback
-        - event: ERC3525Received(indexed address,indexed uint256,indexed uint256,uint256,bytes,uint256)
+        - event: ERC3525Received(indexed address,indexed uint256,indexed
+            uint256,uint256,bytes,uint256)
           handler: handleERC3525Received
         - event: ExchangeSBTByEth(indexed uint256,indexed address,indexed uint256,uint256)
           handler: handleExchangeSBTByEth
-        - event: ExchangeEthBySBT(indexed uint256,indexed address,indexed uint256,uint256,uint256,uint256)
+        - event: ExchangeEthBySBT(indexed uint256,indexed address,indexed
+            uint256,uint256,uint256,uint256)
           handler: handleExchangeEthBySBT
-        - event: SubmitTransaction(indexed address,indexed uint256,indexed address,uint256,bytes)
+        - event: SubmitTransaction(indexed address,indexed uint256,indexed
+            address,uint256,bytes)
           handler: handleSubmitTransaction
         - event: ConfirmTransaction(indexed address,indexed uint256)
           handler: handleConfirmTransaction
         - event: ExecuteTransaction(indexed address,indexed uint256,address,uint256)
           handler: handleExecuteTransaction
-        - event: ExecuteTransactionERC3525(indexed address,indexed uint256,indexed uint256,uint256,uint256)
+        - event: ExecuteTransactionERC3525(indexed address,indexed uint256,indexed
+            uint256,uint256,uint256)
           handler: handleExecuteTransactionERC3525
         - event: RevokeConfirmation(indexed address,indexed uint256)
           handler: handleRevokeConfirmation
-        - event: ExchangeVoucher(indexed uint256,indexed address,indexed uint256,uint256,uint256)
+        - event: ExchangeVoucher(indexed uint256,indexed address,indexed
+            uint256,uint256,uint256)
           handler: handleExchangeVoucher
       file: ./src/bankTreasury-mapping.ts
-  
   - kind: ethereum/contract
     name: Voucher
     network: mainnet
     source:
-      address: "0x8A791620dd6260079BF849Dc5567aDC3F2FdC318"
       abi: Events
-      startBlock: 0
+      address: "0x8A791620dd6260079BF849Dc5567aDC3F2FdC318"
+      startBlock: 1
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.6
@@ -197,7 +204,7 @@ dataSources:
         - GenerateVoucher
       abis:
         - name: Events
-          file: ./abis/Events.json
+          file: ../artifacts/contracts/libraries/Events.sol/Events.json
       eventHandlers:
         - event: MintNFTVoucher(uint256,address,uint8,uint256,uint256,uint256)
           handler: handleMintNFTVoucher
@@ -206,14 +213,13 @@ dataSources:
         - event: GenerateVoucher(uint8,uint256,uint256,uint256,uint256,uint256)
           handler: handleGenerateVoucher
       file: ./src/voucher-mapping.ts
-  
   - kind: ethereum/contract
     name: VoucherERC1155
     network: mainnet
     source:
-      address: "0x8A791620dd6260079BF849Dc5567aDC3F2FdC318"
       abi: Voucher
-      startBlock: 0
+      address: "0x8A791620dd6260079BF849Dc5567aDC3F2FdC318"
+      startBlock: 1
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.6
@@ -223,21 +229,22 @@ dataSources:
         - TransferSingle
       abis:
         - name: Voucher
-          file: ./abis/Voucher.json
+          file: ../artifacts/contracts/Voucher.sol/Voucher.json
       eventHandlers:
-        - event: TransferBatch(indexed address,indexed address,indexed address,uint256[],uint256[]) 
+        - event: TransferBatch(indexed address,indexed address,indexed
+            address,uint256[],uint256[])
           handler: handleTransferBatch
-        - event: TransferSingle(indexed address,indexed address,indexed address,uint256,uint256)
+        - event: TransferSingle(indexed address,indexed address,indexed
+            address,uint256,uint256)
           handler: handleTransferSingle
       file: ./src/voucher-mapping.ts
-
   - kind: ethereum/contract
     name: ModuleGlobals
     network: mainnet
     source:
-      address: "0xc6e7DF5E7b4f2A278906862b61205850344D4e7d"
       abi: Events
-      startBlock: 0
+      address: "0xc6e7DF5E7b4f2A278906862b61205850344D4e7d"
+      startBlock: 1
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.6
@@ -257,11 +264,13 @@ dataSources:
         - ModuleGlobalsTreasuryFeeSet
       abis:
         - name: Events
-          file: ./abis/Events.json
+          file: ../artifacts/contracts/libraries/Events.sol/Events.json
       eventHandlers:
-        - event: ProfileCreatorWhitelisted(indexed address,indexed bool,indexed address,uint256)
+        - event: ProfileCreatorWhitelisted(indexed address,indexed bool,indexed
+            address,uint256)
           handler: handleProfileCreatorWhitelisted
-        - event: HubCreatorWhitelisted(indexed uint256,indexed bool,indexed address,uint256)
+        - event: HubCreatorWhitelisted(indexed uint256,indexed bool,indexed
+            address,uint256)
           handler: handleHubCreatorWhitelisted
         - event: ModuleGlobalsTreasurySet(indexed address,indexed address,uint256)
           handler: handleModuleGlobalsTreasurySet
@@ -284,14 +293,13 @@ dataSources:
         - event: TemplateWhitelisted(indexed address,indexed bool,uint256)
           handler: handleTemplateWhitelisted
       file: ./src/moduleGlobals-mapping.ts
-
   - kind: ethereum/contract
     name: FeeCollectModule
     network: mainnet
     source:
-      address: "0x4ed7c70F96B99c776995fB64377f0d4aB3B0e1C1"
       abi: Events
-      startBlock: 0
+      address: "0x4ed7c70F96B99c776995fB64377f0d4aB3B0e1C1"
+      startBlock: 1
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.6
@@ -300,19 +308,18 @@ dataSources:
         - FeesForCollect
       abis:
         - name: Events
-          file: ./abis/Events.json
+          file: ../artifacts/contracts/libraries/Events.sol/Events.json
       eventHandlers:
         - event: FeesForCollect(uint256,uint256,(uint256,uint256,uint256,uint256),(uint256,uint256,uint256,uint256,uint256))
           handler: handleFeesForCollect
       file: ./src/feeCollectModule-mapping.ts
-
   - kind: ethereum/contract
     name: Receiver
     network: mainnet
     source:
-      address: "0x9fE46736679d2D9a65F0992F2272dE9f3c7fa6e0"
       abi: Events
-      startBlock: 0
+      address: "0x9fE46736679d2D9a65F0992F2272dE9f3c7fa6e0"
+      startBlock: 1
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.6
@@ -321,19 +328,19 @@ dataSources:
         - ReceiverReceived
       abis:
         - name: Events
-          file: ./abis/Events.json
+          file: ../artifacts/contracts/libraries/Events.sol/Events.json
       eventHandlers:
-        - event: ReceiverReceived(indexed address,indexed uint256,indexed uint256,uint256,bytes,uint256)
+        - event: ReceiverReceived(indexed address,indexed uint256,indexed
+            uint256,uint256,bytes,uint256)
           handler: handleReceiverReceived
       file: ./src/receiver-mapping.ts
-
   - kind: ethereum/contract
     name: MarketPlace
     network: mainnet
     source:
-      address: "0x3Aa5ebB10DC797CAC828524e59A333d0A371443c"
       abi: Events
-      startBlock: 0
+      address: "0x3Aa5ebB10DC797CAC828524e59A333d0A371443c"
+      startBlock: 1
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.6
@@ -348,20 +355,24 @@ dataSources:
         - Traded
       abis:
         - name: Events
-          file: ./abis/Events.json
+          file: ../artifacts/contracts/libraries/Events.sol/Events.json
       eventHandlers:
-        - event: MarketPlaceERC3525Received(indexed address,indexed uint256,indexed uint256,uint256,bytes,uint256)
+        - event: MarketPlaceERC3525Received(indexed address,indexed uint256,indexed
+            uint256,uint256,bytes,uint256)
           handler: handleMarketPlaceERC3525Received
-        - event: FixedPriceSet(indexed uint256,indexed uint128,uint128,indexed uint128,uint256)
+        - event: FixedPriceSet(indexed uint256,indexed uint128,uint128,indexed
+            uint128,uint256)
           handler: handleFixedPriceSet
         - event: AddMarket(address,uint8,uint8,uint16)
           handler: handleAddMarket
         - event: RemoveMarket(address)
           handler: handleRemoveMarket
-        - event: PublishSale((uint256,uint256,uint256,uint128,uint32,uint128,uint8,uint128,uint128),indexed address,indexed uint256,indexed uint128)
+        - event: PublishSale((uint256,uint256,uint256,uint128,uint32,uint128,uint8,uint128,uint128),indexed
+            address,indexed uint256,indexed uint128)
           handler: handlePublishSale
         - event: RemoveSale(uint256,uint128,uint256,uint256)
           handler: handleRemoveSale
-        - event: Traded(indexed uint24,indexed address,uint256,uint32,uint128,uint256,uint128,(uint256,uint256,uint256,uint256,uint256))
+        - event: Traded(indexed uint24,indexed
+            address,uint256,uint32,uint128,uint256,uint128,(uint256,uint256,uint256,uint256,uint256))
           handler: handleTraded
       file: ./src/marketplace-mapping.ts

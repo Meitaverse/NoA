@@ -216,7 +216,8 @@ contract Manager is
             metadataURI: project.metadataURI,
             descriptor: project.descriptor,
             defaultRoyaltyPoints: project.defaultRoyaltyPoints,
-            feeShareType: project.feeShareType
+            feeShareType: project.feeShareType,
+            permitByHubOwner: project.permitByHubOwner
         });
         
         return projectId;
@@ -287,6 +288,11 @@ contract Manager is
         if (!IModuleGlobals(MODULE_GLOBALS).isWhitelistPublishModule(publication.publishModule))
             revert Errors.PublishModuleNotWhitelisted();
 
+        if (_projectInfoByProjectId[publication.projectId].permitByHubOwner) {
+            //wait for hub owner to set permit to true
+            _isHubOwnerPermitBypublishId[publishId] = false;
+        }
+
         PublishLogic.prePublish(
             publication,
             publishId,
@@ -300,6 +306,23 @@ contract Manager is
            revert Errors.InvalidRoyaltyBasisPoints();   
         }
         return publishId;
+    }
+
+    function hubOwnerPermitPublishId(
+        uint256 publishId, 
+        bool isPermit
+    ) 
+        external 
+        whenPublishingEnabled 
+        nonReentrant
+    {
+         DataTypes.PublishData memory publishData = _projectDataByPublishId[publishId];
+         DataTypes.HubData memory hub = _hubInfos[publishData.publication.hubId];
+
+        _validateCallerIsSoulBoundTokenOwnerOrDispathcher(hub.soulBoundTokenId);
+        
+        _isHubOwnerPermitBypublishId[publishId] = isPermit;
+   
     }
 
     function updatePublish(
@@ -355,6 +378,13 @@ contract Manager is
         } else {
 
             _validateCallerIsSoulBoundTokenOwnerOrDispathcher(_projectDataByPublishId[publishId].publication.soulBoundTokenId);
+            if (_projectInfoByProjectId[_projectDataByPublishId[publishId].publication.projectId].permitByHubOwner) {
+                //hub owner permit publish
+                if ( !_isHubOwnerPermitBypublishId[publishId]) {
+                    revert Errors.HubOwnerNotPermitPublish();
+                }
+            }
+
             address publisher = _soulBoundTokenIdToWallet[_projectDataByPublishId[publishId].publication.soulBoundTokenId];
             address derivativeNFT = _derivativeNFTByProjectId[_projectDataByPublishId[publishId].publication.projectId];
             if (_projectDataByPublishId[publishId].publication.amount == 0) revert Errors.InitParamsInvalid();

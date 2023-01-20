@@ -131,7 +131,8 @@ contract ManagerV2_BadRevision is
             metadataURI: project.metadataURI,
             descriptor: project.descriptor,
             defaultRoyaltyPoints: project.defaultRoyaltyPoints,
-            feeShareType: project.feeShareType
+            feeShareType: project.feeShareType,
+            permitByHubOwner: project.permitByHubOwner
         });
         return projectId;
     }

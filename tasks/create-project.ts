@@ -28,6 +28,8 @@ import {
 
 import { loadContract } from "./config";
 
+import { exportDerivativeSubgraphNetworksJson } from "./subgraph";
+
 import { deployContract, waitForTx , ProtocolState, Error, findEvent} from './helpers/utils';
 
 export let runtimeHRE: HardhatRuntimeEnvironment;
@@ -82,6 +84,7 @@ task("create-project", "create-project function")
           descriptor: metadataDescriptor.address,
           defaultRoyaltyPoints: 0,
           feeShareType: 0,  //LEVEL_TWO
+          permitByHubOwner: false
         })
     );
 
@@ -125,12 +128,14 @@ task("create-project", "create-project function")
       "\t--- projectInfo info - feeShareType: ", projectInfo.feeShareType
     );
 
-  //   let derivativeNFT: DerivativeNFTV1;
+    let derivativeNFT: DerivativeNFTV1;
 
-  //   derivativeNFT = DerivativeNFTV1__factory.connect(
-  //     await manager.connect(user).getDerivativeNFT(projectId),
-  //     user
-  //   );
+    derivativeNFT = DerivativeNFTV1__factory.connect(
+      await manager.connect(user).getDerivativeNFT(projectId),
+      user
+    );
+
+    await exportDerivativeSubgraphNetworksJson(hre, derivativeNFT, 'DerivativeNFTV1');
 
   //   //addMarket
   //   await waitForTx(

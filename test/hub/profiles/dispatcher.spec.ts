@@ -130,6 +130,7 @@ makeSuiteCleanRoom('Dispatcher Functionality', function () {
               descriptor: metadataDescriptor.address,
               defaultRoyaltyPoints: 0,
               feeShareType: 0,  
+              permitByHubOwner: false
             },
           )
         ).to.not.be.reverted;
@@ -341,6 +342,7 @@ makeSuiteCleanRoom('Dispatcher Functionality', function () {
               descriptor: metadataDescriptor.address,
               defaultRoyaltyPoints: 0,
               feeShareType: 0,  
+              permitByHubOwner: false
             },
           )
         ).to.not.be.reverted;

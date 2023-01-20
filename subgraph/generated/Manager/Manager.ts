@@ -96,6 +96,10 @@ export class Manager__createProjectInputProjectStruct extends ethereum.Tuple {
   get feeShareType(): i32 {
     return this[8].toI32();
   }
+
+  get permitByHubOwner(): boolean {
+    return this[9].toBoolean();
+  }
 }
 
 export class Manager__getHubInfoResultValue0Struct extends ethereum.Tuple {
@@ -151,6 +155,10 @@ export class Manager__getProjectInfoResultValue0Struct extends ethereum.Tuple {
 
   get feeShareType(): i32 {
     return this[8].toI32();
+  }
+
+  get permitByHubOwner(): boolean {
+    return this[9].toBoolean();
   }
 }
 
@@ -482,7 +490,7 @@ export class Manager extends ethereum.SmartContract {
   createProject(project: Manager__createProjectInputProjectStruct): BigInt {
     let result = super.call(
       "createProject",
-      "createProject((uint256,uint256,string,string,string,string,address,uint96,uint8)):(uint256)",
+      "createProject((uint256,uint256,string,string,string,string,address,uint96,uint8,bool)):(uint256)",
       [ethereum.Value.fromTuple(project)]
     );
 
@@ -494,7 +502,7 @@ export class Manager extends ethereum.SmartContract {
   ): ethereum.CallResult<BigInt> {
     let result = super.tryCall(
       "createProject",
-      "createProject((uint256,uint256,string,string,string,string,address,uint96,uint8)):(uint256)",
+      "createProject((uint256,uint256,string,string,string,string,address,uint96,uint8,bool)):(uint256)",
       [ethereum.Value.fromTuple(project)]
     );
     if (result.reverted) {
@@ -674,7 +682,7 @@ export class Manager extends ethereum.SmartContract {
   ): Manager__getProjectInfoResultValue0Struct {
     let result = super.call(
       "getProjectInfo",
-      "getProjectInfo(uint256):((uint256,uint256,string,string,string,string,address,uint96,uint8))",
+      "getProjectInfo(uint256):((uint256,uint256,string,string,string,string,address,uint96,uint8,bool))",
       [ethereum.Value.fromUnsignedBigInt(projectId_)]
     );
 
@@ -688,7 +696,7 @@ export class Manager extends ethereum.SmartContract {
   ): ethereum.CallResult<Manager__getProjectInfoResultValue0Struct> {
     let result = super.tryCall(
       "getProjectInfo",
-      "getProjectInfo(uint256):((uint256,uint256,string,string,string,string,address,uint96,uint8))",
+      "getProjectInfo(uint256):((uint256,uint256,string,string,string,string,address,uint96,uint8,bool))",
       [ethereum.Value.fromUnsignedBigInt(projectId_)]
     );
     if (result.reverted) {
@@ -1330,6 +1338,10 @@ export class CreateProjectCallProjectStruct extends ethereum.Tuple {
   get feeShareType(): i32 {
     return this[8].toI32();
   }
+
+  get permitByHubOwner(): boolean {
+    return this[9].toBoolean();
+  }
 }
 
 export class DeleteDefaultRoyaltyCall extends ethereum.Call {
@@ -1358,6 +1370,40 @@ export class DeleteDefaultRoyaltyCall__Outputs {
   _call: DeleteDefaultRoyaltyCall;
 
   constructor(call: DeleteDefaultRoyaltyCall) {
+    this._call = call;
+  }
+}
+
+export class HubOwnerPermitPublishIdCall extends ethereum.Call {
+  get inputs(): HubOwnerPermitPublishIdCall__Inputs {
+    return new HubOwnerPermitPublishIdCall__Inputs(this);
+  }
+
+  get outputs(): HubOwnerPermitPublishIdCall__Outputs {
+    return new HubOwnerPermitPublishIdCall__Outputs(this);
+  }
+}
+
+export class HubOwnerPermitPublishIdCall__Inputs {
+  _call: HubOwnerPermitPublishIdCall;
+
+  constructor(call: HubOwnerPermitPublishIdCall) {
+    this._call = call;
+  }
+
+  get publishId(): BigInt {
+    return this._call.inputValues[0].value.toBigInt();
+  }
+
+  get isPermit(): boolean {
+    return this._call.inputValues[1].value.toBoolean();
+  }
+}
+
+export class HubOwnerPermitPublishIdCall__Outputs {
+  _call: HubOwnerPermitPublishIdCall;
+
+  constructor(call: HubOwnerPermitPublishIdCall) {
     this._call = call;
   }
 }

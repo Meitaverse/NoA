@@ -194,6 +194,7 @@ makeSuiteCleanRoom('Multi state', function () {
                     descriptor: metadataDescriptor.address,
                     defaultRoyaltyPoints: 0,
                     feeShareType: 0, //Level two
+                    permitByHubOwner: false
                   },
                 })
             ).to.eq(FIRST_PROJECT_ID);
@@ -224,6 +225,7 @@ makeSuiteCleanRoom('Multi state', function () {
                     descriptor: metadataDescriptor.address,
                     defaultRoyaltyPoints: 0,
                     feeShareType: 0,  
+                    permitByHubOwner: false
                   },
                 )
               ).to.be.revertedWith(ERRORS.PAUSED);
@@ -502,6 +504,7 @@ makeSuiteCleanRoom('Multi state', function () {
                     descriptor: metadataDescriptor.address,
                     defaultRoyaltyPoints: 0,
                     feeShareType: 0, //Level two
+                    permitByHubOwner: false
                   },
                 })
             ).to.eq(FIRST_PROJECT_ID);

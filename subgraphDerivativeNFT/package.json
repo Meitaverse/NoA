@@ -3,11 +3,11 @@
     "license": "UNLICENSED",
     "scripts": {
         "codegen": "graph codegen",
-        "build": "graph build",
+        "build": "graph build --networkFile ./networks.json --network mainnet",
         "deploy": "graph deploy --node https://api.studio.thegraph.com/deploy/ DerivativeNFT/MySubgraph",
         "create-local": "graph create --node http://localhost:8020/ DerivativeNFT/MySubgraph",
         "remove-local": "graph remove --node http://localhost:8020/ DerivativeNFT/MySubgraph",
-        "deploy-local": "graph deploy --node http://localhost:8020/ --ipfs http://localhost:5001 DerivativeNFT/MySubgraph"
+        "deploy-local": "graph deploy --node http://localhost:8020/ --ipfs http://localhost:5001 DerivativeNFT/MySubgraph --networkFile ./networks.json --network mainnet"
     },
     "dependencies": {
         "@graphprotocol/graph-cli": "0.31.0",

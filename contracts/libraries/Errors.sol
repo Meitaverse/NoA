@@ -92,6 +92,7 @@ library Errors {
   error InsufficientSBT();
   error CannotUpdateAfterMinted();
   error SBTNotSet();
+  error HubOwnerNotPermitPublish();
 
   // Module Errors
   error InitParamsInvalid();

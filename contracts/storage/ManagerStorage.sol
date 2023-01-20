@@ -42,6 +42,8 @@ abstract contract ManagerStorage {
     //projectId => projectInfo
     mapping(uint256 => DataTypes.ProjectData) internal _projectInfoByProjectId;
 
+    mapping(uint256 => bool) internal _isHubOwnerPermitBypublishId;
+
     //projectId => derivativeNFT
     mapping(uint256 => address) internal _derivativeNFTByProjectId;
 

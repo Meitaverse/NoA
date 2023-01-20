@@ -4,6 +4,8 @@ import fs from 'fs';
 import { task } from 'hardhat/config';
 // import { readFile, writeFile } from "fs/promises";
 import { exportAddress } from "./config";
+import { exportSubgraphNetworksJson } from "./subgraph";
+
 import {
     MIN_DELAY,
     QUORUM_PERCENTAGE,
@@ -154,6 +156,7 @@ import { NFTDerivativeProtocolTokenV1LibraryAddresses } from '../typechain/facto
         );
         console.log('\t-- Receiver: ', receiverMock.address);
         await exportAddress(hre, receiverMock, 'Receiver');
+        await exportSubgraphNetworksJson(hre, receiverMock, 'Receiver');
     
         console.log('\n\t-- Deploying interactionLogic  --');
         const interactionLogic = await deployContract(
@@ -222,12 +225,14 @@ import { NFTDerivativeProtocolTokenV1LibraryAddresses } from '../typechain/facto
        
         console.log('\t-- manager proxy address: ', proxy.address);
         await exportAddress(hre, proxy, 'Manager');
+        
 
 
         // Connect the manager proxy to the Manager factory and the governance for ease of use.
         const manager = Manager__factory.connect(proxy.address, governance);
 
         // console.log('\t-- manager: ', manager.address);
+        await exportSubgraphNetworksJson(hre, manager, 'Manager');
     
         console.log('\n\t-- Deploying voucher --');
         const voucherImpl = await deployContract(
@@ -245,6 +250,8 @@ import { NFTDerivativeProtocolTokenV1LibraryAddresses } from '../typechain/facto
         const voucherContract = new Voucher__factory(deployer).attach(voucherProxy.address);
         console.log('\t-- voucherContract: ', voucherContract.address);
         await exportAddress(hre, voucherContract, 'Voucher');
+        await exportSubgraphNetworksJson(hre, voucherContract, 'Voucher');
+        await exportSubgraphNetworksJson(hre, voucherContract, 'VoucherERC1155');
 
         console.log('\n\t-- Deploying SBT --');
 
@@ -281,6 +288,8 @@ import { NFTDerivativeProtocolTokenV1LibraryAddresses } from '../typechain/facto
         const sbtContract = new NFTDerivativeProtocolTokenV1__factory(sbtLibs, deployer).attach(sbtProxy.address);
         console.log('\t-- sbtContract: ', sbtContract.address);
         await exportAddress(hre, sbtContract, 'SBT');
+        await exportSubgraphNetworksJson(hre, sbtContract, 'SBT');
+        await exportSubgraphNetworksJson(hre, sbtContract, 'SBTERC3525');
 
 
         const governorImpl = await new GovernorContract__factory(deployer).deploy({ nonce: deployerNonce++ });
@@ -300,6 +309,7 @@ import { NFTDerivativeProtocolTokenV1LibraryAddresses } from '../typechain/facto
         const governorContract = new GovernorContract__factory(deployer).attach(gonvernorProxy.address);
         console.log("\t-- governorContract address: ", governorContract.address);
         await exportAddress(hre, governorContract, 'GovernorContract');
+        // await exportSubgraphNetworksJson(hre, governorContract, 'GovernorContract');
 
         console.log('\n\t-- Deploying bank treasury --');
         const soulBoundTokenIdOfBankTreaury = 1;
@@ -322,6 +332,7 @@ import { NFTDerivativeProtocolTokenV1LibraryAddresses } from '../typechain/facto
         const bankTreasuryContract = new BankTreasury__factory(deployer).attach(bankTreasuryProxy.address);
         console.log('\t-- bankTreasuryContract: ', bankTreasuryContract.address);
         await exportAddress(hre, bankTreasuryContract, 'BankTreasury');
+        await exportSubgraphNetworksJson(hre, bankTreasuryContract, 'BankTreasury');
 
         
         console.log('\n\t-- Deploying market place --');
@@ -342,6 +353,7 @@ import { NFTDerivativeProtocolTokenV1LibraryAddresses } from '../typechain/facto
         const marketPlaceContract = new MarketPlace__factory(deployer).attach(marketPlaceProxy.address);
         console.log('\t-- marketPlaceContract: ', marketPlaceContract.address);
         await exportAddress(hre, marketPlaceContract, 'MarketPlace');
+        await exportSubgraphNetworksJson(hre, marketPlaceContract, 'MarketPlace');
 
         console.log('\n\t-- Deploying moduleGlobals --');
         const moduleGlobals = await deployContract(
@@ -357,6 +369,7 @@ import { NFTDerivativeProtocolTokenV1LibraryAddresses } from '../typechain/facto
         );
         console.log('\t-- moduleGlobals: ', moduleGlobals.address);
         await exportAddress(hre, moduleGlobals, 'ModuleGlobals');
+        await exportSubgraphNetworksJson(hre, moduleGlobals, 'ModuleGlobals');
 
         
         console.log('\n\t-- Deploying metadataDescriptor  --');
@@ -379,6 +392,7 @@ import { NFTDerivativeProtocolTokenV1LibraryAddresses } from '../typechain/facto
         );
         console.log('\t-- feeCollectModule: ', feeCollectModule.address);
         await exportAddress(hre, feeCollectModule, 'FeeCollectModule');
+        await exportSubgraphNetworksJson(hre, feeCollectModule, 'FeeCollectModule');
 
         console.log('\n\t-- Deploying publishModule --');
         const publishModule = await deployContract(

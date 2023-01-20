@@ -1745,44 +1745,6 @@ export class SetTokenImageURICall__Outputs {
   }
 }
 
-export class SetTokenRoyaltyCall extends ethereum.Call {
-  get inputs(): SetTokenRoyaltyCall__Inputs {
-    return new SetTokenRoyaltyCall__Inputs(this);
-  }
-
-  get outputs(): SetTokenRoyaltyCall__Outputs {
-    return new SetTokenRoyaltyCall__Outputs(this);
-  }
-}
-
-export class SetTokenRoyaltyCall__Inputs {
-  _call: SetTokenRoyaltyCall;
-
-  constructor(call: SetTokenRoyaltyCall) {
-    this._call = call;
-  }
-
-  get tokenId(): BigInt {
-    return this._call.inputValues[0].value.toBigInt();
-  }
-
-  get recipient(): Address {
-    return this._call.inputValues[1].value.toAddress();
-  }
-
-  get fraction(): BigInt {
-    return this._call.inputValues[2].value.toBigInt();
-  }
-}
-
-export class SetTokenRoyaltyCall__Outputs {
-  _call: SetTokenRoyaltyCall;
-
-  constructor(call: SetTokenRoyaltyCall) {
-    this._call = call;
-  }
-}
-
 export class SplitCall extends ethereum.Call {
   get inputs(): SplitCall__Inputs {
     return new SplitCall__Inputs(this);
@@ -1943,44 +1905,6 @@ export class TransferFrom2Call__Outputs {
   _call: TransferFrom2Call;
 
   constructor(call: TransferFrom2Call) {
-    this._call = call;
-  }
-}
-
-export class TransferValueCall extends ethereum.Call {
-  get inputs(): TransferValueCall__Inputs {
-    return new TransferValueCall__Inputs(this);
-  }
-
-  get outputs(): TransferValueCall__Outputs {
-    return new TransferValueCall__Outputs(this);
-  }
-}
-
-export class TransferValueCall__Inputs {
-  _call: TransferValueCall;
-
-  constructor(call: TransferValueCall) {
-    this._call = call;
-  }
-
-  get fromTokenId_(): BigInt {
-    return this._call.inputValues[0].value.toBigInt();
-  }
-
-  get toTokenId_(): BigInt {
-    return this._call.inputValues[1].value.toBigInt();
-  }
-
-  get value_(): BigInt {
-    return this._call.inputValues[2].value.toBigInt();
-  }
-}
-
-export class TransferValueCall__Outputs {
-  _call: TransferValueCall;
-
-  constructor(call: TransferValueCall) {
     this._call = call;
   }
 }
