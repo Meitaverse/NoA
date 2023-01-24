@@ -15,7 +15,7 @@ import {IERC20Upgradeable} from "@openzeppelin/contracts-upgradeable/token/ERC20
 import {SafeMathUpgradeable} from "@openzeppelin/contracts-upgradeable/utils/math/SafeMathUpgradeable.sol";
 import {Errors} from "../libraries/Errors.sol";
 import {Events} from "../libraries/Events.sol";
-import {Constants} from '../libraries/Constants.sol';
+import '../libraries/Constants.sol';
 import {SBTLogic} from '../libraries/SBTLogic.sol';
 import {IManager} from "../interfaces/IManager.sol";
 import {ERC3525Votes} from "../extensions/ERC3525Votes.sol";
@@ -124,7 +124,7 @@ contract NFTDerivativeProtocolTokenV2 is
     { 
         uint256 balance = ERC3525Upgradeable.balanceOf(soulBoundTokenId);
         if (balance > 0 ) {
-            ERC3525Upgradeable._transferValue(soulBoundTokenId, Constants._BANK_TREASURY_SOUL_BOUND_TOKENID, balance);
+            ERC3525Upgradeable._transferValue(soulBoundTokenId, BANK_TREASURY_SOUL_BOUND_TOKENID, balance);
         }
         ERC3525Upgradeable._burn(soulBoundTokenId);
         emit Events.BurnSBT(msg.sender, soulBoundTokenId, balance, block.timestamp);

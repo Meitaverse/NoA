@@ -13,7 +13,6 @@ import {DataTypes} from '../libraries/DataTypes.sol';
 import {Events} from"../libraries/Events.sol";
 import {InteractionLogic} from '../libraries/InteractionLogic.sol';
 import {PublishLogic} from '../libraries/PublishLogic.sol';
-import {PriceManager} from '../libraries/PriceManager.sol';
 import {MockManagerV2Storage} from  "./MockManagerV2Storage.sol";
 import {IModuleGlobals} from "../interfaces/IModuleGlobals.sol";
 
@@ -21,7 +20,7 @@ import "../libraries/SafeMathUpgradeable128.sol";
 
 import {VersionedInitializable} from '../upgradeability/VersionedInitializable.sol';
 
-contract ManagerV2 is IManagerV2, NFTDerivativeProtocolMultiState, MockManagerV2Storage, PriceManager, VersionedInitializable {
+contract ManagerV2 is IManagerV2, NFTDerivativeProtocolMultiState, MockManagerV2Storage, VersionedInitializable {
     // using SafeMathUpgradeable for uint256;
     using SafeMathUpgradeable128 for uint128;
     using EnumerableSetUpgradeable for EnumerableSetUpgradeable.UintSet;
@@ -102,24 +101,15 @@ contract ManagerV2 is IManagerV2, NFTDerivativeProtocolMultiState, MockManagerV2
             _DNFT_IMPL,
             SBT,
             TREASURY,
+            TREASURY,
             projectId,
             project,
             _RECEIVER,
-            _derivativeNFTByProjectId
+            _derivativeNFTByProjectId,
+            _projectInfoByProjectId
         );
 
-        _projectInfoByProjectId[projectId] = DataTypes.ProjectData({
-            hubId: project.hubId,
-            soulBoundTokenId: project.soulBoundTokenId,
-            name: project.name,
-            description: project.description,
-            image: project.image,
-            metadataURI: project.metadataURI,
-            descriptor: project.descriptor,
-            defaultRoyaltyPoints: project.defaultRoyaltyPoints,
-            feeShareType: project.feeShareType,
-            permitByHubOwner: project.permitByHubOwner
-        });
+       
         return projectId; 
     }
 

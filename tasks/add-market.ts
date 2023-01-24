@@ -125,7 +125,7 @@ task("add-market", "add-market function")
     );
     
     let marketInfo = await marketPlace.connect(user).getMarketInfo(derivativeNFT.address);
-    console.log('\n\t--- marketInfo.isValid : ', marketInfo.isValid);
+    console.log('\n\t--- marketInfo.isOpen : ', marketInfo.isOpen);
     console.log('\n\t--- marketInfo.feePayType : ', marketInfo.feePayType);
     console.log('\n\t--- marketInfo.feeShareType : ', marketInfo.feeShareType);
     console.log('\n\t--- marketInfo.royaltyBasisPoints : ', marketInfo.royaltyBasisPoints);

@@ -5,7 +5,7 @@ pragma solidity ^0.8.13;
 
 import {IPublishModule} from "../../interfaces/IPublishModule.sol";
 import {Errors} from "../../libraries/Errors.sol";
-import {Constants} from '../../libraries/Constants.sol';
+import '../../libraries/Constants.sol';
 import {Events} from "../../libraries/Events.sol";
 import {FeeModuleBase} from "../FeeModuleBase.sol";
 import {DataTypes} from '../../libraries/DataTypes.sol';
@@ -104,7 +104,7 @@ contract PublishModule is FeeModuleBase, IPublishModule, ModuleBase {
             uint256 addedPublishTaxes = (amount - _dataPublishdNFTByProject[publishId].publication.amount) * _publishCurrencyTax();
             
             if ( addedPublishTaxes > 0){
-                INFTDerivativeProtocolTokenV1(_sbt()).transferValue(_dataPublishdNFTByProject[publishId].publication.soulBoundTokenId, Constants._BANK_TREASURY_SOUL_BOUND_TOKENID, addedPublishTaxes);
+                INFTDerivativeProtocolTokenV1(_sbt()).transferValue(_dataPublishdNFTByProject[publishId].publication.soulBoundTokenId, BANK_TREASURY_SOUL_BOUND_TOKENID, addedPublishTaxes);
             } 
 
             _dataPublishdNFTByProject[publishId].publication.salePrice = salePrice;

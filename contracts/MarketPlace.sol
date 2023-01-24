@@ -4,91 +4,160 @@ pragma solidity ^0.8.13;
 
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol";
-import "@openzeppelin/contracts-upgradeable/access/AccessControlUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
 import "@openzeppelin/contracts/utils/introspection/IERC165.sol";
 import "@solvprotocol/erc-3525/contracts/IERC3525Receiver.sol";
 import "@solvprotocol/erc-3525/contracts/IERC3525.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
 import "@openzeppelin/contracts-upgradeable/utils/structs/EnumerableSetUpgradeable.sol";
-import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
-
+import "@openzeppelin/contracts-upgradeable/security/ReentrancyGuardUpgradeable.sol";
 import {IERC3525Metadata} from "@solvprotocol/erc-3525/contracts/extensions/IERC3525Metadata.sol";
 import {IDerivativeNFTV1} from "./interfaces/IDerivativeNFTV1.sol";
 import "./interfaces/INFTDerivativeProtocolTokenV1.sol";
 import {IMarketPlace} from "./interfaces/IMarketPlace.sol";
-import {Constants} from './libraries/Constants.sol';
+import './libraries/Constants.sol';
 import {DataTypes} from './libraries/DataTypes.sol';
 import {Events} from"./libraries/Events.sol";
 import {Errors} from "./libraries/Errors.sol";
 import "./libraries/SafeMathUpgradeable128.sol";
-import {PriceManager} from './libraries/PriceManager.sol';
+import {MarketLogic} from './libraries/MarketLogic.sol';
 import {MarketPlaceStorage} from  "./storage/MarketPlaceStorage.sol";
 import {SafeMathUpgradeable} from "@openzeppelin/contracts-upgradeable/utils/math/SafeMathUpgradeable.sol";
 import {IBankTreasury} from "./interfaces/IBankTreasury.sol";
 import {IModuleGlobals} from "./interfaces/IModuleGlobals.sol";
 import {IManager} from "./interfaces/IManager.sol";
+import {DNFTMarketAuction} from "./market/DNFTMarketAuction.sol";
+import {MarketSharedCore} from "./market/MarketSharedCore.sol";
+import {DNFTMarketCore} from "./market/DNFTMarketCore.sol";
+import {MarketFees} from "./market/MarketFees.sol";
+import {DNFTMarketOffer} from "./market/DNFTMarketOffer.sol";
+import {DNFTMarketBuyPrice} from "./market/DNFTMarketBuyPrice.sol";
+import {DNFTMarketReserveAuction} from "./market/DNFTMarketReserveAuction.sol";
+import {AdminRoleEnumerable} from "./market/AdminRoleEnumerable.sol";
+import {OperatorRoleEnumerable} from "./market/OperatorRoleEnumerable.sol";
+
 import "hardhat/console.sol";
 
 contract MarketPlace is
     Initializable,
-    ReentrancyGuard,
+    ReentrancyGuardUpgradeable,
     IMarketPlace,
     MarketPlaceStorage,
-    PriceManager,
+    MarketSharedCore,
+    DNFTMarketCore,
+    MarketFees,
+    DNFTMarketAuction,
+    DNFTMarketReserveAuction,    
+    DNFTMarketBuyPrice,
+    DNFTMarketOffer,
     IERC165,
     IERC3525Receiver,
     PausableUpgradeable,
-    AccessControlUpgradeable,
+    AdminRoleEnumerable,
+    OperatorRoleEnumerable,
     UUPSUpgradeable
 {
     using SafeMathUpgradeable for uint256;
-     using SafeMathUpgradeable128 for uint128;
+    using SafeMathUpgradeable128 for uint128;
     using Counters for Counters.Counter;
     using EnumerableSetUpgradeable for EnumerableSetUpgradeable.UintSet;
     using EnumerableSetUpgradeable for EnumerableSetUpgradeable.AddressSet;
 
-    bytes32 public constant PAUSER_ROLE = keccak256("PAUSER_ROLE");
-    bytes32 public constant UPGRADER_ROLE = keccak256("UPGRADER_ROLE");
+    // bytes32 public constant PAUSER_ROLE = keccak256("PAUSER_ROLE");
+    // bytes32 public constant UPGRADER_ROLE = keccak256("UPGRADER_ROLE");
     uint16 internal constant BPS_MAX = 10000;
 
-    /**
-     * @dev This modifier reverts if the caller is not the configured governance address.
-     */
-    modifier onlyGov() {
-        _validateCallerIsGovernance();
-        _;
-    }
-
-    /**
-     * @dev This modifier reverts if the caller is not the configured manager address.
-     */
-    modifier onlyManager() {
-        _validateCallerIsManager();
-        _;
-    }
-
     /// @custom:oz-upgrades-unsafe-allow constructor
-    constructor() initializer {}
+    constructor(
+        uint256 duration  //24h
+    ) 
+    DNFTMarketReserveAuction(duration) 
+    MarketFees()
+    initializer {}
 
-    function initialize(address governance) external override initializer {
-        __AccessControl_init();
+    function initialize(address admin) external override initializer {
+        AdminRoleEnumerable._initializeAdminRole(admin);
+
         __Pausable_init();
         __UUPSUpgradeable_init();
 
-        _setupRole(DEFAULT_ADMIN_ROLE, msg.sender);
-        _setupRole(PAUSER_ROLE, msg.sender);
-        _setupRole(UPGRADER_ROLE, msg.sender);
-
-        if (governance == address(0)) revert Errors.InitParamsInvalid();
-        _setGovernance(governance);
+        ReentrancyGuardUpgradeable.__ReentrancyGuard_init();
     }
 
-    function pause() public onlyRole(PAUSER_ROLE) {
+    // --- override --- //
+    function _getManager() internal virtual override returns (address) {
+        return IModuleGlobals(MODULE_GLOBALS).getManager();
+    }
+    
+    function _getSBT() internal virtual override returns (address) {
+        return IModuleGlobals(MODULE_GLOBALS).getSBT();
+    }
+    
+    function _getBankTreasury() internal virtual override returns (address) {
+        return IModuleGlobals(MODULE_GLOBALS).getTreasury();
+    }
+
+    function _getTreasuryData() internal virtual override returns (address, uint16) {
+        return IModuleGlobals(MODULE_GLOBALS).getTreasuryData();
+    }
+
+    function _getMarketInfo(address derivativeNFT) internal virtual override returns (DataTypes.Market memory) {
+        return markets[derivativeNFT];
+    }
+
+    function _beforeAuctionStarted(address derivativeNFT, uint256 tokenId)
+        internal
+        override(DNFTMarketCore, DNFTMarketBuyPrice, DNFTMarketOffer)
+    {
+        // This is a no-op function required to avoid compile errors.
+        super._beforeAuctionStarted(derivativeNFT, tokenId);
+    }
+
+    function _transferFromEscrow(
+        address derivativeNFT,
+        uint256 fromTokenId,
+        uint256 toTokenId,
+        uint128 units,
+        address authorizeSeller
+    ) internal override(DNFTMarketCore, DNFTMarketReserveAuction){
+        // This is a no-op function required to avoid compile errors.
+        super._transferFromEscrow(derivativeNFT, fromTokenId, toTokenId, units, authorizeSeller);
+    }
+ 
+    function _transferFromEscrowIfAvailable(
+        address derivativeNFT,
+        uint256 fromTokenId,
+        uint256 toTokenId,
+        uint128 units
+    ) internal override(DNFTMarketCore, DNFTMarketReserveAuction, DNFTMarketBuyPrice) {
+        // This is a no-op function required to avoid compile errors.
+        super._transferFromEscrowIfAvailable(derivativeNFT, fromTokenId, toTokenId, units);
+    }
+
+    function _transferToEscrow(address derivativeNFT, uint256 tokenId, uint128 onSellUnits)
+        internal
+        override(DNFTMarketCore, DNFTMarketReserveAuction, DNFTMarketBuyPrice)
+        returns(uint256)
+    {
+        // This is a no-op function required to avoid compile errors.
+        return super._transferToEscrow(derivativeNFT, tokenId, onSellUnits);
+    }
+        
+    function _getSellerOf(address derivativeNFT, uint256 tokenId)
+        internal
+        view
+        override(MarketSharedCore, DNFTMarketCore, DNFTMarketReserveAuction, DNFTMarketBuyPrice)
+        returns (address payable seller)
+    {
+        // This is a no-op function required to avoid compile errors.
+        seller = super._getSellerOf(derivativeNFT, tokenId);
+    }
+
+    function pause() public onlyAdmin {
         _pause();
     }
 
-    function unpause() public onlyRole(PAUSER_ROLE) {
+    function unpause() public onlyAdmin {
         _unpause();
     }
 
@@ -114,17 +183,15 @@ contract MarketPlace is
 
     function supportsInterface(
         bytes4 interfaceId
-    ) public view virtual override(AccessControlUpgradeable, IERC165) returns (bool) {
+    ) public view virtual override returns (bool) {
         return
             interfaceId == type(IERC165).interfaceId ||
-            interfaceId == type(AccessControlUpgradeable).interfaceId ||
-            interfaceId == type(IERC3525Receiver).interfaceId ||
-            super.supportsInterface(interfaceId);
+            interfaceId == type(IERC3525Receiver).interfaceId;
     }
 
     function _authorizeUpgrade(address newImplementation) internal virtual override {
         newImplementation;
-        if (!hasRole(UPGRADER_ROLE, _msgSender())) revert Errors.Unauthorized();
+        if (!hasRole(DEFAULT_ADMIN_ROLE, _msgSender())) revert Errors.Unauthorized();
     }
 
     function onERC3525Received(
@@ -143,7 +210,7 @@ contract MarketPlace is
         external
         nonReentrant
         whenNotPaused  
-        onlyGov 
+        onlyAdmin 
     {
         if (moduleGlobals == address(0)) revert Errors.InitParamsInvalid();
         MODULE_GLOBALS = moduleGlobals;
@@ -151,118 +218,6 @@ contract MarketPlace is
 
     function getGlobalModule() external view returns (address) {
         return MODULE_GLOBALS;
-    }
-   
-    function getGovernance() external view returns (address) {
-         return _governance;
-    }
-
-    function publishSale(
-        DataTypes.SaleParam memory saleParam
-    ) 
-        external 
-        nonReentrant
-        whenNotPaused  
-    {
-         _validateCallerIsSoulBoundTokenOwnerOrDispathcher(saleParam.soulBoundTokenId);
-        
-        if (saleParam.max > 0) {
-            if (saleParam.min > saleParam.max) revert Errors.MinGTMax();
-        }
-
-        address _manager = IModuleGlobals(MODULE_GLOBALS).getManager();
-        address derivativeNFT = IManager(_manager).getDerivativeNFT(saleParam.projectId);
-        if (derivativeNFT == address(0)) 
-            revert Errors.InvalidParameter();
-        
-        if (!markets[derivativeNFT].isValid)
-            revert Errors.UnsupportedDerivativeNFT();
-        
-        uint128 total = uint128(IERC3525(derivativeNFT).balanceOf(saleParam.tokenId));
-        if(total > type(uint128).max) revert Errors.ExceedsUint128Max();
-        if(total == 0) revert Errors.TotalIsZero();
-        if(saleParam.max > total) revert Errors.MaxGTTotal(); 
-        if(saleParam.onSellUnits > total) revert Errors.UnitsGTTotal(); 
-        
-        uint24 saleId = _generateNextSaleId();
-        _derivativeNFTSales[derivativeNFT].add(saleId);
-        PriceManager.setFixedPrice(saleId, saleParam.salePrice);
-
-        //must approve manager before
-        uint256 tokenIdOfMarket = IERC3525(derivativeNFT).transferFrom(saleParam.tokenId, address(this), saleParam.onSellUnits);
-       
-        //genesis
-        uint256 genesisPublishId = IManager(IModuleGlobals(MODULE_GLOBALS).getManager()).getGenesisPublishIdByProjectId(saleParam.projectId);
-        DataTypes.PublishData memory gengesisPublishData  = IManager(IModuleGlobals(MODULE_GLOBALS).getManager()).getPublishInfo(genesisPublishId);
-        DataTypes.ProjectData memory genesisProjectData = IManager(IModuleGlobals(MODULE_GLOBALS).getManager()).getProjectInfo(saleParam.projectId);
-   
-        //previous 
-        (uint256 publishId, )  = IManager(IModuleGlobals(MODULE_GLOBALS).getManager()).getPublicationByTokenId(saleParam.projectId, saleParam.tokenId);
-        DataTypes.PublishData memory publishData  = IManager(IModuleGlobals(MODULE_GLOBALS).getManager()).getPublishInfo(publishId);
-        
-        DataTypes.PublishData memory previousPublishData = IManager(IModuleGlobals(MODULE_GLOBALS).getManager()).getPublishInfo(publishData.previousPublishId);
- 
-        _publishFixedPrice(
-            saleId, 
-            tokenIdOfMarket, 
-            derivativeNFT, 
-            saleParam,
-            genesisProjectData.soulBoundTokenId,
-            gengesisPublishData.publication.royaltyBasisPoints,
-            previousPublishData.publication.soulBoundTokenId,
-            previousPublishData.publication.royaltyBasisPoints
-        ); 
-    }
-
-    function fixedPriceSet(uint24 saleId, uint128 newSalePrice) 
-        external  
-        nonReentrant
-        whenNotPaused          
-    {
-        _validateCallerIsSoulBoundTokenOwnerOrDispathcher(sales[saleId].soulBoundTokenId);
-
-        DataTypes.Sale memory sale = sales[saleId];
-
-        if (!sale.isValid) revert Errors.InvalidSale();
-
-        uint128 preSalePrice = sale.salePrice;
-        
-        emit Events.FixedPriceSet(
-            sales[saleId].soulBoundTokenId,
-            saleId,
-            preSalePrice,
-            newSalePrice,
-            block.timestamp
-        );
-    }
-
-    function setSaleValid(uint24 saleId, bool isValid) 
-        external 
-        nonReentrant
-        whenNotPaused          
-        onlyGov
-    {
-        DataTypes.Sale storage sale = sales[saleId];
-        sale.isValid = isValid;
-    }
-
-    function setMarketValid(address derivativeNFT, bool isValid) 
-        external 
-        nonReentrant
-        whenNotPaused          
-        onlyGov
-    {
-        markets[derivativeNFT].isValid = isValid;
-    }
-
-    function removeSale(uint24 saleId) 
-        external 
-        nonReentrant
-        whenNotPaused   
-    {
-        _validateCallerIsSoulBoundTokenOwnerOrDispathcher(sales[saleId].soulBoundTokenId);
-       
-        _removeSale(saleId);
     }
 
     function addMarket(
@@ -274,279 +229,55 @@ contract MarketPlace is
         external 
         nonReentrant
         whenNotPaused   
-        onlyGov 
+        onlyOperator 
     {
-        markets[derivativeNFT_].isValid = true;
-        markets[derivativeNFT_].feePayType = DataTypes.FeePayType(feePayType_);
-        markets[derivativeNFT_].feeShareType = DataTypes.FeeShareType(feeShareType_);
-        markets[derivativeNFT_].royaltyBasisPoints = royaltyBasisPoints_;
-
-        emit Events.AddMarket(
+        MarketLogic.addMarket(
             derivativeNFT_,
             feePayType_,
             feeShareType_,
-            royaltyBasisPoints_
+            royaltyBasisPoints_,
+            markets
         );
     }
 
-    function getMarketInfo(address derivativeNFT) external view returns(DataTypes.Market memory) {
-        return markets[derivativeNFT];
+    function getMarketInfo(address derivativeNFT) external returns(DataTypes.Market memory) {
+        return _getMarketInfo(derivativeNFT);
     }
 
     function removeMarket(address derivativeNFT_) 
         external 
         nonReentrant
         whenNotPaused   
-        onlyGov
+        onlyOperator
     {
         delete markets[derivativeNFT_];
         emit Events.RemoveMarket(derivativeNFT_);
     }
 
-    function buyUnits(
-        uint256 buyerSoulBoundTokenId,
-        uint24 saleId,
-        uint128 units
-    )
+    function setMarketOpen(address derivativeNFT, bool isOpen) 
         external 
-        payable 
         nonReentrant
-        whenNotPaused 
+        whenNotPaused          
+        onlyOperator
     {
-         _validateCallerIsSoulBoundTokenOwnerOrDispathcher(buyerSoulBoundTokenId);
-
-        address _manager = IModuleGlobals(MODULE_GLOBALS).getManager();
-        address buyer = IManager(_manager).getWalletBySoulBoundTokenId(buyerSoulBoundTokenId);
- 
-        if (sales[saleId].max > 0) {
-            if (saleRecords[saleId][buyer].add(units) > sales[saleId].max) 
-                revert Errors.ExceedsPurchaseLimit(); 
-
-            saleRecords[saleId][buyer] = saleRecords[saleId][buyer].add(units);
-        }
-
-        if (sales[saleId].min > 0) {
-            if (sales[saleId].min > units) revert Errors.UnitsLTMin();
-        }
-
-        _buyByUnits(
-            buyerSoulBoundTokenId,
-            _generateNextTradeId(),
-            buyer,
-            saleId,
-            PriceManager.price(sales[saleId].priceType, saleId),
-            units
-        );
-    }
-
-    function purchasedUnits(
-        uint24 saleId_, 
-        address buyer_
-    ) external view returns(uint128) {
-        return saleRecords[saleId_][buyer_];
-    }
-
-    function totalSalesOfICToken(
-        address derivativeNFT_
-    )
-        external
-        view
-        returns (uint256)
-    {
-        return _derivativeNFTSales[derivativeNFT_].length();
-    }
-
-    function saleIdOfDerivativeNFTByIndex(
-        address derivativeNFT_, 
-        uint256 index_
-    )
-        external
-        view
-        returns (uint256)
-    {
-        return _derivativeNFTSales[derivativeNFT_].at(index_);
-    }
-
-    function getSaleData( uint24 saleId) external view returns(DataTypes.Sale memory) {
-        return sales[saleId];
+        markets[derivativeNFT].isOpen = isOpen;
     }
 
     //--- internal  ---//
 
-    function _generateNextTradeId() internal returns (uint24) {
-        _nextTradeId.increment();
-        return uint24(_nextTradeId.current());
-    } 
-
-    function _validateCallerIsSoulBoundTokenOwnerOrDispathcher(uint256 soulBoundTokenId_) internal view {
-        if (MODULE_GLOBALS == address(0)) revert Errors.ModuleGlobasNotSet();
+    // function _validateCallerIsSoulBoundTokenOwnerOrDispathcher(uint256 soulBoundTokenId_) internal view {
+    //     if (MODULE_GLOBALS == address(0)) revert Errors.ModuleGlobasNotSet();
         
-         address _sbt = IModuleGlobals(MODULE_GLOBALS).getSBT();
-         address _manager = IModuleGlobals(MODULE_GLOBALS).getManager();
+    //      address _sbt = IModuleGlobals(MODULE_GLOBALS).getSBT();
+    //      address _manager = IModuleGlobals(MODULE_GLOBALS).getManager();
 
-         if (IERC3525(_sbt).ownerOf(soulBoundTokenId_) == msg.sender || 
-            IManager(_manager).getDispatcher(soulBoundTokenId_) == msg.sender) {
-            return;
-         }
+    //      if (IERC3525(_sbt).ownerOf(soulBoundTokenId_) == msg.sender || 
+    //         IManager(_manager).getDispatcher(soulBoundTokenId_) == msg.sender) {
+    //         return;
+    //      }
 
-         revert Errors.NotProfileOwnerOrDispatcher();
-    }
+    //      revert Errors.NotProfileOwnerOrDispatcher();
+    // }
 
-    function _setGovernance(address newGovernance) internal {
-        _governance = newGovernance;
-    }
-
-    function _validateCallerIsGovernance() internal view {
-        if (msg.sender != _governance) revert Errors.NotGovernance();
-    }
-
-    function _validateCallerIsManager() internal view {
-        if (MODULE_GLOBALS == address(0)) revert Errors.ModuleGlobasNotSet();
-        address _manager = IModuleGlobals(MODULE_GLOBALS).getManager();
-        if (msg.sender != _manager) revert Errors.NotManager();
-    }
-
-    function _generateNextSaleId() internal returns (uint24) {
-        _nextSaleId.increment();
-        return uint24(_nextSaleId.current());
-    }
-
-    function _publishFixedPrice(
-        uint24 saleId,
-        uint256 tokenIdOfMarket, 
-        address derivativeNFT, 
-        DataTypes.SaleParam memory saleParam,
-        uint256 genesisSoulBoundTokenId,
-        uint256 genesisRoyaltyBasisPoints,
-        uint256 previousSoulBoundTokenId,
-        uint256 previousRoyaltyBasisPoints
-    ) internal {
-        sales[saleId] = DataTypes.Sale({
-            soulBoundTokenId: saleParam.soulBoundTokenId,
-            projectId : saleParam.projectId,
-            salePrice: saleParam.salePrice,
-            tokenId: saleParam.tokenId,
-            tokenIdOfMarket: tokenIdOfMarket,
-            onSellUnits: saleParam.onSellUnits, 
-            seledUnits: 0,
-            startTime: saleParam.startTime,
-            min: saleParam.min,
-            max: saleParam.max,
-            derivativeNFT: derivativeNFT,
-            priceType: saleParam.priceType,
-            isValid: true, 
-            genesisSoulBoundTokenId: genesisSoulBoundTokenId,
-            genesisRoyaltyBasisPoints: genesisRoyaltyBasisPoints,
-            previousSoulBoundTokenId: previousSoulBoundTokenId,
-            previousRoyaltyBasisPoints: previousRoyaltyBasisPoints
-        });
-
-        emit Events.PublishSale(
-            saleParam,
-            derivativeNFT,
-            tokenIdOfMarket,
-            saleId
-        );
-    }
-
-    function _removeSale(
-        uint24 saleId_
-    ) internal {
-        DataTypes.Sale memory sale = sales[saleId_];
-
-        if (!sale.isValid) revert Errors.InvalidSale();
-
-        //transfer from tokenIdOfMarket to seller if units is not zero
-        if (sale.onSellUnits > 0) {
-            IERC3525(sale.derivativeNFT).transferFrom(sale.tokenIdOfMarket, sale.tokenId, sale.onSellUnits);
-        }
-
-        delete sales[saleId_];
-
-        emit Events.RemoveSale(
-            sale.soulBoundTokenId,
-            saleId_,
-            sale.onSellUnits,
-            sale.seledUnits
-        );
-    }
-
-    function _buyByUnits(
-        uint256 buyerSoulBoundTokenId_,
-        uint256 tradeId_,
-        address buyer_,
-        uint24 saleId_, 
-        uint128 price_,
-        uint128 units_
-    ) internal {
-        DataTypes.Sale storage sale_ = sales[saleId_];   
-        
-        //transfer units to buyer
-        uint256 newTokenIdBuyer_ = IERC3525(sale_.derivativeNFT).transferFrom(sale_.tokenIdOfMarket, buyer_, uint256(units_));
-
-        uint256 payValue = units_.mul(sale_.salePrice);
-
-        //get realtime bank treasury fee points
-        if (MODULE_GLOBALS == address(0)) revert Errors.ModuleGlobasNotSet();
-        (, uint16 treasuryFee) = IModuleGlobals(MODULE_GLOBALS).getTreasuryData();
-
-        DataTypes.RoyaltyAmounts memory royaltyAmounts;
-        royaltyAmounts.treasuryAmount = payValue.mul(treasuryFee).div(BPS_MAX);
-
-        royaltyAmounts.genesisAmount = payValue.mul(sale_.genesisRoyaltyBasisPoints).div(BPS_MAX);
-        royaltyAmounts.previousAmount = payValue.mul(sale_.previousRoyaltyBasisPoints).div(BPS_MAX);
-            
-        if (royaltyAmounts.treasuryAmount > 0){
-            if (markets[sale_.derivativeNFT].feePayType == DataTypes.FeePayType.BUYER_PAY) {
-                INFTDerivativeProtocolTokenV1(IModuleGlobals(MODULE_GLOBALS).getSBT()).transferValue(buyerSoulBoundTokenId_, Constants._BANK_TREASURY_SOUL_BOUND_TOKENID, royaltyAmounts.treasuryAmount);
-                royaltyAmounts.adjustedAmount = payValue.sub(royaltyAmounts.treasuryAmount).sub(royaltyAmounts.genesisAmount).sub(royaltyAmounts.previousAmount);
-                
-            } else {
-                INFTDerivativeProtocolTokenV1(IModuleGlobals(MODULE_GLOBALS).getSBT()).transferValue(sale_.soulBoundTokenId, Constants._BANK_TREASURY_SOUL_BOUND_TOKENID, royaltyAmounts.treasuryAmount);
-                royaltyAmounts.adjustedAmount = payValue.sub(royaltyAmounts.genesisAmount).sub(royaltyAmounts.previousAmount);
-                
-            }
-        } 
-
-        if(markets[sale_.derivativeNFT].feeShareType == DataTypes.FeeShareType.LEVEL_TWO ) {
-
-            if ( royaltyAmounts.adjustedAmount > 0) 
-                INFTDerivativeProtocolTokenV1(IModuleGlobals(MODULE_GLOBALS).getSBT()).transferValue(buyerSoulBoundTokenId_, sale_.soulBoundTokenId, royaltyAmounts.adjustedAmount);
-            
-            if (royaltyAmounts.genesisAmount > 0) INFTDerivativeProtocolTokenV1(IModuleGlobals(MODULE_GLOBALS).getSBT()).transferValue(buyerSoulBoundTokenId_, sale_.genesisSoulBoundTokenId, royaltyAmounts.genesisAmount);
-            if (royaltyAmounts.previousAmount > 0) INFTDerivativeProtocolTokenV1(IModuleGlobals(MODULE_GLOBALS).getSBT()).transferValue(buyerSoulBoundTokenId_, sale_.previousSoulBoundTokenId, royaltyAmounts.previousAmount);
-        
-        } else if(markets[sale_.derivativeNFT].feeShareType == DataTypes.FeeShareType.LEVEL_FIVE) {
-            royaltyAmounts.adjustedAmount = payValue.mul(markets[sale_.derivativeNFT].royaltyBasisPoints);
-            if ( royaltyAmounts.adjustedAmount > 0 ) 
-                INFTDerivativeProtocolTokenV1(IModuleGlobals(MODULE_GLOBALS).getSBT()).transferValue(buyerSoulBoundTokenId_, sale_.soulBoundTokenId, royaltyAmounts.adjustedAmount);
-            
-            INFTDerivativeProtocolTokenV1(IModuleGlobals(MODULE_GLOBALS).getSBT()).transferValue(buyerSoulBoundTokenId_, Constants._BANK_TREASURY_SOUL_BOUND_TOKENID, payValue.sub(royaltyAmounts.adjustedAmount).sub(royaltyAmounts.treasuryAmount));
-        }
-
-        sale_.onSellUnits -= units_;
-        sale_.seledUnits += units_;
-
-        emit Events.Traded(
-            saleId_,
-            buyer_,
-            tradeId_,
-            uint32(block.timestamp),
-            price_,
-            newTokenIdBuyer_,
-            units_,
-            royaltyAmounts
-        );
-
-        if (sale_.onSellUnits == 0) {
-            emit Events.RemoveSale(
-                sale_.soulBoundTokenId,
-                saleId_,
-                sale_.onSellUnits,
-                sale_.seledUnits
-            );
-            delete sales[saleId_];
-        }
-    }
 
 }

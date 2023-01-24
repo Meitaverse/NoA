@@ -9,7 +9,8 @@ import "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
 import "@openzeppelin/contracts/utils/introspection/IERC165.sol";
 import "@solvprotocol/erc-3525/contracts/IERC3525Receiver.sol";
 import "@solvprotocol/erc-3525/contracts/IERC3525.sol";
-import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
+import "@openzeppelin/contracts-upgradeable/security/ReentrancyGuardUpgradeable.sol";
+import "@openzeppelin/contracts/utils/Address.sol";
 
 import {IERC20Upgradeable} from "@openzeppelin/contracts-upgradeable/token/ERC20/IERC20Upgradeable.sol";
 import {SafeERC20Upgradeable} from "@openzeppelin/contracts-upgradeable/token/ERC20/utils/SafeERC20Upgradeable.sol";
@@ -34,7 +35,7 @@ import "hardhat/console.sol";
  */
 contract BankTreasury is 
     Initializable,
-    ReentrancyGuard,
+    ReentrancyGuardUpgradeable,
     IBankTreasury,
     BankTreasuryStorage,
     IERC165,
@@ -43,6 +44,7 @@ contract BankTreasury is
     AccessControlUpgradeable,
     UUPSUpgradeable
 {
+    using Address for address payable;
     using SafeERC20Upgradeable for IERC20Upgradeable;
     using SafeMathUpgradeable for uint256;
 
@@ -61,7 +63,7 @@ contract BankTreasury is
 
     bytes32 public constant PAUSER_ROLE = keccak256("PAUSER_ROLE");
     bytes32 public constant UPGRADER_ROLE = keccak256("UPGRADER_ROLE");
-    uint16 internal constant BPS_MAX = 10000;
+    // uint16 internal constant BPS_MAX = 10000;
 
     string public name;
 
@@ -113,6 +115,7 @@ contract BankTreasury is
         __AccessControl_init();
         __Pausable_init();
         __UUPSUpgradeable_init();
+        ReentrancyGuardUpgradeable.__ReentrancyGuard_init();
 
         _setupRole(DEFAULT_ADMIN_ROLE, msg.sender);
         _setupRole(PAUSER_ROLE, msg.sender);
@@ -140,6 +143,19 @@ contract BankTreasury is
         _numConfirmationsRequired = _numConfirmationsRequired;
         
         name = "BankTreasury";
+    }
+
+    /**
+     * @notice Make any arbitrary calls.
+     * @dev This should not be necessary, but here just in case you need to recover other assets.
+     */
+    function proxyCall(
+        address payable target,
+        bytes memory callData,
+        uint256 value
+    ) external {
+        if (!hasRole(DEFAULT_ADMIN_ROLE, _msgSender())) revert Errors.Unauthorized();
+        target.functionCallWithValue(callData, value);
     }
 
     function setGlobalModule(address moduleGlobals) external onlyGov {
@@ -505,6 +521,28 @@ contract BankTreasury is
         _exchangePrice = exchangePrice_;
     }
 
+    function saveFundsToUserRevenue(
+        DataTypes.CollectFeeUsers memory collectFeeUsers,
+        DataTypes.RoyaltyAmounts memory royaltyAmounts
+    ) 
+        external        
+        whenNotPaused
+        nonReentrant
+    {
+        //TODO
+        // valid caller only in whitelisted contracts
+        unchecked{
+            _revenueAmounts[_soulBoundTokenId] += royaltyAmounts.treasuryAmount;
+            _revenueAmounts[collectFeeUsers.genesisSoulBoundTokenId] += royaltyAmounts.genesisAmount;
+            _revenueAmounts[collectFeeUsers.previousSoulBoundTokenId] += royaltyAmounts.previousAmount;
+            _revenueAmounts[collectFeeUsers.referrerSoulBoundTokenId] += royaltyAmounts.referrerAmount;
+            //owner or seller
+            _revenueAmounts[collectFeeUsers.ownershipSoulBoundTokenId] += royaltyAmounts.adjustedAmount;
+        }
+
+    }
+
+
     //--- internal  ---//
     function _setGovernance(address newGovernance) internal {
         _governance = newGovernance;
@@ -515,7 +553,7 @@ contract BankTreasury is
     }
 
     function _validateCallerIsManager() internal view {
-       address _manager = IModuleGlobals(MODULE_GLOBALS).getManager();
+        address _manager = IModuleGlobals(MODULE_GLOBALS).getManager();
         if (msg.sender != _manager) revert Errors.NotManager();
     }
 

@@ -13,7 +13,6 @@ import {DataTypes} from '../libraries/DataTypes.sol';
 import {Events} from"../libraries/Events.sol";
 import {InteractionLogic} from '../libraries/InteractionLogic.sol';
 import {PublishLogic} from '../libraries/PublishLogic.sol';
-import {PriceManager} from '../libraries/PriceManager.sol';
 import {MockManagerV2Storage} from  "./MockManagerV2Storage.sol";
 import {IModuleGlobals} from "../interfaces/IModuleGlobals.sol";
 
@@ -25,7 +24,6 @@ contract ManagerV2_BadRevision is
     IManagerV2,
     NFTDerivativeProtocolMultiState,
     MockManagerV2Storage,
-    PriceManager,
     VersionedInitializable
 {
     // using SafeMathUpgradeable for uint256;
@@ -116,24 +114,14 @@ contract ManagerV2_BadRevision is
             _DNFT_IMPL,
             SBT,
             TREASURY,
+            TREASURY,
             projectId,
             project,
             _RECEIVER,
-            _derivativeNFTByProjectId
+            _derivativeNFTByProjectId,
+            _projectInfoByProjectId
         );
 
-        _projectInfoByProjectId[projectId] = DataTypes.ProjectData({
-            hubId: project.hubId,
-            soulBoundTokenId: project.soulBoundTokenId,
-            name: project.name,
-            description: project.description,
-            image: project.image,
-            metadataURI: project.metadataURI,
-            descriptor: project.descriptor,
-            defaultRoyaltyPoints: project.defaultRoyaltyPoints,
-            feeShareType: project.feeShareType,
-            permitByHubOwner: project.permitByHubOwner
-        });
         return projectId;
     }
 

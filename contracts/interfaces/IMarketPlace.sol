@@ -22,15 +22,15 @@ interface IMarketPlace {
    
     function getGlobalModule() external view returns(address);
 
-    function getGovernance() external view returns(address);
+    // function getGovernance() external view returns(address);
 
-    function publishSale(
-        DataTypes.SaleParam memory saleParam
-    ) external;
+    // function publishSale(
+    //     DataTypes.SaleParam memory saleParam
+    // ) external;
 
-    function fixedPriceSet(uint24 saleId, uint128 newSalePrice) external;
+    //function fixedPriceSet(uint24 saleId, uint128 newSalePrice) external;
 
-    function removeSale(uint24 saleId) external;
+    //function removeSale(uint24 saleId) external;
 
     function addMarket(
         address derivativeNFT_,
@@ -39,18 +39,19 @@ interface IMarketPlace {
         uint16 royaltyBasisPoints_
     ) external;
 
-    function getMarketInfo(address derivativeNFT) external view returns(DataTypes.Market memory);
+    function getMarketInfo(address derivativeNFT) external returns(DataTypes.Market memory);
 
     function removeMarket(
         address derivativeNFT_
     ) external;
 
+/*
     function buyUnits(
         uint256 buyerSoulBoundTokenId,
         uint24 saleId, 
         uint128 units
     )  external payable;
-    
+
     function purchasedUnits(
         uint24 saleId_, 
         address buyer_
@@ -65,5 +66,5 @@ interface IMarketPlace {
         returns (uint256);
 
     function getSaleData( uint24 saleId) external view returns(DataTypes.Sale memory);
-   
+*/
 }

@@ -110,7 +110,7 @@ dataSources:
           handler: handleHubCreated
         - event: HubUpdated(indexed uint256,string,string,string,uint256)
           handler: handleHubUpdated
-        - event: PublishPrepared((uint256,uint256,uint256,uint256,uint256,uint256,string,string,string[],uint256[],address,bytes,address,bytes),uint256,uint256,uint256,uint256)
+        - event: PublishPrepared((uint256,uint256,uint256,uint256,uint256,uint256,string,string,bool,string[],uint256[],address,bytes,address,bytes),uint256,uint256,uint256,uint256)
           handler: handlePublishPrepared
         - event: PublishUpdated(uint256,uint256,uint256,uint256,uint256,string,string,string[],uint256[],uint256,uint256)
           handler: handlePublishUpdated
@@ -347,32 +347,63 @@ dataSources:
       language: wasm/assemblyscript
       entities:
         - MarketPlaceERC3525Received
-        - FixedPriceSet
         - AddMarket
         - RemoveMarket
-        - PublishSale
-        - RemoveSale
-        - Traded
+        - ReserveAuctionBidPlaced
+        - ReserveAuctionCanceled
+        - ReserveAuctionCreated
+        - ReserveAuctionFinalized
+        - ReserveAuctionInvalidated
+        - ReserveAuctionUpdated
+        - OfferMade
+        - OfferAccepted
+        - OfferInvalidated
+        - BuyPriceSet
+        - BuyPriceCanceled
+        - BuyPriceInvalidated
+        - BuyPriceAccepted
       abis:
+        - name: DerivativeNFTV1
+          file: ../artifacts/contracts/DerivativeNFTV1.sol/DerivativeNFTV1.json
         - name: Events
           file: ../artifacts/contracts/libraries/Events.sol/Events.json
       eventHandlers:
         - event: MarketPlaceERC3525Received(indexed address,indexed uint256,indexed
             uint256,uint256,bytes,uint256)
           handler: handleMarketPlaceERC3525Received
-        - event: FixedPriceSet(indexed uint256,indexed uint128,uint128,indexed
-            uint128,uint256)
-          handler: handleFixedPriceSet
         - event: AddMarket(address,uint8,uint8,uint16)
           handler: handleAddMarket
         - event: RemoveMarket(address)
           handler: handleRemoveMarket
-        - event: PublishSale((uint256,uint256,uint256,uint128,uint32,uint128,uint8,uint128,uint128),indexed
-            address,indexed uint256,indexed uint128)
-          handler: handlePublishSale
-        - event: RemoveSale(uint256,uint128,uint256,uint256)
-          handler: handleRemoveSale
-        - event: Traded(indexed uint24,indexed
-            address,uint256,uint32,uint128,uint256,uint128,(uint256,uint256,uint256,uint256,uint256))
-          handler: handleTraded
+        - event: ReserveAuctionBidPlaced(indexed uint256,indexed address,uint256,uint256)
+          handler: handleReserveAuctionBidPlaced
+        - event: ReserveAuctionCanceled(indexed uint256)
+          handler: handleReserveAuctionCanceled
+        - event: ReserveAuctionCreated(indexed address,indexed address,indexed
+            uint256,uint256,uint256,uint256,uint256)
+          handler: handleReserveAuctionCreated
+        - event: ReserveAuctionFinalized(indexed uint256,indexed address,indexed
+            address,uint256,uint256,uint256)
+          handler: handleReserveAuctionFinalized
+        - event: ReserveAuctionInvalidated(indexed uint256)
+          handler: handleReserveAuctionInvalidated
+        - event: ReserveAuctionUpdated(indexed uint256,uint256)
+          handler: handleReserveAuctionUpdated
+        - event: OfferMade(indexed address,indexed uint256,indexed
+            address,uint256,uint256)
+          handler: handleOfferMade
+        - event: OfferAccepted(indexed address,indexed uint256,indexed
+            address,address,uint256,uint256,uint256)
+          handler: handleOfferAccepted
+        - event: OfferInvalidated(indexed address,indexed uint256)
+          handler: handleOfferInvalidated
+        - event: BuyPriceSet(indexed address,indexed uint256,indexed address,uint256)
+          handler: handleBuyPriceSet
+        - event: BuyPriceCanceled(indexed address,indexed uint256)
+          handler: handleBuyPriceCanceled
+        - event: BuyPriceInvalidated(indexed address,indexed uint256)
+          handler: handleBuyPriceInvalidated
+        - event: BuyPriceAccepted(indexed address,indexed uint256,indexed
+            address,address,uint256,uint256,uint256)
+          handler: handleBuyPriceAccepted
       file: ./src/marketplace-mapping.ts

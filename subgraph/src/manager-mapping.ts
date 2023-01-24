@@ -107,6 +107,7 @@ export function handlePublishPrepared(event: PublishPrepared): void {
         publication.amount = event.params.publication.amount
         publication.name = event.params.publication.name
         publication.description = event.params.publication.description
+        publication.canCollect = event.params.publication.canCollect
         publication.materialURIs = event.params.publication.materialURIs
         publication.fromTokenIds = event.params.publication.fromTokenIds
         publication.collectModule = event.params.publication.collectModule

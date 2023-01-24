@@ -95,7 +95,7 @@ task("market-removeSale", "market place remove sale")
       user
     );
 
-
+/*
     await waitForTx(
       marketPlace.connect(user).removeSale(saleid)
     );
@@ -105,5 +105,5 @@ task("market-removeSale", "market place remove sale")
     
     console.log('\n\t--- ownerOf SECOND_DNFT_TOKEN_ID : ', await derivativeNFT.ownerOf(SECOND_DNFT_TOKEN_ID));
     console.log('\t--- balanceOf SECOND_DNFT_TOKEN_ID : ', (await derivativeNFT["balanceOf(uint256)"](SECOND_DNFT_TOKEN_ID)).toNumber());
-    
+    */
 });

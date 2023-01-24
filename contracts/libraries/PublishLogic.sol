@@ -6,7 +6,7 @@ import {IERC3525} from "@solvprotocol/erc-3525/contracts/IERC3525.sol";
 import {DataTypes} from './DataTypes.sol';
 import {Errors} from './Errors.sol';
 import {Events} from './Events.sol';
-import {Constants} from './Constants.sol';
+import './Constants.sol';
 import {IDerivativeNFTV1} from "../interfaces/IDerivativeNFTV1.sol";
 import {ICollectModule} from '../interfaces/ICollectModule.sol';
 import {IPublishModule} from '../interfaces/IPublishModule.sol';
@@ -219,6 +219,7 @@ library PublishLogic {
 
         if ( derivativeNFT== address(0)) 
             revert Errors.DerivativeNFTIsZero();
+
 
         uint256 projectId = _projectDataByPublishId[collectData.publishId].publication.projectId;
 

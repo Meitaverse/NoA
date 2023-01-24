@@ -82,4 +82,13 @@ interface IBankTreasury {
      * @return bytes32 The domain separator.
      */
     function getDomainSeparator() external view returns (bytes32);
+
+    /**
+     * @notice Save funds to mapping revenues, user can withdraw it if reach a limit amount
+     *
+     */
+    function saveFundsToUserRevenue(
+        DataTypes.CollectFeeUsers memory collectFeeUsers,
+        DataTypes.RoyaltyAmounts memory royaltyAmounts
+    ) external;
 }

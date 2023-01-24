@@ -36,7 +36,7 @@ contract GovernorContract is
    
     bytes32 public constant PAUSER_ROLE = keccak256("PAUSER_ROLE");
     bytes32 public constant UPGRADER_ROLE = keccak256("UPGRADER_ROLE");
-    uint16 internal constant BPS_MAX = 10000;
+    // uint16 internal constant BPS_MAX = 10000;
 
     /// @custom:oz-upgrades-unsafe-allow constructor
     constructor() initializer {}
@@ -60,6 +60,7 @@ contract GovernorContract is
         __AccessControl_init();
         __Pausable_init();
         __UUPSUpgradeable_init();
+        ReentrancyGuardUpgradeable.__ReentrancyGuard_init();
 
         _setupRole(DEFAULT_ADMIN_ROLE, msg.sender);
         _setupRole(PAUSER_ROLE, msg.sender);

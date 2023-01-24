@@ -123,7 +123,6 @@ makeSuiteCleanRoom('UUPS ability', function () {
          expect(await v2.version()).to.eq(2);
          expect(await v2.getSigner()).to.eq(userAddress);
 
-        //  expect((await sbtContract.getBankTreasury()).toUpperCase()).to.eq(bankTreasuryContract.address.toUpperCase());
       });
       
     });

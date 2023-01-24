@@ -99,6 +99,7 @@ task("market-publishSale", "market place functions")
       derivativeNFT.connect(user)["approve(address,uint256)"](marketPlace.address, nftid)
     );
 
+    /*
     await waitForTx(
       marketPlace.connect(user).publishSale({
         soulBoundTokenId: SECOND_PROFILE_ID,
@@ -118,5 +119,5 @@ task("market-publishSale", "market place functions")
     
     console.log('\n\t--- ownerOf second tokenId : ', await derivativeNFT.ownerOf(SECOND_DNFT_TOKEN_ID));
     console.log('\t--- balanceOf second tokenId : ', (await derivativeNFT["balanceOf(uint256)"](SECOND_DNFT_TOKEN_ID)).toNumber());
-    
+    */
 });

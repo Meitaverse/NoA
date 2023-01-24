@@ -18,6 +18,7 @@ interface IModuleGlobals {
     function setGovernance(address newGovernance) external;
     
     function setManager(address newManager) external;
+    
     function setSBT(address newSBT) external;
 
     /**
@@ -27,6 +28,7 @@ interface IModuleGlobals {
      */
     function setTreasury(address newTreasury) external;
 
+    function setMarketPlace(address newMarketPlace) external;
 
     function setVoucher(address newVoucher) external;
 
@@ -78,6 +80,8 @@ interface IModuleGlobals {
      * @return address The treasury address.
      */
     function getSBT() external view returns (address);
+    
+    function getMarketPlace() external view returns (address);
     
     /**
      * @notice Returns the treasury fee.

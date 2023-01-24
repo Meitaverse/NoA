@@ -189,61 +189,8 @@ library Events {
         uint256 gas
     );
 
-    /**
-     * @dev Emitted when the market place receive ERC3525 tokens
-     *
-     * @param operator The operator who called by.
-     * @param fromTokenId The from token id
-     * @param toTokenId The to token id
-     * @param value The value of token
-     * @param data The data extend
-     * @param gas The gas left
-     */    
-    event MarketPlaceERC3525Received(
-        address indexed operator, 
-        uint256 indexed fromTokenId, 
-        uint256 indexed toTokenId, 
-        uint256 value, 
-        bytes data, 
-        uint256 gas
-    );
-
-    
-/**
-     * @dev Emitted when ether send to  market place contract
-     *
-     * 
-     * @param sender The sender 
-     * @param amount The amount
-     * @param sender The receiver 
-     * @param balance balance of contract
-     */
-    event MarketPlaceDeposit(
-        address indexed sender, 
-        uint256 amount, 
-        address indexed receiver, 
-        uint256 balance
-    );
-    
-    /**
-     * @dev Emitted when ether send to market place contract
-     *
-     * 
-     * @param sender The sender 
-     * @param amount The amount
-     * @param sender The receiver 
-     * @param balance balance of contract
-     * @param data msg.data 
-     */
-    event MarketPlaceDepositByFallback(
-        address indexed sender, 
-        uint256 amount, 
-        address indexed receiver, 
-        uint256 balance,
-        bytes data
-    );
-    
     //Receiver
+
     /**
      * @dev Emitted when the Receiver contract receive ERC3525 tokens
      *
@@ -525,6 +472,62 @@ library Events {
         uint256 timestamp
     );
 
+// Market
+
+    /**
+     * @dev Emitted when the market place receive ERC3525 tokens
+     *
+     * @param operator The operator who called by.
+     * @param fromTokenId The from token id
+     * @param toTokenId The to token id
+     * @param value The value of token
+     * @param data The data extend
+     * @param gas The gas left
+     */    
+    event MarketPlaceERC3525Received(
+        address indexed operator, 
+        uint256 indexed fromTokenId, 
+        uint256 indexed toTokenId, 
+        uint256 value, 
+        bytes data, 
+        uint256 gas
+    );
+
+    
+/**
+     * @dev Emitted when ether send to  market place contract
+     *
+     * 
+     * @param sender The sender 
+     * @param amount The amount
+     * @param sender The receiver 
+     * @param balance balance of contract
+     */
+    event MarketPlaceDeposit(
+        address indexed sender, 
+        uint256 amount, 
+        address indexed receiver, 
+        uint256 balance
+    );
+    
+    /**
+     * @dev Emitted when ether send to market place contract
+     *
+     * 
+     * @param sender The sender 
+     * @param amount The amount
+     * @param sender The receiver 
+     * @param balance balance of contract
+     * @param data msg.data 
+     */
+    event MarketPlaceDepositByFallback(
+        address indexed sender, 
+        uint256 amount, 
+        address indexed receiver, 
+        uint256 balance,
+        bytes data
+    );
+    
     /**
      * @dev Emitted when a derivativeNFT contract is add to market
      * only governor called
@@ -534,7 +537,7 @@ library Events {
      * @param feeShareType The share type, default is level two
      * @param royaltyBasisPoints The royalty Basis Points 
      */
-   event AddMarket(
+    event AddMarket(
         address derivativeNFT,
         DataTypes.FeePayType feePayType,
         DataTypes.FeeShareType feeShareType,
@@ -547,8 +550,176 @@ library Events {
      *
      * @param derivativeNFT The derivativeNFT address
      */
-   event RemoveMarket(address derivativeNFT);
+    event RemoveMarket(address derivativeNFT);
+    
+
+    /**
+     * @notice Emitted when an DNFT is bought by accepting the buy price,
+     * indicating that the DNFT has been transferred and revenue from the sale distributed.
+     * @dev The total buy price that was accepted is `totalFees` + `creatorRev` + `sellerRev`.
+     * @param derivativeNFT The address of the DNFT contract.
+     * @param tokenId The token id of seller.
+     * @param newTokenIdBuyer The new token id of buyer .
+     * @param seller The address of the seller which originally set the buy price.
+     * @param buyer The address of the collector that purchased the DNFT using `buy`.
+     * @param soulBoundTokenIdReferrer The SBT id of the referrer
+     * @param royaltyAmounts The fees that was sent to Foundation & referrals for this sale.
+     */
+    event BuyPriceAccepted(
+        address indexed derivativeNFT,
+        uint256 indexed tokenId,
+        uint256 indexed newTokenIdBuyer,
+        address seller,
+        address buyer,
+        uint256 soulBoundTokenIdReferrer,
+        DataTypes.RoyaltyAmounts royaltyAmounts
+    );
+    
+    /**
+     * @notice Emitted when the buy price is removed by the owner of an DNFT.
+     * @dev The DNFT is transferred back to the owner unless it's still escrowed for another market tool,
+     * e.g. listed for sale in an auction.
+     * @param derivativeNFT The address of the DNFT contract.
+     * @param tokenId The id of the DNFT.
+     */
+    event BuyPriceCanceled(address indexed derivativeNFT, uint256 indexed tokenId);
+    
+    /**
+     * @notice Emitted when a buy price is invalidated due to other market activity.
+     * @dev This occurs when the buy price is no longer eligible to be accepted,
+     * e.g. when a bid is placed in an auction for this DNFT.
+     * @param derivativeNFT The address of the DNFT contract.
+     * @param tokenId The id of the DNFT.
+     */
+    event BuyPriceInvalidated(address indexed derivativeNFT, uint256 indexed tokenId);
+    /**
+     * @notice Emitted when a buy price is set by the owner of an DNFT.
+     * @dev The DNFT is transferred into the market contract for escrow unless it was already escrowed,
+     * e.g. for auction listing.
+     * @param derivativeNFT The address of the DNFT contract.
+     * @param tokenId The id of the DNFT.
+     * @param seller The address of the DNFT owner which set the buy price.
+     * @param price The price of the DNFT.
+     */
+    event BuyPriceSet(address indexed derivativeNFT, uint256 indexed tokenId, address indexed seller, uint256 price);
+
+
+    /**
+     * @notice Emitted when an offer is accepted,
+     * indicating that the DNFT has been transferred and revenue from the sale distributed.
+     * @dev The accepted total offer amount is `totalFees` + `creatorRev` + `sellerRev`.
+     * @param derivativeNFT The address of the DNFT contract.
+     * @param tokenId The id of the DNFT.
+     * @param buyer The address of the collector that made the offer which was accepted.
+     * @param seller The address of the seller which accepted the offer.
+     * @param royaltyAmounts The fees that was sent to Foundation & referrals for this sale.
+     */
+    event OfferAccepted(
+        address indexed derivativeNFT,
+        uint256 indexed tokenId,
+        address indexed buyer,
+        address seller,
+        DataTypes.RoyaltyAmounts royaltyAmounts
+    );
+
+    /**
+     * @notice Emitted when an offer is invalidated due to other market activity.
+     * When this occurs, the collector which made the offer has their FETH balance unlocked
+     * and the funds are available to place other offers or to be withdrawn.
+     * @dev This occurs when the offer is no longer eligible to be accepted,
+     * e.g. when a bid is placed in an auction for this DNFT.
+     * @param derivativeNFT The address of the DNFT contract.
+     * @param tokenId The id of the DNFT.
+     */
+    event OfferInvalidated(address indexed derivativeNFT, uint256 indexed tokenId);
+    
+    /**
+     * @notice Emitted when an offer is made.
+     * @dev The `amount` of the offer is locked in the FETH ERC-20 contract, guaranteeing that the funds
+     * remain available until the `expiration` date.
+     * @param derivativeNFT The address of the DNFT contract.
+     * @param tokenId The id of the DNFT.
+     * @param buyer The address of the collector that made the offer to buy this DNFT.
+     * @param amount The amount, in wei, of the offer.
+     * @param expiration The expiration timestamp for the offer.
+     */
+    event OfferMade(
+        address indexed derivativeNFT,
+        uint256 indexed tokenId,
+        address indexed buyer,
+        uint256 amount,
+        uint256 expiration
+    );
+
+
+    /**
+     * @notice Emitted when a bid is placed.
+     * @param auctionId The id of the auction this bid was for.
+     * @param bidder The address of the bidder.
+     * @param amount The amount of the bid.
+     * @param endTime The new end time of the auction (which may have been set or extended by this bid).
+     */
+    event ReserveAuctionBidPlaced(uint256 indexed auctionId, address indexed bidder, uint256 amount, uint256 endTime);
+    
+    /**
+     * @notice Emitted when an auction is canceled.
+     * @dev This is only possible if the auction has not received any bids.
+     * @param auctionId The id of the auction that was canceled.
+     */
+    event ReserveAuctionCanceled(uint256 indexed auctionId);
+    
+    /**
+     * @notice Emitted when an DNFT is listed for auction.
+     * @param seller The address of the seller.
+     * @param derivativeNFT The address of the DNFT contract.
+     * @param tokenId The id of the DNFT.
+     * @param duration The duration of the auction (always 24-hours).
+     * @param extensionDuration The duration of the auction extension window (always 15-minutes).
+     * @param reservePrice The reserve price to kick off the auction.
+     * @param auctionId The id of the auction that was created.
+     */
+    event ReserveAuctionCreated(
+        address indexed seller,
+        address indexed derivativeNFT,
+        uint256 indexed tokenId,
+        uint256 duration,
+        uint256 extensionDuration,
+        uint256 reservePrice,
+        uint256 auctionId
+    );
    
+    /**
+     * @notice Emitted when an auction that has already ended is finalized,
+     * indicating that the DNFT has been transferred and revenue from the sale distributed.
+     * @dev The amount of the highest bid / final sale price for this auction
+     * is `totalFees` + `creatorRev` + `sellerRev`.
+     * @param auctionId The id of the auction that was finalized.
+     * @param seller The address of the seller.
+     * @param bidder The address of the highest bidder that won the DNFT.
+     * @param royaltyAmounts The fees  for this sale.
+     */
+    event ReserveAuctionFinalized(
+        uint256 indexed auctionId,
+        address indexed seller,
+        address indexed bidder,
+        DataTypes.RoyaltyAmounts royaltyAmounts
+    );
+    
+    /**
+     * @notice Emitted when an auction is invalidated due to other market activity.
+     * @dev This occurs when the DNFT is sold another way, such as with `buy` or `acceptOffer`.
+     * @param auctionId The id of the auction that was invalidated.
+     */
+    event ReserveAuctionInvalidated(uint256 indexed auctionId);
+    
+    /**
+     * @notice Emitted when the auction's reserve price is changed.
+     * @dev This is only possible if the auction has not received any bids.
+     * @param auctionId The id of the auction that was updated.
+     * @param reservePrice The new reserve price for the auction.
+     */
+    event ReserveAuctionUpdated(uint256 indexed auctionId, uint256 reservePrice);
+
     /**
      * @dev Emitted when a saleId is set a new salePrice.
      *
@@ -558,13 +729,13 @@ library Events {
      * @param newSalePrice The newSalePrice
      * @param timestamp The current block timestamp.
      */
-    event FixedPriceSet(
-       uint256 indexed soulBoundTokenId,
-       uint128 indexed saleId,
-       uint128 preSalePrice,
-       uint128 indexed newSalePrice,
-       uint256 timestamp
-    );
+    // event FixedPriceSet(
+    //    uint256 indexed soulBoundTokenId,
+    //    uint128 indexed saleId,
+    //    uint128 preSalePrice,
+    //    uint128 indexed newSalePrice,
+    //    uint256 timestamp
+    // );
 
     /**
      * @dev Emitted when a sale is publish, after transfer to market, a new tokenId is generated.
@@ -575,12 +746,12 @@ library Events {
      * @param tokenIdOfMarket The new tokenId generate while market receive 
      * @param saleId The saleId 
      */
-    event PublishSale(
-        DataTypes.SaleParam saleParam,
-        address indexed derivativeNFT,
-        uint256 indexed tokenIdOfMarket,
-        uint128 indexed saleId
-    );
+    // event PublishSale(
+    //     DataTypes.SaleParam saleParam,
+    //     address indexed derivativeNFT,
+    //     uint256 indexed tokenIdOfMarket,
+    //     uint128 indexed saleId
+    // );
 
     /**
      * @dev Emitted when a sale is removed, after removed value of dNFT will transfer to seller
@@ -590,12 +761,12 @@ library Events {
      * @param onSellUnits The onSell Units 
      * @param saledUnits The saled Units 
      */
-   event RemoveSale(
-        uint256 soulBoundTokenId,
-        uint128 saleId,
-        uint256 onSellUnits,
-        uint256 saledUnits
-    ); 
+//    event RemoveSale(
+//         uint256 soulBoundTokenId,
+//         uint128 saleId,
+//         uint256 onSellUnits,
+//         uint256 saledUnits
+//     ); 
     
     /**
      * @dev Emitted when a sale is traded
@@ -610,18 +781,18 @@ library Events {
      * @param tradedUnits The trade units
      * @param royaltyAmounts The royalty amounts
      */
-    event Traded(
-        uint24 indexed saleId,
-        address indexed buyer,
-        uint256 tradeId,
-        uint32 tradeTime,
-        uint128 price,
-        uint256 newTokenIdBuyer,
-        uint128 tradedUnits,
-        DataTypes.RoyaltyAmounts royaltyAmounts
-    );
+    // event Traded(
+    //     uint24 indexed saleId,
+    //     address indexed buyer,
+    //     uint256 tradeId,
+    //     uint32 tradeTime,
+    //     uint128 price,
+    //     uint256 newTokenIdBuyer,
+    //     uint128 tradedUnits,
+    //     DataTypes.RoyaltyAmounts royaltyAmounts
+    // );
 
-    //BankTreasury
+    //Bank Treasury
     
     /**
      * @dev Emitted when ether send to bank treasury contract
@@ -876,12 +1047,14 @@ library Events {
      *
      * @param publishId  The publishId 
      * @param tokenId  The tokenId collected
+     * @param collectUnits  The units collected
      * @param collectFeeUsers The collectFeeUsers data
      * @param royaltyAmounts  The royaltyAmounts data
      */
     event FeesForCollect (
         uint256 publishId, 
         uint256 tokenId, 
+        uint256 collectUnits, 
         DataTypes.CollectFeeUsers collectFeeUsers,
         DataTypes.RoyaltyAmounts royaltyAmounts
     );

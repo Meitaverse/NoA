@@ -9,7 +9,7 @@ import "@solvprotocol/erc-3525/contracts/ERC3525Upgradeable.sol";
 
 import {Errors} from "./libraries/Errors.sol";
 import {Events} from "./libraries/Events.sol";
-import {Constants} from './libraries/Constants.sol';
+import './libraries/Constants.sol';
 import {SBTLogic} from './libraries/SBTLogic.sol';
 import {IManager} from "./interfaces/IManager.sol";
 import {ERC3525Votes} from "./extensions/ERC3525Votes.sol";
@@ -67,7 +67,6 @@ contract NFTDerivativeProtocolTokenV1 is
 
         _setupRole(DEFAULT_ADMIN_ROLE, _msgSender());
         _grantRole(UPGRADER_ROLE, _msgSender());
-        // _grantRole(TRANSFER_VALUE_ROLE, _msgSender());
 
         if (manager == address(0)) revert Errors.InitParamsInvalid();
         _setManager(manager);
@@ -158,7 +157,7 @@ contract NFTDerivativeProtocolTokenV1 is
     { 
         uint256 balance = ERC3525Upgradeable.balanceOf(soulBoundTokenId);
         if (balance > 0 ) {
-            ERC3525Upgradeable._transferValue(soulBoundTokenId, Constants._BANK_TREASURY_SOUL_BOUND_TOKENID, balance);
+            ERC3525Upgradeable._transferValue(soulBoundTokenId, BANK_TREASURY_SOUL_BOUND_TOKENID, balance);
         }
         ERC3525Upgradeable._burn(soulBoundTokenId);
         SBTLogic.burnProcess(msg.sender, balance, soulBoundTokenId, _sbtDetails);
@@ -169,7 +168,7 @@ contract NFTDerivativeProtocolTokenV1 is
         uint256 toTokenId_,
         uint256 value_
     ) external  { 
-        //call only by BankTreasury or FeeCollectModule or publishModule  or Voucher
+        //call only by BankTreasury, FeeCollectModule, publishModule, Voucher Or MarketPlace
         if (!hasRole(TRANSFER_VALUE_ROLE, _msgSender())) revert Errors.NotTransferValueAuthorised();
         ERC3525Upgradeable._transferValue(fromTokenId_, toTokenId_, value_);
     }

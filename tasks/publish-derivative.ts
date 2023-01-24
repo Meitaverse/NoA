@@ -145,6 +145,7 @@ task("publish-derivative", "publish-derivative function")
         royaltyBasisPoints: Default_royaltyBasisPoints,
         name: `Secondary creation from #${fromtokenid}`,  //注意，不能重复
         description: `Secondary creation description`,
+        canCollect: true,
         materialURIs: [],
         fromTokenIds: [fromtokenid],  //必须先collect
         collectModule: feeCollectModule.address,

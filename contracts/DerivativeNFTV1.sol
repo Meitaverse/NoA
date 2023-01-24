@@ -9,8 +9,9 @@ import {Errors} from "./libraries/Errors.sol";
 import {DataTypes} from './libraries/DataTypes.sol';
 import {IManager} from "./interfaces/IManager.sol";
 import {IDerivativeNFTV1} from "./interfaces/IDerivativeNFTV1.sol";
+import './libraries/Constants.sol';
 import "./base/DerivativeNFTMultiState.sol";
-import {Constants} from './libraries/Constants.sol';
+import './libraries/Constants.sol';
 import "hardhat/console.sol";
 
 /**
@@ -69,6 +70,7 @@ contract DerivativeNFTV1 is
     address public immutable MANAGER;
     address internal _SBT;
     address internal _banktreasury;
+    address internal _marketPlace;
 
     uint96 internal _royaltyBasisPoints; //版税佣金点数, 本协议将版税的10%及金库固定税收5%设置为
 
@@ -77,7 +79,6 @@ contract DerivativeNFTV1 is
 
     // bytes4(keccak256('royaltyInfo(uint256,uint256)')) == 0x2a55205a
     bytes4 internal constant _INTERFACE_ID_ERC2981 = 0x2a55205a;
-    uint16 internal constant _BASIS_POINTS = 10000;
 
     struct RoyaltyInfo {
         address receiver;
@@ -109,6 +110,7 @@ contract DerivativeNFTV1 is
         _;
     }
 
+
     //===== Initializer =====//
 
     /// @custom:oz-upgrades-unsafe-allow constructor
@@ -123,6 +125,7 @@ contract DerivativeNFTV1 is
     function initialize(
         address sbt, 
         address bankTreasury,
+        address marketPlace,
         string memory name_,
         string memory symbol_,
         uint256 projectId_,
@@ -139,6 +142,8 @@ contract DerivativeNFTV1 is
         _SBT = sbt;
         if (bankTreasury == address(0)) revert Errors.InitParamsInvalid();
         _banktreasury = bankTreasury;
+        if (marketPlace == address(0)) revert Errors.InitParamsInvalid();
+        _marketPlace = marketPlace;
 
         if (metadataDescriptor_ == address(0x0)) revert Errors.ZeroAddress();
 
@@ -156,40 +161,74 @@ contract DerivativeNFTV1 is
         _setDefaultRoyalty(_banktreasury, defaultRoyaltyPoints_);
 
         _feeShareType = feeShareType_;
-
     }
 
-    //only manager
+    /**
+     * @notice Can only be called by manager
+     */    
     function setMetadataDescriptor(address metadataDescriptor_) external whenNotPaused onlyManager {
         _setMetadataDescriptor(metadataDescriptor_);
     }
 
-    function setState(DataTypes.DerivativeNFTState newState) external override onlyManager{
-        _setState(newState);
+    /**
+     * @notice Can only be called by manager or hub owner
+     */    
+    function setState(DataTypes.DerivativeNFTState newState) external override {
+        if (msg.sender == MANAGER || msg.sender == IERC3525(_SBT).ownerOf(_soulBoundTokenId)) {
+             _setState(newState);
+        } else {
+            revert Errors.NotManagerNorHubOwner();
+        } 
     }
 
-    function setDefaultRoyalty(address recipient, uint96 fraction) public whenNotPaused onlyManager{
-        _setDefaultRoyalty(recipient, fraction);
+    /**
+     * @notice Can only be called by manager or hub owner
+     */ 
+    function setDefaultRoyalty(address recipient, uint96 fraction) public whenNotPaused {
+       
+        if (msg.sender == MANAGER || msg.sender == IERC3525(_SBT).ownerOf(_soulBoundTokenId)) {
+             _setDefaultRoyalty(recipient, fraction);
+        } else {
+            revert Errors.NotManagerNorHubOwner();
+        } 
     }
 
     function getDefaultRoyalty() external view returns(uint96) {
         return _defaultRoyaltyInfo.royaltyFraction;
     }
 
-    function deleteDefaultRoyalty() public whenNotPaused onlyManager{
-        _deleteDefaultRoyalty();
+    /**
+     * @notice Can only be called by manager or hub owner
+     */ 
+    function deleteDefaultRoyalty() public whenNotPaused {
+        if (msg.sender == MANAGER || msg.sender == IERC3525(_SBT).ownerOf(_soulBoundTokenId)) {
+             _deleteDefaultRoyalty();
+        } else {
+            revert Errors.NotManagerNorHubOwner();
+        } 
     }
 
     function getPublishIdByTokenId(uint256 tokenId) external view returns (uint256) {
         return _tokenIdByPublishId[tokenId];
     }
 
-    // Publication only can publish once
+    function tokenCreator(uint256 tokenId) external view returns (address) {
+        DataTypes.SlotDetail memory detail = _slotDetails[tokenId];
+
+       uint256 soulBoundTokenIdOfCreator = detail.publication.soulBoundTokenId;
+        
+       return IManager(MANAGER).getWalletBySoulBoundTokenId(soulBoundTokenIdOfCreator);
+    }
+
+    /**
+     * @notice Publication only can publish once.
+     * Can only be called by manager
+     */ 
     function publish(
         uint256 publishId,
         DataTypes.Publication memory publication,
         address publisher
-    ) external whenNotPaused onlyManager returns (uint256) { 
+    ) external whenPublishingEnabled onlyManager returns (uint256) { 
         
         if (_publicationNameHashBySlot[keccak256(bytes(publication.name))] > 0) revert Errors.PublicationIsExisted();
         if (publication.soulBoundTokenId != _soulBoundTokenId && publication.fromTokenIds.length == 0) revert Errors.InvalidParameter();
@@ -222,12 +261,18 @@ contract DerivativeNFTV1 is
         return newTokenId;
     }
 
+    /**
+     * @notice Can only be called by manager
+     */ 
     function split(
         uint256 publishId_, 
         uint256 fromTokenId_, 
         address to_,
         uint256 value_
-    ) external whenNotPaused onlyManager returns(uint256) {
+    ) external whenPublishingEnabled returns(uint256) {
+        if (!(MANAGER == msg.sender || _marketPlace == msg.sender))
+            revert Errors.NotManagerNorMarketPlace();
+            
         uint256 newTokenId = ERC3525Upgradeable._createDerivedTokenId(fromTokenId_);
       
         _tokenIdByPublishId[newTokenId] = publishId_;
@@ -238,14 +283,30 @@ contract DerivativeNFTV1 is
         return newTokenId;
     }
 
+    function transferValue(
+        uint256 fromTokenId_,
+        uint256 toTokenId_,
+        uint256 value_
+    ) external whenNotPaused {
+        //call only by manager or market place contract
+        if (!(MANAGER == msg.sender || _marketPlace == msg.sender))
+            revert Errors.NotManagerNorMarketPlace();
+
+        ERC3525Upgradeable._transferValue(fromTokenId_, toTokenId_, value_);
+    }
+
     function setTokenImageURI(uint256 tokenId, string calldata imageURI)
         external
-        whenNotPaused
+        whenPublishingEnabled
     { 
         _setTokenImageURI(tokenId, imageURI);
     }
 
-    function burn(uint256 tokenId_) external virtual whenNotPaused {
+    function burn(uint256 tokenId_) external virtual {
+        if (!( msg.sender == ERC3525Upgradeable.ownerOf(tokenId_) || msg.sender == IERC3525(_SBT).ownerOf(_soulBoundTokenId) )) {
+            revert Errors.NotManagerNorHubOwner();
+        } 
+
         uint256 slot = slotOf(tokenId_);
         if (!_isApprovedOrOwner(msg.sender, tokenId_)) {
             revert Errors.NotAllowed();
@@ -326,7 +387,7 @@ contract DerivativeNFTV1 is
         address from_,
         address to_,
         uint256 tokenId_
-    ) public payable virtual override  whenNotPaused {
+    ) public payable virtual override whenNotPaused {
        super.safeTransferFrom(from_, to_, tokenId_, "");
     }
 
@@ -381,7 +442,7 @@ contract DerivativeNFTV1 is
      */
     function setRoyalty(uint96 royaltyBasisPoints) external whenNotPaused {
         if (IERC3525(_SBT).ownerOf(_soulBoundTokenId) == msg.sender) {
-            if (royaltyBasisPoints > _BASIS_POINTS) {
+            if (royaltyBasisPoints > BASIS_POINTS) {
                 revert Errors.InvalidParameter();
             } else {
                 _royaltyBasisPoints = royaltyBasisPoints;
@@ -429,7 +490,7 @@ contract DerivativeNFTV1 is
      * override.
      */
     function _feeDenominator() internal pure virtual returns (uint96) {
-        return _BASIS_POINTS;
+        return uint96(BASIS_POINTS);
     }
 
     /**
@@ -497,7 +558,7 @@ contract DerivativeNFTV1 is
     }
 
     function _setTokenImageURI(uint256 tokenId, string calldata imageURI) internal {
-        if (bytes(imageURI).length > Constants.MAX_PROFILE_IMAGE_URI_LENGTH)
+        if (bytes(imageURI).length > MAX_PROFILE_IMAGE_URI_LENGTH)
             revert Errors.ProfileImageURILengthInvalid(); 
 
         address owner = ERC3525Upgradeable.ownerOf(tokenId);
@@ -511,7 +572,5 @@ contract DerivativeNFTV1 is
 
         emit DerivativeNFTImageURISet(tokenId, imageURI, block.timestamp);
     }
-
-
 
 }

@@ -24,6 +24,7 @@ interface IDerivativeNFTV1 {
     function initialize( 
         address sbt, 
         address bankTreasury,        
+        address marketPlace,        
         string memory name_,
         string memory symbol_,
         uint256 projectId_,
@@ -161,6 +162,19 @@ interface IDerivativeNFTV1 {
         address to_,
         uint256 value_
     ) external returns(uint256);
+    
+    /**
+     * @notice Transfer value from a tokenId to a another tokenId,  only call by market place, not need approve before
+     *
+     * @param fromTokenId_ The tokenId to be transfer
+     * @param toTokenId_  The tokenId to be receive
+     * @param value_  The value
+     */
+    function transferValue(
+        uint256 fromTokenId_,
+        uint256 toTokenId_,
+        uint256 value_
+    ) external;
 
     /**
      * @notice Burns an NFT, removing it from circulation and essentially destroying it. This function can only

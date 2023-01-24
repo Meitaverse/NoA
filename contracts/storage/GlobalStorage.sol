@@ -20,6 +20,7 @@ abstract contract GlobalStorage {
     address internal _sbt; 
     address internal _governance;
     address internal _treasury;
+    address internal _marketPlace;
     address internal _voucher;
     uint16 internal _treasuryFee; 
 

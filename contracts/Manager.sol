@@ -12,7 +12,7 @@ import {IDerivativeNFTV1} from "./interfaces/IDerivativeNFTV1.sol";
 import "./interfaces/INFTDerivativeProtocolTokenV1.sol";
 import "./interfaces/IManager.sol";
 import "./base/NFTDerivativeProtocolMultiState.sol";
-import {Constants} from './libraries/Constants.sol';
+import './libraries/Constants.sol';
 import {DataTypes} from './libraries/DataTypes.sol';
 import {Events} from"./libraries/Events.sol";
 import {InteractionLogic} from './libraries/InteractionLogic.sol';
@@ -126,7 +126,7 @@ contract Manager is
     }
 
     function createHub(
-        DataTypes.HubData memory hub
+        DataTypes.HubData calldata hub
     ) 
         external 
         nonReentrant
@@ -157,9 +157,9 @@ contract Manager is
 
     function updateHub(
         uint256 soulBoundTokenId,
-        string memory name,
-        string memory description,
-        string memory imageURI
+        string calldata name,
+        string calldata description,
+        string calldata imageURI
     ) 
         external 
         nonReentrant
@@ -182,7 +182,7 @@ contract Manager is
     }
  
     function createProject(
-        DataTypes.ProjectData memory project
+        DataTypes.ProjectData calldata project
     ) 
         external 
         whenPublishingEnabled 
@@ -201,25 +201,14 @@ contract Manager is
             _DNFT_IMPL,
             IModuleGlobals(MODULE_GLOBALS).getSBT(),
             IModuleGlobals(MODULE_GLOBALS).getTreasury(),
+            IModuleGlobals(MODULE_GLOBALS).getMarketPlace(),
             projectId,
             project,
             _RECEIVER,
-            _derivativeNFTByProjectId 
+            _derivativeNFTByProjectId,
+            _projectInfoByProjectId
         );
 
-        _projectInfoByProjectId[projectId] = DataTypes.ProjectData({
-            hubId: project.hubId,
-            soulBoundTokenId: project.soulBoundTokenId,
-            name: project.name,
-            description: project.description,
-            image: project.image,
-            metadataURI: project.metadataURI,
-            descriptor: project.descriptor,
-            defaultRoyaltyPoints: project.defaultRoyaltyPoints,
-            feeShareType: project.feeShareType,
-            permitByHubOwner: project.permitByHubOwner
-        });
-        
         return projectId;
     }
 
@@ -246,7 +235,7 @@ contract Manager is
  
     //prepare publish, and transfer from SBT value to bank treasury while amount >1
     function prePublish(
-        DataTypes.Publication memory publication
+        DataTypes.Publication calldata publication
     ) 
         external 
         whenPublishingEnabled 
@@ -297,12 +286,12 @@ contract Manager is
             publication,
             publishId,
             previousPublishId,
-            Constants._BANK_TREASURY_SOUL_BOUND_TOKENID,
+            BANK_TREASURY_SOUL_BOUND_TOKENID,
             _projectDataByPublishId
         );
 
         //calculate royalties
-        if (_calculateRoyalty(publishId) > uint96(Constants._BASIS_POINTS)) {
+        if (_calculateRoyalty(publishId) > uint96(BASIS_POINTS)) {
            revert Errors.InvalidRoyaltyBasisPoints();   
         }
         return publishId;
@@ -325,15 +314,31 @@ contract Manager is
    
     }
 
+    function publisherSetCanCollect(
+        uint256 publishId, 
+        bool canCollect
+    ) 
+        external 
+        whenPublishingEnabled 
+        nonReentrant
+    {
+        DataTypes.PublishData memory publishData = _projectDataByPublishId[publishId];
+        
+        _validateCallerIsSoulBoundTokenOwnerOrDispathcher(publishData.publication.soulBoundTokenId);
+        
+        publishData.publication.canCollect = canCollect;
+
+    }
+
     function updatePublish(
         uint256 publishId,
         uint256 salePrice,
         uint256 royaltyBasisPoints,
         uint256 amount,
-        string memory name,
-        string memory description,
-        string[] memory materialURIs,
-        uint256[] memory fromTokenIds
+        string calldata name,
+        string calldata description,
+        string[] calldata materialURIs,
+        uint256[] calldata fromTokenIds
     ) 
         external 
         whenPublishingEnabled 
@@ -348,7 +353,7 @@ contract Manager is
         if (_projectDataByPublishId[publishId].isMinted) revert Errors.CannotUpdateAfterMinted();
         
         //calculate royalties
-        if (_calculateRoyalty(publishId) > uint96(Constants._BASIS_POINTS)) {
+        if (_calculateRoyalty(publishId) > uint96(BASIS_POINTS)) {
            revert Errors.InvalidRoyaltyBasisPoints();   
         }
 
@@ -411,7 +416,7 @@ contract Manager is
     }
 
     function collect(
-        DataTypes.CollectData memory collectData
+        DataTypes.CollectData calldata collectData
     ) 
         external 
         whenPublishingEnabled 
@@ -421,6 +426,12 @@ contract Manager is
          _validateCallerIsSoulBoundTokenOwnerOrDispathcher(collectData.collectorSoulBoundTokenId);
 
         address derivativeNFT =  _derivativeNFTByProjectId[_projectDataByPublishId[collectData.publishId].publication.projectId];
+
+ 
+        //check can collect?
+        if (!_projectDataByPublishId[collectData.publishId].publication.canCollect) {
+            revert Errors.PublisherSetCanNotCollect();
+        }
 
         uint256 newTokenId = IDerivativeNFTV1(derivativeNFT).split(
             collectData.publishId, 
@@ -442,7 +453,7 @@ contract Manager is
     }
 
     function airdrop(
-        DataTypes.AirdropData memory airdropData
+        DataTypes.AirdropData calldata airdropData
     ) 
         external
         whenPublishingEnabled
@@ -489,9 +500,25 @@ contract Manager is
     function getWalletBySoulBoundTokenId(uint256 soulBoundTokenId) external view returns(address) {
         return _soulBoundTokenIdToWallet[soulBoundTokenId];
     }
-
-    function getSoulBoundTokenIdByWallet(address wallet) external view returns(uint256) {
-        return _walletToSoulBoundTokenId[wallet];
+    
+    function getGenesisAndPreviousInfo(uint256 projectId, uint256 tokenId) 
+        external 
+        view 
+        returns(uint256, uint256,uint256,uint256) 
+    {
+         //genesis
+        uint256 genesisPublishId = _genesisPublishIdByProjectId[projectId];
+   
+        //previous 
+        address derivativeNFT =  _derivativeNFTByProjectId[projectId];
+        uint256 publishId = IDerivativeNFTV1(derivativeNFT).getPublishIdByTokenId(tokenId);
+        
+        return (
+            _projectDataByPublishId[genesisPublishId].publication.soulBoundTokenId,
+            _projectDataByPublishId[genesisPublishId].publication.royaltyBasisPoints,
+            _projectDataByPublishId[_projectDataByPublishId[publishId].previousPublishId].publication.soulBoundTokenId,
+            _projectDataByPublishId[_projectDataByPublishId[publishId].previousPublishId].publication.royaltyBasisPoints
+        );
     }
 
     /// ***********************
@@ -586,11 +613,11 @@ contract Manager is
         return MODULE_GLOBALS;
     }
 
-    function getDispatcher(uint256 soulBoundToken) external view override returns (address) {
+    function getDispatcher(uint256 soulBoundToken) external view returns (address) {
         return _dispatcherByProfile[soulBoundToken];
     }
 
-    function setDispatcher(uint256 soulBoundTokenId, address dispatcher) external override whenNotPaused {
+    function setDispatcher(uint256 soulBoundTokenId, address dispatcher) external whenNotPaused {
         _validateCallerIsSoulBoundTokenOwner(soulBoundTokenId);
         _setDispatcher(soulBoundTokenId, dispatcher);
     }
@@ -735,31 +762,8 @@ contract Manager is
 
     function _validateNickName(string calldata nickName) private pure {
         bytes memory byteNickName = bytes(nickName);
-        if (byteNickName.length == 0 || byteNickName.length > Constants.MAX_NICKNAME_LENGTH)
+        if (byteNickName.length == 0 || byteNickName.length > MAX_NICKNAME_LENGTH)
             revert Errors.NickNameLengthInvalid();
     }
 
-    //Box for testing
-    uint256 private _value;
-
-    // Stores a new value in the contract
-    // owner可以为合约地址，由合约来调用
-    function store(uint256 newValue) public onlyGov {
-        console.log('_timeLock: ', _timeLock);
-        console.log('manager store tx.origin: ', tx.origin);
-        console.log('manager store caller: ', msg.sender);
-        if (msg.sender == _governance || msg.sender == _timeLock)  {
-            console.log('store: caller is governance or governanor');
-        } else {
-            revert Errors.NotGovernance();
-        }
-
-        _value = newValue;
-        emit Events.ValueChanged(newValue, msg.sender);
-    }
-
-    // Reads the last stored value
-    function retrieve() public view returns (uint256) {
-        return _value;
-    }
 }

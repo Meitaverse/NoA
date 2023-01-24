@@ -5,7 +5,7 @@ pragma solidity ^0.8.10;
 import {DataTypes} from './DataTypes.sol';
 import {Errors} from './Errors.sol';
 import {Events} from './Events.sol';
-import {Constants} from './Constants.sol';
+import './Constants.sol';
 import {IDerivativeNFTV1} from "../interfaces/IDerivativeNFTV1.sol";
 import {ICollectModule} from '../interfaces/ICollectModule.sol';
 import {Strings} from '@openzeppelin/contracts/utils/Strings.sol';
@@ -82,10 +82,12 @@ library InteractionLogic {
         address derivativeImpl,
         address sbt,
         address treasury,
+        address marketPlace,
         uint256 projectId,
         DataTypes.ProjectData memory project,
         address receiver,
-        mapping(uint256 => address) storage _derivativeNFTByProjectId
+        mapping(uint256 => address) storage _derivativeNFTByProjectId,
+        mapping(uint256 => DataTypes.ProjectData) storage _projectInfoByProjectId
     ) external returns(address) {
         address derivativeNFT;
         if(_derivativeNFTByProjectId[projectId] == address(0)) {
@@ -93,17 +95,27 @@ library InteractionLogic {
                     derivativeImpl,
                     sbt,
                     treasury,
+                    marketPlace,
                     projectId,
-                    project.soulBoundTokenId,
-                    project.name, 
-                    project.description,
-                    project.descriptor,
-                    project.defaultRoyaltyPoints,
-                    project.feeShareType,
+                    project,
                     receiver
                 );
                 _derivativeNFTByProjectId[projectId] = derivativeNFT;
         }
+
+        _projectInfoByProjectId[projectId] = DataTypes.ProjectData({
+            hubId: project.hubId,
+            soulBoundTokenId: project.soulBoundTokenId,
+            name: project.name,
+            description: project.description,
+            image: project.image,
+            metadataURI: project.metadataURI,
+            descriptor: project.descriptor,
+            defaultRoyaltyPoints: project.defaultRoyaltyPoints,
+            feeShareType: project.feeShareType,
+            permitByHubOwner: project.permitByHubOwner
+        });
+
         return derivativeNFT;
     }
     
@@ -111,33 +123,29 @@ library InteractionLogic {
         address derivativeImpl,
         address sbt,
         address treasury,        
+        address marketPlace,        
         uint256 projectId,
-        uint256 soulBoundTokenId,
-        string memory name_,
-        string memory symbol_,
-        address descriptor_,
-        uint96 defaultRoyaltyPoints_,
-        DataTypes.FeeShareType feeShareType_,
+        DataTypes.ProjectData memory project,
         address receiver_
     ) private returns (address) {
-
         address derivativeNFT = Clones.clone(derivativeImpl);
         IDerivativeNFTV1(derivativeNFT).initialize(
             sbt,
-            treasury,    
-            name_,
-            symbol_,
+            treasury,  
+            marketPlace,  
+            project.name, 
+            project.description,
             projectId,
-            soulBoundTokenId,
-            descriptor_,
+            project.soulBoundTokenId,
+            project.descriptor,
             receiver_,
-            defaultRoyaltyPoints_,
-            feeShareType_
+            project.defaultRoyaltyPoints,
+            project.feeShareType
         );
 
         emit Events.DerivativeNFTDeployed(
             projectId, 
-            soulBoundTokenId, 
+            project.soulBoundTokenId,
             derivativeNFT, 
             block.timestamp
         );

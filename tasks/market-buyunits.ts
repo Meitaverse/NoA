@@ -95,7 +95,7 @@ task("market-buyunits", "market place functions")
       await manager.connect(user).getDerivativeNFT(FIRST_PROJECT_ID),
       user
     );
-
+/*
     let units = 1;
     await waitForTx(
       marketPlace.connect(userTwo).buyUnits(
@@ -113,5 +113,5 @@ task("market-buyunits", "market place functions")
     
     console.log('\n\t--- ownerOf third tokenId : ', await derivativeNFT.ownerOf(THIRD_DNFT_TOKEN_ID));
     console.log('\t--- balanceOf third tokenId : ', (await derivativeNFT["balanceOf(uint256)"](THIRD_DNFT_TOKEN_ID)).toNumber());
-    
+    */
 });

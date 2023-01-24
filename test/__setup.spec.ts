@@ -14,8 +14,6 @@ import {
 
 import {
   ERC1967Proxy__factory,
-  // Currency,
-  // Currency__factory,
   Box,
   Box__factory,
   TimeLock,
@@ -55,6 +53,8 @@ import {
   Template__factory,
   MultirecipientFeeCollectModule,
   MultirecipientFeeCollectModule__factory,
+  MarketLogic,
+  MarketLogic__factory,
   MarketPlace,
   MarketPlace__factory,
   SBTLogic__factory,
@@ -79,6 +79,7 @@ import {
 
 import { DataTypes } from '../typechain/contracts/modules/template/Template';
 import { NFTDerivativeProtocolTokenV1LibraryAddresses } from '../typechain/factories/contracts/NFTDerivativeProtocolTokenV1__factory';
+import { MarketPlaceLibraryAddresses } from '../typechain/factories/contracts/MarketPlace__factory';
 
 use(solidity);
 
@@ -112,6 +113,7 @@ export const MOCK_FOLLOW_NFT_URI =
 
 export const  RECEIVER_MAGIC_VALUE = '0x009ce20b';
 export const TreasuryFee = 50; 
+export const MARKET_MAX_DURATION = 86400000; //1000 days in seconds
 
 export const INITIAL_SUPPLY = 1000000;  //SBT初始发行总量
 export const VOUCHER_AMOUNT_LIMIT = 100;  //用户用SBT兑换Voucher的最低数量 
@@ -149,6 +151,7 @@ export let helper: Helper;
 export let receiverMock: ERC3525ReceiverMock
 export let bankTreasuryImpl: BankTreasury
 export let bankTreasuryContract: BankTreasury
+export let marketLibs:MarketPlaceLibraryAddresses
 export let marketPlaceImpl: MarketPlace
 export let marketPlaceContract: MarketPlace
 export let sbtImpl: NFTDerivativeProtocolTokenV1;
@@ -335,7 +338,12 @@ before(async function () {
   bankTreasuryContract = new BankTreasury__factory(deployer).attach(bankTreasuryProxy.address);
   
   //market place
-  marketPlaceImpl = await new MarketPlace__factory(deployer).deploy( );
+
+  const marketLogic = await new MarketLogic__factory(deployer).deploy();
+  marketLibs = {
+    'contracts/libraries/MarketLogic.sol:MarketLogic': marketLogic.address,
+  };
+  marketPlaceImpl = await new MarketPlace__factory(marketLibs, deployer).deploy(MARKET_MAX_DURATION);
   let marketPlaceData = marketPlaceImpl.interface.encodeFunctionData("initialize", [
     governanceAddress,
   ]);
@@ -344,7 +352,7 @@ before(async function () {
     marketPlaceImpl.address,
     marketPlaceData
   );
-  marketPlaceContract = new MarketPlace__factory(deployer).attach(marketPlaceProxy.address);
+  marketPlaceContract = new MarketPlace__factory(marketLibs, deployer).attach(marketPlaceProxy.address);
 
   moduleGlobals = await new ModuleGlobals__factory(deployer).deploy(
     manager.address,
@@ -352,6 +360,7 @@ before(async function () {
     governanceAddress,
     bankTreasuryContract.address,
     voucherContract.address,
+    marketPlaceContract.address,
     TREASURY_FEE_BPS,
     PublishRoyaltySBT
   );
@@ -441,6 +450,9 @@ before(async function () {
   await expect(
     sbtContract.connect(deployer).grantRole(transferValueRole, voucherContract.address)
   ).to.not.be.reverted;
+  await expect(
+    sbtContract.connect(deployer).grantRole(transferValueRole, marketPlaceContract.address)
+  ).to.not.be.reverted;
 
 
   await expect(voucherContract.connect(deployer).setGlobalModule(moduleGlobals.address)).to.not.be.reverted;
@@ -478,7 +490,6 @@ before(async function () {
   // expect((await sbtContract.getManager()).toUpperCase()).to.eq(manager.address.toUpperCase());
   console.log('sbtContract getManager ok ');
 
-  // expect((await sbtContract.getBankTreasury()).toUpperCase()).to.eq(bankTreasuryContract.address.toUpperCase());
   
   expect((await bankTreasuryContract.getManager()).toUpperCase()).to.eq(manager.address.toUpperCase());
   console.log('bankTreasuryContract getManager ok ');

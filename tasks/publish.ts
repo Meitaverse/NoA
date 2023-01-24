@@ -112,6 +112,7 @@ task("publish", "publish function")
         royaltyBasisPoints: Default_royaltyBasisPoints,
         name: "Dollar",
         description: "Hand draw",
+        canCollect: true,
         materialURIs: [],
         fromTokenIds: [],
         collectModule: feeCollectModule.address,

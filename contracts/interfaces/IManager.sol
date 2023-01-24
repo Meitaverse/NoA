@@ -22,9 +22,9 @@ interface IManager {
     
     function getGlobalModule() external returns(address);
 
-    function setGovernance(address newGovernance) external;
+    // function setGovernance(address newGovernance) external;
 
-    function setTimeLock(address timeLock) external;
+    // function setTimeLock(address timeLock) external;
 
     function getGovernance() external returns(address);
     
@@ -35,7 +35,7 @@ interface IManager {
      *
      * @param vars A SetDispatcherWithSigData struct, including the regular parameters and an EIP712Signature struct.
      */
-    function setDispatcherWithSig(DataTypes.SetDispatcherWithSigData calldata vars) external;
+    // function setDispatcherWithSig(DataTypes.SetDispatcherWithSigData calldata vars) external;
 
     /**
      * @notice Returns the dispatcher associated with a soulBoundToken.
@@ -53,7 +53,7 @@ interface IManager {
      *
      * @param newEmergencyAdmin The new emergency admin address to set.
      */
-    function setEmergencyAdmin(address newEmergencyAdmin) external;
+    // function setEmergencyAdmin(address newEmergencyAdmin) external;
 
     /**
      * @notice Sets the protocol state to either a global pause, a publishing pause or an unpaused state. This function
@@ -65,7 +65,7 @@ interface IManager {
      *
      * @param newState The state to set, as a member of the ProtocolState enum.
     */
-    function setState(DataTypes.ProtocolState newState) external;
+    // function setState(DataTypes.ProtocolState newState) external;
     
     /**
      * @notice Sets the derivativeNFT state to either a global pause, a publishing pause or an unpaused state. This function
@@ -74,10 +74,10 @@ interface IManager {
      * @param projectId The project Id of derivativeNFT contract
      * @param newState The state to set, as a member of the DerivativeNFTState enum.
     */    
-    function setDerivativeNFTState(
-        uint256 projectId,
-        DataTypes.DerivativeNFTState newState
-    ) external;
+    // function setDerivativeNFTState(
+    //     uint256 projectId,
+    //     DataTypes.DerivativeNFTState newState
+    // ) external;
     
     /**
      * @notice Sets the metadata descriptor of derivativeNFT contract. This function
@@ -146,7 +146,8 @@ interface IManager {
     
     function getWalletBySoulBoundTokenId(uint256 soulBoundTokenId) external view returns(address);
 
-    function getSoulBoundTokenIdByWallet(address wallet) external view returns(uint256);
+    function getGenesisAndPreviousInfo(uint256 projectId, uint256 tokenId) external view returns(uint256,uint256,uint256,uint256);
+
 
     /**
      * @notice Sets a profile's dispatcher, giving that dispatcher rights to publish to that profile.
@@ -156,20 +157,19 @@ interface IManager {
      */
     function setDispatcher(uint256 profileId, address dispatcher) external;
 
-
     function createHub(
-        DataTypes.HubData memory hub
+        DataTypes.HubData calldata hub
     ) external returns(uint256);
 
     function updateHub(
         uint256 soulBoundTokenId,
-        string memory name,
-        string memory description,
-        string memory imageURI
+        string calldata name,
+        string calldata description,
+        string calldata imageURI
     ) external;
 
     function createProject(
-        DataTypes.ProjectData memory project
+        DataTypes.ProjectData calldata project
     ) external returns (uint256);
 
     /**
@@ -180,7 +180,7 @@ interface IManager {
      * @return The new publish id
      */
     function prePublish(
-        DataTypes.Publication memory publication
+        DataTypes.Publication calldata publication
     ) external  returns (uint256);
 
     /**
@@ -214,10 +214,10 @@ interface IManager {
         uint256 salePrice,
         uint256 royaltyBasisPoints,        
         uint256 amount,
-        string memory name,
-        string memory description,
-        string[] memory materialURIs,
-        uint256[] memory fromTokenIds
+        string calldata name,
+        string calldata description,
+        string[] calldata materialURIs,
+        uint256[] calldata fromTokenIds
     ) external;
 
     /**
@@ -238,7 +238,7 @@ interface IManager {
      * @return The new token id of dNFT
      */
     function collect(
-        DataTypes.CollectData memory collectData
+        DataTypes.CollectData calldata collectData
     ) external returns(uint256);
 
     /**
@@ -252,7 +252,7 @@ interface IManager {
      *     -- values: array values 
      */ 
     function airdrop(
-        DataTypes.AirdropData memory airdropData
+        DataTypes.AirdropData calldata airdropData
     ) external;
 
 

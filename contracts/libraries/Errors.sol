@@ -31,6 +31,7 @@ library Errors {
   error PublicationIsExisted();
   error MaxSupplyExceeded();
   error MaxExceeded();
+  error ReferrerFeeExceeded();
   error ApproveToOwner();
   error ComboLengthNotEnough();
   error LengthNotSame();
@@ -39,6 +40,7 @@ library Errors {
   error NotSoulBoundTokenOwner();
   error NotHubOwner();
   error HubIdIsZero();
+  error TokenIdIsZero();
   error SoulBoundTokenIdNotExists();
   error TokenIdNotExists();
   error HandleLengthInvalid();
@@ -49,6 +51,8 @@ library Errors {
   error CannotInitImplementation();
   error NotGovernance();
   error NotManager();
+  error NotManagerNorMarketPlace();
+  error NotManagerNorHubOwner();
   error NotBankTreasury();
   error NotSinger();
   error TxNotExists();
@@ -83,6 +87,7 @@ library Errors {
   error PublishModuleNotWhitelisted();
   error TemplateNotWhitelisted();
   error PublishWithZeroSBT();
+  error PublisherSetCanNotCollect();
   error NotSameHub();
   error InsufficientAllowance();
   error InsufficientDerivativeNFT();
@@ -134,6 +139,60 @@ library Errors {
   error OnlySeller();
 
   //market
+
+  /// @param buyPrice The current buy price set for this DNFT.
+  error DNFTMarketBuyPrice_Cannot_Buy_At_Lower_Price(uint256 buyPrice);
+  error DNFTMarketBuyPrice_Cannot_Buy_Unset_Price();
+  error DNFTMarketBuyPrice_Cannot_Cancel_Unset_Price();
+  /// @param owner The current owner of this DNFT.
+  error DNFTMarketBuyPrice_Only_Owner_Can_Cancel_Price(address owner);
+  /// @param owner The current owner of this DNFT.
+  error DNFTMarketBuyPrice_Only_Owner_Can_Set_Price(address owner);
+  error DNFTMarketBuyPrice_Price_Already_Set();
+  error DNFTMarketBuyPrice_Price_Too_High();
+  /// @param seller The current owner of this DNFT.
+  error DNFTMarketBuyPrice_Seller_Mismatch(address seller);
+
+
+  error DNFTMarketOffer_Cannot_Be_Made_While_In_Auction();
+  /// @param currentOfferAmount The current highest offer available for this DNFT.
+  error DNFTMarketOffer_Offer_Below_Min_Amount(uint256 currentOfferAmount);
+  /// @param expiry The time at which the offer had expired.
+  error DNFTMarketOffer_Offer_Expired(uint256 expiry);
+  /// @param currentOfferFrom The address of the collector which has made the current highest offer.
+  error DNFTMarketOffer_Offer_From_Does_Not_Match(address currentOfferFrom);
+  /// @param minOfferAmount The minimum amount that must be offered in order for it to be accepted.
+  error DNFTMarketOffer_Offer_Must_Be_At_Least_Min_Amount(uint256 minOfferAmount);
+
+
+  /// @param auctionId The already listed auctionId for this DNFT.
+  error DNFTMarketReserveAuction_Already_Listed(uint256 auctionId);
+  /// @param minAmount The minimum amount that must be bid in order for it to be accepted.
+  error DNFTMarketReserveAuction_Bid_Must_Be_At_Least_Min_Amount(uint256 minAmount);
+  /// @param reservePrice The current reserve price.
+  error DNFTMarketReserveAuction_Cannot_Bid_Lower_Than_Reserve_Price(uint256 reservePrice);
+  /// @param endTime The timestamp at which the auction had ended.
+  error DNFTMarketReserveAuction_Cannot_Bid_On_Ended_Auction(uint256 endTime);
+  error DNFTMarketReserveAuction_Cannot_Bid_On_Nonexistent_Auction();
+  error DNFTMarketReserveAuction_Cannot_Finalize_Already_Settled_Auction();
+  /// @param endTime The timestamp at which the auction will end.
+  error DNFTMarketReserveAuction_Cannot_Finalize_Auction_In_Progress(uint256 endTime);
+  error DNFTMarketReserveAuction_Cannot_Rebid_Over_Outstanding_Bid();
+  error DNFTMarketReserveAuction_Cannot_Update_Auction_In_Progress();
+  /// @param maxDuration The maximum configuration for a duration of the auction, in seconds.
+  error DNFTMarketReserveAuction_Exceeds_Max_Duration(uint256 maxDuration);
+  /// @param extensionDuration The extension duration, in seconds.
+  error DNFTMarketReserveAuction_Less_Than_Extension_Duration(uint256 extensionDuration);
+  error DNFTMarketReserveAuction_Must_Set_Non_Zero_Reserve_Price();
+  /// @param seller The current owner of the DNFT.
+  error DNFTMarketReserveAuction_Not_Matching_Seller(address seller);
+  /// @param owner The current owner of the DNFT.
+  error DNFTMarketReserveAuction_Only_Owner_Can_Update_Auction(address owner);
+  error DNFTMarketReserveAuction_Price_Already_Set();
+  error DNFTMarketReserveAuction_Too_Much_Value_Provided();
+
+  error DerivativeNFT_Must_Be_A_Contract();
+
   error ExceedsPurchaseLimit();
   error NotInAllowList();
   error UnsupportedDerivativeNFT();

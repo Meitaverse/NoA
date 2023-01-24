@@ -22,6 +22,11 @@ abstract contract DerivativeNFTMultiState {
         _;
     }
 
+    modifier whenPublishingEnabled() {
+        _validatePublishingEnabled();
+        _;
+    }
+    
     /**
      * @notice Returns the current DerivativeNFT state.
      *
@@ -37,6 +42,12 @@ abstract contract DerivativeNFTMultiState {
         DataTypes.DerivativeNFTState prevState = _state;
         _state = newState;
         emit Events.DerivativeNFTStateSet(msg.sender, prevState, newState, block.timestamp);
+    }
+
+    function _validatePublishingEnabled() internal view {
+        if (_state != DataTypes.DerivativeNFTState.Unpaused) {
+            revert Errors.PublishingPaused();
+        }
     }
 
     function _validateNotPaused() internal view {

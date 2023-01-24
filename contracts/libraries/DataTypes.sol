@@ -75,7 +75,7 @@ library DataTypes {
     }
     
     /**
-     * @notice Properties of the Publication, using with publish 
+     * @notice Properties of the publication datas, using for publish paramters
      * @param soulBoundTokenId id of SBT
      * @param hubId id of hub
      * @param projectId id of project
@@ -84,6 +84,7 @@ library DataTypes {
      * @param amount amount of publish
      * @param name name of publication
      * @param description description of publication
+     * @param canCollect bool indicate can collect by other user, default is true
      * @param materialURIs array of  material URI,  ipfs or arweave uri
      * @param fromTokenIds array of from tokenIds
      * @param collectModule collect module
@@ -100,6 +101,7 @@ library DataTypes {
         uint256 amount;
         string name;
         string description;
+        bool canCollect;
         string[] materialURIs;
         uint256[] fromTokenIds; 
         address collectModule;
@@ -181,43 +183,13 @@ library DataTypes {
      * @notice Properties of the Market Item
      */
     struct Market {
-        bool isValid;
+        bool isOpen;
         FeeShareType feeShareType;
         FeePayType feePayType;
         uint16 royaltyBasisPoints;
     }
 
-    struct SaleParam {
-        uint256 soulBoundTokenId;
-        uint256 projectId;
-        uint256 tokenId;
-        uint128 onSellUnits; //on sell units
-        uint32 startTime;
-        uint128 salePrice;
-        PriceType priceType;
-        uint128 min; //min units
-        uint128 max; //max units
-    }
-
-    struct Sale {
-        uint256 soulBoundTokenId;
-        uint256 projectId;
-        uint256 tokenId;
-        uint256 tokenIdOfMarket;
-        uint32 startTime;
-        uint128 salePrice;
-        PriceType priceType;
-        uint128 onSellUnits; //on sell units
-        uint128 seledUnits; //selled units
-        uint128 min; //min units
-        uint128 max; //max units
-        address derivativeNFT; //sale asset
-        bool isValid;
-        uint256 genesisSoulBoundTokenId;
-        uint256 genesisRoyaltyBasisPoints;
-        uint256 previousSoulBoundTokenId;
-        uint256 previousRoyaltyBasisPoints;
-     }
+   
 
     /**
      * @notice An enum containing the different states the protocol can be in, limiting certain actions.
@@ -234,6 +206,7 @@ library DataTypes {
     
     enum DerivativeNFTState {
         Unpaused,
+        PublishingPaused,
         Paused
     }
 
@@ -321,14 +294,135 @@ library DataTypes {
        uint256 collectorSoulBoundTokenId;
        uint256 genesisSoulBoundTokenId;
        uint256 previousSoulBoundTokenId;
+       uint256 referrerSoulBoundTokenId;
     }
 
     struct RoyaltyAmounts {
-       uint256 collectUnits;
+    //    uint256 collectUnits;
        uint256 treasuryAmount;
        uint256 genesisAmount;
        uint256 previousAmount;
+       uint256 referrerAmount;
        uint256 adjustedAmount;
+    }
+
+    struct SaleParam {
+        uint256 soulBoundTokenId;
+
+        /// @notice The DNFT contract address.
+        address derivativeNFT;
+
+        /// @notice The DNFT token id.
+        uint256 tokenId;
+        
+        /// @notice The uints want put on list
+        uint128 onSellUnits;
+
+        /// @notice The start time on sell
+        uint32 startTime;
+
+        /// @notice The sale price
+        uint128 salePrice;
+
+        /// @notice The minimum unit buy limit
+        uint128 min;
+
+        /// @notice The miximum unit limit
+        uint128 max;
+    }
+
+    struct Sale {
+        uint256 soulBoundTokenId;
+        uint256 projectId;
+        uint256 tokenId;
+        uint256 tokenIdOfMarket;
+        uint32 startTime;
+        uint128 salePrice;
+        PriceType priceType;
+        uint128 onSellUnits; //on sell units
+        uint128 seledUnits; //selled units
+        uint128 min; //min units
+        uint128 max; //max units
+        address derivativeNFT; //sale asset
+        bool isOpen;
+        uint256 genesisSoulBoundTokenId;
+        uint256 genesisRoyaltyBasisPoints;
+        uint256 previousSoulBoundTokenId;
+        uint256 previousRoyaltyBasisPoints;
+     }
+
+    /// @notice Stores the buy price details for a specific DNFT.
+    /// @dev The struct is packed into a single slot to optimize gas.
+    struct BuyPrice {
+        /// @notice The SBT id of seller
+        uint256 soulBoundTokenIdSeller;
+
+        /// @notice The current owner of this DNFT which set a buy price.
+        /// @dev A zero price is acceptable so a non-zero address determines whether a price has been set.
+        address payable seller;
+
+        /// @notice The DNFT contract address.
+        address derivativeNFT;
+
+        /// @notice The projectId of the DNFT contract.
+        uint256 projectId;
+        
+        /// @notice The publishId of the token.
+        uint256 publishId;
+        
+        /// @notice The DNFT token id.
+        uint256 tokenId;
+
+        /// @notice When DNFT is escrowed, a new tokenId is generated.
+        uint256 tokenIdEscrow;
+
+        /// @notice The start time on sell
+        uint32 startTime;
+
+        /// @notice The current buy price set for this DNFT.
+        uint128 salePrice;
+
+        /// @notice The current units set for this DNFT.
+        uint128 onSellUnits;
+
+        /// @notice The selled units.
+        uint128 seledUnits; 
+
+        /// @notice The min units.
+        uint128 min;
+
+        /// @notice The max units
+        uint128 max; 
+    }
+
+    /// @notice Stores offer details for a specific DNFT.
+    struct Offer {
+        uint256 soulBoundTokenId;
+        
+        // Slot 1: When increasing an offer, only this slot is updated.
+        /// @notice The expiration timestamp of when this offer expires.
+        uint32 expiration;
+
+        /// @notice The amount, in wei, of the highest offer.
+        uint96 amount;
+
+        /// @notice First slot (of 16B) used for the offerReferrerAddress.
+        // The offerReferrerAddress is the address used to pay the
+        // referrer on an accepted offer.
+        // uint128 offerReferrerAddressSlot0;
+
+        // Slot 2: When the buyer changes, both slots need updating
+        /// @notice The address of the collector who made this offer.
+        address buyer;
+        
+        /// @notice The units of this offer.
+        uint128 units;
+
+        /// @notice Second slot (of 4B) used for the offerReferrerAddress.
+        // uint32 offerReferrerAddressSlot1;
+        // 96 bits (12B) are available in slot 1.
+
+        uint256 soulBoundTokenIdReferrer;
     }
 
 }

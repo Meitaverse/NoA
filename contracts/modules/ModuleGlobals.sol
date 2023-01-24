@@ -36,6 +36,7 @@ contract ModuleGlobals is IModuleGlobals, GlobalStorage {
      * @param sbt The sbt address
      * @param governance The governance address which has additional control over setting certain parameters.
      * @param treasury The treasury address to direct fees to.
+     * @param marketPlace The market place address
      * @param voucher The voucher(ERC1155) address 
      * @param treasuryFee The treasury fee in BPS to levy on collects.
      * @param publishRoyalty The fee when every dNFT publish or combo, count one is free
@@ -46,6 +47,7 @@ contract ModuleGlobals is IModuleGlobals, GlobalStorage {
         address sbt,
         address governance,
         address treasury,
+        address marketPlace,
         address voucher,
         uint16 treasuryFee,
         uint256 publishRoyalty
@@ -54,6 +56,7 @@ contract ModuleGlobals is IModuleGlobals, GlobalStorage {
         _setSBT(sbt);
         _setGovernance(governance);
         _setTreasury(treasury);
+        _setMarketPlace(marketPlace);
         _setVoucher(voucher);
         _setTreasuryFee(treasuryFee);
         _setPublishRoyalty(publishRoyalty);
@@ -75,6 +78,11 @@ contract ModuleGlobals is IModuleGlobals, GlobalStorage {
     /// @inheritdoc IModuleGlobals
     function setTreasury(address newTreasury) external override onlyGov {
         _setTreasury(newTreasury);
+    }
+
+    /// @inheritdoc IModuleGlobals
+    function setMarketPlace(address newMarketPlace) external override onlyGov {
+        _setMarketPlace(newMarketPlace);
     }
 
     function setVoucher(address newVoucher) external override onlyGov {
@@ -110,6 +118,10 @@ contract ModuleGlobals is IModuleGlobals, GlobalStorage {
         return _sbt;
     }
 
+    function getMarketPlace() external view override returns (address) {
+        return _marketPlace;
+    }
+
     /// @inheritdoc IModuleGlobals
     function getTreasuryFee() external view override returns (uint16) {
         return _treasuryFee;
@@ -136,6 +148,11 @@ contract ModuleGlobals is IModuleGlobals, GlobalStorage {
         address prevTreasury = _treasury;
         _treasury = newTreasury;
         emit Events.ModuleGlobalsTreasurySet(prevTreasury, newTreasury, block.timestamp);
+    }
+
+    function _setMarketPlace(address newMarketPlace) internal {
+        if (newMarketPlace == address(0)) revert Errors.InitParamsInvalid();
+        _marketPlace = newMarketPlace;
     }
 
     function _setVoucher(address newVoucher) internal {

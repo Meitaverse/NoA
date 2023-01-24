@@ -22,7 +22,7 @@ abstract contract MarketPlaceStorage {
     mapping(address => uint256) public sigNonces;
 
     // solhint-disable-next-line var-name-mixedcase
-    address internal  _governance;
+    // address internal  _governance;
     address internal  MODULE_GLOBALS;
 
     //derivativeNFT => saleId
@@ -39,5 +39,7 @@ abstract contract MarketPlaceStorage {
     
     // records of user purchased units from an order
     mapping(uint24 => mapping(address => uint128)) internal saleRecords;
+
+
 
 }

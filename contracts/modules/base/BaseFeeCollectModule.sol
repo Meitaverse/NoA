@@ -3,7 +3,7 @@
 pragma solidity ^0.8.10;
 
 import {Errors} from '../../libraries/Errors.sol';
-import {Constants} from '../../libraries/Constants.sol';
+import '../../libraries/Constants.sol';
 import {FeeModuleBase} from '../FeeModuleBase.sol';
 import {ModuleBase} from "../ModuleBase.sol";
 import {ICollectModule} from '../../interfaces/ICollectModule.sol';
@@ -175,7 +175,7 @@ abstract contract BaseFeeCollectModule is
         if (treasuryAmount > 0) 
             INFTDerivativeProtocolTokenV1(_sbt()).transferValue(
                 collectorSoulBoundTokenId, 
-                Constants._BANK_TREASURY_SOUL_BOUND_TOKENID, 
+                BANK_TREASURY_SOUL_BOUND_TOKENID, 
                 treasuryAmount);
             
          if (payFees - treasuryAmount > 0) 

@@ -67,6 +67,7 @@ let derivativeNFT: DerivativeNFTV1;
 const Default_royaltyBasisPoints = 50; //
 const SALE_ID = 1;
 const THIRD_DNFT_TOKEN_ID =3;
+const SALE_PRICE = 100;
 
 makeSuiteCleanRoom('Market Place', function () {
 
@@ -167,6 +168,7 @@ makeSuiteCleanRoom('Market Place', function () {
           royaltyBasisPoints: Default_royaltyBasisPoints,              
           name: "Dollar",
           description: "Hand draw",
+          canCollect: true,
           materialURIs: [],
           fromTokenIds: [],
           collectModule: feeCollectModule.address,
@@ -187,11 +189,14 @@ makeSuiteCleanRoom('Market Place', function () {
         await derivativeNFT.ownerOf(FIRST_DNFT_TOKEN_ID)
       ).to.eq(userAddress);
 
+
+      await derivativeNFT.setApprovalForAll(marketPlaceContract.address, true);
+
   });
 
   context('MarketPlace', function () {
     context('Negatives', function () {
-      it('User should fail to add market with non governance', async function () {
+      it('User should fail to add market with non operator', async function () {
 
         await expect(
           marketPlaceContract.connect(user).addMarket(
@@ -200,86 +205,43 @@ makeSuiteCleanRoom('Market Place', function () {
              0,
              50,
           )
-        ).to.be.revertedWith(ERRORS.NOT_GOVERNANCE);
+        ).to.be.revertedWith("Operator: caller does not have the Operator role");
 
       });
 
-      it('User should fail to publishSale with none exists soulBoundTokenId', async function () {
-
-        await expect(
-          marketPlaceContract.connect(user).publishSale({
-            soulBoundTokenId: 100,
-            projectId: FIRST_PROJECT_ID,
-            tokenId: FIRST_DNFT_TOKEN_ID,
-            onSellUnits: 10,
-            startTime: 1673236726,
-            salePrice: 100,
-            priceType: 0,
-            min: 0,
-            max: 1,
-          }
-          )
-        ).to.be.revertedWith('ERC3525: invalid token ID');
-
-      });
-
-      it('User should fail to publishSale with not owner', async function () {
-
-        await expect(
-          marketPlaceContract.connect(userTwo).publishSale({
-            soulBoundTokenId: SECOND_PROFILE_ID,
-            projectId: 1,
-            tokenId: FIRST_DNFT_TOKEN_ID,
-            onSellUnits: 10,
-            startTime: 1673236726,
-            salePrice: 100,
-            priceType: 0,
-            min: 0,
-            max: 1,
-          }
-          )
-        ).to.be.revertedWith(ERRORS.NOT_PROFILE_OWNER_OR_DISPATCHER);
-
-      });
-
-      it('User should fail to publishSale with none exists projectId', async function () {
-
-        await expect(
-          marketPlaceContract.connect(user).publishSale({
-            soulBoundTokenId: SECOND_PROFILE_ID,
-            projectId: 1000, //revert
-            tokenId: FIRST_DNFT_TOKEN_ID,
-            onSellUnits: 10,
-            startTime: 1673236726,
-            salePrice: 100,
-            priceType: 0,
-            min: 0,
-            max: 1,
-          }
-          )
+      it('User should fail to setBuyPrice with not owner of dNFT', async function () {
+        await expect( 
+          marketPlaceContract.connect(userTwo).setBuyPrice(
+            {
+              derivativeNFT: derivativeNFT.address, 
+              tokenId: FIRST_DNFT_TOKEN_ID,
+              onSellUnits: 100, //revert UnitsGTTotal
+              startTime: 1673236726,
+              salePrice: SALE_PRICE,
+              min: 0,
+              max: 1,
+            })
         ).to.be.reverted;
-
       });
 
-      it('User should fail to publishSale with none exists tokenId', async function () {
-
-        await expect(
-          marketPlaceContract.connect(user).publishSale({
-            soulBoundTokenId: SECOND_PROFILE_ID,
-            projectId: FIRST_PROJECT_ID,
-            tokenId: 100, //revert
-            onSellUnits: 10,
-            startTime: 1673236726,
-            salePrice: 100,
-            priceType: 0,
-            min: 0,
-            max: 1,
-          }
-          )
+      it('User should fail to setBuyPrice with none exists dNFT tokenId', async function () {
+        await expect( 
+          marketPlaceContract.connect(user).setBuyPrice(
+            {
+              derivativeNFT: derivativeNFT.address, 
+              tokenId: SECOND_DNFT_TOKEN_ID,
+              onSellUnits: 100, //revert UnitsGTTotal
+              startTime: 1673236726,
+              salePrice: SALE_PRICE,
+              min: 0,
+              max: 1,
+            })
         ).to.be.reverted;
-
       });
-      
+
+
+/*
+
       it('User should fail to publishSale when on sell units is gt total', async function () {
 
         await expect(
@@ -336,6 +298,7 @@ makeSuiteCleanRoom('Market Place', function () {
         ).to.be.reverted;
 
       });
+      
       it('User should fail to buy units with non exists sale id', async function () {
 
         await expect(
@@ -410,11 +373,12 @@ makeSuiteCleanRoom('Market Place', function () {
         ).to.be.reverted;
 
       });
-
+*/
     });
 
 
     context('Success', function () {
+      /*
         it('UserTwo should buy units', async function () {
           await expect(
             marketPlaceContract.connect(governance).addMarket(
@@ -467,8 +431,7 @@ makeSuiteCleanRoom('Market Place', function () {
 
           
         });
-
-       
+       */
     });
 
   });

@@ -18,7 +18,7 @@ import {SafeERC20Upgradeable} from "@openzeppelin/contracts-upgradeable/token/ER
 import {StringsUpgradeable} from "@openzeppelin/contracts-upgradeable/utils/StringsUpgradeable.sol";
 import {Base64Upgradeable} from "@openzeppelin/contracts-upgradeable/utils/Base64Upgradeable.sol";
 import {Errors} from "./libraries/Errors.sol";
-import {Constants} from './libraries/Constants.sol';
+import './libraries/Constants.sol';
 import {IVoucher} from './interfaces/IVoucher.sol';
 import {Events} from "./libraries/Events.sol";
 import {DataTypes} from './libraries/DataTypes.sol';
@@ -134,7 +134,7 @@ contract Voucher is
             address _bankTreasury = IModuleGlobals(MODULE_GLOBALS).getTreasury();
 
             //not need to approve this contract first 
-            INFTDerivativeProtocolTokenV1(_sbt).transferValue(soulBoundTokenId, Constants._BANK_TREASURY_SOUL_BOUND_TOKENID, amountSBT);
+            INFTDerivativeProtocolTokenV1(_sbt).transferValue(soulBoundTokenId, BANK_TREASURY_SOUL_BOUND_TOKENID, amountSBT);
 
             _mint(account, _tokenId, amountSBT, "");
 
