@@ -526,11 +526,6 @@ contract BankTreasury is
     ) external payable whenNotPaused nonReentrant {
         // only called by owner of soulBoundTokenId
         _validateCallerIsSoulBoundTokenOwner(soulBoundTokenId);
-        // address _manager = IModuleGlobals(MODULE_GLOBALS).getManager();
-
-        // if (msg.sender != IManager(_manager).getWalletBySoulBoundTokenId(soulBoundTokenId)) {
-        //     revert Errors.Unauthorized();
-        // }
 
         if (_exchangePrice == 0) revert Errors.ExchangePriceIsZero();
         if (amount == 0) revert Errors.AmountIsZero();
@@ -568,12 +563,6 @@ contract BankTreasury is
     ) external payable whenNotPaused nonReentrant {
         // only called by owner of soulBoundTokenId
         _validateCallerIsSoulBoundTokenOwner(soulBoundTokenId);
-
-        // address _manager = IModuleGlobals(MODULE_GLOBALS).getManager();
-
-        // if (msg.sender != IManager(_manager).getWalletBySoulBoundTokenId(soulBoundTokenId)) {
-        //     revert Errors.Unauthorized();
-        // }
 
         if (_exchangePrice == 0) revert Errors.ExchangePriceIsZero();
         if (sbtValue == 0) revert Errors.AmountIsZero();
@@ -1029,7 +1018,6 @@ contract BankTreasury is
         return accountInfo;
     }
 
-
     function _validateCallerIsSoulBoundTokenOwner(uint256 soulBoundTokenId_) internal view {
         if (MODULE_GLOBALS == address(0)) revert Errors.ModuleGlobasNotSet();
         
@@ -1041,6 +1029,5 @@ contract BankTreasury is
 
          revert Errors.NotProfileOwner();
     }
-
 
 }

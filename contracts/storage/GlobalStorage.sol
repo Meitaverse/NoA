@@ -25,7 +25,6 @@ abstract contract GlobalStorage {
     uint16 internal _treasuryFee; 
 
     mapping(address => uint256) internal _publishCurrencyTaxes; //publish的币种及数量
-
    
     mapping(address => bool) internal _profileCreatorWhitelisted;
 
@@ -33,7 +32,9 @@ abstract contract GlobalStorage {
     mapping(uint256 => bool) internal _hubCreatorWhitelisted;
 
     mapping(address => bool) internal _collectModuleWhitelisted;
+
     mapping(address => bool) internal _publishModuleWhitelisted;
+
     mapping(address => bool) internal _templateWhitelisted;
   
 }

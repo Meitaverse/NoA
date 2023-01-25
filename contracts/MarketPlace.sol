@@ -60,13 +60,23 @@ contract MarketPlace is
 
     function initialize(address admin) external override initializer {
         AdminRoleEnumerable._initializeAdminRole(admin);
-
         __Pausable_init();
         __UUPSUpgradeable_init();
-
     }
 
     // --- override --- //
+    function _validateCallerIsSoulBoundTokenOwner(uint256 soulBoundTokenId_) internal virtual view override {
+        if (MODULE_GLOBALS == address(0)) revert Errors.ModuleGlobasNotSet();
+        
+            address _sbt = IModuleGlobals(MODULE_GLOBALS).getSBT();
+
+            if (IERC3525(_sbt).ownerOf(soulBoundTokenId_) == msg.sender) {
+            return;
+            }
+
+            revert Errors.NotProfileOwner();
+    }
+
     function _getTreasuryData() internal virtual view override returns (address, uint16) {
         return IModuleGlobals(MODULE_GLOBALS).getTreasuryData();
     }
@@ -228,20 +238,4 @@ contract MarketPlace is
     {
         markets[derivativeNFT].isOpen = isOpen;
     }
-
-    //--- internal  ---//
-    function _validateCallerIsSoulBoundTokenOwner(uint256 soulBoundTokenId_) internal virtual view override {
-        if (MODULE_GLOBALS == address(0)) revert Errors.ModuleGlobasNotSet();
-        
-            address _sbt = IModuleGlobals(MODULE_GLOBALS).getSBT();
-
-            if (IERC3525(_sbt).ownerOf(soulBoundTokenId_) == msg.sender) {
-            return;
-            }
-
-            revert Errors.NotProfileOwner();
-    }
-
-
-
 }

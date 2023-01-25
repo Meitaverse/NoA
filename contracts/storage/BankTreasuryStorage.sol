@@ -6,12 +6,12 @@ import {DataTypes} from '../libraries/DataTypes.sol';
 contract BankTreasuryStorage  {
 
     //SBT id of BankTreasury
-    uint256 soulBoundTokenIdBankTreasury;
+    uint256 internal soulBoundTokenIdBankTreasury;
     
     mapping(address => uint256) public sigNonces;
 
-    // solhint-disable-next-line var-name-mixedcase
     address internal  _governance;
+
     address internal  MODULE_GLOBALS;
 
     address[] internal _signers;
