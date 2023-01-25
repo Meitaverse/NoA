@@ -54,8 +54,8 @@ contract NFTDerivativeProtocolTokenV1 is
     constructor() initializer {}
 
     function initialize(
-        string memory name,
-        string memory symbol,
+        string calldata name,
+        string calldata symbol,
         uint8 decimals,
         address manager,
         address metadataDescriptor_

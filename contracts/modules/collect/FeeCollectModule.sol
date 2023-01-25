@@ -50,6 +50,11 @@ contract FeeCollectModule is FeeModuleBase, ModuleBase, ICollectModule {
     // using SafeERC20Upgradeable for IERC20Upgradeable;
     using SafeMathUpgradeable for uint256;
 
+    /// @notice The fee collected by the buy referrer for sales facilitated by this market contract.
+    ///         This fee is calculated from the total protocol fee.
+    uint256 private constant BUY_REFERRER_FEE_DENOMINATOR = BASIS_POINTS / 100; // 1%
+
+
     // publishId => ProfilePublicationData
     mapping(uint256 =>  ProfilePublicationData) internal _dataByPublicationByProfile;
 
@@ -70,7 +75,8 @@ contract FeeCollectModule is FeeModuleBase, ModuleBase, ICollectModule {
         if (
             publishId == 0 || 
             ownershipSoulBoundTokenId == 0 || 
-            genesisFee > BPS_MAX - 1000 || 
+            genesisFee > BASIS_POINTS - 1000 || 
+
             amount == 0
         )
             revert Errors.InitParamsInvalid();
@@ -139,9 +145,9 @@ contract FeeCollectModule is FeeModuleBase, ModuleBase, ICollectModule {
         uint256 payValue = collectUnits.mul(_dataByPublicationByProfile[publishId].salePrice);
         (,  treasuryFee) = _treasuryData();
         genesisSoulBoundTokenId = _dataByPublicationByProfile[publishId].genesisSoulBoundTokenId;
-        royaltyAmounts.treasuryAmount = payValue.mul(treasuryFee).div(BPS_MAX);
-        royaltyAmounts.genesisAmount = payValue.mul(_dataByPublicationByProfile[publishId].genesisFee).div(BPS_MAX);
-        royaltyAmounts.previousAmount = payValue.mul(_dataByPublicationByProfile[publishId].previousFee).div(BPS_MAX);
+        royaltyAmounts.treasuryAmount = payValue.mul(treasuryFee).div(BASIS_POINTS);
+        royaltyAmounts.genesisAmount = payValue.mul(_dataByPublicationByProfile[publishId].genesisFee).div(BASIS_POINTS);
+        royaltyAmounts.previousAmount = payValue.mul(_dataByPublicationByProfile[publishId].previousFee).div(BASIS_POINTS);
         royaltyAmounts.adjustedAmount = payValue.sub(royaltyAmounts.treasuryAmount).sub(royaltyAmounts.genesisAmount).sub(royaltyAmounts.previousAmount);
 
         return (
@@ -167,6 +173,11 @@ contract FeeCollectModule is FeeModuleBase, ModuleBase, ICollectModule {
             );
         }
 
+        // referrerFee max limit 1000
+        if (referrerFee >  BUY_REFERRER_FEE_DENOMINATOR ) {
+            revert Errors.ReferrerFeeExceeded();
+        }
+
         DataTypes.RoyaltyAmounts memory royaltyAmounts;
         uint256 payValue = collectUnits.mul(_dataByPublicationByProfile[publishId].salePrice);
         if (payValue >0) {
@@ -175,17 +186,18 @@ contract FeeCollectModule is FeeModuleBase, ModuleBase, ICollectModule {
 
             uint256 genesisSoulBoundTokenId = _dataByPublicationByProfile[publishId].genesisSoulBoundTokenId;
             (address treasury, uint16 treasuryFee) = _treasuryData();
-
-            if (treasuryFee + uint16(_dataByPublicationByProfile[publishId].previousFee) + uint16(_dataByPublicationByProfile[publishId].genesisFee) + referrerFee > BPS_MAX) {
-                revert Errors.ReferrerFeeExceeded();
+            
+            if (treasuryFee >0 && treasuryFee < referrerFee) {
+                revert Errors.NFTMarketFees_Invalid_Referrer_Fee();   
             }
 
-            royaltyAmounts.treasuryAmount = payValue.mul(treasuryFee).div(BPS_MAX);
-            royaltyAmounts.previousAmount = payValue.mul(_dataByPublicationByProfile[publishId].previousFee).div(BPS_MAX);
-            royaltyAmounts.genesisAmount = payValue.mul(_dataByPublicationByProfile[publishId].genesisFee).div(BPS_MAX);
+            royaltyAmounts.treasuryAmount = payValue.mul(treasuryFee).div(BASIS_POINTS);
+            royaltyAmounts.previousAmount = payValue.mul(_dataByPublicationByProfile[publishId].previousFee).div(BASIS_POINTS);
+            royaltyAmounts.genesisAmount = payValue.mul(_dataByPublicationByProfile[publishId].genesisFee).div(BASIS_POINTS);
             royaltyAmounts.adjustedAmount = payValue.sub(royaltyAmounts.treasuryAmount).sub(royaltyAmounts.genesisAmount).sub(royaltyAmounts.previousAmount);
             if (referrerSoulBoundTokenId != 0 && referrerFee > 0) {
-                royaltyAmounts.referrerAmount = payValue.mul(referrerFee).div(BPS_MAX);
+                royaltyAmounts.referrerAmount = payValue.mul(referrerFee).div(BASIS_POINTS);
+                royaltyAmounts.treasuryAmount = royaltyAmounts.treasuryAmount.sub(royaltyAmounts.referrerAmount);
             }
             
             DataTypes.CollectFeeUsers memory collectFeeUsers =  DataTypes.CollectFeeUsers({
@@ -198,6 +210,8 @@ contract FeeCollectModule is FeeModuleBase, ModuleBase, ICollectModule {
             
             // save funds
             IBankTreasury(treasury).saveFundsToUserRevenue(
+                collectorSoulBoundTokenId,
+                payValue,
                 collectFeeUsers,
                 royaltyAmounts
             );

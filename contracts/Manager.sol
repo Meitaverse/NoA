@@ -305,8 +305,8 @@ contract Manager is
         whenPublishingEnabled 
         nonReentrant
     {
-         DataTypes.PublishData memory publishData = _projectDataByPublishId[publishId];
-         DataTypes.HubData memory hub = _hubInfos[publishData.publication.hubId];
+         DataTypes.PublishData storage publishData = _projectDataByPublishId[publishId];
+         DataTypes.HubData storage hub = _hubInfos[publishData.publication.hubId];
 
         _validateCallerIsSoulBoundTokenOwnerOrDispathcher(hub.soulBoundTokenId);
         
@@ -499,6 +499,10 @@ contract Manager is
 
     function getWalletBySoulBoundTokenId(uint256 soulBoundTokenId) external view returns(address) {
         return _soulBoundTokenIdToWallet[soulBoundTokenId];
+    }
+    
+    function getSoulBoundTokenIdByWallet(address wallet) external view returns(uint256) {
+        return _walletToSoulBoundTokenId[wallet];
     }
     
     function getGenesisAndPreviousInfo(uint256 projectId, uint256 tokenId) 

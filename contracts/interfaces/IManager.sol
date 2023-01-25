@@ -148,6 +148,7 @@ interface IManager {
 
     function getGenesisAndPreviousInfo(uint256 projectId, uint256 tokenId) external view returns(uint256,uint256,uint256,uint256);
 
+    function getSoulBoundTokenIdByWallet(address wallet) external view returns(uint256);
 
     /**
      * @notice Sets a profile's dispatcher, giving that dispatcher rights to publish to that profile.

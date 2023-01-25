@@ -22,7 +22,6 @@ import './libraries/Constants.sol';
 import {IVoucher} from './interfaces/IVoucher.sol';
 import {Events} from "./libraries/Events.sol";
 import {DataTypes} from './libraries/DataTypes.sol';
-import "./libraries/EthAddressLib.sol";
 import "./storage/VoucherStorage.sol";
 import {IModuleGlobals} from "./interfaces/IModuleGlobals.sol";
 import {IManager} from "./interfaces/IManager.sol";

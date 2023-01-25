@@ -8,24 +8,14 @@ import "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
 import "@openzeppelin/contracts/utils/introspection/IERC165.sol";
 import "@solvprotocol/erc-3525/contracts/IERC3525Receiver.sol";
 import "@solvprotocol/erc-3525/contracts/IERC3525.sol";
-import "@openzeppelin/contracts/utils/Counters.sol";
-import "@openzeppelin/contracts-upgradeable/utils/structs/EnumerableSetUpgradeable.sol";
-import "@openzeppelin/contracts-upgradeable/security/ReentrancyGuardUpgradeable.sol";
-import {IERC3525Metadata} from "@solvprotocol/erc-3525/contracts/extensions/IERC3525Metadata.sol";
-import {IDerivativeNFTV1} from "./interfaces/IDerivativeNFTV1.sol";
-import "./interfaces/INFTDerivativeProtocolTokenV1.sol";
-import {IMarketPlace} from "./interfaces/IMarketPlace.sol";
 import './libraries/Constants.sol';
+import {IMarketPlace} from "./interfaces/IMarketPlace.sol";
 import {DataTypes} from './libraries/DataTypes.sol';
 import {Events} from"./libraries/Events.sol";
 import {Errors} from "./libraries/Errors.sol";
-import "./libraries/SafeMathUpgradeable128.sol";
 import {MarketLogic} from './libraries/MarketLogic.sol';
 import {MarketPlaceStorage} from  "./storage/MarketPlaceStorage.sol";
-import {SafeMathUpgradeable} from "@openzeppelin/contracts-upgradeable/utils/math/SafeMathUpgradeable.sol";
-import {IBankTreasury} from "./interfaces/IBankTreasury.sol";
 import {IModuleGlobals} from "./interfaces/IModuleGlobals.sol";
-import {IManager} from "./interfaces/IManager.sol";
 import {DNFTMarketAuction} from "./market/DNFTMarketAuction.sol";
 import {MarketSharedCore} from "./market/MarketSharedCore.sol";
 import {DNFTMarketCore} from "./market/DNFTMarketCore.sol";
@@ -40,7 +30,6 @@ import "hardhat/console.sol";
 
 contract MarketPlace is
     Initializable,
-    ReentrancyGuardUpgradeable,
     IMarketPlace,
     MarketPlaceStorage,
     MarketSharedCore,
@@ -57,22 +46,16 @@ contract MarketPlace is
     OperatorRoleEnumerable,
     UUPSUpgradeable
 {
-    using SafeMathUpgradeable for uint256;
-    using SafeMathUpgradeable128 for uint128;
-    using Counters for Counters.Counter;
-    using EnumerableSetUpgradeable for EnumerableSetUpgradeable.UintSet;
-    using EnumerableSetUpgradeable for EnumerableSetUpgradeable.AddressSet;
-
-    // bytes32 public constant PAUSER_ROLE = keccak256("PAUSER_ROLE");
-    // bytes32 public constant UPGRADER_ROLE = keccak256("UPGRADER_ROLE");
-    uint16 internal constant BPS_MAX = 10000;
 
     /// @custom:oz-upgrades-unsafe-allow constructor
     constructor(
+        address manager,
+        address treasury,
+        address sbt,
         uint256 duration  //24h
     ) 
     DNFTMarketReserveAuction(duration) 
-    MarketFees()
+    MarketFees(manager, treasury, sbt)
     initializer {}
 
     function initialize(address admin) external override initializer {
@@ -81,27 +64,14 @@ contract MarketPlace is
         __Pausable_init();
         __UUPSUpgradeable_init();
 
-        ReentrancyGuardUpgradeable.__ReentrancyGuard_init();
     }
 
     // --- override --- //
-    function _getManager() internal virtual override returns (address) {
-        return IModuleGlobals(MODULE_GLOBALS).getManager();
-    }
-    
-    function _getSBT() internal virtual override returns (address) {
-        return IModuleGlobals(MODULE_GLOBALS).getSBT();
-    }
-    
-    function _getBankTreasury() internal virtual override returns (address) {
-        return IModuleGlobals(MODULE_GLOBALS).getTreasury();
-    }
-
-    function _getTreasuryData() internal virtual override returns (address, uint16) {
+    function _getTreasuryData() internal virtual view override returns (address, uint16) {
         return IModuleGlobals(MODULE_GLOBALS).getTreasuryData();
     }
 
-    function _getMarketInfo(address derivativeNFT) internal virtual override returns (DataTypes.Market memory) {
+    function _getMarketInfo(address derivativeNFT) internal virtual view override returns (DataTypes.Market memory) {
         return markets[derivativeNFT];
     }
 
@@ -162,22 +132,22 @@ contract MarketPlace is
     }
 
     receive() external payable {
-        if (msg.value > 0) {
-            (address treasury, ) = IModuleGlobals(MODULE_GLOBALS).getTreasuryData();
-            address payable _to = payable(treasury);
-            (bool success, ) = _to.call{value: msg.value}("");
-            if (!success) revert Errors.TransferEtherToBankTreasuryFailed();
-        }
+        // if (msg.value > 0) {
+        //     (address treasury, ) = IModuleGlobals(MODULE_GLOBALS).getTreasuryData();
+        //     address payable _to = payable(treasury);
+        //     (bool success, ) = _to.call{value: msg.value}("");
+        //     if (!success) revert Errors.TransferEtherToBankTreasuryFailed();
+        // }
         emit Events.MarketPlaceDeposit(msg.sender, msg.value, address(this), address(this).balance);
     }
 
     fallback() external payable {
-        if (msg.value > 0) {
-            (address treasury, ) = IModuleGlobals(MODULE_GLOBALS).getTreasuryData();
-            address payable _to = payable(treasury);
-            (bool success, ) = _to.call{value: msg.value}("");
-            if (!success) revert Errors.TransferEtherToBankTreasuryFailed();
-        }        
+        // if (msg.value > 0) {
+        //     (address treasury, ) = IModuleGlobals(MODULE_GLOBALS).getTreasuryData();
+        //     address payable _to = payable(treasury);
+        //     (bool success, ) = _to.call{value: msg.value}("");
+        //     if (!success) revert Errors.TransferEtherToBankTreasuryFailed();
+        // }        
         emit Events.MarketPlaceDepositByFallback(msg.sender, msg.value, address(this), address(this).balance, msg.data);
     }
 
@@ -208,7 +178,6 @@ contract MarketPlace is
     //must set after moduleGlobals deployed
     function setGlobalModule(address moduleGlobals) 
         external
-        nonReentrant
         whenNotPaused  
         onlyAdmin 
     {
@@ -227,7 +196,6 @@ contract MarketPlace is
         uint16 royaltyBasisPoints_
     ) 
         external 
-        nonReentrant
         whenNotPaused   
         onlyOperator 
     {
@@ -240,13 +208,12 @@ contract MarketPlace is
         );
     }
 
-    function getMarketInfo(address derivativeNFT) external returns(DataTypes.Market memory) {
+    function getMarketInfo(address derivativeNFT) external view returns(DataTypes.Market memory) {
         return _getMarketInfo(derivativeNFT);
     }
 
     function removeMarket(address derivativeNFT_) 
         external 
-        nonReentrant
         whenNotPaused   
         onlyOperator
     {
@@ -256,7 +223,6 @@ contract MarketPlace is
 
     function setMarketOpen(address derivativeNFT, bool isOpen) 
         external 
-        nonReentrant
         whenNotPaused          
         onlyOperator
     {
@@ -264,20 +230,18 @@ contract MarketPlace is
     }
 
     //--- internal  ---//
-
-    // function _validateCallerIsSoulBoundTokenOwnerOrDispathcher(uint256 soulBoundTokenId_) internal view {
-    //     if (MODULE_GLOBALS == address(0)) revert Errors.ModuleGlobasNotSet();
+    function _validateCallerIsSoulBoundTokenOwner(uint256 soulBoundTokenId_) internal virtual view override {
+        if (MODULE_GLOBALS == address(0)) revert Errors.ModuleGlobasNotSet();
         
-    //      address _sbt = IModuleGlobals(MODULE_GLOBALS).getSBT();
-    //      address _manager = IModuleGlobals(MODULE_GLOBALS).getManager();
+            address _sbt = IModuleGlobals(MODULE_GLOBALS).getSBT();
 
-    //      if (IERC3525(_sbt).ownerOf(soulBoundTokenId_) == msg.sender || 
-    //         IManager(_manager).getDispatcher(soulBoundTokenId_) == msg.sender) {
-    //         return;
-    //      }
+            if (IERC3525(_sbt).ownerOf(soulBoundTokenId_) == msg.sender) {
+            return;
+            }
 
-    //      revert Errors.NotProfileOwnerOrDispatcher();
-    // }
+            revert Errors.NotProfileOwner();
+    }
+
 
 
 }

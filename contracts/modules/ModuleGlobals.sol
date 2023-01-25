@@ -2,6 +2,7 @@
 
 pragma solidity ^0.8.13;
 
+import '../libraries/Constants.sol';
 import {Errors} from '../libraries/Errors.sol';
 import {Events} from '../libraries/Events.sol';
 import {IModuleGlobals} from '../interfaces/IModuleGlobals.sol';
@@ -22,7 +23,6 @@ import "hardhat/console.sol";
  * 
  */
 contract ModuleGlobals is IModuleGlobals, GlobalStorage {
-    uint16 internal constant BPS_MAX = 10000;
 
     modifier onlyGov() {
         _validateCallerIsGovernance();
@@ -183,7 +183,7 @@ contract ModuleGlobals is IModuleGlobals, GlobalStorage {
     }
 
     function _setTreasuryFee(uint16 newTreasuryFee) internal {
-        if (newTreasuryFee >= BPS_MAX / 2) revert Errors.InitParamsInvalid();
+        if (newTreasuryFee >= BASIS_POINTS / 2) revert Errors.InitParamsInvalid();
         uint16 prevTreasuryFee = _treasuryFee;
         _treasuryFee = newTreasuryFee;
         emit Events.ModuleGlobalsTreasuryFeeSet(prevTreasuryFee, newTreasuryFee, block.timestamp);

@@ -20,14 +20,6 @@ uint8 constant MAX_NICKNAME_LENGTH = 31;
 
 uint16 constant BANK_TREASURY_SOUL_BOUND_TOKENID = 1;
 
-
-/// Constant values shared across mixins.
-
-/**
- * @dev 100% in basis points.
- */
-// uint256 constant BASIS_POINTS = 10_000;
-
 /**
  * @dev The default admin role defined by OZ ACL modules.
  */
@@ -43,8 +35,6 @@ uint256 constant MAX_ROYALTY_RECIPIENTS = 5;
  * @dev The minimum increase of 10% required when making an offer or placing a bid.
  */
 uint256 constant MIN_PERCENT_INCREMENT_DENOMINATOR = BASIS_POINTS / 1_000;
-
-
 
 /**
  * @dev Default royalty cut paid out on secondary sales.

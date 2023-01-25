@@ -8,7 +8,6 @@ import {SafeMathUpgradeable} from "@openzeppelin/contracts-upgradeable/utils/mat
 import "../libraries/SafeMathUpgradeable128.sol";
 import {Events} from "../libraries/Events.sol";
 import {Errors} from "../libraries/Errors.sol";
-import {IModuleGlobals} from "../interfaces/IModuleGlobals.sol";
 import {IManager} from "../interfaces/IManager.sol";
 import "./MarketSharedCore.sol";
 import "./DNFTMarketAuction.sol";
@@ -31,76 +30,12 @@ abstract contract DNFTMarketReserveAuction is
   using SafeMathUpgradeable for uint256;
   using SafeMathUpgradeable128 for uint128;
 
-  /// @notice The auction configuration for a specific DNFT.
-  struct ReserveAuction {
-    uint256 soulBoundTokenId;
-    /// @notice The address of the DNFT contract.
-    address derivativeNFT;
-    /// @notice The project id of the DNFT.
-    uint256 projectId;
-    /// @notice The id of the DNFT.
-    uint256 tokenId;
-    /// @notice The units of auction.
-    uint128 units;
-    /// @notice The owner of the DNFT which listed it in auction.
-    address payable seller;
-    /// @notice The duration for this auction.
-    uint256 duration;
-    /// @notice The extension window for this auction.
-    uint256 extensionDuration;
-    /// @notice The time at which this auction will not accept any new bids.
-    /// @dev This is `0` until the first bid is placed.
-    uint256 endTime;
-    /// @notice The current highest bidder in this auction.
-    /// @dev This is `address(0)` until the first bid is placed.
-    address payable bidder;
-    /// @notice The latest price of the DNFT in this auction.
-    /// @dev This is set to the reserve price, and then to the highest bid once the auction has started.
-    uint256 amount;
-  }
-
-  /// @notice Stores the auction configuration for a specific DNFT.
-  /// @dev This allows us to modify the storage struct without changing external APIs.
-  struct ReserveAuctionStorage {
-    uint256 soulBoundTokenId;
-    /// @notice The address of the DNFT contract.
-    address derivativeNFT;
-    /// @notice The project id of the DNFT.
-    uint256 projectId;    
-    /// @notice The id of the DNFT.
-    uint256 tokenId;
-    /// @notice The id to escrow
-    uint256 tokenIdToEscrow;
-    /// @notice The units of this reserve auction.
-    uint128 units;
-    /// @notice The id of escrow.
-    uint256 tokenIdEscrow;
-    /// @notice The owner of the DNFT which listed it in auction.
-    address payable seller;
-    /// @notice The SBT id  of referrer in auction.
-    uint256 soulBoundTokenIdReferrer;
-    /// @dev This field is no longer used.
-    uint256 __gap_was_duration;
-    /// @dev This field is no longer used.
-    uint256 __gap_was_extensionDuration;
-    /// @notice The time at which this auction will not accept any new bids.
-    /// @dev This is `0` until the first bid is placed.
-    uint256 endTime;
-    /// @notice The current highest bidder in this auction.
-    /// @dev This is `address(0)` until the first bid is placed.
-    address payable bidder;
-    /// @notice Second slot (of 8B) used for the bidReferrerAddress.
-    // uint64 bidReferrerAddressSlot1;
-    /// @notice The latest price of the DNFT in this auction.
-    /// @dev This is set to the reserve price, and then to the highest bid once the auction has started.
-    uint256 amount;
-  }
-
   /// @notice The auction configuration for a specific auction id.
   mapping(address => mapping(uint256 => uint256)) private nftContractToTokenIdToAuctionId;
+  
   /// @notice The auction id for a specific DNFT.
   /// @dev This is deleted when an auction is finalized or canceled.
-  mapping(uint256 => ReserveAuctionStorage) private auctionIdToAuction;
+  mapping(uint256 => DataTypes.ReserveAuctionStorage) private auctionIdToAuction;
 
   /**
    * @dev Removing old unused variables in an upgrade safe way. Was:
@@ -130,11 +65,13 @@ abstract contract DNFTMarketReserveAuction is
     _;
   }
 
+
   /**
    * @notice Configures the duration for auctions.
    * @param duration The duration for auctions, in seconds.
    */
   constructor(uint256 duration) {
+
     if (duration > MAX_MAX_DURATION) {
       // This ensures that math in this file will not overflow due to a huge duration.
       revert Errors.DNFTMarketReserveAuction_Exceeds_Max_Duration(MAX_MAX_DURATION);
@@ -152,7 +89,7 @@ abstract contract DNFTMarketReserveAuction is
    * @param auctionId The id of the auction to cancel.
    */
   function cancelReserveAuction(uint256 auctionId) external  {
-    ReserveAuctionStorage memory auction = auctionIdToAuction[auctionId];
+    DataTypes.ReserveAuctionStorage memory auction = auctionIdToAuction[auctionId];
     if (auction.seller != msg.sender) {
       revert Errors.DNFTMarketReserveAuction_Only_Owner_Can_Update_Auction(auction.seller);
     }
@@ -164,10 +101,8 @@ abstract contract DNFTMarketReserveAuction is
     delete nftContractToTokenIdToAuctionId[auction.derivativeNFT][auction.tokenId];
     delete auctionIdToAuction[auctionId];
 
-    //TODO
-    uint128 units;
     // Transfer the DNFT unless it still has a buy price set.
-    _transferFromEscrowIfAvailable(auction.derivativeNFT, auction.tokenIdEscrow, auction.tokenId, units);
+    _transferFromEscrowIfAvailable(auction.derivativeNFT, auction.tokenIdEscrow, auction.tokenId, auction.units);
 
     emit Events.ReserveAuctionCanceled(auctionId);
   }
@@ -175,6 +110,7 @@ abstract contract DNFTMarketReserveAuction is
   /**
    * @notice Creates an auction for the given DNFT.
    * The DNFT is held in escrow until the auction is finalized or canceled.
+   * @param soulBoundTokenId The SBT id of the DNFT owner.
    * @param derivativeNFT The address of the DNFT contract.
    * @param tokenId The id of the DNFT.
    * @param reservePrice The initial reserve price for the auction.
@@ -185,31 +121,32 @@ abstract contract DNFTMarketReserveAuction is
     uint256 tokenId,
     uint128 units,
     uint256 reservePrice
-  ) external  onlyValidAuctionConfig(reservePrice) {
+  ) external onlyValidAuctionConfig(reservePrice) {
+    _validUnitsAndAmount(units, reservePrice);
+    _validateCallerIsSoulBoundTokenOwner(soulBoundTokenId);
+
     uint256 auctionId = _getNextAndIncrementAuctionId();
 
     // If the `msg.sender` is not the owner of the DNFT, transferring into escrow should fail.
-    uint256 newTokenId = _transferToEscrow(derivativeNFT, tokenId, units);
+    uint256 tokenIdToEscrow = _transferToEscrow(derivativeNFT, tokenId, units);
 
     // This check must be after _transferToEscrow in case auto-settle was required
     if (nftContractToTokenIdToAuctionId[derivativeNFT][tokenId] != 0) {
       revert Errors.DNFTMarketReserveAuction_Already_Listed(nftContractToTokenIdToAuctionId[derivativeNFT][tokenId]);
     }
 
-    address _manager = _getManager() ;
-    uint256 projectId = IManager(_manager).getProjectIdByContract(derivativeNFT);
+    uint256 projectId = manager.getProjectIdByContract(derivativeNFT);
     if (projectId == 0) 
         revert Errors.InvalidParameter();
 
-
     // Store the auction details
     nftContractToTokenIdToAuctionId[derivativeNFT][tokenId] = auctionId;
-    ReserveAuctionStorage storage auction = auctionIdToAuction[auctionId];
+    DataTypes.ReserveAuctionStorage storage auction = auctionIdToAuction[auctionId];
     auction.soulBoundTokenId = soulBoundTokenId;
     auction.derivativeNFT = derivativeNFT;
     auction.projectId = projectId;
     auction.tokenId = tokenId;
-    auction.tokenIdToEscrow = newTokenId;
+    auction.tokenIdToEscrow = tokenIdToEscrow;
     auction.units = units;
     auction.seller = payable(msg.sender);
     auction.amount = reservePrice;
@@ -218,6 +155,8 @@ abstract contract DNFTMarketReserveAuction is
       msg.sender, 
       derivativeNFT, 
       tokenId, 
+      units,
+      tokenIdToEscrow,
       DURATION, 
       EXTENSION_DURATION, 
       reservePrice, 
@@ -230,7 +169,7 @@ abstract contract DNFTMarketReserveAuction is
    * This will send the DNFT to the highest bidder and distribute revenue for this sale.
    * @param auctionId The id of the auction to settle.
    */
-  function finalizeReserveAuction(uint256 auctionId) external  {
+  function finalizeReserveAuction(uint256 auctionId) external {
     if (auctionIdToAuction[auctionId].endTime == 0) {
       revert Errors.DNFTMarketReserveAuction_Cannot_Finalize_Already_Settled_Auction();
     }
@@ -243,27 +182,28 @@ abstract contract DNFTMarketReserveAuction is
    * If this is the first bid on the auction, the countdown will begin.
    * If there is already an outstanding bid, the previous bidder will be refunded at this time
    * and if the bid is placed in the final moments of the auction, the countdown may be extended.
-   * @dev `amount` - `msg.value` is withdrawn from the bidder's FETH balance.
+   * @dev `amount` - `msg.value` is withdrawn from the bidder's SBT balance.
    * @param auctionId The id of the auction to bid on.
-   * @param amount The amount to bid, if this is more than `msg.value` funds will be withdrawn from your FETH balance.
+   * @param amount The amount to bid, if this is more than `msg.value` funds will be withdrawn from your SBT balance.
    */
   /* solhint-disable-next-line code-complexity */
   function placeBid(
+    uint256 soulBoundTokenIdBidder,
     uint256 auctionId,
     uint256 amount,
     uint256 soulBoundTokenIdReferrer
-  ) public payable  {
-    ReserveAuctionStorage storage auction = auctionIdToAuction[auctionId];
+  ) public {
+    if (soulBoundTokenIdBidder == 0 || auctionId == 0)
+      revert Errors.InvalidParameter();
+
+    DataTypes.ReserveAuctionStorage storage auction = auctionIdToAuction[auctionId];
 
     if (auction.amount == 0) {
       // No auction found
       revert Errors.DNFTMarketReserveAuction_Cannot_Bid_On_Nonexistent_Auction();
-    } else if (amount < msg.value) {
-      // The amount is specified by the bidder, so if too much ETH is sent then something went wrong.
-      revert Errors.DNFTMarketReserveAuction_Too_Much_Value_Provided();
     }
-
     uint256 endTime = auction.endTime;
+    uint256 originalSoulBoundTokenIdBidder;
 
     // Store the bid referral
     if (soulBoundTokenIdReferrer != 0 || endTime != 0) {
@@ -279,12 +219,13 @@ abstract contract DNFTMarketReserveAuction is
       }
 
       // Notify other market tools that an auction for this DNFT has been kicked off.
-      // The only state change before this call is potentially withdrawing funds from FETH.
+      // The only state change before this call is potentially withdrawing funds from SBT.
       _beforeAuctionStarted(auction.derivativeNFT, auction.tokenId);
 
       // Store the bid details.
       auction.amount = amount;
       auction.bidder = payable(msg.sender);
+      auction.soulBoundTokenIdBidder = soulBoundTokenIdBidder;
 
       // On the first bid, set the endTime to now + duration.
       unchecked {
@@ -309,9 +250,10 @@ abstract contract DNFTMarketReserveAuction is
 
       // Cache and update bidder state
       uint256 originalAmount = auction.amount;
-      address payable originalBidder = auction.bidder;
-      auction.amount = amount;
+      originalSoulBoundTokenIdBidder = auction.soulBoundTokenIdBidder;
+      auction.amount = amount; //price
       auction.bidder = payable(msg.sender);
+      auction.soulBoundTokenIdBidder = soulBoundTokenIdBidder;
 
       unchecked {
         // When a bid outbids another, check to see if a time extension should apply.
@@ -324,14 +266,25 @@ abstract contract DNFTMarketReserveAuction is
         }
       }
 
-      // Refund the previous bidder
-      // _sendValueWithFallbackWithdraw(originalBidder, originalAmount, SEND_VALUE_GAS_LIMIT_SINGLE_RECIPIENT);
+      //Refund the previous bidder
+      treasury.refundEarnestMoney(
+            originalSoulBoundTokenIdBidder,
+            originalAmount
+      );
     }
 
-    // _tryUseFETHBalance(amount, false);
+    //Try to use bidder in teasury SBT balance to pay first, and transfer SBT value to treasury if revenueAmounts is not enough for
+    _tryUseEarnestMoneyForPay(auction.soulBoundTokenIdBidder, amount);
 
-    emit Events.ReserveAuctionBidPlaced(auctionId, msg.sender, amount, endTime);
-  }
+    emit Events.ReserveAuctionBidPlaced(
+      auctionId, 
+      originalSoulBoundTokenIdBidder,
+      soulBoundTokenIdBidder,
+      msg.sender,
+      amount, 
+      endTime
+    );
+  } 
 
   /**
    * @notice If an auction has been created but has not yet received bids, the reservePrice may be
@@ -340,7 +293,7 @@ abstract contract DNFTMarketReserveAuction is
    * @param reservePrice The new reserve price for this auction.
    */
   function updateReserveAuction(uint256 auctionId, uint256 reservePrice) external onlyValidAuctionConfig(reservePrice) {
-    ReserveAuctionStorage storage auction = auctionIdToAuction[auctionId];
+    DataTypes.ReserveAuctionStorage storage auction = auctionIdToAuction[auctionId];
     if (auction.seller != msg.sender) {
       revert Errors.DNFTMarketReserveAuction_Only_Owner_Can_Update_Auction(auction.seller);
     } else if (auction.endTime != 0) {
@@ -366,7 +319,7 @@ abstract contract DNFTMarketReserveAuction is
     uint256 auctionId, 
     bool keepInEscrow
   ) private returns(uint256) {
-    ReserveAuctionStorage memory auction = auctionIdToAuction[auctionId];
+    DataTypes.ReserveAuctionStorage memory auction = auctionIdToAuction[auctionId];
 
     if (auction.endTime >= block.timestamp) {
       revert Errors.DNFTMarketReserveAuction_Cannot_Finalize_Auction_In_Progress(auction.endTime);
@@ -383,8 +336,8 @@ abstract contract DNFTMarketReserveAuction is
 
     // Distribute revenue for this sale.
     DataTypes.CollectFeeUsers memory collectFeeUsers =  DataTypes.CollectFeeUsers({
-            ownershipSoulBoundTokenId: 0,
-            collectorSoulBoundTokenId: auction.soulBoundTokenId,
+            ownershipSoulBoundTokenId: auction.soulBoundTokenId,
+            collectorSoulBoundTokenId: auction.soulBoundTokenIdBidder,
             genesisSoulBoundTokenId: 0,
             previousSoulBoundTokenId: 0,
             referrerSoulBoundTokenId: auction.soulBoundTokenIdReferrer
@@ -405,7 +358,6 @@ abstract contract DNFTMarketReserveAuction is
       royaltyAmounts
     );
     
-
   }
 
   /**
@@ -424,7 +376,7 @@ abstract contract DNFTMarketReserveAuction is
   ) internal virtual override{
     uint256 auctionId = nftContractToTokenIdToAuctionId[derivativeNFT][toTokenId];
     if (auctionId != 0) {
-      ReserveAuctionStorage storage auction = auctionIdToAuction[auctionId];
+      DataTypes.ReserveAuctionStorage storage auction = auctionIdToAuction[auctionId];
       if (auction.endTime == 0) {
         // The auction has not received any bids yet so it may be invalided.
 
@@ -484,10 +436,11 @@ abstract contract DNFTMarketReserveAuction is
     if (auctionId == 0) {
       // DNFT is not in auction
       return super._transferToEscrow(derivativeNFT, tokenId, onSellUnits);
-      
     }
+
+    // auctionId != 0 will trigger finalize auction
     // Using storage saves gas since most of the data is not needed
-    ReserveAuctionStorage storage auction = auctionIdToAuction[auctionId];
+    DataTypes.ReserveAuctionStorage storage auction = auctionIdToAuction[auctionId];
     if (auction.endTime == 0) {
       // Reserve price set, confirm the seller is a match
       if (auction.seller != msg.sender) {
@@ -505,13 +458,13 @@ abstract contract DNFTMarketReserveAuction is
   }
 
   /**
-   * @notice Returns the minimum amount a bidder must spend to participate in an auction.
+   * @notice Returns the minimum amount(price) a bidder must spend to participate in an auction.
    * Bids must be greater than or equal to this value or they will revert.
    * @param auctionId The id of the auction to check.
    * @return minimum The minimum amount for a bid to be accepted.
    */
   function getMinBidAmount(uint256 auctionId) external view returns (uint256 minimum) {
-    ReserveAuctionStorage storage auction = auctionIdToAuction[auctionId];
+    DataTypes.ReserveAuctionStorage storage auction = auctionIdToAuction[auctionId];
     if (auction.endTime == 0) {
       return auction.amount;
     }
@@ -522,9 +475,9 @@ abstract contract DNFTMarketReserveAuction is
    * @notice Returns auction details for a given auctionId.
    * @param auctionId The id of the auction to lookup.
    */
-  function getReserveAuction(uint256 auctionId) external view returns (ReserveAuction memory auction) {
-    ReserveAuctionStorage storage auctionStorage = auctionIdToAuction[auctionId];
-    auction = ReserveAuction(
+  function getReserveAuction(uint256 auctionId) external view returns (DataTypes.ReserveAuction memory auction) {
+    DataTypes.ReserveAuctionStorage storage auctionStorage = auctionIdToAuction[auctionId];
+    auction = DataTypes.ReserveAuction(
       auctionStorage.soulBoundTokenId,
       auctionStorage.derivativeNFT,
       auctionStorage.projectId,
@@ -535,6 +488,7 @@ abstract contract DNFTMarketReserveAuction is
       EXTENSION_DURATION,
       auctionStorage.endTime,
       auctionStorage.bidder,
+      auctionStorage.soulBoundTokenIdBidder,
       auctionStorage.amount
     );
   }
@@ -551,10 +505,10 @@ abstract contract DNFTMarketReserveAuction is
   }
 
   /**
-   * @notice Returns the SBT id of referrer for the current highest bid in the auction, or address(0).
+   * @notice Returns the SBT id of referrer for the current highest bid in the auction, or 0.
    */
   function getReserveAuctionBidReferrer(uint256 auctionId) external view returns (uint256 soulBoundTokenIdReferrer) {
-    ReserveAuctionStorage storage auction = auctionIdToAuction[auctionId];
+    DataTypes.ReserveAuctionStorage storage auction = auctionIdToAuction[auctionId];
     return auction.soulBoundTokenIdReferrer;
   }
 

@@ -24,16 +24,17 @@ error DNFTMarketCore_Seller_Not_Found();
 abstract contract DNFTMarketCore is Initializable, MarketSharedCore {
   using AddressUpgradeable for address;
   using AddressUpgradeable for address payable;
-
-  function _getManager() internal virtual returns (address);
-
-  function _getSBT() internal virtual returns (address);
   
-  function _getBankTreasury() internal virtual returns (address);
+  function _validateCallerIsSoulBoundTokenOwner(uint256 soulBoundTokenId_) internal virtual;
 
-  function _getTreasuryData() internal virtual returns (address, uint16);
+  function _getTreasuryData() internal virtual view returns (address, uint16);
 
-  function _getMarketInfo(address derivativeNFT) internal virtual returns (DataTypes.Market memory);
+  function _getMarketInfo(address derivativeNFT) internal virtual view returns (DataTypes.Market memory);
+
+  function _validUnitsAndAmount(uint128 units, uint256 amount) internal view virtual {
+    if ( units == 0  ||  amount == 0 )
+      revert Errors.InvalidParameter();
+  }
 
   /**
    * @notice If there is a buy price at this amount or lower, accept that and return true.
@@ -67,8 +68,9 @@ abstract contract DNFTMarketCore is Initializable, MarketSharedCore {
     // No-op
   }
 
+
   /**
-   * @notice Cancel the `msg.sender`'s offer if there is one, freeing up their FETH balance.
+   * @notice Cancel the `msg.sender`'s offer if there is one, freeing up their SBT balance.
    * @dev This should be used when it does not make sense to keep the original offer around,
    * e.g. if a collector accepts a Buy Price then keeping the offer around is not necessary.
    */
@@ -162,7 +164,6 @@ abstract contract DNFTMarketCore is Initializable, MarketSharedCore {
     sellerOrOwner = _getSellerOf(derivativeNFT, tokenId);
     if (sellerOrOwner == address(0)) {
       sellerOrOwner = payable(IERC3525(derivativeNFT).ownerOf(tokenId));
-      
     }
   }
   
@@ -173,6 +174,8 @@ abstract contract DNFTMarketCore is Initializable, MarketSharedCore {
    */
   function _isInActiveAuction(address derivativeNFT, uint256 tokenId) internal view virtual returns (bool);
 
+
+  
   /**
    * @notice This empty reserved space is put in place to allow future versions to add new
    * variables without shifting down storage in the inheritance chain.

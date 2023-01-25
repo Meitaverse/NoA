@@ -3,17 +3,16 @@
 pragma solidity ^0.8.13;
 
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
-import "@openzeppelin/contracts-upgradeable/utils/AddressUpgradeable.sol";
-import {SafeMathUpgradeable} from "@openzeppelin/contracts-upgradeable/utils/math/SafeMathUpgradeable.sol";
-import "../libraries/SafeMathUpgradeable128.sol";
+// import "@openzeppelin/contracts-upgradeable/utils/AddressUpgradeable.sol";
+// import {SafeMathUpgradeable} from "@openzeppelin/contracts-upgradeable/utils/math/SafeMathUpgradeable.sol";
+// import "../libraries/SafeMathUpgradeable128.sol";
 import {DataTypes} from "../libraries/DataTypes.sol";
 import {Events} from "../libraries/Events.sol";
 import {Errors} from "../libraries/Errors.sol";
-import {IModuleGlobals} from "../interfaces/IModuleGlobals.sol";
-import {IManager} from "../interfaces/IManager.sol";
 import "./MarketSharedCore.sol";
 import "./DNFTMarketCore.sol";
 import {MarketFees} from "./MarketFees.sol";
+
 /**
  * @title Allows sellers to set a buy price of their DNFTs that may be accepted and instantly transferred to the buyer.
  * @notice DNFTs with a buy price set are escrowed in the market contract.
@@ -25,17 +24,17 @@ abstract contract DNFTMarketBuyPrice is
   DNFTMarketCore,
   MarketFees
 {
-  using AddressUpgradeable for address payable;
-  using AddressUpgradeable for address;
-  using SafeMathUpgradeable for uint256;
-  using SafeMathUpgradeable128 for uint128;
+  // using AddressUpgradeable for address payable;
+  // using AddressUpgradeable for address;
+  // using SafeMathUpgradeable for uint256;
+  // using SafeMathUpgradeable128 for uint128;
 
   /// @notice Stores the current buy price for each DNFT.
   mapping(address => mapping(uint256 => DataTypes.BuyPrice)) internal dnftContractToTokenIdToBuyPrice;
 
   /**
    * @notice Buy the DNFT at the set buy price.
-   * `msg.value` must be <= `maxPrice` and any delta will be taken from the account's available FETH balance.
+   * `msg.value` must be <= `maxPrice` and any delta will be taken from the account's available SBT balance.
    * @dev `maxPrice` protects the buyer in case a the price is increased but allows the transaction to continue
    * when the price is reduced (and any surplus funds provided are refunded).
    * @param soulBoundTokenIdBuyer The SBT id of buyer.
@@ -51,7 +50,13 @@ abstract contract DNFTMarketBuyPrice is
     uint128 units,
     uint256 maxPrice,
     uint256 soulBoundTokenIdReferrer
-  ) public payable {
+  ) public {
+    _validUnitsAndAmount(units, maxPrice);
+    _validateCallerIsSoulBoundTokenOwner(soulBoundTokenIdBuyer);
+    
+    if (soulBoundTokenIdBuyer == 0 || tokenId == 0 ) 
+      revert Errors.InvalidParameter();
+
     DataTypes.BuyPrice storage buyPrice = dnftContractToTokenIdToBuyPrice[derivativeNFT][tokenId];
     if (buyPrice.salePrice > maxPrice) {
       revert Errors.DNFTMarketBuyPrice_Cannot_Buy_At_Lower_Price(buyPrice.salePrice);
@@ -59,7 +64,8 @@ abstract contract DNFTMarketBuyPrice is
       revert Errors.DNFTMarketBuyPrice_Cannot_Buy_Unset_Price();
     }
 
-    if (soulBoundTokenIdBuyer == 0) revert Errors.Unauthorized();
+    //Try to use bidder earnest money in teasury to pay first, revert if insufficient funds.
+    _tryUseEarnestMoneyForPay(soulBoundTokenIdBuyer, units * maxPrice);
 
     _buy(soulBoundTokenIdBuyer, derivativeNFT, tokenId, units, soulBoundTokenIdReferrer);
   }
@@ -74,6 +80,7 @@ abstract contract DNFTMarketBuyPrice is
    * @param units The units of the DNFT.
    */
   function cancelBuyPrice(address derivativeNFT, uint256 tokenId, uint128 units) external  { 
+
     uint256 tokenIdEscrow = dnftContractToTokenIdToBuyPrice[derivativeNFT][tokenId].tokenIdEscrow;
     address seller = dnftContractToTokenIdToBuyPrice[derivativeNFT][tokenId].seller;
     if (seller == address(0)) {
@@ -102,16 +109,12 @@ abstract contract DNFTMarketBuyPrice is
   function setBuyPrice(
     DataTypes.SaleParam memory saleParam
   ) external returns(uint256 newTokenId) { 
+    _validUnitsAndAmount(saleParam.onSellUnits, saleParam.salePrice);
+    _validateCallerIsSoulBoundTokenOwner(saleParam.soulBoundTokenId);
+    
     if (saleParam.max > 0) {
         if (saleParam.min > saleParam.max) revert Errors.MinGTMax();
     }
-
-    if (saleParam.derivativeNFT == address(0)) 
-        revert Errors.InvalidParameter();
-
-    if (!saleParam.derivativeNFT.isContract()) {
-      revert Errors.DerivativeNFT_Must_Be_A_Contract();
-    }          
         
     uint128 total = uint128(IERC3525(saleParam.derivativeNFT).balanceOf(saleParam.tokenId));
     if(total > type(uint128).max) revert Errors.ExceedsUint128Max();
@@ -123,16 +126,18 @@ abstract contract DNFTMarketBuyPrice is
     if (!_getMarketInfo(saleParam.derivativeNFT).isOpen)
         revert Errors.UnsupportedDerivativeNFT();
         
-    address _manager = _getManager() ;
-    uint256 projectId = IManager(_manager).getProjectIdByContract(msg.sender);
+    uint256 projectId = manager.getProjectIdByContract(msg.sender);
     if (projectId == 0) 
         revert Errors.InvalidParameter();
+
 
     uint256 publishId = IDerivativeNFTV1(saleParam.derivativeNFT).getPublishIdByTokenId(saleParam.tokenId);
 
     //save to  
     DataTypes.BuyPrice storage buyPrice = dnftContractToTokenIdToBuyPrice[saleParam.derivativeNFT][saleParam.tokenId];
     address seller = buyPrice.seller;
+
+    buyPrice.soulBoundTokenIdSeller = manager.getSoulBoundTokenIdByWallet(msg.sender);
 
     if (buyPrice.salePrice == saleParam.salePrice && seller != address(0)) {
       revert Errors.DNFTMarketBuyPrice_Price_Already_Set();
@@ -224,7 +229,7 @@ abstract contract DNFTMarketBuyPrice is
     uint256 tokenId,
     uint128 units,
     uint256 soulBoundTokenIdReferrer
-  ) private  { 
+  ) private { 
     DataTypes.BuyPrice memory buyPrice = dnftContractToTokenIdToBuyPrice[derivativeNFT][tokenId];
 
     if (buyPrice.onSellUnits == units) {
@@ -232,12 +237,9 @@ abstract contract DNFTMarketBuyPrice is
       delete dnftContractToTokenIdToBuyPrice[derivativeNFT][tokenId];
     }
 
-    // Cancel the buyer's offer if there is one in order to free up their FETH balance
-    // even if they don't need the FETH for this specific purchase.
+    // Cancel the buyer's offer if there is one in order to free up their SBT balance
+    // even if they don't need the SBT for this specific purchase.
     _cancelSendersOffer(derivativeNFT, tokenId);
-
-    //TODO SBT value
-    // _tryUseFETHBalance(buyPrice.price, true);
 
     // Transfer the DNFT units to the buyer.
     // The seller was already authorized when the buyPrice was set originally set.
@@ -250,19 +252,19 @@ abstract contract DNFTMarketBuyPrice is
 
     // Distribute revenue for this sale.
     DataTypes.CollectFeeUsers memory collectFeeUsers =  DataTypes.CollectFeeUsers({
-            ownershipSoulBoundTokenId: 0,
+            ownershipSoulBoundTokenId: buyPrice.soulBoundTokenIdSeller,
             collectorSoulBoundTokenId: soulBoundTokenIdBuyer,
             genesisSoulBoundTokenId: 0,
             previousSoulBoundTokenId: 0,
             referrerSoulBoundTokenId: soulBoundTokenIdReferrer
     });
-    // uint256 payValue = uint256(units).mul(buyPrice.salePrice);
+
     DataTypes.RoyaltyAmounts memory royaltyAmounts = _distributeFunds(
       collectFeeUsers,
       buyPrice.projectId,
       derivativeNFT,
       tokenId,
-      uint256(units).mul(buyPrice.salePrice)
+      units * buyPrice.salePrice
     );
     
     emit Events.BuyPriceAccepted( 
@@ -271,9 +273,10 @@ abstract contract DNFTMarketBuyPrice is
       newTokenIdBuyer,
       buyPrice.seller, 
       msg.sender, 
-      soulBoundTokenIdReferrer,
+      collectFeeUsers,
       royaltyAmounts
     );
+
   }
 
   /**
@@ -307,7 +310,8 @@ abstract contract DNFTMarketBuyPrice is
    * @dev Checks if the DNFT is already in escrow for buy now.
    */
   function _transferToEscrow(address derivativeNFT, uint256 tokenId, uint128 onSellUnits) 
-      internal virtual override returns(uint256){
+      internal virtual override returns(uint256)
+  {
     address seller = dnftContractToTokenIdToBuyPrice[derivativeNFT][tokenId].seller;
     if (seller == address(0)) {
       // The DNFT is not in escrow for buy now.

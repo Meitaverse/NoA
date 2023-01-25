@@ -32,6 +32,7 @@ library Errors {
   error MaxSupplyExceeded();
   error MaxExceeded();
   error ReferrerFeeExceeded();
+  error NFTMarketFees_Invalid_Referrer_Fee();
   error ApproveToOwner();
   error ComboLengthNotEnough();
   error LengthNotSame();
@@ -127,6 +128,7 @@ library Errors {
   error ERC3525INSUFFICIENTBALANCE();
 
   error InvalidRoyaltyBasisPoints();
+  error InvalidRoyalties();
   error MintLimitExceeded();
   error CollectExpired();
 
@@ -204,4 +206,15 @@ library Errors {
   error ExceedsUint128Max();
   error TotalIsZero();
   error NotSeller();
+  error Cannot_Deposit_For_Lockup_With_SoulBoundTokenId_Zero();
+  error Must_Lockup_Non_Zero_Amount();
+  error Only_BITSOUL_Market_Allowed();
+  error Expiration_Too_Far_In_Future();
+  error Invalid_Lockup_Duration();
+  error Escrow_Expired();
+  error BankTreasury_Only_Can_Transfer_SBT();
+  error Escrow_Not_Found();
+  error Insufficient_Available_Funds(uint256 amount);
+  error Insufficient_Available_EarnestMoneys(uint256 amount);
+  error Insufficient_Escrow(uint256 amount);
 }

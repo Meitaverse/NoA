@@ -22,16 +22,15 @@ interface IMarketPlace {
    
     function getGlobalModule() external view returns(address);
 
-    // function getGovernance() external view returns(address);
-
-    // function publishSale(
-    //     DataTypes.SaleParam memory saleParam
-    // ) external;
-
-    //function fixedPriceSet(uint24 saleId, uint128 newSalePrice) external;
-
-    //function removeSale(uint24 saleId) external;
-
+    /**
+     * @notice Add the derivativeNFT contract to market place.
+     * only 
+     * 
+     * @param derivativeNFT_ The address of the DNFT contract.
+     * @param feePayType_ The enum of feePayType
+     * @param feeShareType_ The enum of feeShareType
+     * @param royaltyBasisPoints_ The royaltyBasisPoints for LEVEL_FIVE 
+     */
     function addMarket(
         address derivativeNFT_,
         DataTypes.FeePayType feePayType_,

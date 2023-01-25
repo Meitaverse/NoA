@@ -171,7 +171,7 @@ abstract contract BaseFeeCollectModule is
         uint256 payFees = collectUnits * fraction;
 
         (, uint16 treasuryFee) = _treasuryData();
-        uint256 treasuryAmount = (payFees * treasuryFee) / BPS_MAX;
+        uint256 treasuryAmount = (payFees * treasuryFee) / BASIS_POINTS;
         if (treasuryAmount > 0) 
             INFTDerivativeProtocolTokenV1(_sbt()).transferValue(
                 collectorSoulBoundTokenId, 

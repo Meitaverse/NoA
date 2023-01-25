@@ -562,7 +562,7 @@ library Events {
      * @param newTokenIdBuyer The new token id of buyer .
      * @param seller The address of the seller which originally set the buy price.
      * @param buyer The address of the collector that purchased the DNFT using `buy`.
-     * @param soulBoundTokenIdReferrer The SBT id of the referrer
+     * @param collectFeeUsers The SBT Id who receive fee.
      * @param royaltyAmounts The fees that was sent to Foundation & referrals for this sale.
      */
     event BuyPriceAccepted(
@@ -571,7 +571,7 @@ library Events {
         uint256 indexed newTokenIdBuyer,
         address seller,
         address buyer,
-        uint256 soulBoundTokenIdReferrer,
+        DataTypes.CollectFeeUsers collectFeeUsers,
         DataTypes.RoyaltyAmounts royaltyAmounts
     );
     
@@ -624,7 +624,7 @@ library Events {
 
     /**
      * @notice Emitted when an offer is invalidated due to other market activity.
-     * When this occurs, the collector which made the offer has their FETH balance unlocked
+     * When this occurs, the collector which made the offer has their SBT Value balance unlocked
      * and the funds are available to place other offers or to be withdrawn.
      * @dev This occurs when the offer is no longer eligible to be accepted,
      * e.g. when a bid is placed in an auction for this DNFT.
@@ -635,7 +635,7 @@ library Events {
     
     /**
      * @notice Emitted when an offer is made.
-     * @dev The `amount` of the offer is locked in the FETH ERC-20 contract, guaranteeing that the funds
+     * @dev The `amount` of the offer is locked in the SBT contract, guaranteeing that the funds
      * remain available until the `expiration` date.
      * @param derivativeNFT The address of the DNFT contract.
      * @param tokenId The id of the DNFT.
@@ -651,15 +651,23 @@ library Events {
         uint256 expiration
     );
 
-
     /**
      * @notice Emitted when a bid is placed.
      * @param auctionId The id of the auction this bid was for.
-     * @param bidder The address of the bidder.
+     * @param originalSoulBoundTokenIdBidder The SBT id of the original bidder.
+     * @param soulBoundTokenIdBidder The SBT id of the bidder.
+     * @param bidder The bidder address.
      * @param amount The amount of the bid.
      * @param endTime The new end time of the auction (which may have been set or extended by this bid).
      */
-    event ReserveAuctionBidPlaced(uint256 indexed auctionId, address indexed bidder, uint256 amount, uint256 endTime);
+    event ReserveAuctionBidPlaced(
+        uint256 indexed auctionId, 
+        uint256 indexed originalSoulBoundTokenIdBidder, 
+        uint256 indexed soulBoundTokenIdBidder, 
+        address bidder,
+        uint256 amount,
+        uint256 endTime
+    );
     
     /**
      * @notice Emitted when an auction is canceled.
@@ -673,6 +681,8 @@ library Events {
      * @param seller The address of the seller.
      * @param derivativeNFT The address of the DNFT contract.
      * @param tokenId The id of the DNFT.
+     * @param units The units of the DNFT.
+     * @param tokenIdToEscrow The escrow token id of the DNFT.
      * @param duration The duration of the auction (always 24-hours).
      * @param extensionDuration The duration of the auction extension window (always 15-minutes).
      * @param reservePrice The reserve price to kick off the auction.
@@ -682,6 +692,8 @@ library Events {
         address indexed seller,
         address indexed derivativeNFT,
         uint256 indexed tokenId,
+        uint256 units,
+        uint256 tokenIdToEscrow,
         uint256 duration,
         uint256 extensionDuration,
         uint256 reservePrice,
@@ -720,80 +732,48 @@ library Events {
      */
     event ReserveAuctionUpdated(uint256 indexed auctionId, uint256 reservePrice);
 
-    /**
-     * @dev Emitted when a saleId is set a new salePrice.
-     *
-     * @param soulBoundTokenId The soulBoundToken id of saleId
-     * @param saleId The saleId 
-     * @param preSalePrice The preSalePrice
-     * @param newSalePrice The newSalePrice
-     * @param timestamp The current block timestamp.
-     */
-    // event FixedPriceSet(
-    //    uint256 indexed soulBoundTokenId,
-    //    uint128 indexed saleId,
-    //    uint128 preSalePrice,
-    //    uint128 indexed newSalePrice,
-    //    uint256 timestamp
-    // );
-
-    /**
-     * @dev Emitted when a sale is publish, after transfer to market, a new tokenId is generated.
-     * must approve market contract for tokenId
-     *
-     * @param saleParam The sale param
-     * @param derivativeNFT The derivativeNFT address
-     * @param tokenIdOfMarket The new tokenId generate while market receive 
-     * @param saleId The saleId 
-     */
-    // event PublishSale(
-    //     DataTypes.SaleParam saleParam,
-    //     address indexed derivativeNFT,
-    //     uint256 indexed tokenIdOfMarket,
-    //     uint128 indexed saleId
-    // );
-
-    /**
-     * @dev Emitted when a sale is removed, after removed value of dNFT will transfer to seller
-     *
-     * @param soulBoundTokenId The SBT Id
-     * @param saleId The saleId 
-     * @param onSellUnits The onSell Units 
-     * @param saledUnits The saled Units 
-     */
-//    event RemoveSale(
-//         uint256 soulBoundTokenId,
-//         uint128 saleId,
-//         uint256 onSellUnits,
-//         uint256 saledUnits
-//     ); 
-    
-    /**
-     * @dev Emitted when a sale is traded
-     *
-     * 
-     * @param saleId The saleId 
-     * @param buyer The buyer of trade
-     * @param tradeId The trade id 
-     * @param tradeTime trade timestamp
-     * @param price The trade price
-     * @param newTokenIdBuyer The new tokenId of buyer
-     * @param tradedUnits The trade units
-     * @param royaltyAmounts The royalty amounts
-     */
-    // event Traded(
-    //     uint24 indexed saleId,
-    //     address indexed buyer,
-    //     uint256 tradeId,
-    //     uint32 tradeTime,
-    //     uint128 price,
-    //     uint256 newTokenIdBuyer,
-    //     uint128 tradedUnits,
-    //     DataTypes.RoyaltyAmounts royaltyAmounts
-    // );
-
+   
     //Bank Treasury
-    
+    // Custom events
+    /**
+     * @notice Emitted when SBT tokens are locked up by the Foundation market for 24-25 hours
+     * and may include newly deposited SBT Value which is added to the account's total SBT balance.
+     * @param soulBoundTokenId The soulBoundTokenId which has access to the SBT after the `expiration`.
+     * @param expiration The time at which the `from` account will have access to the locked SBT.
+     * @param amount The number of SBT tokens which where locked up.
+     * @param valueDeposited The amount of ETH added to their account's total SBT balance,
+     * this may be lower than `amount` if available SBT was leveraged.
+     */
+    event BalanceLocked(uint256 soulBoundTokenId, uint256 indexed expiration, uint256 amount, uint256 valueDeposited);
+    /**
+     * @notice Emitted when SBT tokens are unlocked by the Foundation market.
+     * @dev This event will not be emitted when lockups expire,
+     * it's only for tokens which are unlocked before their expiry.
+     * @param soulBoundTokenId The soulBoundTokenId which had locked SBT freed before expiration.
+     * @param expiration The time this balance was originally scheduled to be unlocked.
+     * @param amount The number of SBT tokens which were unlocked.
+     */
+    event BalanceUnlocked(
+        uint256 indexed soulBoundTokenId, 
+        uint256 indexed expiration, 
+        uint256 amount
+    );    
+
+    /**
+     * @notice Emitted when accept offer is withdrawn from a buyer's account.
+     * @dev This may be triggered by the user, an approved operator, or the Foundation market.
+     * @param soulBoundTokenIdBuyer The soulBoundTokenId of buyer was deducted in order to pay for.
+     * @param soulBoundTokenIdOwner The soulBoundTokenId of owner was added because owner accept the offer.
+     * @param caller The caller.
+     * @param amount The number of tokens which were deducted from the buyer's account and transferred to owner account.
+     */
+    event OfferWithdrawn(
+        uint256 indexed soulBoundTokenIdBuyer, 
+        uint256 indexed soulBoundTokenIdOwner, 
+        address indexed caller, 
+        uint256 amount
+    );
+
     /**
      * @dev Emitted when ether send to bank treasury contract
      *
@@ -1149,6 +1129,8 @@ library Events {
         address indexed receiver,
         uint96 feeNumerator
     );
+
+
 
 }
 

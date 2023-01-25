@@ -14,7 +14,6 @@ import {IModuleGlobals} from "../interfaces/IModuleGlobals.sol";
  * contains getters for module globals parameters as well as a validation function to check expected data.
  */
 abstract contract FeeModuleBase {
-    uint16 internal constant BPS_MAX = 10000;
 
     address public immutable MODULE_GLOBALS;
 

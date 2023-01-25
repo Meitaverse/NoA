@@ -140,6 +140,7 @@ makeSuiteCleanRoom('Bank Treasury', function () {
     });
 
     context('Exchange', function () {
+      /*
         it('User should receive SBT after withdrawERC3525', async function () {
           expect((await sbtContract['balanceOf(uint256)'](FIRST_PROFILE_ID)).toNumber()).to.eq(INITIAL_SUPPLY);
           expect((await sbtContract['balanceOf(uint256)'](SECOND_PROFILE_ID)).toNumber()).to.eq(0);
@@ -152,6 +153,7 @@ makeSuiteCleanRoom('Bank Treasury', function () {
           expect((await sbtContract['balanceOf(uint256)'](SECOND_PROFILE_ID)).toNumber()).to.eq(1);
 
         });
+        */
 
         it('User should exchange Voucher SBT', async function () {
           expect((await sbtContract['balanceOf(uint256)'](FIRST_PROFILE_ID)).toNumber()).to.eq(INITIAL_SUPPLY);

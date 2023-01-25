@@ -20,7 +20,6 @@ import {DataTypes} from '../libraries/DataTypes.sol';
 import {IBankTreasuryV2} from '../interfaces/IBankTreasuryV2.sol';
 import {IManager} from "../interfaces/IManager.sol";
 import {IVoucher} from "../interfaces/IVoucher.sol";
-import "../libraries/EthAddressLib.sol";
 import "../storage/BankTreasuryStorage.sol";
 import {INFTDerivativeProtocolTokenV1} from "../interfaces/INFTDerivativeProtocolTokenV1.sol";
 import {IModuleGlobals} from "../interfaces/IModuleGlobals.sol";
@@ -60,7 +59,6 @@ contract BankTreasuryV2 is
 
     bytes32 public constant PAUSER_ROLE = keccak256("PAUSER_ROLE");
     bytes32 public constant UPGRADER_ROLE = keccak256("UPGRADER_ROLE");
-    uint16 internal constant BPS_MAX = 10000;
 
     string public name;
 
@@ -297,8 +295,8 @@ contract BankTreasuryV2 is
         onlyGov
     {
         address _sbt = IModuleGlobals(MODULE_GLOBALS).getSBT();
-        INFTDerivativeProtocolTokenV1(_sbt).transferValue(_soulBoundTokenId, toSoulBoundTokenId, amount);
-        emit Events.WithdrawERC3525(_soulBoundTokenId, toSoulBoundTokenId, amount, block.timestamp);
+        INFTDerivativeProtocolTokenV1(_sbt).transferValue(soulBoundTokenIdBankTreasury, toSoulBoundTokenId, amount);
+        emit Events.WithdrawERC3525(soulBoundTokenIdBankTreasury, toSoulBoundTokenId, amount, block.timestamp);
     }
 
     function calculateAmountEther(uint256 ethAmount) external view returns(uint256) {
@@ -352,7 +350,7 @@ contract BankTreasuryV2 is
 
         if (msg.value < _exchangePrice.mul(amount)) revert Errors.PaymentError();
         address _sbt = IModuleGlobals(MODULE_GLOBALS).getSBT();
-        INFTDerivativeProtocolTokenV1(_sbt).transferValue(_soulBoundTokenId, soulBoundTokenId, amount);
+        INFTDerivativeProtocolTokenV1(_sbt).transferValue(soulBoundTokenIdBankTreasury, soulBoundTokenId, amount);
 
          emit Events.ExchangeSBTByEth(
              soulBoundTokenId,
@@ -405,7 +403,7 @@ contract BankTreasuryV2 is
         }
 
         address _sbt = IModuleGlobals(MODULE_GLOBALS).getSBT();
-        INFTDerivativeProtocolTokenV1(_sbt).transferValue(soulBoundTokenId, _soulBoundTokenId, sbtValue);
+        INFTDerivativeProtocolTokenV1(_sbt).transferValue(soulBoundTokenId, soulBoundTokenIdBankTreasury, sbtValue);
 
         //transfer eth to msg.sender
         uint256 ethAmount = sbtValue.mul(_exchangePrice);
@@ -442,7 +440,7 @@ contract BankTreasuryV2 is
        if (voucherData.tokenId == 0) revert Errors.VoucherNotExists();
        if (voucherData.isUsed) revert Errors.VoucherIsUsed();
 
-       INFTDerivativeProtocolTokenV1(_sbt).transferValue(_soulBoundTokenId, soulBoundTokenId, voucherData.sbtValue);
+       INFTDerivativeProtocolTokenV1(_sbt).transferValue(soulBoundTokenIdBankTreasury, soulBoundTokenId, voucherData.sbtValue);
        IVoucher(_voucher).useVoucher(msg.sender, tokenId, soulBoundTokenId); 
 
        emit Events.ExchangeVoucher(

@@ -6,7 +6,7 @@ import {DataTypes} from '../libraries/DataTypes.sol';
 contract BankTreasuryStorage  {
 
     //SBT id of BankTreasury
-    uint256 _soulBoundTokenId;
+    uint256 soulBoundTokenIdBankTreasury;
     
     mapping(address => uint256) public sigNonces;
 
@@ -15,7 +15,9 @@ contract BankTreasuryStorage  {
     address internal  MODULE_GLOBALS;
 
     address[] internal _signers;
+    
     mapping(address => bool) internal _isSigner;
+
     uint256 internal _numConfirmationsRequired;
  
     // mapping from tx index => signer => bool
@@ -25,11 +27,6 @@ contract BankTreasuryStorage  {
 
     uint256 internal _exchangePrice;
 
-    uint256 internal _discountRecharge = 950;  //base point 10000
-
     mapping(DataTypes.VoucherParValueType => uint256) internal _voucherParValues;
 
-    //SBT id => revenue amounts
-    mapping(uint256 => uint256) internal _revenueAmounts;
-    
 }

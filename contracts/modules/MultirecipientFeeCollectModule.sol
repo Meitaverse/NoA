@@ -7,6 +7,7 @@ import {Events} from "../libraries/Events.sol";
 import {IBankTreasury} from "../interfaces/IBankTreasury.sol";
 import {IManager} from "../interfaces/IManager.sol";
 import {DataTypes} from '../libraries/DataTypes.sol';
+import "../libraries/Constants.sol";
 import {IDerivativeNFTV1} from "../interfaces/IDerivativeNFTV1.sol";
 import {BaseFeeCollectModule} from './base/BaseFeeCollectModule.sol';
 import {BaseProfilePublicationData, BaseFeeCollectModuleInitData} from './base/IBaseFeeCollectModule.sol';
@@ -17,7 +18,7 @@ import {SafeMathUpgradeable} from "@openzeppelin/contracts-upgradeable/utils/mat
 
 struct RecipientData {
     uint256 recipientSoulBoundTokenId;
-    uint16 royaltyPoint; // fraction of BPS_MAX (10 000)
+    uint16 royaltyPoint; // fraction of BASIS_POINTS (10 000)
 }
 
 /**
@@ -153,7 +154,7 @@ contract MultirecipientFeeCollectModule is BaseFeeCollectModule {
 
         uint256 royaltyAmount;
         for (uint256 i = 0; i < len; ) {
-            royaltyAmount = (saleprice * royaltyPoints[i]) / BPS_MAX;
+            royaltyAmount = (saleprice * royaltyPoints[i]) / BASIS_POINTS;
             if (royaltyAmount != 0 && royaltyPoints[i] !=0 )
                 INFTDerivativeProtocolTokenV1(_sbt()).transferValue(
                     collectorSoulBoundTokenId, 
@@ -211,11 +212,11 @@ contract MultirecipientFeeCollectModule is BaseFeeCollectModule {
 
         //社区金库地址及税点
         (address treasury, uint16 treasuryFee) = _treasuryData();
-        uint256 treasuryAmount = (payFees * treasuryFee) / BPS_MAX;
+        uint256 treasuryAmount = (payFees * treasuryFee) / BASIS_POINTS;
         uint256[] memory royalties = new uint256[](recipients.length);
 
         for (uint256 i = 0; i < recipients.length; ) {
-            uint256 royaltyAmount = (_dataByPublicationByProfile[projectId].salePrice * _dataByPublicationByProfile[projectId].royaltyPoints[i]) / BPS_MAX;
+            uint256 royaltyAmount = (_dataByPublicationByProfile[projectId].salePrice * _dataByPublicationByProfile[projectId].royaltyPoints[i]) / BASIS_POINTS;
             royalties[i] = royaltyAmount;
 
             unchecked {

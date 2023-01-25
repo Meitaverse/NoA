@@ -213,7 +213,7 @@ contract DerivativeNFTV1 is
     }
 
     function tokenCreator(uint256 tokenId) external view returns (address) {
-        DataTypes.SlotDetail memory detail = _slotDetails[tokenId];
+        DataTypes.SlotDetail storage detail = _slotDetails[tokenId];
 
        uint256 soulBoundTokenIdOfCreator = detail.publication.soulBoundTokenId;
         
@@ -461,14 +461,13 @@ contract DerivativeNFTV1 is
      * @notice Called with the sale price to determine how much royalty
      *         is owed and to whom.
      *
-     *
      * @param _tokenId The token ID of the derivativeNFT queried for royalty information.
      * @param _salePrice The sale price of the derivativeNFT specified.
      * @return A tuple with the address who should receive the royalties and the royalty
      * payment amount for the given sale price.
      */
     function royaltyInfo(uint256 _tokenId, uint256 _salePrice) external view returns (address, uint256) {
-        RoyaltyInfo memory royalty = _tokenRoyaltyInfo[_tokenId];
+        RoyaltyInfo storage royalty = _tokenRoyaltyInfo[_tokenId];
 
         if (royalty.receiver == address(0)) {
             royalty = _defaultRoyaltyInfo;

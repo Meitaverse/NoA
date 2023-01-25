@@ -2,6 +2,8 @@
 
 pragma solidity ^0.8.13;
 
+import "../libraries/LockedBalance.sol";
+
 /**
  * @title DataTypes
  * @author Bitsoul Protocol
@@ -298,7 +300,6 @@ library DataTypes {
     }
 
     struct RoyaltyAmounts {
-    //    uint256 collectUnits;
        uint256 treasuryAmount;
        uint256 genesisAmount;
        uint256 previousAmount;
@@ -397,32 +398,108 @@ library DataTypes {
 
     /// @notice Stores offer details for a specific DNFT.
     struct Offer {
-        uint256 soulBoundTokenId;
+        // @notice The soulBoundTokenId of buyer.
+        uint256 soulBoundTokenIdBuyer;
         
-        // Slot 1: When increasing an offer, only this slot is updated.
         /// @notice The expiration timestamp of when this offer expires.
         uint32 expiration;
 
         /// @notice The amount, in wei, of the highest offer.
         uint96 amount;
 
-        /// @notice First slot (of 16B) used for the offerReferrerAddress.
-        // The offerReferrerAddress is the address used to pay the
-        // referrer on an accepted offer.
-        // uint128 offerReferrerAddressSlot0;
-
-        // Slot 2: When the buyer changes, both slots need updating
         /// @notice The address of the collector who made this offer.
         address buyer;
-        
+
         /// @notice The units of this offer.
         uint128 units;
 
-        /// @notice Second slot (of 4B) used for the offerReferrerAddress.
-        // uint32 offerReferrerAddressSlot1;
-        // 96 bits (12B) are available in slot 1.
-
+        /// @notice The soulBoundTokenId of referrer.
         uint256 soulBoundTokenIdReferrer;
     }
+
+
+    /// @notice The auction configuration for a specific DNFT.
+    struct ReserveAuction {
+        /// @notice The SBT id of the DNFT owner.
+        uint256 soulBoundTokenId;
+        /// @notice The address of the DNFT contract.
+        address derivativeNFT;
+        /// @notice The project id of the DNFT.
+        uint256 projectId;
+        /// @notice The id of the DNFT.
+        uint256 tokenId;
+        /// @notice The units of auction.
+        uint128 units;
+        /// @notice The owner of the DNFT which listed it in auction.
+        address payable seller;
+        /// @notice The duration for this auction.
+        uint256 duration;
+        /// @notice The extension window for this auction.
+        uint256 extensionDuration;
+        /// @notice The time at which this auction will not accept any new bids.
+        /// @dev This is `0` until the first bid is placed.
+        uint256 endTime;
+        /// @notice The current highest bidder in this auction.
+        /// @dev This is `address(0)` until the first bid is placed.
+        address payable bidder;
+        /// @notice The SBT id of the bidder.
+        uint256 soulBoundTokenIdBidder;
+        /// @notice The latest price of the DNFT in this auction.
+        /// @dev This is set to the reserve price, and then to the highest bid once the auction has started.
+        uint256 amount;
+    }
+
+    /// @notice Stores the auction configuration for a specific DNFT.
+    /// @dev This allows us to modify the storage struct without changing external APIs.
+    struct ReserveAuctionStorage {
+        uint256 soulBoundTokenId;
+        /// @notice The address of the DNFT contract.
+        address derivativeNFT;
+        /// @notice The project id of the DNFT.
+        uint256 projectId;    
+        /// @notice The id of the DNFT.
+        uint256 tokenId;
+        /// @notice The id to escrow
+        uint256 tokenIdToEscrow;
+        /// @notice The units of this reserve auction.
+        uint128 units;
+        /// @notice The id of escrow.
+        uint256 tokenIdEscrow;
+        /// @notice The owner of the DNFT which listed it in auction.
+        address payable seller;
+        /// @notice The SBT id  of referrer in auction.
+        uint256 soulBoundTokenIdReferrer;
+        /// @dev This field is no longer used.
+        uint256 __gap_was_duration;
+        /// @dev This field is no longer used.
+        uint256 __gap_was_extensionDuration;
+        /// @notice The time at which this auction will not accept any new bids.
+        /// @dev This is `0` until the first bid is placed.
+        uint256 endTime;
+        /// @notice The current highest bidder in this auction.
+        /// @dev This is `address(0)` until the first bid is placed.
+        address payable bidder;
+        /// @notice The SBT id of the bidder.
+        uint256 soulBoundTokenIdBidder;
+        /// @notice Second slot (of 8B) used for the bidReferrerAddress.
+        // uint64 bidReferrerAddressSlot1;
+        /// @notice The latest price of the DNFT in this auction.
+        /// @dev This is set to the reserve price, and then to the highest bid once the auction has started.
+        uint256 amount;
+    }    
+
+
+    /// @notice Tracks an account's info.
+    struct AccountInfo {
+        /// @notice The number of tokens which have been unlocked already.
+        uint96 freedBalance;
+        /// @notice The first applicable lockup bucket for this account.
+        uint32 lockupStartIndex;
+        /// @notice Stores up to 25 buckets of locked balance for a user, one per hour.
+        LockedBalance.Lockups lockups;
+        /// @notice Returns the amount which a spender is still allowed to withdraw from this account.
+        mapping(address => uint256) allowance;
+    }
+
 
 }
