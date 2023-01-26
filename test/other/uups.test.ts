@@ -36,7 +36,7 @@ import {
   userAddress,
   userTwoAddress,
   governance,
-  derivativeNFTV1Impl,
+  derivativeNFTImpl,
   governanceAddress,
   sbtMetadataDescriptor,
   sbtImpl,
@@ -44,6 +44,7 @@ import {
   bankTreasuryContract,
   bankTreasuryImpl,
   sbtLibs,
+  LOCKUP_DURATION,
 } from '../__setup.spec';
 
 export let mockManagerV2Impl: ManagerV2;
@@ -85,26 +86,74 @@ makeSuiteCleanRoom('UUPS ability', function () {
 
         sbtImplV2 = await new NFTDerivativeProtocolTokenV2__factory(sbtLibs, deployer).deploy();
         bankTreasuryImplV2 = await new BankTreasuryV2__factory(deployer).deploy();
-        console.log("\t BankTreasury v1 getGovernance(): ", (await bankTreasuryContract.getGovernance()).toUpperCase());
+        // console.log("\t BankTreasury v1 getGovernance(): ", (await bankTreasuryContract.getGovernance()).toUpperCase());
       });
+
       // it("Authorize check", async () => {
       //   await expect(
       //     sbtContract.connect(user).upgradeTo(sbtImplV2.address)
       //   ).to.revertedWith(ERRORS.UNAUTHORIZED);
       // });
 
-      it("Successful upgrade BankTreasury, previous storage is unchanged", async () => {
+      it("Successful upgrade BankTreasury, previous storage is unchanged, etc. governance and manager address", async () => {
         const managerV1Address = (await bankTreasuryContract.getManager()).toUpperCase();
+        console.log("\n\t managerV1Address: ", managerV1Address.toUpperCase());
         
+        await bankTreasuryContract
+        .connect(deployer)
+        .upgradeTo(bankTreasuryImplV2.address);
+        
+        const v2 = new BankTreasuryV2__factory(deployer).attach(bankTreasuryContract.address);
+        console.log("\t BankTreasury v2 manager: ", (await v2.getManager()).toUpperCase());
+        
+        expect((await v2.getManager()).toUpperCase()).to.eq(managerV1Address.toUpperCase());
+        
+        const governanceV1Address = (await bankTreasuryContract.getGovernance()).toUpperCase();
+        console.log("\n\t governanceV1Address: ", governanceV1Address.toUpperCase());
+        console.log("\t BankTreasury v2 getGovernance(): ", (await v2.getGovernance()).toUpperCase());
+        expect((await v2.getGovernance()).toUpperCase()).to.eq(governanceV1Address.toUpperCase());
+        
+      });
+
+      it("Successful upgrade BankTreasury, constructor paramters is changed, etc. lockupDuration", async () => {
+        const lockupDurationV1 = (await bankTreasuryContract.getLockupDuration()).toNumber();
+        console.log("\n\t lockupDurationV1: ", lockupDurationV1);
+
+        await bankTreasuryContract
+          .connect(deployer)
+          .upgradeTo(bankTreasuryImplV2.address);
+/*
+        const data = bankTreasuryImplV2.interface.encodeFunctionData("setLockupDuration", [
+          LOCKUP_DURATION,
+        ]);
+        
+        await bankTreasuryContract
+          .connect(deployer)
+          .upgradeToAndCall(bankTreasuryImplV2.address, data);
+
+*/
+        const v2 = new BankTreasuryV2__factory(deployer).attach(bankTreasuryContract.address);
+        console.log("\t lockupDurationV2: ", (await v2.getLockupDuration()).toNumber());
+        
+       expect((await v2.getLockupDuration()).toNumber()).to.eq(lockupDurationV1);
+
+        
+      });
+      
+
+      it("Successful upgrade BankTreasury, immutable storage is unchanged, etc. soulBoundTokenIdBankTreasury", async () => {
+        const soulBoundTokenIdBankTreasury = (await bankTreasuryContract.soulBoundTokenIdBankTreasury()).toNumber();
+        console.log("\n\t soulBoundTokenIdBankTreasury: ", soulBoundTokenIdBankTreasury);
+
         await bankTreasuryContract
           .connect(deployer)
           .upgradeTo(bankTreasuryImplV2.address);
 
         const v2 = new BankTreasuryV2__factory(deployer).attach(bankTreasuryContract.address);
+        console.log("\t soulBoundTokenIdBankTreasury V2: ", (await v2.soulBoundTokenIdBankTreasury()).toNumber());
+        
+       expect((await v2.soulBoundTokenIdBankTreasury()).toNumber()).to.eq(soulBoundTokenIdBankTreasury);
 
-        console.log("\n\t BankTreasury v2 getManager(): ", (await v2.getManager()).toUpperCase());
-        expect((await v2.getManager()).toUpperCase()).to.eq(managerV1Address.toUpperCase());
-        console.log("\t BankTreasury v2 getGovernance(): ", (await v2.getGovernance()).toUpperCase());
         
       });
       

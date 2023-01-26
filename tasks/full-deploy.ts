@@ -39,8 +39,8 @@ import {
     GovernorContract__factory,
     BankTreasury,
     BankTreasury__factory,
-    DerivativeNFTV1,
-    DerivativeNFTV1__factory,
+    DerivativeNFT,
+    DerivativeNFT__factory,
     NFTDerivativeProtocolTokenV1,
     NFTDerivativeProtocolTokenV2,
     NFTDerivativeProtocolTokenV1__factory,
@@ -56,12 +56,14 @@ import {
     MarketPlace,
     MarketPlace__factory,
     SBTMetadataDescriptor__factory,
+    MarketLogic__factory,
   } from '../typechain';
   import { deployContract, waitForTx , ProtocolState, Error, ZERO_ADDRESS} from './helpers/utils';
   import { ManagerLibraryAddresses } from '../typechain/factories/contracts/Manager__factory';
   
   import { DataTypes } from '../typechain/contracts/modules/template/Template';
 import { NFTDerivativeProtocolTokenV1LibraryAddresses } from '../typechain/factories/contracts/NFTDerivativeProtocolTokenV1__factory';
+import { MarketPlaceLibraryAddresses } from '../typechain/factories/contracts/MarketPlace__factory';
   
   const TREASURY_FEE_BPS = 50;
   const  RECEIVER_MAGIC_VALUE = '0x009ce20b';
@@ -74,6 +76,9 @@ import { NFTDerivativeProtocolTokenV1LibraryAddresses } from '../typechain/facto
   const SBT_NAME = 'NFT Derivative Protocol';
   const SBT_SYMBOL = 'SBT';
   const SBT_DECIMALS = 18;
+  
+  const MARKET_MAX_DURATION = 86400000; //1000 days in seconds
+  const LOCKUP_DURATION = 86400; //24h in seconds
   
   
   const NUM_CONFIRMATIONS_REQUIRED = 3;
@@ -205,7 +210,7 @@ import { NFTDerivativeProtocolTokenV1LibraryAddresses } from '../typechain/facto
 
         console.log('\n\t-- Deploying derivativeNFT Implementations --');
         await deployContract(
-          new DerivativeNFTV1__factory(deployer).deploy(managerProxyAddress, { nonce: deployerNonce++ })
+          new DerivativeNFT__factory(deployer).deploy(managerProxyAddress, { nonce: deployerNonce++ })
         );
 
         console.log('\n\t-- Deploying Manager --');
@@ -314,14 +319,17 @@ import { NFTDerivativeProtocolTokenV1LibraryAddresses } from '../typechain/facto
         console.log('\n\t-- Deploying bank treasury --');
         const soulBoundTokenIdOfBankTreaury = 1;
         const bankTreasuryImpl = await deployContract(
-            new BankTreasury__factory(deployer).deploy({ nonce: deployerNonce++ })
+            new BankTreasury__factory(deployer).deploy(
+                { nonce: deployerNonce++ })
         );
 
         let initializeData = bankTreasuryImpl.interface.encodeFunctionData("initialize", [
-          governance.address,
-          soulBoundTokenIdOfBankTreaury,
-          [user.address, userTwo.address, userThree.address],
-          NUM_CONFIRMATIONS_REQUIRED  //All full signed 
+            deployer.address,
+            governance.address,
+            soulBoundTokenIdOfBankTreaury,
+            [user.address, userTwo.address, userThree.address],
+            NUM_CONFIRMATIONS_REQUIRED,  //All full signed 
+            LOCKUP_DURATION, 
         ]);
       
         const bankTreasuryProxy = await new ERC1967Proxy__factory(deployer).deploy(
@@ -336,9 +344,18 @@ import { NFTDerivativeProtocolTokenV1LibraryAddresses } from '../typechain/facto
 
         
         console.log('\n\t-- Deploying market place --');
-
+        let marketLibs:MarketPlaceLibraryAddresses
+        const marketLogic = await new MarketLogic__factory(deployer).deploy({ nonce: deployerNonce++ });
+        marketLibs = {
+          'contracts/libraries/MarketLogic.sol:MarketLogic': marketLogic.address,
+        };
         const marketPlaceImpl = await deployContract(
-            new MarketPlace__factory    (deployer).deploy({ nonce: deployerNonce++ })
+            new MarketPlace__factory(marketLibs, deployer).deploy(
+                manager.address,
+                bankTreasuryContract.address,
+                sbtContract.address,
+                MARKET_MAX_DURATION,
+                { nonce: deployerNonce++ })
         );
 
         let initializeDataMarket = marketPlaceImpl.interface.encodeFunctionData("initialize", [
@@ -350,7 +367,7 @@ import { NFTDerivativeProtocolTokenV1LibraryAddresses } from '../typechain/facto
             initializeDataMarket,
           { nonce: deployerNonce++ }
         );
-        const marketPlaceContract = new MarketPlace__factory(deployer).attach(marketPlaceProxy.address);
+        const marketPlaceContract = new MarketPlace__factory(marketLibs, deployer).attach(marketPlaceProxy.address);
         console.log('\t-- marketPlaceContract: ', marketPlaceContract.address);
         await exportAddress(hre, marketPlaceContract, 'MarketPlace');
         await exportSubgraphNetworksJson(hre, marketPlaceContract, 'MarketPlace');
@@ -362,6 +379,7 @@ import { NFTDerivativeProtocolTokenV1LibraryAddresses } from '../typechain/facto
                 sbtContract.address,
                 governance.address,
                 bankTreasuryContract.address,
+                marketPlaceContract.address,
                 voucherContract.address,
                 TREASURY_FEE_BPS,
                 PublishRoyaltySBT,
@@ -422,7 +440,15 @@ import { NFTDerivativeProtocolTokenV1LibraryAddresses } from '../typechain/facto
         await waitForTx( sbtContract.connect(deployer).grantRole(transferValueRole, feeCollectModule.address));
         await waitForTx( sbtContract.connect(deployer).grantRole(transferValueRole, bankTreasuryContract.address));
         await waitForTx( sbtContract.connect(deployer).grantRole(transferValueRole, voucherContract.address));
-            
+        
+        const feeModuleRole = await bankTreasuryContract.FEEMODULE_ROLE();
+        await waitForTx(
+          bankTreasuryContract.connect(deployer).grantFeeModule(feeCollectModule.address)
+        );
+        await waitForTx(
+          bankTreasuryContract.connect(deployer).grantFeeModule(marketPlaceContract.address)
+        );
+
         console.log('\n\t-- Add publishModule,feeCollectModule,template to moduleGlobals whitelists --');
         await waitForTx( moduleGlobals.connect(governance).whitelistPublishModule(publishModule.address, true));
         await waitForTx( moduleGlobals.connect(governance).whitelistCollectModule(feeCollectModule.address, true));
@@ -435,6 +461,7 @@ import { NFTDerivativeProtocolTokenV1LibraryAddresses } from '../typechain/facto
       
         console.log('\n\t-- bankTreasuryContract set moduleGlobals address --');
         await waitForTx( bankTreasuryContract.connect(governance).setGlobalModule(moduleGlobals.address));
+        await waitForTx( bankTreasuryContract.connect(governance).setFoundationMarket(marketPlaceContract.address));
        
         console.log('\n\t-- marketPlaceContract set moduleGlobals address --');
         await waitForTx( marketPlaceContract.connect(governance).setGlobalModule(moduleGlobals.address));

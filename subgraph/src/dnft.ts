@@ -1,8 +1,8 @@
 import { Address, BigInt, ethereum, store } from "@graphprotocol/graph-ts";
 
 import {
-  DerivativeNFTV1
-} from "../generated/MarketPlace/DerivativeNFTV1"
+  DerivativeNFT
+} from "../generated/MarketPlace/DerivativeNFT"
 
 import {
   DNFT,
@@ -30,7 +30,7 @@ export function loadOrCreateNFTContract(address: Address): DerivativeNFTContract
 
 function _createNFTContract(address: Address): DerivativeNFTContract {
   let derivativeNFT = new DerivativeNFTContract(address.toHex());
-  let contract = DerivativeNFTV1.bind(address);
+  let contract = DerivativeNFT.bind(address);
   let nameResults = contract.try_name();
   if (!nameResults.reverted) {
     derivativeNFT.name = nameResults.value;
@@ -52,36 +52,36 @@ function getNFTId(address: Address, id: BigInt): string {
 
 export function loadOrCreateNFT(address: Address, id: BigInt, event: ethereum.Event): DNFT {
   let nftId = getNFTId(address, id);
-  let nft = DNFT.load(nftId);
-  if (!nft) {
-    nft = new DNFT(nftId);
-    nft.derivativeNFT = loadOrCreateNFTContract(address).id;
-    nft.tokenId = id;
-    nft.dateMinted = event.block.timestamp;
-    let contract = DerivativeNFTV1.bind(address);
+  let dnft = DNFT.load(nftId);
+  if (!dnft) {
+    dnft = new DNFT(nftId);
+    dnft.derivativeNFT = loadOrCreateNFTContract(address).id;
+    dnft.tokenId = id;
+    dnft.dateMinted = event.block.timestamp;
+    let contract = DerivativeNFT.bind(address);
     let ownerResult = contract.try_ownerOf(id);
     if (!ownerResult.reverted) {
-      nft.owner = loadOrCreateAccount(ownerResult.value).id;
+      dnft.owner = loadOrCreateAccount(ownerResult.value).id;
     } else {
-      nft.owner = loadOrCreateAccount(Address.zero()).id;
+      dnft.owner = loadOrCreateAccount(Address.zero()).id;
     }
-    nft.ownedOrListedBy = nft.owner;
-    nft.netSalesInETH = ZERO_BIG_DECIMAL;
-    nft.netSalesPendingInETH = ZERO_BIG_DECIMAL;
-    nft.netRevenueInETH = ZERO_BIG_DECIMAL;
-    nft.netRevenuePendingInETH = ZERO_BIG_DECIMAL;
-    nft.isFirstSale = true;
+    dnft.ownedOrListedBy = dnft.owner;
+    dnft.netSalesInSBTValue = ZERO_BIG_DECIMAL;
+    dnft.netSalesPendingInSBTValue = ZERO_BIG_DECIMAL;
+    dnft.netRevenueInSBTValue = ZERO_BIG_DECIMAL;
+    dnft.netRevenuePendingInSBTValue = ZERO_BIG_DECIMAL;
+    dnft.isFirstSale = true;
     let pathResult = contract.try_tokenURI(id);
     if (!pathResult.reverted) {
-      nft.tokenIPFSPath = pathResult.value;
+      dnft.tokenIPFSPath = pathResult.value;
     }
     let creatorResult = contract.try_tokenCreator(id);
     if (!creatorResult.reverted) {
-      nft.creator = loadOrCreateCreator(creatorResult.value).id;
+      dnft.creator = loadOrCreateCreator(creatorResult.value).id;
     }
-    nft.save();
+    dnft.save();
   }
 
-  return nft as DNFT;
+  return dnft as DNFT;
 }
 

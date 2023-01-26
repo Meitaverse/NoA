@@ -64,11 +64,6 @@ abstract contract MockManagerV2Storage {
     // derivativeNFT => Market
     mapping(address => DataTypes.Market) internal markets;
 
-    //saleId => struct Sale
-    mapping(uint24 => DataTypes.Sale) internal sales;
-    
-
-
     //MultiRecipient
 
     uint256 internal _additionalValue;

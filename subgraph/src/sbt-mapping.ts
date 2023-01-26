@@ -29,16 +29,19 @@ import {
     ApprovalValueRecord,
 } from "../generated/schema"
 
+import { loadOrCreateAccount } from "./shared/accounts";
+
 export function handleProfileCreated(event: ProfileCreated): void {
     log.info("handleProfileCreated, event.address: {}", [event.address.toHexString()])
 
     let _idString = event.params.soulBoundTokenId.toString()
     const profile = Profile.load(_idString) || new Profile(_idString)
-
+    let account = loadOrCreateAccount(event.params.wallet);
     if (profile) {
         profile.soulBoundTokenId = event.params.soulBoundTokenId
         profile.creator = event.params.creator
         profile.wallet = event.params.wallet
+        profile.account = account.id;
         profile.nickName = event.params.nickName
         profile.imageURI = event.params.imageURI
         profile.isRemove = false

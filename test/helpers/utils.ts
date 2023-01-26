@@ -28,6 +28,7 @@ export enum ProtocolState {
 }
 export enum DerivativeNFTState {
   Unpaused, 
+  PublishingPaused,
   Paused,
 }
 

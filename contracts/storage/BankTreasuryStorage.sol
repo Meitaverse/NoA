@@ -5,12 +5,23 @@ import {DataTypes} from '../libraries/DataTypes.sol';
 
 contract BankTreasuryStorage  {
 
+    // Lockup configuration
+    /// @notice The minimum lockup period in seconds.
+   uint256 internal  lockupDuration;
+    /// @notice The interval to which lockup expiries are rounded, limiting the max number of outstanding lockup buckets.
+   uint256 internal  lockupInterval;
+ 
+
     //SBT id of BankTreasury
-    uint256 internal soulBoundTokenIdBankTreasury;
+    uint256 public soulBoundTokenIdBankTreasury;
     
     mapping(address => uint256) public sigNonces;
 
     address internal  _governance;
+
+    /// @notice The Foundation market contract with permissions to manage lockups.
+    address payable internal _foundationMarket;
+
 
     address internal  MODULE_GLOBALS;
 

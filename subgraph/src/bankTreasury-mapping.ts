@@ -12,7 +12,9 @@ import {
     ExecuteTransaction,
     ExecuteTransactionERC3525,
     RevokeConfirmation,
-
+    BalanceLocked,
+    BalanceUnlocked,
+    OfferWithdrawn,
 } from "../generated/BankTreasury/Events"
 
 import {
@@ -40,6 +42,10 @@ export function handleDeposit(event: Deposit): void {
         history.save()
     } 
 }
+import { loadOrCreateAccount } from "./shared/accounts";
+import { toETH } from "./shared/conversions";
+import { BASIS_POINTS, ONE_BIG_INT, ZERO_ADDRESS_STRING, ZERO_BIG_DECIMAL, ZERO_BIG_INT } from "./shared/constants";
+import { loadOrCreateFsbt, loadOrCreateFsbtEscrow } from "./shared/fsbt";
 
 export function handleDepositByFallback(event: DepositByFallback): void {
     log.info("handleDepositByFallback, event.address: {}", [event.address.toHexString()])
@@ -179,8 +185,6 @@ export function handleExecuteTransaction(event: ExecuteTransaction): void {
     } 
 }
 
-
-
 export function handleExecuteTransactionERC3525(event: ExecuteTransactionERC3525): void {
     log.info("handleExecuteTransactionERC3525, event.address: {}", [event.address.toHexString()])
 
@@ -196,3 +200,51 @@ export function handleExecuteTransactionERC3525(event: ExecuteTransactionERC3525
         history.save()
     } 
 }
+
+export function handleBalanceLocked(event: BalanceLocked): void {
+    log.info("handleBalanceLocked, event.address: {}", [event.address.toHexString()])
+    let to = loadOrCreateAccount(event.params.account);
+    let fsbtTo = loadOrCreateFsbt(to, event.block);
+    fsbtTo.balanceInSBTValue = fsbtTo.balanceInSBTValue.plus(toETH(event.params.valueDeposited));
+    fsbtTo.dateLastUpdated = event.block.timestamp;
+    fsbtTo.save();
+    let escrow = loadOrCreateFsbtEscrow(event, to);
+    if (escrow.dateRemoved) {
+      escrow.amountInSBTValue = toETH(event.params.amount);
+      escrow.dateRemoved = null;
+      escrow.transactionHashRemoved = null;
+    } else {
+      escrow.amountInSBTValue = escrow.amountInSBTValue.plus(toETH(event.params.amount));
+    }
+  
+    escrow.dateExpiry = event.params.expiration;
+    escrow.transactionHashCreated = event.transaction.hash;
+    escrow.save();
+  }
+  
+  export function handleBalanceUnlocked(event: BalanceUnlocked): void {
+    log.info("handleBalanceUnlocked, event.address: {}", [event.address.toHexString()])
+    let from = loadOrCreateAccount(event.params.account);
+    let escrow = loadOrCreateFsbtEscrow(event, from);
+    escrow.amountInSBTValue = escrow.amountInSBTValue.minus(toETH(event.params.amount));
+    if (escrow.amountInSBTValue.equals(ZERO_BIG_DECIMAL)) {
+      escrow.transactionHashRemoved = event.transaction.hash;
+      escrow.dateRemoved = event.block.timestamp;
+    }
+    escrow.save();
+  }
+
+  export function handleOfferWithdrawn(event: OfferWithdrawn): void {
+    log.info("handleOfferWithdrawn, event.address: {}", [event.address.toHexString()])
+    let from = loadOrCreateAccount(event.params.owner);
+    let fsbtFrom = loadOrCreateFsbt(from, event.block);
+    fsbtFrom.balanceInSBTValue = fsbtFrom.balanceInSBTValue.minus(toETH(event.params.amount));
+    fsbtFrom.dateLastUpdated = event.block.timestamp;
+    fsbtFrom.save();
+
+    let buyer = loadOrCreateAccount(event.params.buyer);
+    let fsbtBuyer = loadOrCreateFsbt(buyer, event.block);
+    fsbtBuyer.balanceInSBTValue = fsbtBuyer.balanceInSBTValue.plus(toETH(event.params.amount));
+    fsbtBuyer.dateLastUpdated = event.block.timestamp;
+    fsbtBuyer.save();
+  }

@@ -6,7 +6,7 @@ import {DataTypes} from './DataTypes.sol';
 import {Errors} from './Errors.sol';
 import {Events} from './Events.sol';
 import './Constants.sol';
-import {IDerivativeNFTV1} from "../interfaces/IDerivativeNFTV1.sol";
+import {IDerivativeNFT} from "../interfaces/IDerivativeNFT.sol";
 import {ICollectModule} from '../interfaces/ICollectModule.sol';
 import {IPublishModule} from '../interfaces/IPublishModule.sol';
 /**

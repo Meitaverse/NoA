@@ -738,22 +738,25 @@ library Events {
     /**
      * @notice Emitted when SBT tokens are locked up by the Foundation market for 24-25 hours
      * and may include newly deposited SBT Value which is added to the account's total SBT balance.
-     * @param soulBoundTokenId The soulBoundTokenId which has access to the SBT after the `expiration`.
+     * @param account The address which has access to the SBT after the `expiration`.
+     * @param soulBoundTokenId The soulBoundTokenId of account
      * @param expiration The time at which the `from` account will have access to the locked SBT.
      * @param amount The number of SBT tokens which where locked up.
      * @param valueDeposited The amount of ETH added to their account's total SBT balance,
      * this may be lower than `amount` if available SBT was leveraged.
      */
-    event BalanceLocked(uint256 soulBoundTokenId, uint256 indexed expiration, uint256 amount, uint256 valueDeposited);
+    event BalanceLocked(address indexed account, uint256 indexed soulBoundTokenId, uint256 indexed expiration, uint256 amount, uint256 valueDeposited);
     /**
      * @notice Emitted when SBT tokens are unlocked by the Foundation market.
      * @dev This event will not be emitted when lockups expire,
      * it's only for tokens which are unlocked before their expiry.
-     * @param soulBoundTokenId The soulBoundTokenId which had locked SBT freed before expiration.
+     * @param account The address which had locked SBT freed before expiration.
+     * @param soulBoundTokenId The soulBoundTokenId of account
      * @param expiration The time this balance was originally scheduled to be unlocked.
      * @param amount The number of SBT tokens which were unlocked.
      */
     event BalanceUnlocked(
+        address indexed account,
         uint256 indexed soulBoundTokenId, 
         uint256 indexed expiration, 
         uint256 amount
@@ -762,15 +765,17 @@ library Events {
     /**
      * @notice Emitted when accept offer is withdrawn from a buyer's account.
      * @dev This may be triggered by the user, an approved operator, or the Foundation market.
+     * @param buyer The address of buyer was deducted in order to pay for.
      * @param soulBoundTokenIdBuyer The soulBoundTokenId of buyer was deducted in order to pay for.
+     * @param owner The address of owner
      * @param soulBoundTokenIdOwner The soulBoundTokenId of owner was added because owner accept the offer.
-     * @param caller The caller.
      * @param amount The number of tokens which were deducted from the buyer's account and transferred to owner account.
      */
     event OfferWithdrawn(
+        address indexed buyer,
         uint256 indexed soulBoundTokenIdBuyer, 
+        address owner,
         uint256 indexed soulBoundTokenIdOwner, 
-        address indexed caller, 
         uint256 amount
     );
 

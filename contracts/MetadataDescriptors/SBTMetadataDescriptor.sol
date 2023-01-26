@@ -139,7 +139,7 @@ contract SBTMetadataDescriptor is IERC3525MetadataDescriptor {
      */
 
   function _slotProperties(uint256 slot_) internal pure returns (string memory) {
-    // IDerivativeNFTV1 dao = IDerivativeNFTV1(msg.sender);
+    // IDerivativeNFT dao = IDerivativeNFT(msg.sender);
     // DataTypes.SlotDetail memory slotDetail = dao.getSlotDetail(slot_);
     slot_;
     return "";

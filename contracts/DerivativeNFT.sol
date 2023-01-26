@@ -8,7 +8,7 @@ import "@openzeppelin/contracts/utils/Counters.sol";
 import {Errors} from "./libraries/Errors.sol";
 import {DataTypes} from './libraries/DataTypes.sol';
 import {IManager} from "./interfaces/IManager.sol";
-import {IDerivativeNFTV1} from "./interfaces/IDerivativeNFTV1.sol";
+import {IDerivativeNFT} from "./interfaces/IDerivativeNFT.sol";
 import './libraries/Constants.sol';
 import "./base/DerivativeNFTMultiState.sol";
 import './libraries/Constants.sol';
@@ -19,8 +19,8 @@ import "hardhat/console.sol";
  * 
  * , and includes built-in governance power and delegation mechanisms.
  */
-contract DerivativeNFTV1 is 
-    IDerivativeNFTV1, 
+contract DerivativeNFT is 
+    IDerivativeNFT, 
     DerivativeNFTMultiState, 
     ERC3525Upgradeable
 {
@@ -302,7 +302,11 @@ contract DerivativeNFTV1 is
         _setTokenImageURI(tokenId, imageURI);
     }
 
-    function burn(uint256 tokenId_) external virtual {
+    function burn(uint256 tokenId_) 
+        external 
+        virtual 
+        whenNotPaused
+    {
         if (!( msg.sender == ERC3525Upgradeable.ownerOf(tokenId_) || msg.sender == IERC3525(_SBT).ownerOf(_soulBoundTokenId) )) {
             revert Errors.NotManagerNorHubOwner();
         } 

@@ -11,7 +11,7 @@ import {ModuleBase} from '../ModuleBase.sol';
 import {IBankTreasury} from "../../interfaces/IBankTreasury.sol";
 import {IManager} from "../../interfaces/IManager.sol";
 import {DataTypes} from '../../libraries/DataTypes.sol';
-import {IDerivativeNFTV1} from "../../interfaces/IDerivativeNFTV1.sol";
+import {IDerivativeNFT} from "../../interfaces/IDerivativeNFT.sol";
 
 import {IERC20} from '@openzeppelin/contracts/token/ERC20/IERC20.sol';
 import {INFTDerivativeProtocolTokenV1} from "../../interfaces/INFTDerivativeProtocolTokenV1.sol";
@@ -166,7 +166,7 @@ abstract contract BaseFeeCollectModule is
         );
 
         address derivativeNFT = IManager(MANAGER).getDerivativeNFT(projectId);
-        uint96 fraction = IDerivativeNFTV1(derivativeNFT).getDefaultRoyalty();
+        uint96 fraction = IDerivativeNFT(derivativeNFT).getDefaultRoyalty();
          
         uint256 payFees = collectUnits * fraction;
 

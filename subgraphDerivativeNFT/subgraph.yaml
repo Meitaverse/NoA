@@ -5,11 +5,11 @@ schema:
   file: ./schema.graphql
 dataSources:
   - kind: ethereum/contract
-    name: DerivativeNFTV1
+    name: DerivativeNFT
     network: mainnet
     source:
-      abi: DerivativeNFTV1
-      address: "0x9bd03768a7DCc129555dE410FF8E85528A4F88b5"
+      abi: DerivativeNFT
+      address: "0x4f4588Ed715A88420222a08c74e8D8c0f432Df96"
       startBlock: 1
     mapping:
       kind: ethereum/events
@@ -25,8 +25,8 @@ dataSources:
         - BurnToken
         - DerivativeNFTImageURISet
       abis:
-        - name: DerivativeNFTV1
-          file: ../artifacts/contracts/DerivativeNFTV1.sol/DerivativeNFTV1.json
+        - name: DerivativeNFT
+          file: ../artifacts/contracts/DerivativeNFT.sol/DerivativeNFT.json
       eventHandlers:
         - event: Approval(indexed address,indexed address,indexed uint256)
           handler: handleApproval
@@ -44,4 +44,4 @@ dataSources:
           handler: handleBurnToken
         - event: DerivativeNFTImageURISet(indexed uint256,string,uint256)
           handler: handleDerivativeNFTImageURISet
-      file: ./src/derivativeNFTV1-mapping.ts
+      file: ./src/derivativeNFT-mapping.ts

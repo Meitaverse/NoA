@@ -6,7 +6,7 @@ import {DataTypes} from './DataTypes.sol';
 import {Errors} from './Errors.sol';
 import {Events} from './Events.sol';
 import './Constants.sol';
-import {IDerivativeNFTV1} from "../interfaces/IDerivativeNFTV1.sol";
+import {IDerivativeNFT} from "../interfaces/IDerivativeNFT.sol";
 import {ICollectModule} from '../interfaces/ICollectModule.sol';
 import {Strings} from '@openzeppelin/contracts/utils/Strings.sol';
 import {IERC3525} from "@solvprotocol/erc-3525/contracts/IERC3525.sol";
@@ -129,7 +129,7 @@ library InteractionLogic {
         address receiver_
     ) private returns (address) {
         address derivativeNFT = Clones.clone(derivativeImpl);
-        IDerivativeNFTV1(derivativeNFT).initialize(
+        IDerivativeNFT(derivativeNFT).initialize(
             sbt,
             treasury,  
             marketPlace,  

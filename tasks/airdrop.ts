@@ -3,8 +3,8 @@ import { HardhatRuntimeEnvironment } from 'hardhat/types';
 import { parseEther } from '@ethersproject/units';
 
 import {
-  DerivativeNFTV1,
-  DerivativeNFTV1__factory,
+  DerivativeNFT,
+  DerivativeNFT__factory,
   FeeCollectModule,
   FeeCollectModule__factory,
   PublishLogic__factory,

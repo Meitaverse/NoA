@@ -70,12 +70,6 @@ abstract contract MarketFees is  MarketSharedCore, DNFTMarketCore {
             payValue += royaltyAmounts.treasuryAmount;
         }
 
-        // sbt.transferValue(
-        //     collectFeeUsers.collectorSoulBoundTokenId, 
-        //     BANK_TREASURY_SOUL_BOUND_TOKENID, 
-        //     payValue
-        // );
-
         treasury.saveFundsToUserRevenue(
             collectFeeUsers.collectorSoulBoundTokenId,
             payValue,
@@ -91,14 +85,10 @@ abstract contract MarketFees is  MarketSharedCore, DNFTMarketCore {
      * @param projectId The project id
      * @param derivativeNFT The address of the DNFT contract.
      * @param tokenId The id of the DNFT.
-     * @param units The units
-     * @param price The sale price to calculate the fees for.
-     * @return totalFees How much will be sent to the Foundation treasury and/or referrals.
-     * @return creatorRev How much will be sent across all the `creatorRecipients` defined.
-     * @return creatorRecipients The addresses of the recipients to receive a portion of the creator fee.
-     * @return creatorShares The percentage of the creator fee to be distributed to each `creatorRecipient`.
-     * If there is only one `creatorRecipient`, this may be an empty array.
-     * Otherwise `creatorShares.length` == `creatorRecipients.length`.
+     * @param amount The units * price
+     * @return treasuryFee How much will be sent to the Foundation treasury and/or referrals.
+     * @return creatorRev How much will be sent across all the genesis creator defined.
+     * @return previousCreatorRev How much will be sent across all the previous creator defined.
      * @return sellerRev How much will be sent to the owner/seller of the DNFT.
      * If the DNFT is being sold by the creator, this may be 0 and the full revenue will appear as `creatorRev`.
      * @return seller The address of the owner of the DNFT.
@@ -109,16 +99,14 @@ abstract contract MarketFees is  MarketSharedCore, DNFTMarketCore {
         uint256 projectId,
         address derivativeNFT,
         uint256 tokenId,
-        uint256 units,
-        uint256 price
+        uint256 amount 
     )
         external
         view
         returns (
-            uint256 totalFees,
+            uint256 treasuryFee,
             uint256 creatorRev,
-            uint256[] memory creatorRecipients,
-            uint256[] memory creatorShares,
+            uint256 previousCreatorRev,
             uint256 sellerRev,
             address payable seller
         )
@@ -134,28 +122,18 @@ abstract contract MarketFees is  MarketSharedCore, DNFTMarketCore {
 
         seller = _getSellerOrOwnerOf(derivativeNFT, tokenId);
 
-         (DataTypes.RoyaltyAmounts memory royaltyAmounts,  ) = _getFees(
+        (DataTypes.RoyaltyAmounts memory royaltyAmounts,  ) = _getFees(
             collectFeeUsers,
             projectId,
             derivativeNFT,
             tokenId,
-            price * units
+            amount
         );
 
-       totalFees = royaltyAmounts.treasuryAmount;
-       creatorRev = royaltyAmounts.genesisAmount + royaltyAmounts.previousAmount;
-
-       creatorRecipients.capLength(2);
-       creatorShares.capLength(2);
-
-       creatorRecipients[0] = collectFeeUsers.genesisSoulBoundTokenId;
-       creatorRecipients[1] = collectFeeUsers.previousSoulBoundTokenId;
-
-       creatorShares[0] = royaltyAmounts.genesisAmount;
-       creatorShares[1] = royaltyAmounts.previousAmount;
-
+       treasuryFee = royaltyAmounts.treasuryAmount;
+       creatorRev = royaltyAmounts.genesisAmount;
+       previousCreatorRev = royaltyAmounts.previousAmount;
        sellerRev = royaltyAmounts.adjustedAmount;
-
     }
 
     /**

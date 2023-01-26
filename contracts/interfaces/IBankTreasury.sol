@@ -18,13 +18,15 @@ interface IBankTreasury {
      * @param soulBoundTokenId The  soulBoundToken Id of BankTreasury contract
      * @param _owners The array Address of owner contract
      * @param _numConfirmationsRequired The number confirmation required
+     * @param _lockupDuration The lock duration in seconds
      */
     function initialize(
         address admin,
         address goverance,
         uint256 soulBoundTokenId,
         address[] memory _owners, 
-        uint256 _numConfirmationsRequired
+        uint256 _numConfirmationsRequired,
+        uint256 _lockupDuration
     ) external;
 
     /**
@@ -109,6 +111,7 @@ interface IBankTreasury {
     ) external;
 
     function marketLockupFor(
+        address account,
         uint256 soulBoundTokenId, 
         uint256 amount
     ) external returns (uint256 expiration);
@@ -122,13 +125,16 @@ interface IBankTreasury {
     ) external returns (uint256 expiration);
 
     function marketUnlockFor(
+        address account,
         uint256 soulBoundTokenId,
         uint256 expiration,
         uint256 amount
     ) external;
 
     function marketWithdrawLocked(
+        address account,
         uint256 soulBoundTokenIdBuyer,
+        address owner,
         uint256 soulBoundTokenIdOwner,
         uint256 expiration,
         uint256 amount

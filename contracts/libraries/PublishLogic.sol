@@ -7,7 +7,7 @@ import {DataTypes} from './DataTypes.sol';
 import {Errors} from './Errors.sol';
 import {Events} from './Events.sol';
 import './Constants.sol';
-import {IDerivativeNFTV1} from "../interfaces/IDerivativeNFTV1.sol";
+import {IDerivativeNFT} from "../interfaces/IDerivativeNFT.sol";
 import {ICollectModule} from '../interfaces/ICollectModule.sol';
 import {IPublishModule} from '../interfaces/IPublishModule.sol';
 /**
@@ -102,7 +102,7 @@ library PublishLogic {
         if (derivativeNFT == address(0)) revert Errors.DerivativeNFTIsZero();
         if (publisher == address(0)) revert Errors.PublisherIsZero();
 
-        uint256 newTokenId =  IDerivativeNFTV1(derivativeNFT).publish(
+        uint256 newTokenId =  IDerivativeNFT(derivativeNFT).publish(
             publishId,
             publication,
             publisher
@@ -271,7 +271,7 @@ library PublishLogic {
         for (uint256 i = 0; i < airdropData.toSoulBoundTokenIds.length; ) {
             address toWallet = _soulBoundTokenIdToWallet[airdropData.toSoulBoundTokenIds[i]];
             if (toWallet == address(0)) revert Errors.ToWalletIsZero();
-            uint256 newTokenId = IDerivativeNFTV1(derivativeNFT).split(
+            uint256 newTokenId = IDerivativeNFT(derivativeNFT).split(
                 airdropData.publishId,
                 airdropData.tokenId, 
                 toWallet,

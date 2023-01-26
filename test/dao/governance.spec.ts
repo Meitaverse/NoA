@@ -20,8 +20,8 @@ import { moveTime } from "../../utils/move-time"
 
 import { 
   ERC20__factory,
-  DerivativeNFTV1,
-  DerivativeNFTV1__factory,
+  DerivativeNFT,
+  DerivativeNFT__factory,
   TimeLock,
   TimeLock__factory,
   GovernorContract,

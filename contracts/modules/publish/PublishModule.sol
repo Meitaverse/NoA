@@ -13,7 +13,7 @@ import {ModuleBase} from "../ModuleBase.sol";
 import {IBankTreasury} from '../../interfaces/IBankTreasury.sol';
 import {IERC20Upgradeable} from "@openzeppelin/contracts-upgradeable/token/ERC20/IERC20Upgradeable.sol";
 import {IERC3525} from "@solvprotocol/erc-3525/contracts/IERC3525.sol";
-import {IDerivativeNFTV1} from "../../interfaces/IDerivativeNFTV1.sol";
+import {IDerivativeNFT} from "../../interfaces/IDerivativeNFT.sol";
 import {StringsUpgradeable} from "@openzeppelin/contracts-upgradeable/utils/StringsUpgradeable.sol";
 import {Base64Upgradeable} from "@openzeppelin/contracts-upgradeable/utils/Base64Upgradeable.sol";
 import {StringConvertor} from "../../utils/StringConvertor.sol";

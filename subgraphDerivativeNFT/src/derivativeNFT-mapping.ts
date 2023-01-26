@@ -1,7 +1,7 @@
 import { log, Address, BigInt, Bytes, store, TypedMap } from "@graphprotocol/graph-ts";
 
 import {
-    DerivativeNFTV1,
+    DerivativeNFT,
     Transfer,
     TransferValue,
     SlotChanged,
@@ -10,7 +10,7 @@ import {
     ApprovalForAll,
     ApprovalValue,
     DerivativeNFTImageURISet,
-} from "../generated/DerivativeNFTV1/DerivativeNFTV1"
+} from "../generated/DerivativeNFT/DerivativeNFT"
 
 import {
     DerivativeNFTTransferHistory,
@@ -42,8 +42,8 @@ export function handleTransfer(event: Transfer): void {
         const derivativeNFTAsset = DerivativeNFTAsset.load(_idStringAsset) || new DerivativeNFTAsset(_idStringAsset)
 
         if (derivativeNFTAsset) {
-            const derivativeNFTV1 = DerivativeNFTV1.bind(event.address) 
-            const result = derivativeNFTV1.try_getPublishIdByTokenId(event.params._tokenId)
+            const derivativeNFT = DerivativeNFT.bind(event.address) 
+            const result = derivativeNFT.try_getPublishIdByTokenId(event.params._tokenId)
         
             if (result.reverted) {
                 log.warning('try_getPublishIdByTokenId, result.reverted is true', [])
@@ -83,7 +83,7 @@ export function handleTransferValue(event: TransferValue): void {
         history.timestamp = event.block.timestamp
         history.save()
 
-        const derivativeNFTV1 = DerivativeNFTV1.bind(event.address) 
+        const derivativeNFT = DerivativeNFT.bind(event.address) 
 
         if (event.params._fromTokenId.isZero()){
              //mint value
@@ -95,7 +95,7 @@ export function handleTransferValue(event: TransferValue): void {
     
             if (derivativeNFTAssetFrom) {
                
-                const result = derivativeNFTV1.try_balanceOf1(event.params._fromTokenId)
+                const result = derivativeNFT.try_balanceOf1(event.params._fromTokenId)
         
                 if (result.reverted) {
                     log.warning('try_balanceOf1, result.reverted is true', [])
@@ -119,7 +119,7 @@ export function handleTransferValue(event: TransferValue): void {
     
             if (derivativeNFTAssetTo) {
 
-                const result = derivativeNFTV1.try_balanceOf1(event.params._toTokenId)
+                const result = derivativeNFT.try_balanceOf1(event.params._toTokenId)
         
                 if (result.reverted) {
                     log.warning('try_balanceOf1, result.reverted is true', [])

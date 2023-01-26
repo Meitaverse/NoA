@@ -126,7 +126,7 @@ const config: HardhatUserConfig = {
       ':MarketPlace$', 
       ':Manager$',
       ':BankTreasury$',
-      ':DerivativeNFTV1$', 
+      ':DerivativeNFT$', 
       ':NFTDerivativeProtocolTokenV1$', 
       'GovernorContract$'],
   },

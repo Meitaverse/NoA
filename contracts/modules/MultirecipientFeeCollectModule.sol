@@ -8,7 +8,7 @@ import {IBankTreasury} from "../interfaces/IBankTreasury.sol";
 import {IManager} from "../interfaces/IManager.sol";
 import {DataTypes} from '../libraries/DataTypes.sol';
 import "../libraries/Constants.sol";
-import {IDerivativeNFTV1} from "../interfaces/IDerivativeNFTV1.sol";
+import {IDerivativeNFT} from "../interfaces/IDerivativeNFT.sol";
 import {BaseFeeCollectModule} from './base/BaseFeeCollectModule.sol';
 import {BaseProfilePublicationData, BaseFeeCollectModuleInitData} from './base/IBaseFeeCollectModule.sol';
 import {ICollectModule} from '../interfaces/ICollectModule.sol';
@@ -134,7 +134,7 @@ contract MultirecipientFeeCollectModule is BaseFeeCollectModule {
             }
         }
         address derivativeNFT = IManager(MANAGER).getDerivativeNFT(projectId);
-        uint96 fraction = IDerivativeNFTV1(derivativeNFT).getDefaultRoyalty();
+        uint96 fraction = IDerivativeNFT(derivativeNFT).getDefaultRoyalty();
         if (totalSplits != fraction) revert Errors.InvalidRecipientSplits();
     }
  
@@ -206,7 +206,7 @@ contract MultirecipientFeeCollectModule is BaseFeeCollectModule {
     ) external view returns (
         RoyaltyInfoData memory
     ) {
-        uint96 fraction = IDerivativeNFTV1(IManager(MANAGER).getDerivativeNFT(projectId)).getDefaultRoyalty();
+        uint96 fraction = IDerivativeNFT(IManager(MANAGER).getDerivativeNFT(projectId)).getDefaultRoyalty();
          
         uint256 payFees = collectUnits.mul(_dataByPublicationByProfile[projectId].salePrice) * fraction;
 
@@ -262,7 +262,7 @@ contract MultirecipientFeeCollectModule is BaseFeeCollectModule {
         }
 
         address derivativeNFT = IManager(MANAGER).getDerivativeNFT(projectId);
-        uint96 fraction = IDerivativeNFTV1(derivativeNFT).getDefaultRoyalty();
+        uint96 fraction = IDerivativeNFT(derivativeNFT).getDefaultRoyalty();
         if (totalSplits != fraction) revert Errors.InvalidRecipientSplits();
 
         emit Events.UpdateRoyaltyPoints(

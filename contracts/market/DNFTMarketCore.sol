@@ -9,7 +9,7 @@ import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import {Events} from "../libraries/Events.sol";
 import {Errors} from "../libraries/Errors.sol";
 import {DataTypes} from '../libraries/DataTypes.sol';
-import {IDerivativeNFTV1} from "../interfaces/IDerivativeNFTV1.sol";
+import {IDerivativeNFT} from "../interfaces/IDerivativeNFT.sol";
 
 import "../libraries/Constants.sol";
 import "./MarketSharedCore.sol";
@@ -25,7 +25,7 @@ abstract contract DNFTMarketCore is Initializable, MarketSharedCore {
   using AddressUpgradeable for address;
   using AddressUpgradeable for address payable;
   
-  function _validateCallerIsSoulBoundTokenOwner(uint256 soulBoundTokenId_) internal virtual;
+  function _getWallet(uint256 soulBoundTokenId) internal virtual returns(address);
 
   function _getTreasuryData() internal virtual view returns (address, uint16);
 
@@ -94,7 +94,7 @@ abstract contract DNFTMarketCore is Initializable, MarketSharedCore {
     }
 
     //transfer units from escrow to toTokenId
-    IDerivativeNFTV1(derivativeNFT).transferValue(fromTokenId, toTokenId, uint256(units));
+    IDerivativeNFT(derivativeNFT).transferValue(fromTokenId, toTokenId, uint256(units));
 
   }
 
@@ -112,6 +112,7 @@ abstract contract DNFTMarketCore is Initializable, MarketSharedCore {
 
   /**
    * @notice Transfers an DNFT units into escrow,
+   * if insufficient value , it will fail.
    * if already there this requires the msg.sender is authorized to manage the sale of this DNFT.
    */
   function _transferToEscrow(address derivativeNFT, uint256 tokenId, uint128 units) 

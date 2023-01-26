@@ -48,7 +48,7 @@ import {
   FIRST_DNFT_TOKEN_ID,
   testWallet
 } from '../../__setup.spec';
-import { DerivativeNFTV1, DerivativeNFTV1__factory } from '../../../typechain';
+import { DerivativeNFT, DerivativeNFT__factory } from '../../../typechain';
 
 const Default_royaltyBasisPoints = 50; //
 
@@ -182,8 +182,8 @@ makeSuiteCleanRoom('Dispatcher Functionality', function () {
 
         console.log('\t--- balance of collector: ', (await sbtContract["balanceOf(uint256)"](THIRD_PROFILE_ID)).toNumber());
 
-        let derivativeNFT: DerivativeNFTV1;
-        derivativeNFT = DerivativeNFTV1__factory.connect(
+        let derivativeNFT: DerivativeNFT;
+        derivativeNFT = DerivativeNFT__factory.connect(
           await manager.connect(user).getDerivativeNFT(FIRST_PROJECT_ID),
           user
         );

@@ -3,8 +3,8 @@ import { HardhatRuntimeEnvironment } from 'hardhat/types';
 import { parseEther } from '@ethersproject/units';
 
 import {
-  DerivativeNFTV1,
-  DerivativeNFTV1__factory,
+  DerivativeNFT,
+  DerivativeNFT__factory,
   FeeCollectModule,
   FeeCollectModule__factory,
   PublishLogic__factory,
@@ -63,8 +63,8 @@ task("getDerivativeNFT", "get DerivativeNFT function")
   const template = await loadContract(hre, Template__factory, "Template");
 
   
-  let derivativeNFT: DerivativeNFTV1;
-  derivativeNFT = DerivativeNFTV1__factory.connect(
+  let derivativeNFT: DerivativeNFT;
+  derivativeNFT = DerivativeNFT__factory.connect(
     await manager.connect(user).getDerivativeNFT(projectid),
     user
   );

@@ -11,7 +11,7 @@ import "../market/OZAccessControlUpgradeable.sol";
  * @author batu-inal & HardlyDifficult
  */
 abstract contract FeeModuleRoleEnumerable is Initializable, OZAccessControlUpgradeable {
-  bytes32 private constant FEEMODULE_ROLE = keccak256("FEEMODULE_ROLE");
+  bytes32 public constant FEEMODULE_ROLE = keccak256("FEEMODULE_ROLE");
 
   modifier onlyFeeModule() {
     require(hasRole(FEEMODULE_ROLE, msg.sender), "FeeModule: caller does not have the FeeModule role");

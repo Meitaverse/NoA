@@ -4,8 +4,8 @@ import '@nomiclabs/hardhat-ethers';
 import { expect } from 'chai';
 import { 
   ERC20__factory,
-  DerivativeNFTV1,
-  DerivativeNFTV1__factory,
+  DerivativeNFT,
+  DerivativeNFT__factory,
  } from '../../typechain';
 import { MAX_UINT256, ZERO_ADDRESS } from '../helpers/constants';
 import { ERRORS } from '../helpers/errors';
@@ -66,7 +66,7 @@ import {
   createProfileReturningTokenId,
 } from '../helpers/utils';
 
-let derivativeNFT: DerivativeNFTV1;
+let derivativeNFT: DerivativeNFT;
 const FIRST_VOUCHER_TOKEN_ID = 1;
 const SECOND_VOUCHER_TOKEN_ID = 2;
 
@@ -98,6 +98,8 @@ makeSuiteCleanRoom('Bank Treasury', function () {
 
       expect(await manager.getWalletBySoulBoundTokenId(SECOND_PROFILE_ID)).to.eq(userAddress);
       expect(await manager.getWalletBySoulBoundTokenId(THIRD_PROFILE_ID)).to.eq(userTwoAddress);
+
+
   });
 
   context('BankTreasury', function () {
@@ -107,6 +109,10 @@ makeSuiteCleanRoom('Bank Treasury', function () {
         await expect(
           bankTreasuryContract.connect(user).exchangeVoucher(FIRST_VOUCHER_TOKEN_ID, SECOND_PROFILE_ID)
         ).to.be.revertedWith(ERRORS.VOUCHER_NOT_EXISTS);
+        // await bankTreasuryContract.connect(user).exchangeVoucher(
+        //   FIRST_VOUCHER_TOKEN_ID, 
+        //   SECOND_PROFILE_ID
+        // );
 
       });
 
@@ -140,20 +146,45 @@ makeSuiteCleanRoom('Bank Treasury', function () {
     });
 
     context('Exchange', function () {
-      /*
-        it('User should receive SBT after withdrawERC3525', async function () {
-          expect((await sbtContract['balanceOf(uint256)'](FIRST_PROFILE_ID)).toNumber()).to.eq(INITIAL_SUPPLY);
-          expect((await sbtContract['balanceOf(uint256)'](SECOND_PROFILE_ID)).toNumber()).to.eq(0);
-          
-          await expect(
-            bankTreasuryContract.connect(governance).withdrawERC3525(SECOND_PROFILE_ID, 1)
-          ).to.not.be.reverted;
+      
+        it('User should deposited after user call tranferFrom to treasury', async function () {
 
-          expect((await sbtContract['balanceOf(uint256)'](FIRST_PROFILE_ID)).toNumber()).to.eq(INITIAL_SUPPLY-1);
-          expect((await sbtContract['balanceOf(uint256)'](SECOND_PROFILE_ID)).toNumber()).to.eq(1);
+          //mint some Values to user
+          await manager.connect(governance).mintSBTValue(SECOND_PROFILE_ID, 10000);
+
+          expect((await sbtContract['balanceOf(uint256)'](FIRST_PROFILE_ID)).toNumber()).to.eq(INITIAL_SUPPLY);
+          expect((await sbtContract['balanceOf(uint256)'](SECOND_PROFILE_ID)).toNumber()).to.eq(10000);
+          
+          await sbtContract.connect(user)['transferFrom(uint256,uint256,uint256)'](SECOND_PROFILE_ID, FIRST_PROFILE_ID, 6000);
+
+          expect((await bankTreasuryContract.balanceOf(SECOND_PROFILE_ID)).toNumber()).to.eq(6000);
+
+          expect((await sbtContract['balanceOf(uint256)'](FIRST_PROFILE_ID)).toNumber()).to.eq(INITIAL_SUPPLY + 6000);
+          expect((await sbtContract['balanceOf(uint256)'](SECOND_PROFILE_ID)).toNumber()).to.eq(4000);
 
         });
-        */
+      
+        it('User should receive SBT after withdrawERC3525', async function () {
+
+          //mint some Values to user
+          await manager.connect(governance).mintSBTValue(SECOND_PROFILE_ID, 10000);
+
+          expect((await sbtContract['balanceOf(uint256)'](FIRST_PROFILE_ID)).toNumber()).to.eq(INITIAL_SUPPLY);
+          expect((await sbtContract['balanceOf(uint256)'](SECOND_PROFILE_ID)).toNumber()).to.eq(10000);
+          
+          await sbtContract.connect(user)['transferFrom(uint256,uint256,uint256)'](SECOND_PROFILE_ID, FIRST_PROFILE_ID, 6000);
+          
+          await expect(
+            bankTreasuryContract.connect(user).withdrawERC3525(SECOND_PROFILE_ID, 500)
+          ).to.not.be.reverted;
+
+          expect((await bankTreasuryContract.balanceOf(SECOND_PROFILE_ID)).toNumber()).to.eq(5500);
+
+          expect((await sbtContract['balanceOf(uint256)'](FIRST_PROFILE_ID)).toNumber()).to.eq(INITIAL_SUPPLY + 5500);
+          expect((await sbtContract['balanceOf(uint256)'](SECOND_PROFILE_ID)).toNumber()).to.eq(4500);
+
+        });
+        
 
         it('User should exchange Voucher SBT', async function () {
           expect((await sbtContract['balanceOf(uint256)'](FIRST_PROFILE_ID)).toNumber()).to.eq(INITIAL_SUPPLY);

@@ -8,7 +8,7 @@ import "@solvprotocol/erc-3525/contracts/IERC3525.sol";
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 
 import {IERC3525Metadata} from "@solvprotocol/erc-3525/contracts/extensions/IERC3525Metadata.sol";
-import {IDerivativeNFTV1} from "./interfaces/IDerivativeNFTV1.sol";
+import {IDerivativeNFT} from "./interfaces/IDerivativeNFT.sol";
 import "./interfaces/INFTDerivativeProtocolTokenV1.sol";
 import "./interfaces/IManager.sol";
 import "./base/NFTDerivativeProtocolMultiState.sol";
@@ -271,7 +271,7 @@ contract Manager is
 
         } else{
             address derivativeNFT = _derivativeNFTByProjectId[publication.projectId];
-            previousPublishId = IDerivativeNFTV1(derivativeNFT).getPublishIdByTokenId(publication.fromTokenIds[0]);
+            previousPublishId = IDerivativeNFT(derivativeNFT).getPublishIdByTokenId(publication.fromTokenIds[0]);
         }
         
         if (!IModuleGlobals(MODULE_GLOBALS).isWhitelistPublishModule(publication.publishModule))
@@ -433,7 +433,7 @@ contract Manager is
             revert Errors.PublisherSetCanNotCollect();
         }
 
-        uint256 newTokenId = IDerivativeNFTV1(derivativeNFT).split(
+        uint256 newTokenId = IDerivativeNFT(derivativeNFT).split(
             collectData.publishId, 
             _projectDataByPublishId[collectData.publishId].tokenId, 
             _soulBoundTokenIdToWallet[collectData.collectorSoulBoundTokenId],
@@ -481,7 +481,7 @@ contract Manager is
 
     function getPublicationByTokenId(uint256 projectId_, uint256 tokenId_) external view returns (uint256, DataTypes.Publication memory) {
         address derivativeNFT =  _derivativeNFTByProjectId[projectId_];
-        uint256 publishId = IDerivativeNFTV1(derivativeNFT).getPublishIdByTokenId(tokenId_);
+        uint256 publishId = IDerivativeNFT(derivativeNFT).getPublishIdByTokenId(tokenId_);
         return (publishId, _projectDataByPublishId[publishId].publication);
     } 
 
@@ -515,7 +515,7 @@ contract Manager is
    
         //previous 
         address derivativeNFT =  _derivativeNFTByProjectId[projectId];
-        uint256 publishId = IDerivativeNFTV1(derivativeNFT).getPublishIdByTokenId(tokenId);
+        uint256 publishId = IDerivativeNFT(derivativeNFT).getPublishIdByTokenId(tokenId);
         
         return (
             _projectDataByPublishId[genesisPublishId].publication.soulBoundTokenId,
@@ -555,7 +555,7 @@ contract Manager is
         onlyGov 
     {
         address derivativeNFT = _derivativeNFTByProjectId[projectId];
-        IDerivativeNFTV1(derivativeNFT).setState(newState);
+        IDerivativeNFT(derivativeNFT).setState(newState);
     }
 
     function setDerivativeNFTMetadataDescriptor(
@@ -566,7 +566,7 @@ contract Manager is
         onlyGov 
     {
         address derivativeNFT = _derivativeNFTByProjectId[projectId];
-        IDerivativeNFTV1(derivativeNFT).setMetadataDescriptor(metadataDescriptor);
+        IDerivativeNFT(derivativeNFT).setMetadataDescriptor(metadataDescriptor);
     }
 
     function setDefaultRoyalty(
@@ -579,7 +579,7 @@ contract Manager is
         onlyGov 
     {
         address derivativeNFT = _derivativeNFTByProjectId[projectId];
-        IDerivativeNFTV1(derivativeNFT).setDefaultRoyalty(recipient, fraction);
+        IDerivativeNFT(derivativeNFT).setDefaultRoyalty(recipient, fraction);
     }
 
     function deleteDefaultRoyalty(uint256 projectId)  
@@ -588,7 +588,7 @@ contract Manager is
         onlyGov 
     {
         address derivativeNFT = _derivativeNFTByProjectId[projectId];
-        IDerivativeNFTV1(derivativeNFT).deleteDefaultRoyalty();
+        IDerivativeNFT(derivativeNFT).deleteDefaultRoyalty();
     }
 
     function setGovernance(address newGovernance) external nonReentrant onlyGov {

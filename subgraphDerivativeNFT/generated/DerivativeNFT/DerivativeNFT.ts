@@ -258,10 +258,10 @@ export class TransferValue__Params {
   }
 }
 
-export class DerivativeNFTV1__getSlotDetailResultValue0Struct extends ethereum.Tuple {
-  get publication(): DerivativeNFTV1__getSlotDetailResultValue0PublicationStruct {
+export class DerivativeNFT__getSlotDetailResultValue0Struct extends ethereum.Tuple {
+  get publication(): DerivativeNFT__getSlotDetailResultValue0PublicationStruct {
     return changetype<
-      DerivativeNFTV1__getSlotDetailResultValue0PublicationStruct
+      DerivativeNFT__getSlotDetailResultValue0PublicationStruct
     >(this[0].toTuple());
   }
 
@@ -274,7 +274,7 @@ export class DerivativeNFTV1__getSlotDetailResultValue0Struct extends ethereum.T
   }
 }
 
-export class DerivativeNFTV1__getSlotDetailResultValue0PublicationStruct extends ethereum.Tuple {
+export class DerivativeNFT__getSlotDetailResultValue0PublicationStruct extends ethereum.Tuple {
   get soulBoundTokenId(): BigInt {
     return this[0].toBigInt();
   }
@@ -307,32 +307,36 @@ export class DerivativeNFTV1__getSlotDetailResultValue0PublicationStruct extends
     return this[7].toString();
   }
 
+  get canCollect(): boolean {
+    return this[8].toBoolean();
+  }
+
   get materialURIs(): Array<string> {
-    return this[8].toStringArray();
+    return this[9].toStringArray();
   }
 
   get fromTokenIds(): Array<BigInt> {
-    return this[9].toBigIntArray();
+    return this[10].toBigIntArray();
   }
 
   get collectModule(): Address {
-    return this[10].toAddress();
+    return this[11].toAddress();
   }
 
   get collectModuleInitData(): Bytes {
-    return this[11].toBytes();
+    return this[12].toBytes();
   }
 
   get publishModule(): Address {
-    return this[12].toAddress();
+    return this[13].toAddress();
   }
 
   get publishModuleInitData(): Bytes {
-    return this[13].toBytes();
+    return this[14].toBytes();
   }
 }
 
-export class DerivativeNFTV1__publishInputPublicationStruct extends ethereum.Tuple {
+export class DerivativeNFT__publishInputPublicationStruct extends ethereum.Tuple {
   get soulBoundTokenId(): BigInt {
     return this[0].toBigInt();
   }
@@ -365,32 +369,36 @@ export class DerivativeNFTV1__publishInputPublicationStruct extends ethereum.Tup
     return this[7].toString();
   }
 
+  get canCollect(): boolean {
+    return this[8].toBoolean();
+  }
+
   get materialURIs(): Array<string> {
-    return this[8].toStringArray();
+    return this[9].toStringArray();
   }
 
   get fromTokenIds(): Array<BigInt> {
-    return this[9].toBigIntArray();
+    return this[10].toBigIntArray();
   }
 
   get collectModule(): Address {
-    return this[10].toAddress();
+    return this[11].toAddress();
   }
 
   get collectModuleInitData(): Bytes {
-    return this[11].toBytes();
+    return this[12].toBytes();
   }
 
   get publishModule(): Address {
-    return this[12].toAddress();
+    return this[13].toAddress();
   }
 
   get publishModuleInitData(): Bytes {
-    return this[13].toBytes();
+    return this[14].toBytes();
   }
 }
 
-export class DerivativeNFTV1__royaltyInfoResult {
+export class DerivativeNFT__royaltyInfoResult {
   value0: Address;
   value1: BigInt;
 
@@ -415,9 +423,9 @@ export class DerivativeNFTV1__royaltyInfoResult {
   }
 }
 
-export class DerivativeNFTV1 extends ethereum.SmartContract {
-  static bind(address: Address): DerivativeNFTV1 {
-    return new DerivativeNFTV1("DerivativeNFTV1", address);
+export class DerivativeNFT extends ethereum.SmartContract {
+  static bind(address: Address): DerivativeNFT {
+    return new DerivativeNFT("DerivativeNFT", address);
   }
 
   MANAGER(): Address {
@@ -606,26 +614,24 @@ export class DerivativeNFTV1 extends ethereum.SmartContract {
     return ethereum.CallResult.fromValue(value[0].toBigInt());
   }
 
-  getSlotDetail(
-    slot_: BigInt
-  ): DerivativeNFTV1__getSlotDetailResultValue0Struct {
+  getSlotDetail(slot_: BigInt): DerivativeNFT__getSlotDetailResultValue0Struct {
     let result = super.call(
       "getSlotDetail",
-      "getSlotDetail(uint256):(((uint256,uint256,uint256,uint256,uint256,uint256,string,string,string[],uint256[],address,bytes,address,bytes),string,uint256))",
+      "getSlotDetail(uint256):(((uint256,uint256,uint256,uint256,uint256,uint256,string,string,bool,string[],uint256[],address,bytes,address,bytes),string,uint256))",
       [ethereum.Value.fromUnsignedBigInt(slot_)]
     );
 
-    return changetype<DerivativeNFTV1__getSlotDetailResultValue0Struct>(
+    return changetype<DerivativeNFT__getSlotDetailResultValue0Struct>(
       result[0].toTuple()
     );
   }
 
   try_getSlotDetail(
     slot_: BigInt
-  ): ethereum.CallResult<DerivativeNFTV1__getSlotDetailResultValue0Struct> {
+  ): ethereum.CallResult<DerivativeNFT__getSlotDetailResultValue0Struct> {
     let result = super.tryCall(
       "getSlotDetail",
-      "getSlotDetail(uint256):(((uint256,uint256,uint256,uint256,uint256,uint256,string,string,string[],uint256[],address,bytes,address,bytes),string,uint256))",
+      "getSlotDetail(uint256):(((uint256,uint256,uint256,uint256,uint256,uint256,string,string,bool,string[],uint256[],address,bytes,address,bytes),string,uint256))",
       [ethereum.Value.fromUnsignedBigInt(slot_)]
     );
     if (result.reverted) {
@@ -633,7 +639,7 @@ export class DerivativeNFTV1 extends ethereum.SmartContract {
     }
     let value = result.value;
     return ethereum.CallResult.fromValue(
-      changetype<DerivativeNFTV1__getSlotDetailResultValue0Struct>(
+      changetype<DerivativeNFT__getSlotDetailResultValue0Struct>(
         value[0].toTuple()
       )
     );
@@ -784,12 +790,12 @@ export class DerivativeNFTV1 extends ethereum.SmartContract {
 
   publish(
     publishId: BigInt,
-    publication: DerivativeNFTV1__publishInputPublicationStruct,
+    publication: DerivativeNFT__publishInputPublicationStruct,
     publisher: Address
   ): BigInt {
     let result = super.call(
       "publish",
-      "publish(uint256,(uint256,uint256,uint256,uint256,uint256,uint256,string,string,string[],uint256[],address,bytes,address,bytes),address):(uint256)",
+      "publish(uint256,(uint256,uint256,uint256,uint256,uint256,uint256,string,string,bool,string[],uint256[],address,bytes,address,bytes),address):(uint256)",
       [
         ethereum.Value.fromUnsignedBigInt(publishId),
         ethereum.Value.fromTuple(publication),
@@ -802,12 +808,12 @@ export class DerivativeNFTV1 extends ethereum.SmartContract {
 
   try_publish(
     publishId: BigInt,
-    publication: DerivativeNFTV1__publishInputPublicationStruct,
+    publication: DerivativeNFT__publishInputPublicationStruct,
     publisher: Address
   ): ethereum.CallResult<BigInt> {
     let result = super.tryCall(
       "publish",
-      "publish(uint256,(uint256,uint256,uint256,uint256,uint256,uint256,string,string,string[],uint256[],address,bytes,address,bytes),address):(uint256)",
+      "publish(uint256,(uint256,uint256,uint256,uint256,uint256,uint256,string,string,bool,string[],uint256[],address,bytes,address,bytes),address):(uint256)",
       [
         ethereum.Value.fromUnsignedBigInt(publishId),
         ethereum.Value.fromTuple(publication),
@@ -824,7 +830,7 @@ export class DerivativeNFTV1 extends ethereum.SmartContract {
   royaltyInfo(
     _tokenId: BigInt,
     _salePrice: BigInt
-  ): DerivativeNFTV1__royaltyInfoResult {
+  ): DerivativeNFT__royaltyInfoResult {
     let result = super.call(
       "royaltyInfo",
       "royaltyInfo(uint256,uint256):(address,uint256)",
@@ -834,7 +840,7 @@ export class DerivativeNFTV1 extends ethereum.SmartContract {
       ]
     );
 
-    return new DerivativeNFTV1__royaltyInfoResult(
+    return new DerivativeNFT__royaltyInfoResult(
       result[0].toAddress(),
       result[1].toBigInt()
     );
@@ -843,7 +849,7 @@ export class DerivativeNFTV1 extends ethereum.SmartContract {
   try_royaltyInfo(
     _tokenId: BigInt,
     _salePrice: BigInt
-  ): ethereum.CallResult<DerivativeNFTV1__royaltyInfoResult> {
+  ): ethereum.CallResult<DerivativeNFT__royaltyInfoResult> {
     let result = super.tryCall(
       "royaltyInfo",
       "royaltyInfo(uint256,uint256):(address,uint256)",
@@ -857,7 +863,7 @@ export class DerivativeNFTV1 extends ethereum.SmartContract {
     }
     let value = result.value;
     return ethereum.CallResult.fromValue(
-      new DerivativeNFTV1__royaltyInfoResult(
+      new DerivativeNFT__royaltyInfoResult(
         value[0].toAddress(),
         value[1].toBigInt()
       )
@@ -1021,6 +1027,27 @@ export class DerivativeNFTV1 extends ethereum.SmartContract {
     }
     let value = result.value;
     return ethereum.CallResult.fromValue(value[0].toBigInt());
+  }
+
+  tokenCreator(tokenId: BigInt): Address {
+    let result = super.call("tokenCreator", "tokenCreator(uint256):(address)", [
+      ethereum.Value.fromUnsignedBigInt(tokenId)
+    ]);
+
+    return result[0].toAddress();
+  }
+
+  try_tokenCreator(tokenId: BigInt): ethereum.CallResult<Address> {
+    let result = super.tryCall(
+      "tokenCreator",
+      "tokenCreator(uint256):(address)",
+      [ethereum.Value.fromUnsignedBigInt(tokenId)]
+    );
+    if (result.reverted) {
+      return new ethereum.CallResult();
+    }
+    let value = result.value;
+    return ethereum.CallResult.fromValue(value[0].toAddress());
   }
 
   tokenOfOwnerByIndex(owner_: Address, index_: BigInt): BigInt {
@@ -1288,36 +1315,40 @@ export class InitializeCall__Inputs {
     return this._call.inputValues[1].value.toAddress();
   }
 
-  get name_(): string {
-    return this._call.inputValues[2].value.toString();
+  get marketPlace(): Address {
+    return this._call.inputValues[2].value.toAddress();
   }
 
-  get symbol_(): string {
+  get name_(): string {
     return this._call.inputValues[3].value.toString();
   }
 
-  get projectId_(): BigInt {
-    return this._call.inputValues[4].value.toBigInt();
+  get symbol_(): string {
+    return this._call.inputValues[4].value.toString();
   }
 
-  get soulBoundTokenId_(): BigInt {
+  get projectId_(): BigInt {
     return this._call.inputValues[5].value.toBigInt();
   }
 
-  get metadataDescriptor_(): Address {
-    return this._call.inputValues[6].value.toAddress();
+  get soulBoundTokenId_(): BigInt {
+    return this._call.inputValues[6].value.toBigInt();
   }
 
-  get receiver_(): Address {
+  get metadataDescriptor_(): Address {
     return this._call.inputValues[7].value.toAddress();
   }
 
+  get receiver_(): Address {
+    return this._call.inputValues[8].value.toAddress();
+  }
+
   get defaultRoyaltyPoints_(): BigInt {
-    return this._call.inputValues[8].value.toBigInt();
+    return this._call.inputValues[9].value.toBigInt();
   }
 
   get feeShareType_(): i32 {
-    return this._call.inputValues[9].value.toI32();
+    return this._call.inputValues[10].value.toI32();
   }
 }
 
@@ -1406,28 +1437,32 @@ export class PublishCallPublicationStruct extends ethereum.Tuple {
     return this[7].toString();
   }
 
+  get canCollect(): boolean {
+    return this[8].toBoolean();
+  }
+
   get materialURIs(): Array<string> {
-    return this[8].toStringArray();
+    return this[9].toStringArray();
   }
 
   get fromTokenIds(): Array<BigInt> {
-    return this[9].toBigIntArray();
+    return this[10].toBigIntArray();
   }
 
   get collectModule(): Address {
-    return this[10].toAddress();
+    return this[11].toAddress();
   }
 
   get collectModuleInitData(): Bytes {
-    return this[11].toBytes();
+    return this[12].toBytes();
   }
 
   get publishModule(): Address {
-    return this[12].toAddress();
+    return this[13].toAddress();
   }
 
   get publishModuleInitData(): Bytes {
-    return this[13].toBytes();
+    return this[14].toBytes();
   }
 }
 
@@ -1905,6 +1940,44 @@ export class TransferFrom2Call__Outputs {
   _call: TransferFrom2Call;
 
   constructor(call: TransferFrom2Call) {
+    this._call = call;
+  }
+}
+
+export class TransferValueCall extends ethereum.Call {
+  get inputs(): TransferValueCall__Inputs {
+    return new TransferValueCall__Inputs(this);
+  }
+
+  get outputs(): TransferValueCall__Outputs {
+    return new TransferValueCall__Outputs(this);
+  }
+}
+
+export class TransferValueCall__Inputs {
+  _call: TransferValueCall;
+
+  constructor(call: TransferValueCall) {
+    this._call = call;
+  }
+
+  get fromTokenId_(): BigInt {
+    return this._call.inputValues[0].value.toBigInt();
+  }
+
+  get toTokenId_(): BigInt {
+    return this._call.inputValues[1].value.toBigInt();
+  }
+
+  get value_(): BigInt {
+    return this._call.inputValues[2].value.toBigInt();
+  }
+}
+
+export class TransferValueCall__Outputs {
+  _call: TransferValueCall;
+
+  constructor(call: TransferValueCall) {
     this._call = call;
   }
 }

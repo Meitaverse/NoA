@@ -43,6 +43,8 @@ interface IBankTreasuryV2 {
         DataTypes.EIP712Signature calldata sign        
     ) external payable;
 
+    function getGlobalModule() external view returns(address);
+    
     function getSigners() external view returns (address[] memory);
 
     function getTransactionCount() external view returns (uint256);
@@ -55,7 +57,9 @@ interface IBankTreasuryV2 {
 
     function getVoucher() external view returns(address);
 
-     function calculateAmountEther(uint256 ethAmount) external view returns(uint256);
+    function balanceOf(uint256 soulBoundTokenId) external view returns (uint256 balance);
+
+    function calculateAmountEther(uint256 ethAmount) external view returns(uint256);
 
     function calculateAmountSBT(uint256 sbtValue) external view returns(uint256);
 
@@ -66,4 +70,57 @@ interface IBankTreasuryV2 {
      * @return bytes32 The domain separator.
      */
     function getDomainSeparator() external view returns (bytes32);
+
+    /**
+     * @notice Save funds to mapping revenues, user can withdraw it if reach a limit amount
+     *
+     */
+    function saveFundsToUserRevenue(
+        uint256 fromSoulBoundTokenId,
+        uint256 payValue,
+        DataTypes.CollectFeeUsers memory collectFeeUsers,
+        DataTypes.RoyaltyAmounts memory royaltyAmounts
+    ) external;
+
+    function useEarnestMoneyForPay(
+        uint256 soulBoundTokenId,
+        uint256 amount
+    ) external;
+
+    function refundEarnestMoney(
+        uint256 soulBoundTokenId,
+        uint256 amount
+    ) external;
+
+    function marketLockupFor(
+        address account,
+        uint256 soulBoundTokenId, 
+        uint256 amount
+    ) external returns (uint256 expiration);
+
+    function marketChangeLockup(
+        uint256 unlockFromSoulBoundTokenId,
+        uint256 unlockExpiration,
+        uint256 unlockAmount,
+        uint256 lockupForSoulBoundTokenId,
+        uint256 lockupAmount
+    ) external returns (uint256 expiration);
+
+    function marketUnlockFor(
+        address account,
+        uint256 soulBoundTokenId,
+        uint256 expiration,
+        uint256 amount
+    ) external;
+
+    function marketWithdrawLocked(
+        address account,
+        uint256 soulBoundTokenIdBuyer,
+        address owner,
+        uint256 soulBoundTokenIdOwner,
+        uint256 expiration,
+        uint256 amount
+    ) external;
+
+    
 }

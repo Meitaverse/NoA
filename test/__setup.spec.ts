@@ -37,8 +37,8 @@ import {
   GovernorContract__factory,
   BankTreasury,
   BankTreasury__factory,
-  DerivativeNFTV1,
-  DerivativeNFTV1__factory,
+  DerivativeNFT,
+  DerivativeNFT__factory,
   NFTDerivativeProtocolTokenV1,
   NFTDerivativeProtocolTokenV2,
   NFTDerivativeProtocolTokenV1__factory,
@@ -114,6 +114,7 @@ export const MOCK_FOLLOW_NFT_URI =
 export const  RECEIVER_MAGIC_VALUE = '0x009ce20b';
 export const TreasuryFee = 50; 
 export const MARKET_MAX_DURATION = 86400000; //1000 days in seconds
+export const LOCKUP_DURATION = 86400; //24h in seconds
 
 export const INITIAL_SUPPLY = 1000000;  //SBT初始发行总量
 export const VOUCHER_AMOUNT_LIMIT = 100;  //用户用SBT兑换Voucher的最低数量 
@@ -156,7 +157,7 @@ export let marketPlaceImpl: MarketPlace
 export let marketPlaceContract: MarketPlace
 export let sbtImpl: NFTDerivativeProtocolTokenV1;
 export let sbtContract: NFTDerivativeProtocolTokenV1;
-export let derivativeNFTV1Impl: DerivativeNFTV1;
+export let derivativeNFTImpl: DerivativeNFT;
 export let metadataDescriptor: DerivativeMetadataDescriptor;
 export let sbtMetadataDescriptor: SBTMetadataDescriptor;
 
@@ -249,12 +250,12 @@ before(async function () {
   const managerProxyAddress = computeContractAddress(deployerAddress, nonce + 2); //'0x' + keccak256(RLP.encode([deployerAddress, hubProxyNonce])).substr(26);
   console.log("managerProxyAddress: ", managerProxyAddress);
 
-  derivativeNFTV1Impl = await new DerivativeNFTV1__factory(deployer).deploy(
+  derivativeNFTImpl = await new DerivativeNFT__factory(deployer).deploy(
     managerProxyAddress
   );
 
   managerImpl = await new Manager__factory(managerLibs, deployer).deploy(
-    derivativeNFTV1Impl.address,
+    derivativeNFTImpl.address,
     receiverMock.address,
   );
 
@@ -282,6 +283,7 @@ before(async function () {
     initializeVoucherData
   );
   voucherContract = new Voucher__factory(deployer).attach(voucherProxy.address);
+  console.log("voucherContract.address: ", voucherContract.address);
 
   //SBT descriptor
   sbtMetadataDescriptor = await new SBTMetadataDescriptor__factory(deployer).deploy(
@@ -305,6 +307,7 @@ before(async function () {
     initializeSBTData
   );
   sbtContract = new NFTDerivativeProtocolTokenV1__factory(sbtLibs, deployer).attach(sbtProxy.address);
+  console.log("sbtContract.address: ", sbtContract.address);
 
   const governorImpl = await new GovernorContract__factory(deployer).deploy();
   let initializeDataGovrnor = governorImpl.interface.encodeFunctionData("initialize", [
@@ -323,12 +326,15 @@ before(async function () {
   console.log("governorContract address: ", governorContract.address);
   
   const soulBoundTokenIdOfBankTreaury = FIRST_PROFILE_ID;
-  bankTreasuryImpl = await new BankTreasury__factory(deployer).deploy();
+  bankTreasuryImpl = await new BankTreasury__factory(deployer).deploy(
+  );
   let initializeData = bankTreasuryImpl.interface.encodeFunctionData("initialize", [
+    deployerAddress,
     governanceAddress,
     soulBoundTokenIdOfBankTreaury,
     [userAddress, userTwoAddress, userThreeAddress],
-    NUM_CONFIRMATIONS_REQUIRED  //All full signed 
+    NUM_CONFIRMATIONS_REQUIRED,  //All full signed 
+    LOCKUP_DURATION
   ]);
 
   const bankTreasuryProxy = await new ERC1967Proxy__factory(deployer).deploy(
@@ -336,6 +342,7 @@ before(async function () {
     initializeData
   );
   bankTreasuryContract = new BankTreasury__factory(deployer).attach(bankTreasuryProxy.address);
+  console.log("bankTreasuryContract.address: ", bankTreasuryContract.address);
   
   //market place
 
@@ -343,7 +350,12 @@ before(async function () {
   marketLibs = {
     'contracts/libraries/MarketLogic.sol:MarketLogic': marketLogic.address,
   };
-  marketPlaceImpl = await new MarketPlace__factory(marketLibs, deployer).deploy(MARKET_MAX_DURATION);
+  marketPlaceImpl = await new MarketPlace__factory(marketLibs, deployer).deploy(
+    manager.address,
+    bankTreasuryContract.address,
+    sbtContract.address,
+    MARKET_MAX_DURATION
+  );
   let marketPlaceData = marketPlaceImpl.interface.encodeFunctionData("initialize", [
     governanceAddress,
   ]);
@@ -353,17 +365,20 @@ before(async function () {
     marketPlaceData
   );
   marketPlaceContract = new MarketPlace__factory(marketLibs, deployer).attach(marketPlaceProxy.address);
+  console.log("marketPlaceContract.address: ", marketPlaceContract.address);
+  
 
   moduleGlobals = await new ModuleGlobals__factory(deployer).deploy(
     manager.address,
     sbtContract.address,
     governanceAddress,
     bankTreasuryContract.address,
-    voucherContract.address,
     marketPlaceContract.address,
+    voucherContract.address,
     TREASURY_FEE_BPS,
     PublishRoyaltySBT
   );
+  console.log("moduleGlobals.address: ", moduleGlobals.address);
   
   // Modules
   feeCollectModule = await new FeeCollectModule__factory(deployer).deploy(
@@ -390,7 +405,7 @@ before(async function () {
   expect(marketPlaceContract).to.not.be.undefined;
   expect(sbtContract).to.not.be.undefined;
   expect(receiverMock).to.not.be.undefined;
-  expect(derivativeNFTV1Impl).to.not.be.undefined;
+  expect(derivativeNFTImpl).to.not.be.undefined;
   expect(manager).to.not.be.undefined;
   expect(timeLock).to.not.be.undefined;
   expect(governorContract).to.not.be.undefined;
@@ -422,6 +437,9 @@ before(async function () {
 
   await bankTreasuryContract.connect(governance).setGlobalModule(moduleGlobals.address);
   console.log('bankTreasuryContract setGlobalModule ok ');
+
+  await bankTreasuryContract.connect(governance).setFoundationMarket(marketPlaceContract.address);
+  console.log('bankTreasuryContract setFoundationMarket ok ');
   
   await marketPlaceContract.connect(governance).setGlobalModule(moduleGlobals.address);
   console.log('marketPlaceContract setGlobalModule ok ');
@@ -454,6 +472,15 @@ before(async function () {
     sbtContract.connect(deployer).grantRole(transferValueRole, marketPlaceContract.address)
   ).to.not.be.reverted;
 
+  const feeModuleRole = await bankTreasuryContract.FEEMODULE_ROLE();
+
+  await expect(
+    bankTreasuryContract.connect(deployer).grantFeeModule(feeCollectModule.address)
+  ).to.not.be.reverted;
+  await expect(
+    bankTreasuryContract.connect(deployer).grantFeeModule(marketPlaceContract.address)
+  ).to.not.be.reverted;
+
 
   await expect(voucherContract.connect(deployer).setGlobalModule(moduleGlobals.address)).to.not.be.reverted;
   console.log('voucherContract setGlobalModule ok ');
@@ -484,7 +511,7 @@ before(async function () {
 
   expect(await manager.getWalletBySoulBoundTokenId(FIRST_PROFILE_ID)).to.eq(bankTreasuryContract.address);
 
-  expect((await derivativeNFTV1Impl.MANAGER()).toUpperCase()).to.eq(manager.address.toUpperCase());
+  expect((await derivativeNFTImpl.MANAGER()).toUpperCase()).to.eq(manager.address.toUpperCase());
 
   expect((await sbtContract.version()).toNumber()).to.eq(1);
   // expect((await sbtContract.getManager()).toUpperCase()).to.eq(manager.address.toUpperCase());

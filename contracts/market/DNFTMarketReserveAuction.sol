@@ -65,7 +65,6 @@ abstract contract DNFTMarketReserveAuction is
     _;
   }
 
-
   /**
    * @notice Configures the duration for auctions.
    * @param duration The duration for auctions, in seconds.
@@ -123,7 +122,11 @@ abstract contract DNFTMarketReserveAuction is
     uint256 reservePrice
   ) external onlyValidAuctionConfig(reservePrice) {
     _validUnitsAndAmount(units, reservePrice);
-    _validateCallerIsSoulBoundTokenOwner(soulBoundTokenId);
+    
+    address account = _getWallet(soulBoundTokenId);
+    if (account != msg.sender) {
+      revert Errors.NotProfileOwner();
+    }      
 
     uint256 auctionId = _getNextAndIncrementAuctionId();
 

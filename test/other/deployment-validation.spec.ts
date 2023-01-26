@@ -4,7 +4,7 @@ import {
   // CollectNFT__factory,
   // FeeFollowModule__factory,
   // FollowNFT__factory,
-  DerivativeNFTV1__factory,
+  DerivativeNFT__factory,
   NFTDerivativeProtocolTokenV1__factory,
   Manager__factory,
   ModuleGlobals__factory,
@@ -29,17 +29,18 @@ import {
   user,
   userAddress,
   receiverMock,
-  derivativeNFTV1Impl,
+  derivativeNFTImpl,
   sbtContract,
   bankTreasuryContract,
   PublishRoyaltySBT,
-  voucherContract
+  voucherContract,
+  marketPlaceContract
   
 } from '../__setup.spec';
 
 makeSuiteCleanRoom('deployment validation', () => {
 
-  it('Should fail to deploy a Manager implementation with zero address DerivativeNFTV1 impl', async function () {
+  it('Should fail to deploy a Manager implementation with zero address DerivativeNFT impl', async function () {
     await expect(
       new Manager__factory(managerLibs, deployer).deploy(ZERO_ADDRESS, receiverMock.address)
     ).to.be.revertedWith(ERRORS.INIT_PARAMS_INVALID);
@@ -47,7 +48,7 @@ makeSuiteCleanRoom('deployment validation', () => {
 
   it('Should fail to deploy a Manager implementation with zero address receiver impl', async function () {
     await expect(
-      new Manager__factory(managerLibs, deployer).deploy( derivativeNFTV1Impl.address, ZERO_ADDRESS)
+      new Manager__factory(managerLibs, deployer).deploy( derivativeNFTImpl.address, ZERO_ADDRESS)
     ).to.be.revertedWith(ERRORS.INIT_PARAMS_INVALID);
   });
 
@@ -73,7 +74,7 @@ makeSuiteCleanRoom('deployment validation', () => {
 
   it('Deployer should deploy a Manager implementation, a proxy, initialize it, and fail to initialize it again', async function () {
     const newImpl = await new Manager__factory(managerLibs, deployer).deploy(
-      derivativeNFTV1Impl.address,
+      derivativeNFTImpl.address,
       receiverMock.address,
     );
 
@@ -152,6 +153,7 @@ makeSuiteCleanRoom('deployment validation', () => {
         sbtContract.address,
         governanceAddress,
         bankTreasuryContract.address, 
+        marketPlaceContract.address,
         voucherContract.address,
         TREASURY_FEE_BPS,
         PublishRoyaltySBT
@@ -166,6 +168,7 @@ makeSuiteCleanRoom('deployment validation', () => {
         ZERO_ADDRESS,
         governanceAddress,
         bankTreasuryContract.address, 
+        marketPlaceContract.address,
         voucherContract.address,
         TREASURY_FEE_BPS,
         PublishRoyaltySBT
@@ -180,6 +183,7 @@ makeSuiteCleanRoom('deployment validation', () => {
         sbtContract.address,
         ZERO_ADDRESS, 
         bankTreasuryContract.address, 
+        marketPlaceContract.address,
         voucherContract.address,
         TREASURY_FEE_BPS,
         PublishRoyaltySBT
@@ -194,6 +198,7 @@ makeSuiteCleanRoom('deployment validation', () => {
         sbtContract.address,
         governanceAddress, 
         ZERO_ADDRESS, 
+        marketPlaceContract.address,
         voucherContract.address,
         TREASURY_FEE_BPS,
         PublishRoyaltySBT
@@ -208,6 +213,7 @@ makeSuiteCleanRoom('deployment validation', () => {
         sbtContract.address,
         governanceAddress, 
         bankTreasuryContract.address, 
+        marketPlaceContract.address,
         ZERO_ADDRESS, 
         TREASURY_FEE_BPS,
         PublishRoyaltySBT
@@ -222,6 +228,7 @@ makeSuiteCleanRoom('deployment validation', () => {
           sbtContract.address,
           governanceAddress, 
           bankTreasuryContract.address, 
+          marketPlaceContract.address,
           voucherContract.address,
           5001,
           PublishRoyaltySBT
@@ -237,6 +244,7 @@ makeSuiteCleanRoom('deployment validation', () => {
         sbtContract.address,
         governanceAddress, 
         bankTreasuryContract.address,  
+        marketPlaceContract.address,
         voucherContract.address,
         BPS_MAX,
         PublishRoyaltySBT
@@ -249,6 +257,7 @@ makeSuiteCleanRoom('deployment validation', () => {
         sbtContract.address,
         governanceAddress, 
         bankTreasuryContract.address, 
+        marketPlaceContract.address,
         voucherContract.address,
         BPS_MAX + 1,
         PublishRoyaltySBT

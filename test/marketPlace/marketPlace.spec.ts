@@ -4,8 +4,8 @@ import '@nomiclabs/hardhat-ethers';
 import { expect } from 'chai';
 import { 
   ERC20__factory,
-  DerivativeNFTV1,
-  DerivativeNFTV1__factory,
+  DerivativeNFT,
+  DerivativeNFT__factory,
  } from '../../typechain';
 import { MAX_UINT256, ZERO_ADDRESS } from '../helpers/constants';
 import { ERRORS } from '../helpers/errors';
@@ -62,7 +62,7 @@ import {
   marketPlaceContract
 } from '../__setup.spec';
 
-let derivativeNFT: DerivativeNFTV1;
+let derivativeNFT: DerivativeNFT;
 
 const Default_royaltyBasisPoints = 50; //
 const SALE_ID = 1;
@@ -142,7 +142,7 @@ makeSuiteCleanRoom('Market Place', function () {
     expect(projectInfo.metadataURI).to.eq("metadataURI");
     expect(projectInfo.descriptor.toUpperCase()).to.eq(metadataDescriptor.address.toUpperCase());
 
-    derivativeNFT = DerivativeNFTV1__factory.connect(
+    derivativeNFT = DerivativeNFT__factory.connect(
       await manager.getDerivativeNFT(FIRST_PROJECT_ID),
       user
     );

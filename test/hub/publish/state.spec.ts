@@ -48,7 +48,7 @@ import {
   THIRD_PROFILE_ID,
   
 } from '../../__setup.spec';
-import { DerivativeNFTV1, DerivativeNFTV1__factory } from '../../../typechain';
+import { DerivativeNFT, DerivativeNFT__factory } from '../../../typechain';
 
 const Default_royaltyBasisPoints = 50; //
 
@@ -712,7 +712,6 @@ makeSuiteCleanRoom('Multi state', function () {
                 })
             ).to.not.be.reverted;
 
-            
             await expect(
                     manager.connect(user).publish(
                     FIRST_PUBLISH_ID,
@@ -721,8 +720,8 @@ makeSuiteCleanRoom('Multi state', function () {
 
             await manager.connect(governance).setDerivativeNFTState(FIRST_PROJECT_ID, DerivativeNFTState.Paused);
             
-            let derivativeNFT: DerivativeNFTV1;
-            derivativeNFT = DerivativeNFTV1__factory.connect(
+            let derivativeNFT: DerivativeNFT;
+            derivativeNFT = DerivativeNFT__factory.connect(
               await manager.connect(user).getDerivativeNFT(FIRST_PROJECT_ID),
               user
             );
@@ -776,8 +775,8 @@ makeSuiteCleanRoom('Multi state', function () {
 
             await manager.connect(governance).setDerivativeNFTState(FIRST_PROJECT_ID, DerivativeNFTState.Paused);
             
-            let derivativeNFT: DerivativeNFTV1;
-            derivativeNFT = DerivativeNFTV1__factory.connect(
+            let derivativeNFT: DerivativeNFT;
+            derivativeNFT = DerivativeNFT__factory.connect(
               await manager.connect(user).getDerivativeNFT(FIRST_PROJECT_ID),
               user
             );

@@ -75,15 +75,6 @@ contract BankTreasury is
     /// @notice Stores per-account details.
     mapping(uint256 => DataTypes.AccountInfo) private accountToInfo;
 
-    // Lockup configuration
-    /// @notice The minimum lockup period in seconds.
-    uint256 private immutable lockupDuration;
-    /// @notice The interval to which lockup expiries are rounded, limiting the max number of outstanding lockup buckets.
-    uint256 private immutable lockupInterval;
-
-    /// @notice The Foundation market contract with permissions to manage lockups.
-    address payable private immutable foundationMarket;
-
     /**
      * @dev This modifier reverts if the caller is not the configured governance address.
      */
@@ -91,14 +82,6 @@ contract BankTreasury is
         _validateCallerIsGovernance();
         _;
     }
-
-    /**
-     * @dev This modifier reverts if the caller is not the configured manager address.
-     */
-    // modifier onlyManager() {
-    //     _validateCallerIsManager();
-    //     _;
-    // }
 
     modifier onlySigner() {
         _validateCallerIsSigner();
@@ -122,34 +105,33 @@ contract BankTreasury is
 
     /// @dev Allows the Foundation market permission to manage lockups for a user.
     modifier onlyFoundationMarket() {
-        if (msg.sender != foundationMarket) {
+        if (msg.sender != _foundationMarket) {
             revert Errors.Only_BITSOUL_Market_Allowed();
         }
         _;
     }
 
     /// @custom:oz-upgrades-unsafe-allow constructor
-    constructor(address payable _foundationMarket, uint256 _lockupDuration) initializer {
-        foundationMarket = _foundationMarket;
-        lockupDuration = _lockupDuration;
-        lockupInterval = _lockupDuration / 24;
-        if (lockupInterval * 24 != _lockupDuration || _lockupDuration == 0) {
-            revert Errors.Invalid_Lockup_Duration();
-        }
-    }
+    constructor() initializer {}
 
     function initialize(
         address admin,
         address governance,
         uint256 soulBoundTokenId,
         address[] memory signers,
-        uint256 _numConfirmationsRequired
+        uint256 _numConfirmationsRequired,
+        uint256 _lockupDuration
     ) external override initializer {
         AdminRoleEnumerable._initializeAdminRole(admin);
         __Pausable_init();
         __UUPSUpgradeable_init();
         ReentrancyGuardUpgradeable.__ReentrancyGuard_init();
 
+        lockupDuration = _lockupDuration;
+        lockupInterval = _lockupDuration / 24;
+        if (lockupInterval * 24 != _lockupDuration || _lockupDuration == 0) {
+            revert Errors.Invalid_Lockup_Duration();
+        }
         if (governance == address(0)) revert Errors.InitParamsInvalid();
         _setGovernance(governance);
 
@@ -188,6 +170,11 @@ contract BankTreasury is
         MODULE_GLOBALS = moduleGlobals;
     }
 
+    function setFoundationMarket(address payable newFoundationMarket) external onlyGov {
+        if (newFoundationMarket == address(0)) revert Errors.InitParamsInvalid();
+        _setFoundationMarket(newFoundationMarket);
+    }
+
     function getGlobalModule() external view returns (address) {
         return MODULE_GLOBALS;
     }
@@ -208,6 +195,10 @@ contract BankTreasury is
     function getSBT() external view returns (address) {
         address _sbt = IModuleGlobals(MODULE_GLOBALS).getSBT();
         return _sbt;
+    }
+
+    function getLockupDuration() external view returns(uint256) {
+        return lockupDuration;
     }
 
     function pause() public onlyAdmin {
@@ -487,7 +478,11 @@ contract BankTreasury is
         return address(this).balance;
     }
     
-    //testing
+    /**
+     * @notice Withdraw the total free amount of balance
+     * @param soulBoundTokenId The soulBoundTokenId of caller.
+     * @param amount The total amount of balance, not include locked.
+     */
     function withdrawERC3525(uint256 soulBoundTokenId, uint256 amount) 
         external 
         whenNotPaused 
@@ -600,15 +595,19 @@ contract BankTreasury is
         emit Events.ExchangeEthBySBT(soulBoundTokenId, _to, sbtValue, _exchangePrice, ethAmount, block.timestamp);
     }
 
-    function exchangeVoucher(uint256 tokenId, uint256 soulBoundTokenId) external whenNotPaused nonReentrant {
+    function exchangeVoucher(
+        uint256 tokenId, 
+        uint256 soulBoundTokenId
+        ) 
+        external 
+        whenNotPaused 
+        nonReentrant 
+    {
+        _validateCallerIsSoulBoundTokenOwner(soulBoundTokenId);
 
         address _sbt = IModuleGlobals(MODULE_GLOBALS).getSBT();
         address _voucher = IModuleGlobals(MODULE_GLOBALS).getVoucher();
-        //isvalid
-        if (IERC3525(_sbt).ownerOf(soulBoundTokenId) != msg.sender) {
-            revert Errors.Unauthorized();
-        }
-
+   
         DataTypes.VoucherData memory voucherData = IVoucher(_voucher).getVoucherData(tokenId);
         if (voucherData.tokenId == 0) revert Errors.VoucherNotExists();
         if (voucherData.isUsed) revert Errors.VoucherIsUsed();
@@ -633,7 +632,7 @@ contract BankTreasury is
     {
         // valid caller is only have fee module grant role or is foundationMarket
 
-        if (!( isFeeModule(msg.sender) || msg.sender == foundationMarket )) {
+        if (!( isFeeModule(msg.sender) || msg.sender == _foundationMarket )) {
             revert Errors.Only_BITSOUL_Market_Allowed();
         }
 
@@ -689,17 +688,20 @@ contract BankTreasury is
      * @notice Used by the market contract only:
      * Lockup an account's earnest money for 24-25 hours.
      * @dev Used by the market when a new offer for an DNFT is made.
-     * @param soulBoundTokenId The soulBoundTokenId to which the funds are to be deposited for (via the `onERC3525Received()`) and tokens locked up.
+     * @param account The address
+     * @param soulBoundTokenId The soulBoundTokenId of account
      * @param amount The number of earnest money to be locked up for the `lockupFor`'s account.
      * @return expiration The expiration timestamp for the earnest money  that were locked.
      */
     function marketLockupFor(
+        address account,
         uint256 soulBoundTokenId,
         uint256 amount
     ) external whenNotPaused nonReentrant onlyFoundationMarket returns (uint256 expiration) {
-        return _marketLockupFor(soulBoundTokenId, amount);
-    }
 
+        return _marketLockupFor(account, soulBoundTokenId, amount);
+    }
+ 
     function marketChangeLockup(
         uint256 unlockFromSoulBoundTokenId,
         uint256 unlockExpiration,
@@ -707,17 +709,24 @@ contract BankTreasury is
         uint256 lockupForSoulBoundTokenId,
         uint256 lockupAmount
     ) external whenNotPaused nonReentrant onlyFoundationMarket returns (uint256 expiration) {
-        _marketUnlockFor(unlockFromSoulBoundTokenId, unlockExpiration, unlockAmount);
-        return _marketLockupFor(lockupForSoulBoundTokenId, lockupAmount);
+
+        address _sbt = IModuleGlobals(MODULE_GLOBALS).getSBT();
+        address unlockFrom = IERC3525(_sbt).ownerOf(unlockFromSoulBoundTokenId);
+        address lockupFor = IERC3525(_sbt).ownerOf(lockupForSoulBoundTokenId);
+        _marketUnlockFor(unlockFrom, unlockFromSoulBoundTokenId, unlockExpiration, unlockAmount);
+
+        return _marketLockupFor(lockupFor, lockupForSoulBoundTokenId, lockupAmount);
     }
 
     function marketWithdrawLocked(
+        address account,
         uint256 soulBoundTokenIdBuyer,
+        address owner,
         uint256 soulBoundTokenIdOwner,
         uint256 expiration,
         uint256 amount
     ) external whenNotPaused nonReentrant onlyFoundationMarket {
-        _removeFromLockedBalance(soulBoundTokenIdBuyer, expiration, amount);
+        _removeFromLockedBalance(account, soulBoundTokenIdBuyer, expiration, amount);
 
         DataTypes.AccountInfo storage accountInfoBuyer = accountToInfo[soulBoundTokenIdBuyer];
         _deductBalanceFrom(accountInfoBuyer, amount);
@@ -725,15 +734,16 @@ contract BankTreasury is
         DataTypes.AccountInfo storage accountInfoOwner = accountToInfo[soulBoundTokenIdOwner];
         _addBalanceTo(accountInfoOwner, amount);
 
-        emit Events.OfferWithdrawn(soulBoundTokenIdBuyer, soulBoundTokenIdOwner, msg.sender, amount);
+        emit Events.OfferWithdrawn(account, soulBoundTokenIdBuyer, owner, soulBoundTokenIdOwner, amount);
     }
 
     function marketUnlockFor(
+        address account,
         uint256 soulBoundTokenId,
         uint256 expiration,
         uint256 amount
     ) external whenNotPaused nonReentrant onlyFoundationMarket {
-        _marketUnlockFor(soulBoundTokenId, expiration, amount);
+        _marketUnlockFor(account, soulBoundTokenId, expiration, amount);
     }
 
     //--- internal  ---//
@@ -741,14 +751,13 @@ contract BankTreasury is
         _governance = newGovernance;
     }
 
+    function _setFoundationMarket(address payable newFoundationMarket) internal {
+        _foundationMarket = newFoundationMarket;
+    }
+
     function _validateCallerIsGovernance() internal view {
         if (msg.sender != _governance) revert Errors.NotGovernance();
     }
-
-    // function _validateCallerIsManager() internal view {
-    //     address _manager = IModuleGlobals(MODULE_GLOBALS).getManager();
-    //     if (msg.sender != _manager) revert Errors.NotManager();
-    // }
 
     function _validateCallerIsSigner() internal view {
         if (!_isSigner[msg.sender]) revert Errors.NotSinger();
@@ -823,7 +832,7 @@ contract BankTreasury is
      * @notice Lockup an account's earnest money for 24-25 hours.
      */
     /* solhint-disable-next-line code-complexity */
-    function _marketLockupFor(uint256 soulBoundTokenId, uint256 amount) private returns (uint256 expiration) {
+    function _marketLockupFor(address account, uint256 soulBoundTokenId, uint256 amount) private returns (uint256 expiration) {
         if (soulBoundTokenId == 0) {
             revert Errors.Cannot_Deposit_For_Lockup_With_SoulBoundTokenId_Zero();
         }
@@ -866,7 +875,7 @@ contract BankTreasury is
             _deductBalanceFrom(_freeFromEscrow(soulBoundTokenId), amount);
         }
 
-        emit Events.BalanceLocked(soulBoundTokenId, expiration, amount, msg.value);
+        emit Events.BalanceLocked(account, soulBoundTokenId, expiration, amount, msg.value);
     }
 
     /**
@@ -943,8 +952,8 @@ contract BankTreasury is
     /**
      * @notice Remove an soulBoundTokenId's lockup, making the earnest money available for transfer or withdrawal.
      */
-    function _marketUnlockFor(uint256 soulBoundTokenId, uint256 expiration, uint256 amount) private {
-        DataTypes.AccountInfo storage accountInfo = _removeFromLockedBalance(soulBoundTokenId, expiration, amount);
+    function _marketUnlockFor(address account, uint256 soulBoundTokenId, uint256 expiration, uint256 amount) private {
+        DataTypes.AccountInfo storage accountInfo = _removeFromLockedBalance(account, soulBoundTokenId, expiration, amount);
         // Total SBT Value cannot realistically overflow 96 bits.
         unchecked {
             accountInfo.freedBalance += uint96(amount);
@@ -956,6 +965,7 @@ contract BankTreasury is
      */
     /* solhint-disable-next-line code-complexity */
     function _removeFromLockedBalance(
+        address account,
         uint256 soulBoundTokenId,
         uint256 expiration,
         uint256 amount
@@ -1014,7 +1024,7 @@ contract BankTreasury is
             }
         }
 
-        emit Events.BalanceUnlocked(soulBoundTokenId, expiration, amount);
+        emit Events.BalanceUnlocked(account, soulBoundTokenId, expiration, amount);
         return accountInfo;
     }
 

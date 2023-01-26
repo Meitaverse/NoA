@@ -26,7 +26,7 @@ import {
   managerLibs,
   userAddress,
   userTwoAddress,
-  derivativeNFTV1Impl,
+  derivativeNFTImpl,
   receiverMock,
   governanceAddress,
   sbtContract,

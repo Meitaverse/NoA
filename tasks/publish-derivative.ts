@@ -3,8 +3,8 @@ import { HardhatRuntimeEnvironment } from 'hardhat/types';
 import { parseEther } from '@ethersproject/units';
 
 import {
-  DerivativeNFTV1,
-  DerivativeNFTV1__factory,
+  DerivativeNFT,
+  DerivativeNFT__factory,
   FeeCollectModule,
   FeeCollectModule__factory,
   PublishLogic__factory,
@@ -92,8 +92,8 @@ task("publish-derivative", "publish-derivative function")
     
     console.log('\n\t-- creator: ', creator.address);
   
-    let derivativeNFT: DerivativeNFTV1;
-    derivativeNFT = DerivativeNFTV1__factory.connect(
+    let derivativeNFT: DerivativeNFT;
+    derivativeNFT = DerivativeNFT__factory.connect(
       await manager.connect(user).getDerivativeNFT(projectid),
       user
       );

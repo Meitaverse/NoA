@@ -9,7 +9,7 @@ import {StringsUpgradeable} from "@openzeppelin/contracts-upgradeable/utils/Stri
 import {Base64Upgradeable} from "@openzeppelin/contracts-upgradeable/utils/Base64Upgradeable.sol";
 import {IERC3525MetadataDescriptor} from "@solvprotocol/erc-3525/contracts/periphery/interface/IERC3525MetadataDescriptor.sol";
 import {StringConvertor} from "../utils/StringConvertor.sol";
-import "../interfaces/IDerivativeNFTV1.sol";
+import "../interfaces/IDerivativeNFT.sol";
 import {DataTypes} from '../libraries/DataTypes.sol';
 import {IModuleGlobals} from "../interfaces/IModuleGlobals.sol";
 import {IManager} from "../interfaces/IManager.sol";
@@ -114,7 +114,7 @@ contract DerivativeMetadataDescriptor is IERC3525MetadataDescriptor {
   }
 
   function _slotDetail(uint256 slot_) internal view returns (DataTypes.SlotDetail memory) {
-    DataTypes.SlotDetail memory slotDetail = IDerivativeNFTV1(msg.sender).getSlotDetail(slot_);
+    DataTypes.SlotDetail memory slotDetail = IDerivativeNFT(msg.sender).getSlotDetail(slot_);
     return slotDetail;
   }
 

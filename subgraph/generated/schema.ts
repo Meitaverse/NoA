@@ -69,6 +69,15 @@ export class Profile extends Entity {
     this.set("wallet", Value.fromBytes(value));
   }
 
+  get account(): string {
+    let value = this.get("account");
+    return value!.toString();
+  }
+
+  set account(value: string) {
+    this.set("account", Value.fromString(value));
+  }
+
   get nickName(): string {
     let value = this.get("nickName");
     return value!.toString();
@@ -4480,6 +4489,23 @@ export class Account extends Entity {
     this.set("id", Value.fromString(value));
   }
 
+  get profile(): string | null {
+    let value = this.get("profile");
+    if (!value || value.kind == ValueKind.NULL) {
+      return null;
+    } else {
+      return value.toString();
+    }
+  }
+
+  set profile(value: string | null) {
+    if (!value) {
+      this.unset("profile");
+    } else {
+      this.set("profile", Value.fromString(<string>value));
+    }
+  }
+
   get creator(): string | null {
     let value = this.get("creator");
     if (!value || value.kind == ValueKind.NULL) {
@@ -4560,22 +4586,22 @@ export class Account extends Entity {
     this.set("nftTransfersIn", Value.fromStringArray(value));
   }
 
-  get netRevenueInETH(): BigDecimal {
-    let value = this.get("netRevenueInETH");
+  get netRevenueInSBTValue(): BigDecimal {
+    let value = this.get("netRevenueInSBTValue");
     return value!.toBigDecimal();
   }
 
-  set netRevenueInETH(value: BigDecimal) {
-    this.set("netRevenueInETH", Value.fromBigDecimal(value));
+  set netRevenueInSBTValue(value: BigDecimal) {
+    this.set("netRevenueInSBTValue", Value.fromBigDecimal(value));
   }
 
-  get netRevenuePendingInETH(): BigDecimal {
-    let value = this.get("netRevenuePendingInETH");
+  get netRevenuePendingInSBTValue(): BigDecimal {
+    let value = this.get("netRevenuePendingInSBTValue");
     return value!.toBigDecimal();
   }
 
-  set netRevenuePendingInETH(value: BigDecimal) {
-    this.set("netRevenuePendingInETH", Value.fromBigDecimal(value));
+  set netRevenuePendingInSBTValue(value: BigDecimal) {
+    this.set("netRevenuePendingInSBTValue", Value.fromBigDecimal(value));
   }
 
   get nftAccountApprovals(): Array<string> {
@@ -4596,13 +4622,13 @@ export class Account extends Entity {
     this.set("nftHistory", Value.fromStringArray(value));
   }
 
-  get feth(): Array<string> {
-    let value = this.get("feth");
+  get fsbt(): Array<string> {
+    let value = this.get("fsbt");
     return value!.toStringArray();
   }
 
-  set feth(value: Array<string>) {
-    this.set("feth", Value.fromStringArray(value));
+  set fsbt(value: Array<string>) {
+    this.set("fsbt", Value.fromStringArray(value));
   }
 
   get nftOffersMade(): Array<string> {
@@ -4664,40 +4690,40 @@ export class Creator extends Entity {
     this.set("nfts", Value.fromStringArray(value));
   }
 
-  get netSalesInETH(): BigDecimal {
-    let value = this.get("netSalesInETH");
+  get netSalesInSBTValue(): BigDecimal {
+    let value = this.get("netSalesInSBTValue");
     return value!.toBigDecimal();
   }
 
-  set netSalesInETH(value: BigDecimal) {
-    this.set("netSalesInETH", Value.fromBigDecimal(value));
+  set netSalesInSBTValue(value: BigDecimal) {
+    this.set("netSalesInSBTValue", Value.fromBigDecimal(value));
   }
 
-  get netSalesPendingInETH(): BigDecimal {
-    let value = this.get("netSalesPendingInETH");
+  get netSalesPendingInSBTValue(): BigDecimal {
+    let value = this.get("netSalesPendingInSBTValue");
     return value!.toBigDecimal();
   }
 
-  set netSalesPendingInETH(value: BigDecimal) {
-    this.set("netSalesPendingInETH", Value.fromBigDecimal(value));
+  set netSalesPendingInSBTValue(value: BigDecimal) {
+    this.set("netSalesPendingInSBTValue", Value.fromBigDecimal(value));
   }
 
-  get netRevenueInETH(): BigDecimal {
-    let value = this.get("netRevenueInETH");
+  get netRevenueInSBTValue(): BigDecimal {
+    let value = this.get("netRevenueInSBTValue");
     return value!.toBigDecimal();
   }
 
-  set netRevenueInETH(value: BigDecimal) {
-    this.set("netRevenueInETH", Value.fromBigDecimal(value));
+  set netRevenueInSBTValue(value: BigDecimal) {
+    this.set("netRevenueInSBTValue", Value.fromBigDecimal(value));
   }
 
-  get netRevenuePendingInETH(): BigDecimal {
-    let value = this.get("netRevenuePendingInETH");
+  get netRevenuePendingInSBTValue(): BigDecimal {
+    let value = this.get("netRevenuePendingInSBTValue");
     return value!.toBigDecimal();
   }
 
-  set netRevenuePendingInETH(value: BigDecimal) {
-    this.set("netRevenuePendingInETH", Value.fromBigDecimal(value));
+  set netRevenuePendingInSBTValue(value: BigDecimal) {
+    this.set("netRevenuePendingInSBTValue", Value.fromBigDecimal(value));
   }
 }
 
@@ -4985,40 +5011,40 @@ export class DNFT extends Entity {
     this.set("bids", Value.fromStringArray(value));
   }
 
-  get netSalesInETH(): BigDecimal {
-    let value = this.get("netSalesInETH");
+  get netSalesInSBTValue(): BigDecimal {
+    let value = this.get("netSalesInSBTValue");
     return value!.toBigDecimal();
   }
 
-  set netSalesInETH(value: BigDecimal) {
-    this.set("netSalesInETH", Value.fromBigDecimal(value));
+  set netSalesInSBTValue(value: BigDecimal) {
+    this.set("netSalesInSBTValue", Value.fromBigDecimal(value));
   }
 
-  get netSalesPendingInETH(): BigDecimal {
-    let value = this.get("netSalesPendingInETH");
+  get netSalesPendingInSBTValue(): BigDecimal {
+    let value = this.get("netSalesPendingInSBTValue");
     return value!.toBigDecimal();
   }
 
-  set netSalesPendingInETH(value: BigDecimal) {
-    this.set("netSalesPendingInETH", Value.fromBigDecimal(value));
+  set netSalesPendingInSBTValue(value: BigDecimal) {
+    this.set("netSalesPendingInSBTValue", Value.fromBigDecimal(value));
   }
 
-  get netRevenueInETH(): BigDecimal {
-    let value = this.get("netRevenueInETH");
+  get netRevenueInSBTValue(): BigDecimal {
+    let value = this.get("netRevenueInSBTValue");
     return value!.toBigDecimal();
   }
 
-  set netRevenueInETH(value: BigDecimal) {
-    this.set("netRevenueInETH", Value.fromBigDecimal(value));
+  set netRevenueInSBTValue(value: BigDecimal) {
+    this.set("netRevenueInSBTValue", Value.fromBigDecimal(value));
   }
 
-  get netRevenuePendingInETH(): BigDecimal {
-    let value = this.get("netRevenuePendingInETH");
+  get netRevenuePendingInSBTValue(): BigDecimal {
+    let value = this.get("netRevenuePendingInSBTValue");
     return value!.toBigDecimal();
   }
 
-  set netRevenuePendingInETH(value: BigDecimal) {
-    this.set("netRevenuePendingInETH", Value.fromBigDecimal(value));
+  set netRevenuePendingInSBTValue(value: BigDecimal) {
+    this.set("netRevenuePendingInSBTValue", Value.fromBigDecimal(value));
   }
 
   get isFirstSale(): boolean {
@@ -5133,8 +5159,8 @@ export class DNFT extends Entity {
     }
   }
 
-  get lastSalePriceInETH(): BigDecimal | null {
-    let value = this.get("lastSalePriceInETH");
+  get lastSalePriceInSBTValue(): BigDecimal | null {
+    let value = this.get("lastSalePriceInSBTValue");
     if (!value || value.kind == ValueKind.NULL) {
       return null;
     } else {
@@ -5142,11 +5168,14 @@ export class DNFT extends Entity {
     }
   }
 
-  set lastSalePriceInETH(value: BigDecimal | null) {
+  set lastSalePriceInSBTValue(value: BigDecimal | null) {
     if (!value) {
-      this.unset("lastSalePriceInETH");
+      this.unset("lastSalePriceInSBTValue");
     } else {
-      this.set("lastSalePriceInETH", Value.fromBigDecimal(<BigDecimal>value));
+      this.set(
+        "lastSalePriceInSBTValue",
+        Value.fromBigDecimal(<BigDecimal>value)
+      );
     }
   }
 
@@ -5591,13 +5620,13 @@ export class NftMarketAuction extends Entity {
     }
   }
 
-  get reservePriceInETH(): BigDecimal {
-    let value = this.get("reservePriceInETH");
+  get reservePriceInSBTValue(): BigDecimal {
+    let value = this.get("reservePriceInSBTValue");
     return value!.toBigDecimal();
   }
 
-  set reservePriceInETH(value: BigDecimal) {
-    this.set("reservePriceInETH", Value.fromBigDecimal(value));
+  set reservePriceInSBTValue(value: BigDecimal) {
+    this.set("reservePriceInSBTValue", Value.fromBigDecimal(value));
   }
 
   get initialBid(): string | null {
@@ -5643,8 +5672,8 @@ export class NftMarketAuction extends Entity {
     this.set("bids", Value.fromStringArray(value));
   }
 
-  get creatorRevenueInETH(): BigDecimal | null {
-    let value = this.get("creatorRevenueInETH");
+  get creatorRevenueInSBTValue(): BigDecimal | null {
+    let value = this.get("creatorRevenueInSBTValue");
     if (!value || value.kind == ValueKind.NULL) {
       return null;
     } else {
@@ -5652,36 +5681,19 @@ export class NftMarketAuction extends Entity {
     }
   }
 
-  set creatorRevenueInETH(value: BigDecimal | null) {
+  set creatorRevenueInSBTValue(value: BigDecimal | null) {
     if (!value) {
-      this.unset("creatorRevenueInETH");
-    } else {
-      this.set("creatorRevenueInETH", Value.fromBigDecimal(<BigDecimal>value));
-    }
-  }
-
-  get foundationRevenueInETH(): BigDecimal | null {
-    let value = this.get("foundationRevenueInETH");
-    if (!value || value.kind == ValueKind.NULL) {
-      return null;
-    } else {
-      return value.toBigDecimal();
-    }
-  }
-
-  set foundationRevenueInETH(value: BigDecimal | null) {
-    if (!value) {
-      this.unset("foundationRevenueInETH");
+      this.unset("creatorRevenueInSBTValue");
     } else {
       this.set(
-        "foundationRevenueInETH",
+        "creatorRevenueInSBTValue",
         Value.fromBigDecimal(<BigDecimal>value)
       );
     }
   }
 
-  get ownerRevenueInETH(): BigDecimal | null {
-    let value = this.get("ownerRevenueInETH");
+  get previousCreatorRevenueInSBTValue(): BigDecimal | null {
+    let value = this.get("previousCreatorRevenueInSBTValue");
     if (!value || value.kind == ValueKind.NULL) {
       return null;
     } else {
@@ -5689,11 +5701,54 @@ export class NftMarketAuction extends Entity {
     }
   }
 
-  set ownerRevenueInETH(value: BigDecimal | null) {
+  set previousCreatorRevenueInSBTValue(value: BigDecimal | null) {
     if (!value) {
-      this.unset("ownerRevenueInETH");
+      this.unset("previousCreatorRevenueInSBTValue");
     } else {
-      this.set("ownerRevenueInETH", Value.fromBigDecimal(<BigDecimal>value));
+      this.set(
+        "previousCreatorRevenueInSBTValue",
+        Value.fromBigDecimal(<BigDecimal>value)
+      );
+    }
+  }
+
+  get foundationRevenueInSBTValue(): BigDecimal | null {
+    let value = this.get("foundationRevenueInSBTValue");
+    if (!value || value.kind == ValueKind.NULL) {
+      return null;
+    } else {
+      return value.toBigDecimal();
+    }
+  }
+
+  set foundationRevenueInSBTValue(value: BigDecimal | null) {
+    if (!value) {
+      this.unset("foundationRevenueInSBTValue");
+    } else {
+      this.set(
+        "foundationRevenueInSBTValue",
+        Value.fromBigDecimal(<BigDecimal>value)
+      );
+    }
+  }
+
+  get ownerRevenueInSBTValue(): BigDecimal | null {
+    let value = this.get("ownerRevenueInSBTValue");
+    if (!value || value.kind == ValueKind.NULL) {
+      return null;
+    } else {
+      return value.toBigDecimal();
+    }
+  }
+
+  set ownerRevenueInSBTValue(value: BigDecimal | null) {
+    if (!value) {
+      this.unset("ownerRevenueInSBTValue");
+    } else {
+      this.set(
+        "ownerRevenueInSBTValue",
+        Value.fromBigDecimal(<BigDecimal>value)
+      );
     }
   }
 
@@ -5733,13 +5788,13 @@ export class NftMarketAuction extends Entity {
     this.set("numberOfBids", Value.fromBigInt(value));
   }
 
-  get bidVolumeInETH(): BigDecimal {
-    let value = this.get("bidVolumeInETH");
+  get bidVolumeInSBTValue(): BigDecimal {
+    let value = this.get("bidVolumeInSBTValue");
     return value!.toBigDecimal();
   }
 
-  set bidVolumeInETH(value: BigDecimal) {
-    this.set("bidVolumeInETH", Value.fromBigDecimal(value));
+  set bidVolumeInSBTValue(value: BigDecimal) {
+    this.set("bidVolumeInSBTValue", Value.fromBigDecimal(value));
   }
 
   get dateInvalidated(): BigInt | null {
@@ -5827,8 +5882,8 @@ export class NftMarketAuction extends Entity {
     }
   }
 
-  get foundationProtocolFeeInETH(): BigDecimal | null {
-    let value = this.get("foundationProtocolFeeInETH");
+  get foundationProtocolFeeInSBTValue(): BigDecimal | null {
+    let value = this.get("foundationProtocolFeeInSBTValue");
     if (!value || value.kind == ValueKind.NULL) {
       return null;
     } else {
@@ -5836,12 +5891,12 @@ export class NftMarketAuction extends Entity {
     }
   }
 
-  set foundationProtocolFeeInETH(value: BigDecimal | null) {
+  set foundationProtocolFeeInSBTValue(value: BigDecimal | null) {
     if (!value) {
-      this.unset("foundationProtocolFeeInETH");
+      this.unset("foundationProtocolFeeInSBTValue");
     } else {
       this.set(
-        "foundationProtocolFeeInETH",
+        "foundationProtocolFeeInSBTValue",
         Value.fromBigDecimal(<BigDecimal>value)
       );
     }
@@ -5924,13 +5979,13 @@ export class NftMarketBid extends Entity {
     this.set("transactionHashPlaced", Value.fromBytes(value));
   }
 
-  get amountInETH(): BigDecimal {
-    let value = this.get("amountInETH");
+  get amountInSBTValue(): BigDecimal {
+    let value = this.get("amountInSBTValue");
     return value!.toBigDecimal();
   }
 
-  set amountInETH(value: BigDecimal) {
-    this.set("amountInETH", Value.fromBigDecimal(value));
+  set amountInSBTValue(value: BigDecimal) {
+    this.set("amountInSBTValue", Value.fromBigDecimal(value));
   }
 
   get status(): string {
@@ -6228,8 +6283,8 @@ export class NftHistory extends Entity {
     }
   }
 
-  get amountInETH(): BigDecimal | null {
-    let value = this.get("amountInETH");
+  get amountInSBTValue(): BigDecimal | null {
+    let value = this.get("amountInSBTValue");
     if (!value || value.kind == ValueKind.NULL) {
       return null;
     } else {
@@ -6237,11 +6292,11 @@ export class NftHistory extends Entity {
     }
   }
 
-  set amountInETH(value: BigDecimal | null) {
+  set amountInSBTValue(value: BigDecimal | null) {
     if (!value) {
-      this.unset("amountInETH");
+      this.unset("amountInSBTValue");
     } else {
-      this.set("amountInETH", Value.fromBigDecimal(<BigDecimal>value));
+      this.set("amountInSBTValue", Value.fromBigDecimal(<BigDecimal>value));
     }
   }
 
@@ -6511,8 +6566,8 @@ export class FixedPriceSaleMint extends Entity {
     }
   }
 
-  get amountInETH(): BigDecimal | null {
-    let value = this.get("amountInETH");
+  get amountInSBTValue(): BigDecimal | null {
+    let value = this.get("amountInSBTValue");
     if (!value || value.kind == ValueKind.NULL) {
       return null;
     } else {
@@ -6520,11 +6575,11 @@ export class FixedPriceSaleMint extends Entity {
     }
   }
 
-  set amountInETH(value: BigDecimal | null) {
+  set amountInSBTValue(value: BigDecimal | null) {
     if (!value) {
-      this.unset("amountInETH");
+      this.unset("amountInSBTValue");
     } else {
-      this.set("amountInETH", Value.fromBigDecimal(<BigDecimal>value));
+      this.set("amountInSBTValue", Value.fromBigDecimal(<BigDecimal>value));
     }
   }
 
@@ -6621,13 +6676,13 @@ export class FixedPriceSale extends Entity {
     this.set("seller", Value.fromString(value));
   }
 
-  get unitPriceInETH(): BigDecimal {
-    let value = this.get("unitPriceInETH");
+  get unitPriceInSBTValue(): BigDecimal {
+    let value = this.get("unitPriceInSBTValue");
     return value!.toBigDecimal();
   }
 
-  set unitPriceInETH(value: BigDecimal) {
-    this.set("unitPriceInETH", Value.fromBigDecimal(value));
+  set unitPriceInSBTValue(value: BigDecimal) {
+    this.set("unitPriceInSBTValue", Value.fromBigDecimal(value));
   }
 
   get limitPerAccount(): BigInt {
@@ -6682,13 +6737,13 @@ export class FixedPriceSale extends Entity {
     this.set("mintCount", Value.fromBigInt(value));
   }
 
-  get amountInETH(): BigDecimal {
-    let value = this.get("amountInETH");
+  get amountInSBTValue(): BigDecimal {
+    let value = this.get("amountInSBTValue");
     return value!.toBigDecimal();
   }
 
-  set amountInETH(value: BigDecimal) {
-    this.set("amountInETH", Value.fromBigDecimal(value));
+  set amountInSBTValue(value: BigDecimal) {
+    this.set("amountInSBTValue", Value.fromBigDecimal(value));
   }
 
   get dateCreated(): BigInt {
@@ -6709,22 +6764,42 @@ export class FixedPriceSale extends Entity {
     this.set("transactionHashCreated", Value.fromBytes(value));
   }
 
-  get creatorRevenueInETH(): BigDecimal {
-    let value = this.get("creatorRevenueInETH");
+  get creatorRevenueInSBTValue(): BigDecimal {
+    let value = this.get("creatorRevenueInSBTValue");
     return value!.toBigDecimal();
   }
 
-  set creatorRevenueInETH(value: BigDecimal) {
-    this.set("creatorRevenueInETH", Value.fromBigDecimal(value));
+  set creatorRevenueInSBTValue(value: BigDecimal) {
+    this.set("creatorRevenueInSBTValue", Value.fromBigDecimal(value));
   }
 
-  get foundationRevenueInETH(): BigDecimal {
-    let value = this.get("foundationRevenueInETH");
+  get previousCreatorRevenueInSBTValue(): BigDecimal | null {
+    let value = this.get("previousCreatorRevenueInSBTValue");
+    if (!value || value.kind == ValueKind.NULL) {
+      return null;
+    } else {
+      return value.toBigDecimal();
+    }
+  }
+
+  set previousCreatorRevenueInSBTValue(value: BigDecimal | null) {
+    if (!value) {
+      this.unset("previousCreatorRevenueInSBTValue");
+    } else {
+      this.set(
+        "previousCreatorRevenueInSBTValue",
+        Value.fromBigDecimal(<BigDecimal>value)
+      );
+    }
+  }
+
+  get foundationRevenueInSBTValue(): BigDecimal {
+    let value = this.get("foundationRevenueInSBTValue");
     return value!.toBigDecimal();
   }
 
-  set foundationRevenueInETH(value: BigDecimal) {
-    this.set("foundationRevenueInETH", Value.fromBigDecimal(value));
+  set foundationRevenueInSBTValue(value: BigDecimal) {
+    this.set("foundationRevenueInSBTValue", Value.fromBigDecimal(value));
   }
 
   get buyReferrerFee(): BigDecimal | null {
@@ -6744,13 +6819,13 @@ export class FixedPriceSale extends Entity {
     }
   }
 
-  get foundationProtocolFeeInETH(): BigDecimal {
-    let value = this.get("foundationProtocolFeeInETH");
+  get foundationProtocolFeeInSBTValue(): BigDecimal {
+    let value = this.get("foundationProtocolFeeInSBTValue");
     return value!.toBigDecimal();
   }
 
-  set foundationProtocolFeeInETH(value: BigDecimal) {
-    this.set("foundationProtocolFeeInETH", Value.fromBigDecimal(value));
+  set foundationProtocolFeeInSBTValue(value: BigDecimal) {
+    this.set("foundationProtocolFeeInSBTValue", Value.fromBigDecimal(value));
   }
 }
 
@@ -6812,40 +6887,60 @@ export class PrivateSale extends Entity {
     this.set("buyer", Value.fromString(value));
   }
 
-  get amountInETH(): BigDecimal {
-    let value = this.get("amountInETH");
+  get amountInSBTValue(): BigDecimal {
+    let value = this.get("amountInSBTValue");
     return value!.toBigDecimal();
   }
 
-  set amountInETH(value: BigDecimal) {
-    this.set("amountInETH", Value.fromBigDecimal(value));
+  set amountInSBTValue(value: BigDecimal) {
+    this.set("amountInSBTValue", Value.fromBigDecimal(value));
   }
 
-  get creatorRevenueInETH(): BigDecimal {
-    let value = this.get("creatorRevenueInETH");
+  get creatorRevenueInSBTValue(): BigDecimal {
+    let value = this.get("creatorRevenueInSBTValue");
     return value!.toBigDecimal();
   }
 
-  set creatorRevenueInETH(value: BigDecimal) {
-    this.set("creatorRevenueInETH", Value.fromBigDecimal(value));
+  set creatorRevenueInSBTValue(value: BigDecimal) {
+    this.set("creatorRevenueInSBTValue", Value.fromBigDecimal(value));
   }
 
-  get foundationRevenueInETH(): BigDecimal {
-    let value = this.get("foundationRevenueInETH");
+  get previousCreatorRevenueInSBTValue(): BigDecimal | null {
+    let value = this.get("previousCreatorRevenueInSBTValue");
+    if (!value || value.kind == ValueKind.NULL) {
+      return null;
+    } else {
+      return value.toBigDecimal();
+    }
+  }
+
+  set previousCreatorRevenueInSBTValue(value: BigDecimal | null) {
+    if (!value) {
+      this.unset("previousCreatorRevenueInSBTValue");
+    } else {
+      this.set(
+        "previousCreatorRevenueInSBTValue",
+        Value.fromBigDecimal(<BigDecimal>value)
+      );
+    }
+  }
+
+  get foundationRevenueInSBTValue(): BigDecimal {
+    let value = this.get("foundationRevenueInSBTValue");
     return value!.toBigDecimal();
   }
 
-  set foundationRevenueInETH(value: BigDecimal) {
-    this.set("foundationRevenueInETH", Value.fromBigDecimal(value));
+  set foundationRevenueInSBTValue(value: BigDecimal) {
+    this.set("foundationRevenueInSBTValue", Value.fromBigDecimal(value));
   }
 
-  get ownerRevenueInETH(): BigDecimal {
-    let value = this.get("ownerRevenueInETH");
+  get ownerRevenueInSBTValue(): BigDecimal {
+    let value = this.get("ownerRevenueInSBTValue");
     return value!.toBigDecimal();
   }
 
-  set ownerRevenueInETH(value: BigDecimal) {
-    this.set("ownerRevenueInETH", Value.fromBigDecimal(value));
+  set ownerRevenueInSBTValue(value: BigDecimal) {
+    this.set("ownerRevenueInSBTValue", Value.fromBigDecimal(value));
   }
 
   get dateSold(): BigInt {
@@ -7088,7 +7183,7 @@ export class NftDropCollectionContract extends Entity {
   }
 }
 
-export class Feth extends Entity {
+export class Fsbt extends Entity {
   constructor(id: string) {
     super();
     this.set("id", Value.fromString(id));
@@ -7096,18 +7191,18 @@ export class Feth extends Entity {
 
   save(): void {
     let id = this.get("id");
-    assert(id != null, "Cannot save Feth entity without an ID");
+    assert(id != null, "Cannot save Fsbt entity without an ID");
     if (id) {
       assert(
         id.kind == ValueKind.STRING,
-        `Entities of type Feth must have an ID of type String but the id '${id.displayData()}' is of type ${id.displayKind()}`
+        `Entities of type Fsbt must have an ID of type String but the id '${id.displayData()}' is of type ${id.displayKind()}`
       );
-      store.set("Feth", id.toString(), this);
+      store.set("Fsbt", id.toString(), this);
     }
   }
 
-  static load(id: string): Feth | null {
-    return changetype<Feth | null>(store.get("Feth", id));
+  static load(id: string): Fsbt | null {
+    return changetype<Fsbt | null>(store.get("Fsbt", id));
   }
 
   get id(): string {
@@ -7128,13 +7223,13 @@ export class Feth extends Entity {
     this.set("user", Value.fromString(value));
   }
 
-  get balanceInETH(): BigDecimal {
-    let value = this.get("balanceInETH");
+  get balanceInSBTValue(): BigDecimal {
+    let value = this.get("balanceInSBTValue");
     return value!.toBigDecimal();
   }
 
-  set balanceInETH(value: BigDecimal) {
-    this.set("balanceInETH", Value.fromBigDecimal(value));
+  set balanceInSBTValue(value: BigDecimal) {
+    this.set("balanceInSBTValue", Value.fromBigDecimal(value));
   }
 
   get escrow(): Array<string> {
@@ -7156,7 +7251,7 @@ export class Feth extends Entity {
   }
 }
 
-export class FethEscrow extends Entity {
+export class FsbtEscrow extends Entity {
   constructor(id: string) {
     super();
     this.set("id", Value.fromString(id));
@@ -7164,18 +7259,18 @@ export class FethEscrow extends Entity {
 
   save(): void {
     let id = this.get("id");
-    assert(id != null, "Cannot save FethEscrow entity without an ID");
+    assert(id != null, "Cannot save FsbtEscrow entity without an ID");
     if (id) {
       assert(
         id.kind == ValueKind.STRING,
-        `Entities of type FethEscrow must have an ID of type String but the id '${id.displayData()}' is of type ${id.displayKind()}`
+        `Entities of type FsbtEscrow must have an ID of type String but the id '${id.displayData()}' is of type ${id.displayKind()}`
       );
-      store.set("FethEscrow", id.toString(), this);
+      store.set("FsbtEscrow", id.toString(), this);
     }
   }
 
-  static load(id: string): FethEscrow | null {
-    return changetype<FethEscrow | null>(store.get("FethEscrow", id));
+  static load(id: string): FsbtEscrow | null {
+    return changetype<FsbtEscrow | null>(store.get("FsbtEscrow", id));
   }
 
   get id(): string {
@@ -7187,22 +7282,22 @@ export class FethEscrow extends Entity {
     this.set("id", Value.fromString(value));
   }
 
-  get feth(): string {
-    let value = this.get("feth");
+  get fsbt(): string {
+    let value = this.get("fsbt");
     return value!.toString();
   }
 
-  set feth(value: string) {
-    this.set("feth", Value.fromString(value));
+  set fsbt(value: string) {
+    this.set("fsbt", Value.fromString(value));
   }
 
-  get amountInETH(): BigDecimal {
-    let value = this.get("amountInETH");
+  get amountInSBTValue(): BigDecimal {
+    let value = this.get("amountInSBTValue");
     return value!.toBigDecimal();
   }
 
-  set amountInETH(value: BigDecimal) {
-    this.set("amountInETH", Value.fromBigDecimal(value));
+  set amountInSBTValue(value: BigDecimal) {
+    this.set("amountInSBTValue", Value.fromBigDecimal(value));
   }
 
   get dateExpiry(): BigInt {
@@ -7351,13 +7446,13 @@ export class NftMarketOffer extends Entity {
     }
   }
 
-  get amountInETH(): BigDecimal {
-    let value = this.get("amountInETH");
+  get amountInSBTValue(): BigDecimal {
+    let value = this.get("amountInSBTValue");
     return value!.toBigDecimal();
   }
 
-  set amountInETH(value: BigDecimal) {
-    this.set("amountInETH", Value.fromBigDecimal(value));
+  set amountInSBTValue(value: BigDecimal) {
+    this.set("amountInSBTValue", Value.fromBigDecimal(value));
   }
 
   get dateCreated(): BigInt {
@@ -7540,8 +7635,8 @@ export class NftMarketOffer extends Entity {
     }
   }
 
-  get creatorRevenueInETH(): BigDecimal | null {
-    let value = this.get("creatorRevenueInETH");
+  get creatorRevenueInSBTValue(): BigDecimal | null {
+    let value = this.get("creatorRevenueInSBTValue");
     if (!value || value.kind == ValueKind.NULL) {
       return null;
     } else {
@@ -7549,36 +7644,19 @@ export class NftMarketOffer extends Entity {
     }
   }
 
-  set creatorRevenueInETH(value: BigDecimal | null) {
+  set creatorRevenueInSBTValue(value: BigDecimal | null) {
     if (!value) {
-      this.unset("creatorRevenueInETH");
-    } else {
-      this.set("creatorRevenueInETH", Value.fromBigDecimal(<BigDecimal>value));
-    }
-  }
-
-  get foundationRevenueInETH(): BigDecimal | null {
-    let value = this.get("foundationRevenueInETH");
-    if (!value || value.kind == ValueKind.NULL) {
-      return null;
-    } else {
-      return value.toBigDecimal();
-    }
-  }
-
-  set foundationRevenueInETH(value: BigDecimal | null) {
-    if (!value) {
-      this.unset("foundationRevenueInETH");
+      this.unset("creatorRevenueInSBTValue");
     } else {
       this.set(
-        "foundationRevenueInETH",
+        "creatorRevenueInSBTValue",
         Value.fromBigDecimal(<BigDecimal>value)
       );
     }
   }
 
-  get ownerRevenueInETH(): BigDecimal | null {
-    let value = this.get("ownerRevenueInETH");
+  get previousCreatorRevenueInSBTValue(): BigDecimal | null {
+    let value = this.get("previousCreatorRevenueInSBTValue");
     if (!value || value.kind == ValueKind.NULL) {
       return null;
     } else {
@@ -7586,11 +7664,54 @@ export class NftMarketOffer extends Entity {
     }
   }
 
-  set ownerRevenueInETH(value: BigDecimal | null) {
+  set previousCreatorRevenueInSBTValue(value: BigDecimal | null) {
     if (!value) {
-      this.unset("ownerRevenueInETH");
+      this.unset("previousCreatorRevenueInSBTValue");
     } else {
-      this.set("ownerRevenueInETH", Value.fromBigDecimal(<BigDecimal>value));
+      this.set(
+        "previousCreatorRevenueInSBTValue",
+        Value.fromBigDecimal(<BigDecimal>value)
+      );
+    }
+  }
+
+  get foundationRevenueInSBTValue(): BigDecimal | null {
+    let value = this.get("foundationRevenueInSBTValue");
+    if (!value || value.kind == ValueKind.NULL) {
+      return null;
+    } else {
+      return value.toBigDecimal();
+    }
+  }
+
+  set foundationRevenueInSBTValue(value: BigDecimal | null) {
+    if (!value) {
+      this.unset("foundationRevenueInSBTValue");
+    } else {
+      this.set(
+        "foundationRevenueInSBTValue",
+        Value.fromBigDecimal(<BigDecimal>value)
+      );
+    }
+  }
+
+  get ownerRevenueInSBTValue(): BigDecimal | null {
+    let value = this.get("ownerRevenueInSBTValue");
+    if (!value || value.kind == ValueKind.NULL) {
+      return null;
+    } else {
+      return value.toBigDecimal();
+    }
+  }
+
+  set ownerRevenueInSBTValue(value: BigDecimal | null) {
+    if (!value) {
+      this.unset("ownerRevenueInSBTValue");
+    } else {
+      this.set(
+        "ownerRevenueInSBTValue",
+        Value.fromBigDecimal(<BigDecimal>value)
+      );
     }
   }
 
@@ -7688,8 +7809,8 @@ export class NftMarketOffer extends Entity {
     }
   }
 
-  get foundationProtocolFeeInETH(): BigDecimal | null {
-    let value = this.get("foundationProtocolFeeInETH");
+  get foundationProtocolFeeInSBTValue(): BigDecimal | null {
+    let value = this.get("foundationProtocolFeeInSBTValue");
     if (!value || value.kind == ValueKind.NULL) {
       return null;
     } else {
@@ -7697,12 +7818,12 @@ export class NftMarketOffer extends Entity {
     }
   }
 
-  set foundationProtocolFeeInETH(value: BigDecimal | null) {
+  set foundationProtocolFeeInSBTValue(value: BigDecimal | null) {
     if (!value) {
-      this.unset("foundationProtocolFeeInETH");
+      this.unset("foundationProtocolFeeInSBTValue");
     } else {
       this.set(
-        "foundationProtocolFeeInETH",
+        "foundationProtocolFeeInSBTValue",
         Value.fromBigDecimal(<BigDecimal>value)
       );
     }
@@ -7785,13 +7906,13 @@ export class NftMarketBuyNow extends Entity {
     this.set("seller", Value.fromString(value));
   }
 
-  get amountInETH(): BigDecimal {
-    let value = this.get("amountInETH");
+  get amountInSBTValue(): BigDecimal {
+    let value = this.get("amountInSBTValue");
     return value!.toBigDecimal();
   }
 
-  set amountInETH(value: BigDecimal) {
-    this.set("amountInETH", Value.fromBigDecimal(value));
+  set amountInSBTValue(value: BigDecimal) {
+    this.set("amountInSBTValue", Value.fromBigDecimal(value));
   }
 
   get dateCreated(): BigInt {
@@ -7931,8 +8052,8 @@ export class NftMarketBuyNow extends Entity {
     }
   }
 
-  get creatorRevenueInETH(): BigDecimal | null {
-    let value = this.get("creatorRevenueInETH");
+  get creatorRevenueInSBTValue(): BigDecimal | null {
+    let value = this.get("creatorRevenueInSBTValue");
     if (!value || value.kind == ValueKind.NULL) {
       return null;
     } else {
@@ -7940,36 +8061,19 @@ export class NftMarketBuyNow extends Entity {
     }
   }
 
-  set creatorRevenueInETH(value: BigDecimal | null) {
+  set creatorRevenueInSBTValue(value: BigDecimal | null) {
     if (!value) {
-      this.unset("creatorRevenueInETH");
-    } else {
-      this.set("creatorRevenueInETH", Value.fromBigDecimal(<BigDecimal>value));
-    }
-  }
-
-  get foundationRevenueInETH(): BigDecimal | null {
-    let value = this.get("foundationRevenueInETH");
-    if (!value || value.kind == ValueKind.NULL) {
-      return null;
-    } else {
-      return value.toBigDecimal();
-    }
-  }
-
-  set foundationRevenueInETH(value: BigDecimal | null) {
-    if (!value) {
-      this.unset("foundationRevenueInETH");
+      this.unset("creatorRevenueInSBTValue");
     } else {
       this.set(
-        "foundationRevenueInETH",
+        "creatorRevenueInSBTValue",
         Value.fromBigDecimal(<BigDecimal>value)
       );
     }
   }
 
-  get ownerRevenueInETH(): BigDecimal | null {
-    let value = this.get("ownerRevenueInETH");
+  get previousCreatorRevenueInSBTValue(): BigDecimal | null {
+    let value = this.get("previousCreatorRevenueInSBTValue");
     if (!value || value.kind == ValueKind.NULL) {
       return null;
     } else {
@@ -7977,11 +8081,54 @@ export class NftMarketBuyNow extends Entity {
     }
   }
 
-  set ownerRevenueInETH(value: BigDecimal | null) {
+  set previousCreatorRevenueInSBTValue(value: BigDecimal | null) {
     if (!value) {
-      this.unset("ownerRevenueInETH");
+      this.unset("previousCreatorRevenueInSBTValue");
     } else {
-      this.set("ownerRevenueInETH", Value.fromBigDecimal(<BigDecimal>value));
+      this.set(
+        "previousCreatorRevenueInSBTValue",
+        Value.fromBigDecimal(<BigDecimal>value)
+      );
+    }
+  }
+
+  get foundationRevenueInSBTValue(): BigDecimal | null {
+    let value = this.get("foundationRevenueInSBTValue");
+    if (!value || value.kind == ValueKind.NULL) {
+      return null;
+    } else {
+      return value.toBigDecimal();
+    }
+  }
+
+  set foundationRevenueInSBTValue(value: BigDecimal | null) {
+    if (!value) {
+      this.unset("foundationRevenueInSBTValue");
+    } else {
+      this.set(
+        "foundationRevenueInSBTValue",
+        Value.fromBigDecimal(<BigDecimal>value)
+      );
+    }
+  }
+
+  get ownerRevenueInSBTValue(): BigDecimal | null {
+    let value = this.get("ownerRevenueInSBTValue");
+    if (!value || value.kind == ValueKind.NULL) {
+      return null;
+    } else {
+      return value.toBigDecimal();
+    }
+  }
+
+  set ownerRevenueInSBTValue(value: BigDecimal | null) {
+    if (!value) {
+      this.unset("ownerRevenueInSBTValue");
+    } else {
+      this.set(
+        "ownerRevenueInSBTValue",
+        Value.fromBigDecimal(<BigDecimal>value)
+      );
     }
   }
 
@@ -8045,8 +8192,8 @@ export class NftMarketBuyNow extends Entity {
     }
   }
 
-  get foundationProtocolFeeInETH(): BigDecimal | null {
-    let value = this.get("foundationProtocolFeeInETH");
+  get foundationProtocolFeeInSBTValue(): BigDecimal | null {
+    let value = this.get("foundationProtocolFeeInSBTValue");
     if (!value || value.kind == ValueKind.NULL) {
       return null;
     } else {
@@ -8054,12 +8201,12 @@ export class NftMarketBuyNow extends Entity {
     }
   }
 
-  set foundationProtocolFeeInETH(value: BigDecimal | null) {
+  set foundationProtocolFeeInSBTValue(value: BigDecimal | null) {
     if (!value) {
-      this.unset("foundationProtocolFeeInETH");
+      this.unset("foundationProtocolFeeInSBTValue");
     } else {
       this.set(
-        "foundationProtocolFeeInETH",
+        "foundationProtocolFeeInSBTValue",
         Value.fromBigDecimal(<BigDecimal>value)
       );
     }

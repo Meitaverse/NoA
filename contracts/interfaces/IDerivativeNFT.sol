@@ -4,7 +4,7 @@ pragma solidity ^0.8.0;
 
 import {DataTypes} from '../libraries/DataTypes.sol';
 
-interface IDerivativeNFTV1 { 
+interface IDerivativeNFT { 
   
     /**
      * @notice Initializes the DerivativeNFT, setting the initial governance address as well as the name and symbol in

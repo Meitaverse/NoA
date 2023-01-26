@@ -65,16 +65,10 @@ contract MarketPlace is
     }
 
     // --- override --- //
-    function _validateCallerIsSoulBoundTokenOwner(uint256 soulBoundTokenId_) internal virtual view override {
+    function _getWallet(uint256 soulBoundTokenId) internal virtual view override returns(address) {
         if (MODULE_GLOBALS == address(0)) revert Errors.ModuleGlobasNotSet();
-        
-            address _sbt = IModuleGlobals(MODULE_GLOBALS).getSBT();
-
-            if (IERC3525(_sbt).ownerOf(soulBoundTokenId_) == msg.sender) {
-            return;
-            }
-
-            revert Errors.NotProfileOwner();
+        address _sbt = IModuleGlobals(MODULE_GLOBALS).getSBT();
+        return IERC3525(_sbt).ownerOf(soulBoundTokenId);
     }
 
     function _getTreasuryData() internal virtual view override returns (address, uint16) {

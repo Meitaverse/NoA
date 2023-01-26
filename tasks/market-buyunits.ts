@@ -3,8 +3,8 @@ import { HardhatRuntimeEnvironment } from 'hardhat/types';
 import { parseEther } from '@ethersproject/units';
 
 import {
-  DerivativeNFTV1,
-  DerivativeNFTV1__factory,
+  DerivativeNFT,
+  DerivativeNFT__factory,
   FeeCollectModule,
   FeeCollectModule__factory,
   PublishLogic__factory,
@@ -32,7 +32,7 @@ import { loadContract } from "./config";
 import { deployContract, waitForTx , ProtocolState, Error} from './helpers/utils';
 
 let runtimeHRE: HardhatRuntimeEnvironment;
-let derivativeNFT: DerivativeNFTV1;
+let derivativeNFT: DerivativeNFT;
 
 // yarn hardhat market-buyunits --saleid 1 --network local
 
@@ -90,8 +90,8 @@ task("market-buyunits", "market place functions")
     );
 
 
-    let derivativeNFT: DerivativeNFTV1;
-    derivativeNFT = DerivativeNFTV1__factory.connect(
+    let derivativeNFT: DerivativeNFT;
+    derivativeNFT = DerivativeNFT__factory.connect(
       await manager.connect(user).getDerivativeNFT(FIRST_PROJECT_ID),
       user
     );

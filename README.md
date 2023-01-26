@@ -113,30 +113,18 @@ $ yarn hardhat getDerivativeNFT --projectid 1 --network local
 	---derivativeNFT address:  0x3B02fF1e626Ed7a8fd6eC5299e2C54e1421B626B
 ```
 
-### 2. 将上一步骤输出的derivativeNFT address合约地址替换
-文件: subgraphDerivativeNFT/subgraph.yaml
-```
-...
- source:
-      address: "0x3b02ff1e626ed7a8fd6ec5299e2c54e1421b626b" //<==替换
-      abi: DerivativeNFTV1
-      startBlock: 0
-...
-
-```
-
-### 3. 生成代码
+### 2. 生成代码
 
 ```
 $ yarn graph-derivativeNFT-codegen && yarn graph-derivativeNFT-build
 ```
 
-### 4. 部署到graph node
+### 3. 部署到graph node
 ```
 $ yarn create-derivativeNFT-subgraph-node && yarn deploy-derivativeNFT-subgraph-node
 ```
 
-### 5. 查询相关子图数据
+### 4. 查询相关子图数据
 ```
 derivativeNFT.schema.graphql.md
 ```

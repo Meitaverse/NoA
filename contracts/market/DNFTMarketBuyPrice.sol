@@ -3,9 +3,6 @@
 pragma solidity ^0.8.13;
 
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
-// import "@openzeppelin/contracts-upgradeable/utils/AddressUpgradeable.sol";
-// import {SafeMathUpgradeable} from "@openzeppelin/contracts-upgradeable/utils/math/SafeMathUpgradeable.sol";
-// import "../libraries/SafeMathUpgradeable128.sol";
 import {DataTypes} from "../libraries/DataTypes.sol";
 import {Events} from "../libraries/Events.sol";
 import {Errors} from "../libraries/Errors.sol";
@@ -24,11 +21,6 @@ abstract contract DNFTMarketBuyPrice is
   DNFTMarketCore,
   MarketFees
 {
-  // using AddressUpgradeable for address payable;
-  // using AddressUpgradeable for address;
-  // using SafeMathUpgradeable for uint256;
-  // using SafeMathUpgradeable128 for uint128;
-
   /// @notice Stores the current buy price for each DNFT.
   mapping(address => mapping(uint256 => DataTypes.BuyPrice)) internal dnftContractToTokenIdToBuyPrice;
 
@@ -52,9 +44,9 @@ abstract contract DNFTMarketBuyPrice is
     uint256 soulBoundTokenIdReferrer
   ) public {
     _validUnitsAndAmount(units, maxPrice);
-    _validateCallerIsSoulBoundTokenOwner(soulBoundTokenIdBuyer);
+    address buyer = _getWallet(soulBoundTokenIdBuyer);
     
-    if (soulBoundTokenIdBuyer == 0 || tokenId == 0 ) 
+    if (soulBoundTokenIdBuyer == 0 || tokenId == 0 || buyer != msg.sender ) 
       revert Errors.InvalidParameter();
 
     DataTypes.BuyPrice storage buyPrice = dnftContractToTokenIdToBuyPrice[derivativeNFT][tokenId];
@@ -62,6 +54,8 @@ abstract contract DNFTMarketBuyPrice is
       revert Errors.DNFTMarketBuyPrice_Cannot_Buy_At_Lower_Price(buyPrice.salePrice);
     } else if (buyPrice.seller == address(0)) {
       revert Errors.DNFTMarketBuyPrice_Cannot_Buy_Unset_Price();
+    } else if (buyPrice.onSellUnits < units) {
+       revert Errors.DNFTMarketOffer_BuyPrice_Insufficient_Units(buyPrice.onSellUnits);
     }
 
     //Try to use bidder earnest money in teasury to pay first, revert if insufficient funds.
@@ -104,23 +98,25 @@ abstract contract DNFTMarketBuyPrice is
    * A 0 price is acceptable and valid price you can set, enabling a giveaway to the first collector that calls `buy`.
    * @dev If there is an offer for this amount or higher, that will be accepted instead of setting a buy price.
    * @param saleParam The sale param to set buy price
-   *       
+   *      --soulBoundTokenId: SBT id of owner
+   *      --derivativeNFT: DNFT contract addrss
+   *      --tokenId: DNFT token id
+   *      --putOnListUnits: The uints want put on list
+   *      --startTime: The start time on sell
+   *      --salePrice: The sale price, amount
    */
   function setBuyPrice(
     DataTypes.SaleParam memory saleParam
   ) external returns(uint256 newTokenId) { 
-    _validUnitsAndAmount(saleParam.onSellUnits, saleParam.salePrice);
-    _validateCallerIsSoulBoundTokenOwner(saleParam.soulBoundTokenId);
-    
-    if (saleParam.max > 0) {
-        if (saleParam.min > saleParam.max) revert Errors.MinGTMax();
+    _validUnitsAndAmount(saleParam.putOnListUnits, saleParam.salePrice);
+    address account = _getWallet(saleParam.soulBoundTokenId);
+    if (account != msg.sender) {
+      revert Errors.NotProfileOwner();
     }
-        
+    
     uint128 total = uint128(IERC3525(saleParam.derivativeNFT).balanceOf(saleParam.tokenId));
-    if(total > type(uint128).max) revert Errors.ExceedsUint128Max();
     if(total == 0) revert Errors.TotalIsZero();
-    if(saleParam.max > total) revert Errors.MaxGTTotal(); 
-    if(saleParam.onSellUnits > total) revert Errors.UnitsGTTotal(); 
+    if(saleParam.putOnListUnits > total) revert Errors.UnitsGTTotal(); 
 
     // validate martket is open for this contract?
     if (!_getMarketInfo(saleParam.derivativeNFT).isOpen)
@@ -130,8 +126,7 @@ abstract contract DNFTMarketBuyPrice is
     if (projectId == 0) 
         revert Errors.InvalidParameter();
 
-
-    uint256 publishId = IDerivativeNFTV1(saleParam.derivativeNFT).getPublishIdByTokenId(saleParam.tokenId);
+    uint256 publishId = IDerivativeNFT(saleParam.derivativeNFT).getPublishIdByTokenId(saleParam.tokenId);
 
     //save to  
     DataTypes.BuyPrice storage buyPrice = dnftContractToTokenIdToBuyPrice[saleParam.derivativeNFT][saleParam.tokenId];
@@ -149,19 +144,18 @@ abstract contract DNFTMarketBuyPrice is
 
     buyPrice.projectId = projectId;    
     buyPrice.publishId = publishId;    
-    buyPrice.min = saleParam.min;    
-    buyPrice.max = saleParam.max;    
 
-    uint128 units;
+    uint128 leftUnits;
     // If there is a valid offer at this salePrice or higher, accept that instead.
-    (newTokenId, units) = _autoAcceptOffer(saleParam);
+    (newTokenId, leftUnits) = _autoAcceptOffer(saleParam);
 
     // offer is done
-    if (newTokenId > 0 && units == saleParam.onSellUnits) {
+    if (newTokenId > 0 && leftUnits == saleParam.putOnListUnits) {
         return newTokenId;
     } 
 
-    buyPrice.onSellUnits = saleParam.onSellUnits - units;
+    buyPrice.onSellUnits = leftUnits;
+    buyPrice.seledUnits = saleParam.putOnListUnits - leftUnits;
 
     // Store the new salePrice for this DNFT.
     buyPrice.salePrice = uint96(saleParam.salePrice);
@@ -243,7 +237,7 @@ abstract contract DNFTMarketBuyPrice is
 
     // Transfer the DNFT units to the buyer.
     // The seller was already authorized when the buyPrice was set originally set.
-    uint256 newTokenIdBuyer = IDerivativeNFTV1(derivativeNFT).split(
+    uint256 newTokenIdBuyer = IDerivativeNFT(derivativeNFT).split(
             buyPrice.publishId, 
             tokenId, 
             msg.sender,

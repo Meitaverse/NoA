@@ -16,11 +16,6 @@ library DataTypes {
     //0.1eth, 0.2eth, 0.3eth, 0.4eth, 0.5 eth
     enum VoucherParValueType {ZEROPOINT, ZEROPOINTONE, ZEROPOINTTWO, ZEROPOINTTHREE, ZEROPOINTFOUR, ZEROPOINTFIVE}
 
-    // enum FeeType {
-    //     BY_AMOUNT,
-    //     FIXED
-    // }
-
     enum FeeShareType {
         LEVEL_TWO,
         LEVEL_FIVE
@@ -35,6 +30,25 @@ library DataTypes {
         ETHER,
         ERC20,
         ERC3525
+    }
+
+    /**
+     * @notice An enum containing the different states the protocol can be in, limiting certain actions.
+     *
+     * @param Unpaused The fully unpaused state.
+     * @param PublishingPaused The state where only publication creation functions are paused.
+     * @param Paused The fully paused state.
+     */
+    enum ProtocolState {
+        Unpaused,
+        PublishingPaused,
+        Paused
+    }
+    
+    enum DerivativeNFTState {
+        Unpaused,
+        PublishingPaused,
+        Paused
     }
     
     struct SoulBoundTokenDetail {
@@ -192,26 +206,6 @@ library DataTypes {
     }
 
    
-
-    /**
-     * @notice An enum containing the different states the protocol can be in, limiting certain actions.
-     *
-     * @param Unpaused The fully unpaused state.
-     * @param PublishingPaused The state where only publication creation functions are paused.
-     * @param Paused The fully paused state.
-     */
-    enum ProtocolState {
-        Unpaused,
-        PublishingPaused,
-        Paused
-    }
-    
-    enum DerivativeNFTState {
-        Unpaused,
-        PublishingPaused,
-        Paused
-    }
-
     /**
      * @notice A struct containing the necessary information to reconstruct an EIP-712 typed data signature.
      *
@@ -317,40 +311,34 @@ library DataTypes {
         uint256 tokenId;
         
         /// @notice The uints want put on list
-        uint128 onSellUnits;
+        uint128 putOnListUnits;
 
         /// @notice The start time on sell
         uint32 startTime;
 
         /// @notice The sale price
         uint128 salePrice;
-
-        /// @notice The minimum unit buy limit
-        uint128 min;
-
-        /// @notice The miximum unit limit
-        uint128 max;
     }
 
-    struct Sale {
-        uint256 soulBoundTokenId;
-        uint256 projectId;
-        uint256 tokenId;
-        uint256 tokenIdOfMarket;
-        uint32 startTime;
-        uint128 salePrice;
-        PriceType priceType;
-        uint128 onSellUnits; //on sell units
-        uint128 seledUnits; //selled units
-        uint128 min; //min units
-        uint128 max; //max units
-        address derivativeNFT; //sale asset
-        bool isOpen;
-        uint256 genesisSoulBoundTokenId;
-        uint256 genesisRoyaltyBasisPoints;
-        uint256 previousSoulBoundTokenId;
-        uint256 previousRoyaltyBasisPoints;
-     }
+    // struct Sale {
+    //     uint256 soulBoundTokenId;
+    //     uint256 projectId;
+    //     uint256 tokenId;
+    //     uint256 tokenIdOfMarket;
+    //     uint32 startTime;
+    //     uint128 salePrice;
+    //     PriceType priceType;
+    //     uint128 onSellUnits; //on sell units
+    //     uint128 seledUnits; //selled units
+    //     uint128 min; //min units
+    //     uint128 max; //max units
+    //     address derivativeNFT; //sale asset
+    //     bool isOpen;
+    //     uint256 genesisSoulBoundTokenId;
+    //     uint256 genesisRoyaltyBasisPoints;
+    //     uint256 previousSoulBoundTokenId;
+    //     uint256 previousRoyaltyBasisPoints;
+    //  }
 
     /// @notice Stores the buy price details for a specific DNFT.
     /// @dev The struct is packed into a single slot to optimize gas.
@@ -388,12 +376,6 @@ library DataTypes {
 
         /// @notice The selled units.
         uint128 seledUnits; 
-
-        /// @notice The min units.
-        uint128 min;
-
-        /// @notice The max units
-        uint128 max; 
     }
 
     /// @notice Stores offer details for a specific DNFT.

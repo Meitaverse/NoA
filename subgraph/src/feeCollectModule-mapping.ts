@@ -21,7 +21,7 @@ export function handleFeesForCollect(event: FeesForCollect): void {
         history.previousSoulBoundTokenId = event.params.collectFeeUsers.previousSoulBoundTokenId
         history.publishId = event.params.publishId
         history.tokenId = event.params.tokenId
-        history.collectUnits = event.params.royaltyAmounts.collectUnits
+        history.collectUnits = event.params.collectUnits
         history.treasuryAmount = event.params.royaltyAmounts.treasuryAmount
         history.genesisAmount = event.params.royaltyAmounts.genesisAmount
         history.previousAmount = event.params.royaltyAmounts.previousAmount

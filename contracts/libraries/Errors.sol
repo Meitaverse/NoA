@@ -216,5 +216,7 @@ library Errors {
   error Escrow_Not_Found();
   error Insufficient_Available_Funds(uint256 amount);
   error Insufficient_Available_EarnestMoneys(uint256 amount);
+  error DNFTMarketOffer_Offer_Insufficient_Units(uint256 units);
+  error DNFTMarketOffer_BuyPrice_Insufficient_Units(uint256 units);
   error Insufficient_Escrow(uint256 amount);
 }

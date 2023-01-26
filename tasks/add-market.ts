@@ -21,8 +21,8 @@ import {
   Template,
   Template__factory,
   MarketPlace__factory,
-  DerivativeNFTV1,
-  DerivativeNFTV1__factory,
+  DerivativeNFT,
+  DerivativeNFT__factory,
 } from '../typechain';
 
 import { loadContract } from "./config";
@@ -103,9 +103,9 @@ task("add-market", "add-market function")
     //   "\t--- projectInfo info - feeShareType: ", projectInfo.feeShareType
     // );
 
-    let derivativeNFT: DerivativeNFTV1;
+    let derivativeNFT: DerivativeNFT;
 
-    derivativeNFT = DerivativeNFTV1__factory.connect(
+    derivativeNFT = DerivativeNFT__factory.connect(
       await manager.connect(user).getDerivativeNFT(FIRST_PROJECT_ID),
       user
     );

@@ -5,7 +5,7 @@ import "@openzeppelin/contracts-upgradeable/utils/cryptography/ECDSAUpgradeable.
 import "@openzeppelin/contracts-upgradeable/utils/structs/EnumerableSetUpgradeable.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
 import "@solvprotocol/erc-3525/contracts/IERC3525.sol";
-import "../interfaces/IDerivativeNFTV1.sol";
+import "../interfaces/IDerivativeNFT.sol";
 import "../interfaces/INFTDerivativeProtocolTokenV1.sol";
 import "../interfaces/IManagerV2.sol";
 import "../base/NFTDerivativeProtocolMultiState.sol";

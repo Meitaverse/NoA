@@ -8,8 +8,8 @@ export function loadOrCreateAccount(address: Address): Account {
   let account = Account.load(addressHex);
   if (!account) {
     account = new Account(addressHex);
-    account.netRevenueInETH = ZERO_BIG_DECIMAL;
-    account.netRevenuePendingInETH = ZERO_BIG_DECIMAL;
+    account.netRevenueInSBTValue = ZERO_BIG_DECIMAL;
+    account.netRevenuePendingInSBTValue = ZERO_BIG_DECIMAL;
     account.save();
   }
   return account as Account;

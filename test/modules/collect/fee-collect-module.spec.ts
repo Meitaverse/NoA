@@ -4,8 +4,8 @@ import '@nomiclabs/hardhat-ethers';
 import { expect } from 'chai';
 import { 
   ERC20__factory,
-  DerivativeNFTV1,
-  DerivativeNFTV1__factory,
+  DerivativeNFT,
+  DerivativeNFT__factory,
  } from '../../../typechain';
 import { MAX_UINT256, ZERO_ADDRESS } from '../../helpers/constants';
 import { ERRORS } from '../../helpers/errors';
@@ -62,7 +62,7 @@ import {
   createProjectReturningProjectId,
 } from '../../helpers/utils';
 
-let derivativeNFT: DerivativeNFTV1;
+let derivativeNFT: DerivativeNFT;
 
 makeSuiteCleanRoom('Fee Collect Module', function () {
   const DEFAULT_COLLECT_PRICE = 10000; // in wei parseEther('10');
@@ -134,7 +134,7 @@ makeSuiteCleanRoom('Fee Collect Module', function () {
         })
     ).to.eq(FIRST_PROJECT_ID);
 
-    derivativeNFT = DerivativeNFTV1__factory.connect(
+    derivativeNFT = DerivativeNFT__factory.connect(
       await manager.getDerivativeNFT(FIRST_PROJECT_ID),
       user
     );
@@ -320,11 +320,6 @@ makeSuiteCleanRoom('Fee Collect Module', function () {
       it('Governance should set the treasury fee BPS to zero, userTwo call permit userTwo collecting should not emit a transfer event to the treasury', async function () {
         await expect(moduleGlobals.connect(governance).setTreasuryFee(0)).to.not.be.reverted;
 
-        /*
-        //不开放直接调用transferFrom, 必须通过manager来调用
-        const tx = derivativeNFT['transferFrom(uint256,address,uint256)'](FIRST_DNFT_TOKEN_ID, userTwoAddress, 1);
-        const receipt = await waitForTx(tx);
-        */
           
         let [treasuryFee, genesisSoulBoundTokenId, treasuryAmount, genesisAmount, adjustedAmount] = await feeCollectModule.getFees(FIRST_PUBLISH_ID, 1);
         console.log("\t --- treasuryFee:", treasuryFee);

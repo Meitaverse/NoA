@@ -19,7 +19,7 @@ export function recordNftEvent(
   actorAccount: Account,
   auction: NftMarketAuction | null = null,
   marketplace: string | null = null,
-  amountInETH: BigDecimal | null = null,
+  amountInSBTValue: BigDecimal | null = null,
   nftRecipient: Account | null = null,
   dateOverride: BigInt | null = null,
   amountInTokens: BigInt | null = null,
@@ -46,7 +46,7 @@ export function recordNftEvent(
     historicalEvent.nftRecipient = nftRecipient.id;
   }
   historicalEvent.marketplace = marketplace;
-  historicalEvent.amountInETH = amountInETH;
+  historicalEvent.amountInSBTValue = amountInSBTValue;
   historicalEvent.amountInTokens = amountInTokens;
   historicalEvent.tokenAddress = tokenAddress;
 
