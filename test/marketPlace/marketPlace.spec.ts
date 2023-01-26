@@ -213,13 +213,12 @@ makeSuiteCleanRoom('Market Place', function () {
         await expect( 
           marketPlaceContract.connect(userTwo).setBuyPrice(
             {
+              soulBoundTokenId: SECOND_PROFILE_ID,
               derivativeNFT: derivativeNFT.address, 
               tokenId: FIRST_DNFT_TOKEN_ID,
-              onSellUnits: 100, //revert UnitsGTTotal
+              putOnListUnits: 100,
               startTime: 1673236726,
               salePrice: SALE_PRICE,
-              min: 0,
-              max: 1,
             })
         ).to.be.reverted;
       });
@@ -228,13 +227,12 @@ makeSuiteCleanRoom('Market Place', function () {
         await expect( 
           marketPlaceContract.connect(user).setBuyPrice(
             {
+              soulBoundTokenId: SECOND_PROFILE_ID,
               derivativeNFT: derivativeNFT.address, 
               tokenId: SECOND_DNFT_TOKEN_ID,
-              onSellUnits: 100, //revert UnitsGTTotal
+              putOnListUnits: 100, //revert UnitsGTTotal
               startTime: 1673236726,
               salePrice: SALE_PRICE,
-              min: 0,
-              max: 1,
             })
         ).to.be.reverted;
       });
