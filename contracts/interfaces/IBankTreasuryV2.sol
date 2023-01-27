@@ -20,7 +20,7 @@ interface IBankTreasuryV2 {
      */
     //  * @param nonce nonce of sig.
     //  * @param sig The EIP712 signature struct.
-    function withdrawERC3525(
+    function WithdrawEarnestMoney(
         uint256 toSoulBoundTokenId,
         uint256 amount
     ) external;

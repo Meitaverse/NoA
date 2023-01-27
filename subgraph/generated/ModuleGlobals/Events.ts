@@ -2524,16 +2524,16 @@ export class ValueChanged__Params {
   }
 }
 
-export class WithdrawERC3525 extends ethereum.Event {
+export class WithdrawnEarnestMoney extends ethereum.Event {
   get params(): WithdrawERC3525__Params {
     return new WithdrawERC3525__Params(this);
   }
 }
 
 export class WithdrawERC3525__Params {
-  _event: WithdrawERC3525;
+  _event: WithdrawnEarnestMoney;
 
-  constructor(event: WithdrawERC3525) {
+  constructor(event: WithdrawnEarnestMoney) {
     this._event = event;
   }
 

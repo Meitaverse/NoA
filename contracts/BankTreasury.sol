@@ -479,28 +479,34 @@ contract BankTreasury is
     }
     
     /**
-     * @notice Withdraw the total free amount of balance
+     * @notice Withdraw avaliable balance to msg.sender wallet
      * @param soulBoundTokenId The soulBoundTokenId of caller.
      * @param amount The total amount of balance, not include locked.
      */
-    function withdrawERC3525(uint256 soulBoundTokenId, uint256 amount) 
+    function WithdrawEarnestMoney(uint256 soulBoundTokenId, uint256 amount) 
         external 
         whenNotPaused 
         nonReentrant 
     {
         _validateCallerIsSoulBoundTokenOwner(soulBoundTokenId);
 
-        DataTypes.AccountInfo storage accountInfo = accountToInfo[soulBoundTokenId];
+        DataTypes.AccountInfo storage accountInfo = _freeFromEscrow(soulBoundTokenId);
+        uint256 balanceAmount = accountInfo.freedBalance;
+        
+        if (balanceAmount == 0) {
+            revert Errors.SBT_No_Funds_To_Withdraw(); 
+        }
+
         _deductBalanceFrom(accountInfo, amount);
 
         address _sbt = IModuleGlobals(MODULE_GLOBALS).getSBT();
         INFTDerivativeProtocolTokenV1(_sbt).transferValue(soulBoundTokenIdBankTreasury, soulBoundTokenId, amount);
         
-        emit Events.WithdrawERC3525(
-            soulBoundTokenIdBankTreasury, 
+        emit Events.WithdrawnEarnestMoney(
             soulBoundTokenId, 
-            amount, 
-            block.timestamp
+            msg.sender,
+            amount,
+            balanceAmount - amount
         );
     }
 

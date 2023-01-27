@@ -188,11 +188,10 @@ type DepositHistory @entity {
   timestamp: BigInt!
 }
 
-# Bank Treasury WithdrawERC3525 history 
+# Bank Treasury WithdrawnEarnestMoney history 
 type WithdrawERC3525History @entity {
   id: ID!
-  fromTokenId: BigInt!
-  toTokenId: BigInt!
+  toSoulBoundTokenId: BigInt!
   value: BigInt!
   timestamp: BigInt!
 }

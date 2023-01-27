@@ -31,10 +31,6 @@ abstract contract DNFTMarketCore is Initializable, MarketSharedCore {
 
   function _getMarketInfo(address derivativeNFT) internal virtual view returns (DataTypes.Market memory);
 
-  function _validUnitsAndAmount(uint128 units, uint256 amount) internal view virtual {
-    if ( units == 0  ||  amount == 0 )
-      revert Errors.InvalidParameter();
-  }
 
   /**
    * @notice If there is a buy price at this amount or lower, accept that and return true.

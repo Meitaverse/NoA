@@ -57,7 +57,9 @@ abstract contract DNFTMarketOffer is
     address offerFrom,
     uint256 minAmount
   ) external {
-    _validUnitsAndAmount(units, minAmount);
+    if ( units == 0 || minAmount == 0 )
+      revert Errors.InvalidParameter();
+
     address account = _getWallet(soulBoundTokenId);
     if (account != msg.sender) {
       revert Errors.NotProfileOwner();
@@ -106,7 +108,9 @@ abstract contract DNFTMarketOffer is
     uint256 amount,
     uint256 soulBoundTokenIdReferrer
   ) external payable returns (uint256 expiration) {
-    _validUnitsAndAmount(units, amount);
+    if ( units == 0 || amount == 0 )
+      revert Errors.InvalidParameter();    
+
     address buyer = _getWallet(soulBoundTokenIdBuyer);
     if (buyer != msg.sender) {
       revert Errors.NotProfileOwner();

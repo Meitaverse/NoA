@@ -43,7 +43,9 @@ abstract contract DNFTMarketBuyPrice is
     uint256 maxPrice,
     uint256 soulBoundTokenIdReferrer
   ) public {
-    _validUnitsAndAmount(units, maxPrice);
+    if ( units == 0 || maxPrice == 0 )
+      revert Errors.InvalidParameter();
+
     address buyer = _getWallet(soulBoundTokenIdBuyer);
     
     if (soulBoundTokenIdBuyer == 0 || tokenId == 0 || buyer != msg.sender ) 
@@ -108,7 +110,9 @@ abstract contract DNFTMarketBuyPrice is
   function setBuyPrice(
     DataTypes.SaleParam memory saleParam
   ) external returns(uint256 newTokenId) { 
-    _validUnitsAndAmount(saleParam.putOnListUnits, saleParam.salePrice);
+    if ( saleParam.putOnListUnits == 0 || saleParam.salePrice == 0 )
+      revert Errors.InvalidParameter();
+
     address account = _getWallet(saleParam.soulBoundTokenId);
     if (account != msg.sender) {
       revert Errors.NotProfileOwner();
@@ -122,9 +126,9 @@ abstract contract DNFTMarketBuyPrice is
     if (!_getMarketInfo(saleParam.derivativeNFT).isOpen)
         revert Errors.UnsupportedDerivativeNFT();
         
-    uint256 projectId = manager.getProjectIdByContract(msg.sender);
+    uint256 projectId = manager.getProjectIdByContract(saleParam.derivativeNFT);
     if (projectId == 0) 
-        revert Errors.InvalidParameter();
+        revert Errors.UnsupportedDerivativeNFT();
 
     uint256 publishId = IDerivativeNFT(saleParam.derivativeNFT).getPublishIdByTokenId(saleParam.tokenId);
 

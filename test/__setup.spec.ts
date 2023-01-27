@@ -472,13 +472,16 @@ before(async function () {
     sbtContract.connect(deployer).grantRole(transferValueRole, marketPlaceContract.address)
   ).to.not.be.reverted;
 
-  const feeModuleRole = await bankTreasuryContract.FEEMODULE_ROLE();
-
   await expect(
     bankTreasuryContract.connect(deployer).grantFeeModule(feeCollectModule.address)
   ).to.not.be.reverted;
   await expect(
     bankTreasuryContract.connect(deployer).grantFeeModule(marketPlaceContract.address)
+  ).to.not.be.reverted;
+
+
+  await expect(
+    marketPlaceContract.connect(governance).grantOperator(governanceAddress)
   ).to.not.be.reverted;
 
 

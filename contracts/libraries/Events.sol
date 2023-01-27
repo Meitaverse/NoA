@@ -894,17 +894,15 @@ library Events {
      * @dev Emitted when ERC3525 is withdrawn
      *
      * 
-     * @param fromTokenId The from tokenId of transcation
-     * @param toTokenId The to tokenId of transcation
+     * @param toSoulBoundTokenId The to tokenId of transcation
      * @param value The value of transcation
-     * @param timestamp The current block timestamp.
      * 
      */
-    event WithdrawERC3525(
-        uint256 indexed fromTokenId, 
-        uint256 indexed toTokenId, 
-        uint256 value,
-        uint256 timestamp
+    event WithdrawnEarnestMoney(
+        uint256 indexed toSoulBoundTokenId, 
+        address indexed to,
+        uint256 indexed value,
+        uint256 availableBalance
     );
 
     /**

@@ -63,4 +63,5 @@ export const ERRORS = {
   Template_Not_in_Whitelisted: 'TemplateNotWhitelisted()',
   Amount_Limit: 'AmountLimit()',
   AmountSBT_Is_Zero: 'AmountSBTIsZero()',
+  SBT_No_Funds_To_Withdraw: 'SBT_No_Funds_To_Withdraw()',
 };

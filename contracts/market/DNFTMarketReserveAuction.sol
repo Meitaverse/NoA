@@ -121,8 +121,9 @@ abstract contract DNFTMarketReserveAuction is
     uint128 units,
     uint256 reservePrice
   ) external onlyValidAuctionConfig(reservePrice) {
-    _validUnitsAndAmount(units, reservePrice);
-    
+    if ( units == 0 || reservePrice == 0 )
+      revert Errors.InvalidParameter();    
+
     address account = _getWallet(soulBoundTokenId);
     if (account != msg.sender) {
       revert Errors.NotProfileOwner();

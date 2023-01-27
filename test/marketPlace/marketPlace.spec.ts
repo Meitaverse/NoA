@@ -189,7 +189,6 @@ makeSuiteCleanRoom('Market Place', function () {
         await derivativeNFT.ownerOf(FIRST_DNFT_TOKEN_ID)
       ).to.eq(userAddress);
 
-
       await derivativeNFT.setApprovalForAll(marketPlaceContract.address, true);
 
   });
@@ -237,145 +236,34 @@ makeSuiteCleanRoom('Market Place', function () {
         ).to.be.reverted;
       });
 
-
-/*
-
-      it('User should fail to publishSale when on sell units is gt total', async function () {
-
-        await expect(
-          marketPlaceContract.connect(user).publishSale({
-            soulBoundTokenId: SECOND_PROFILE_ID,
-            projectId: FIRST_PROJECT_ID,
-            tokenId: FIRST_DNFT_TOKEN_ID,
-            onSellUnits: 100, //revert UnitsGTTotal
-            startTime: 1673236726,
-            salePrice: 100,
-            priceType: 0,
-            min: 0,
-            max: 1,
-          }
-          )
-        ).to.be.reverted;
-
-      });
-
-      it('User should fail to publishSale when max is gt total', async function () {
-
-        await expect(
-          marketPlaceContract.connect(user).publishSale({
-            soulBoundTokenId: SECOND_PROFILE_ID,
-            projectId: FIRST_PROJECT_ID,
-            tokenId: FIRST_DNFT_TOKEN_ID,
-            onSellUnits: 10, 
-            startTime: 1673236726,
-            salePrice: 100,
-            priceType: 0,
-            min: 0,
-            max: 12, //revert MAXGTTotal
-          }
-          )
-        ).to.be.reverted;
-
-      });
-
-      it('User should fail to publishSale when min is gt max', async function () {
-
-        await expect(
-          marketPlaceContract.connect(user).publishSale({
-            soulBoundTokenId: SECOND_PROFILE_ID,
-            projectId: FIRST_PROJECT_ID,
-            tokenId: FIRST_DNFT_TOKEN_ID,
-            onSellUnits: 10, 
-            startTime: 1673236726,
-            salePrice: 100,
-            priceType: 0,
-            min: 3,//revert MinGTMax
-            max: 2, 
-          }
-          )
-        ).to.be.reverted;
-
-      });
-      
-      it('User should fail to buy units with non exists sale id', async function () {
-
-        await expect(
-          marketPlaceContract.connect(governance).addMarket(
-            derivativeNFT.address,
-             0,
-             0,
-             50,
-          )
-        ).to.not.be.reverted;
-        
-        //approve market contract
-        await derivativeNFT.connect(user)['approve(address,uint256)'](marketPlaceContract.address, FIRST_DNFT_TOKEN_ID);
-
-        await marketPlaceContract.connect(user).publishSale({
-            soulBoundTokenId: SECOND_PROFILE_ID,
-            projectId: FIRST_PROJECT_ID,
-            tokenId: FIRST_DNFT_TOKEN_ID,
-            onSellUnits: 1, 
-            startTime: 1673236726,
-            salePrice: 100,
-            priceType: 0,
-            min: 0,
-            max: 10, 
-          }
-          );
-
-        await expect(
-          marketPlaceContract.connect(userTwo).buyUnits(
-            THIRD_PROFILE_ID,
-            22, //revert
-            1,
-          )
-        ).to.be.reverted;
-
-      });
-
-      it('User should fail to buy units with exceed units', async function () {
-
-        await expect(
-          marketPlaceContract.connect(governance).addMarket(
-            derivativeNFT.address,
-             0,
-             0,
-             50,
-          )
-        ).to.not.be.reverted;
-        
-        //approve market contract
-        await derivativeNFT.connect(user)['approve(address,uint256)'](marketPlaceContract.address, FIRST_DNFT_TOKEN_ID);
-
-        await marketPlaceContract.connect(user).publishSale({
-            soulBoundTokenId: SECOND_PROFILE_ID,
-            projectId: FIRST_PROJECT_ID,
-            tokenId: FIRST_DNFT_TOKEN_ID,
-            onSellUnits: 1, 
-            startTime: 1673236726,
-            salePrice: 100,
-            priceType: 0,
-            min: 0,
-            max: 10, 
-          }
-          );
-
-         
-        await expect(
-          marketPlaceContract.connect(userTwo).buyUnits(
-            THIRD_PROFILE_ID,
-            SALE_ID, 
-            400,//revert
-          )
-        ).to.be.reverted;
-
-      });
-*/
     });
 
-
     context('Success', function () {
+      it('UserTwo should success to setBuyPrice', async function () {
+          await expect(
+            marketPlaceContract.connect(governance).addMarket(
+              derivativeNFT.address,
+               0,
+               0,
+               50,
+            )
+          ).to.not.be.reverted;
+          
+          //approve market contract
+          await derivativeNFT.connect(user)['approve(address,uint256)'](marketPlaceContract.address, FIRST_DNFT_TOKEN_ID);
+          
+          await marketPlaceContract.connect(user).setBuyPrice({
+            soulBoundTokenId: SECOND_PROFILE_ID,
+            derivativeNFT: derivativeNFT.address,
+            tokenId: FIRST_DNFT_TOKEN_ID,
+            putOnListUnits: 11,
+            startTime: 1693236726,
+            salePrice: SALE_PRICE,
+          });
+
+  
+      });
+
       /*
         it('UserTwo should buy units', async function () {
           await expect(
