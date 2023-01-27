@@ -16,7 +16,6 @@ import { loadOrCreateCreator } from "./shared/creators";
 import { recordNftEvent, removePreviousTransferEvent } from "./shared/events";
 import { getLogId } from "./shared/ids";
 
-
 export function loadOrCreateNFTContract(address: Address): DerivativeNFTContract {
   let derivativeNFT = DerivativeNFTContract.load(address.toHex());
   if (!derivativeNFT) {
@@ -26,7 +25,6 @@ export function loadOrCreateNFTContract(address: Address): DerivativeNFTContract
   }
   return derivativeNFT as DerivativeNFTContract;
 }
-
 
 function _createNFTContract(address: Address): DerivativeNFTContract {
   let derivativeNFT = new DerivativeNFTContract(address.toHex());
@@ -44,7 +42,6 @@ function _createNFTContract(address: Address): DerivativeNFTContract {
   derivativeNFT.save();
   return derivativeNFT;
 }
-
 
 function getNFTId(address: Address, id: BigInt): string {
   return address.toHex() + "-" + id.toString();

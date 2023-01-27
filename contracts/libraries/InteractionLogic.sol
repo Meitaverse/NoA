@@ -55,6 +55,7 @@ library InteractionLogic {
     }
     
     function updateHub(
+        address creator,
         uint256 hubId,
         string memory name,
         string memory description,
@@ -69,7 +70,7 @@ library InteractionLogic {
         hubData.imageURI = imageURI;
  
         emit Events.HubUpdated(
-            hubId,
+            creator, 
             name,
             description,
             imageURI,
@@ -79,6 +80,7 @@ library InteractionLogic {
     }
 
     function createProject(
+        address creator,
         address derivativeImpl,
         address sbt,
         address treasury,
@@ -92,6 +94,7 @@ library InteractionLogic {
         address derivativeNFT;
         if(_derivativeNFTByProjectId[projectId] == address(0)) {
                 derivativeNFT = _deployDerivativeNFT(
+                    creator,
                     derivativeImpl,
                     sbt,
                     treasury,
@@ -120,6 +123,7 @@ library InteractionLogic {
     }
     
     function _deployDerivativeNFT(
+        address creator,
         address derivativeImpl,
         address sbt,
         address treasury,        
@@ -144,6 +148,7 @@ library InteractionLogic {
         );
 
         emit Events.DerivativeNFTDeployed(
+            creator,
             projectId, 
             project.soulBoundTokenId,
             derivativeNFT, 

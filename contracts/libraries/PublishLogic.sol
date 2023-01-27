@@ -39,8 +39,7 @@ library PublishLogic {
             publication,
             publishId,
             previousPublishId,
-            publishTaxAmount,
-            block.timestamp
+            publishTaxAmount
         );
     }
 
@@ -76,6 +75,7 @@ library PublishLogic {
         );
 
         emit Events.PublishUpdated(
+            _projectDataByPublishId[publishId].publication.projectId,
             publishId,
             _projectDataByPublishId[publishId].publication.soulBoundTokenId,
             salePrice,

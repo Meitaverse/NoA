@@ -72,7 +72,6 @@ import {
 let derivativeNFT: DerivativeNFT;
 const FIRST_VOUCHER_TOKEN_ID = 1;
 const SECOND_VOUCHER_TOKEN_ID = 2;
-let transactionResponse: TransactionResponse;
 let receipt: TransactionReceipt;
 let original_balance = 10000;
 let balance = 500;

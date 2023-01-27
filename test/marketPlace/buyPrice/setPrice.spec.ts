@@ -1,14 +1,15 @@
 import { BigNumber } from '@ethersproject/bignumber';
 import { parseEther } from '@ethersproject/units';
 import '@nomiclabs/hardhat-ethers';
+import { TransactionReceipt, TransactionResponse } from '@ethersproject/providers';
 import { expect } from 'chai';
 import { 
   ERC20__factory,
   DerivativeNFT,
   DerivativeNFT__factory,
- } from '../../typechain';
-import { MAX_UINT256, ZERO_ADDRESS } from '../helpers/constants';
-import { ERRORS } from '../helpers/errors';
+ } from '../../../typechain';
+import { MAX_UINT256, ZERO_ADDRESS } from '../../helpers/constants';
+import { ERRORS } from '../../helpers/errors';
 
 import { 
   createProfileReturningTokenId,
@@ -17,7 +18,7 @@ import {
   matchEvent,
   getTimestamp, 
   waitForTx 
-} from '../helpers/utils';
+} from '../../helpers/utils';
 
 import {
   abiCoder,
@@ -60,7 +61,7 @@ import {
   deployer,
   voucherContract,
   marketPlaceContract
-} from '../__setup.spec';
+} from '../../__setup.spec';
 
 let derivativeNFT: DerivativeNFT;
 
@@ -68,6 +69,8 @@ const Default_royaltyBasisPoints = 50; //
 const SALE_ID = 1;
 const THIRD_DNFT_TOKEN_ID =3;
 const SALE_PRICE = 100;
+
+let receipt: TransactionReceipt;
 
 makeSuiteCleanRoom('Market Place', function () {
 
@@ -192,51 +195,60 @@ makeSuiteCleanRoom('Market Place', function () {
 
   });
 
-  context('MarketPlace', function () {
-    context('Negatives', function () {
-      it('User should fail to add market with non operator', async function () {
 
-        await expect(
-          marketPlaceContract.connect(user).addMarket(
-            derivativeNFT.address,
-             0,
-             0,
-             50,
-          )
-        ).to.be.revertedWith("Operator: caller does not have the Operator role");
+  context('setBuyPrice', function () {
+    beforeEach(async function () {
+      await expect(
+        marketPlaceContract.connect(governance).addMarket(
+          derivativeNFT.address,
+            0,
+            0,
+            50,
+        )
+      ).to.not.be.reverted;
+      
+      //approve market contract
+      await derivativeNFT.connect(user)['approve(address,uint256)'](marketPlaceContract.address, FIRST_DNFT_TOKEN_ID);
+      
+    });
 
-      });
-
-      it('User should fail to setBuyPrice with not owner of dNFT', async function () {
-        await expect( 
-          marketPlaceContract.connect(userTwo).setBuyPrice(
-            {
+    it('UserTwo should success to setBuyPrice', async function () {
+      receipt = await waitForTx(
+            marketPlaceContract.connect(user).setBuyPrice({
               soulBoundTokenId: SECOND_PROFILE_ID,
-              derivativeNFT: derivativeNFT.address, 
+              derivativeNFT: derivativeNFT.address,
               tokenId: FIRST_DNFT_TOKEN_ID,
-              putOnListUnits: 100,
-              startTime: 1673236726,
+              putOnListUnits: 11,
+              startTime: 1693236726,
               salePrice: SALE_PRICE,
             })
-        ).to.be.reverted;
-      });
+        );
 
-      it('User should fail to setBuyPrice with none exists dNFT tokenId', async function () {
-        await expect( 
-          marketPlaceContract.connect(user).setBuyPrice(
-            {
-              soulBoundTokenId: SECOND_PROFILE_ID,
-              derivativeNFT: derivativeNFT.address, 
-              tokenId: SECOND_DNFT_TOKEN_ID,
-              putOnListUnits: 100, //revert UnitsGTTotal
-              startTime: 1673236726,
-              salePrice: SALE_PRICE,
-            })
-        ).to.be.reverted;
-      });
+        expect(
+          await derivativeNFT.ownerOf(FIRST_DNFT_TOKEN_ID)
+        ).to.eq(userAddress);
 
+        expect(
+          await derivativeNFT.ownerOf(SECOND_DNFT_TOKEN_ID)
+        ).to.eq(marketPlaceContract.address);
+    
+    });
+
+    it("Emits BuyPriceSet", async () => {
+      matchEvent(
+        receipt,
+        'BuyPriceSet',
+        [
+          SECOND_PROFILE_ID,
+          derivativeNFT.address, 
+          FIRST_DNFT_TOKEN_ID,
+          SALE_PRICE,
+          userAddress,
+        ],
+      );
     });
 
   });
+  
 
 });

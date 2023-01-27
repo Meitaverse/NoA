@@ -44,7 +44,7 @@ export function handleDeposit(event: Deposit): void {
 }
 import { loadOrCreateAccount } from "./shared/accounts";
 import { toETH } from "./shared/conversions";
-import { BASIS_POINTS, ONE_BIG_INT, ZERO_ADDRESS_STRING, ZERO_BIG_DECIMAL, ZERO_BIG_INT } from "./shared/constants";
+import { BASIS_POINTS, ONE_BIG_INT, ZERO_ADDRESS_STRING, ZERO_BIG_DECIMAL, ZERO_BIG_INT } from "./shared/constants"; 
 import { loadOrCreateFsbt, loadOrCreateFsbtEscrow } from "./shared/fsbt";
 
 export function handleDepositByFallback(event: DepositByFallback): void {
@@ -93,7 +93,6 @@ export function handleExchangeSBTByEth(event: ExchangeSBTByEth): void {
         history.save()
     } 
 }
-
 
 export function handleExchangeEthBySBT(event: ExchangeEthBySBT): void {
     log.info("handleExchangeEthBySBT, event.address: {}", [event.address.toHexString()])

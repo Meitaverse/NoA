@@ -63,11 +63,13 @@ contract DerivativeNFT is
 
     uint256 internal _projectId;  //one derivativeNFT include one projectId
     uint256 internal _soulBoundTokenId;
+   
 
     address internal _receiver;
     DataTypes.FeeShareType internal _feeShareType;
 
     address public immutable MANAGER;
+
     address internal _SBT;
     address internal _banktreasury;
     address internal _marketPlace;
@@ -156,6 +158,7 @@ contract DerivativeNFT is
 
         _projectId = projectId_;
         _soulBoundTokenId = soulBoundTokenId_;
+
         _receiver = receiver_;
 
         _setDefaultRoyalty(_banktreasury, defaultRoyaltyPoints_);
@@ -210,6 +213,10 @@ contract DerivativeNFT is
 
     function getPublishIdByTokenId(uint256 tokenId) external view returns (uint256) {
         return _tokenIdByPublishId[tokenId];
+    }
+
+    function getCreator() external view returns(address) {
+        return IERC3525(_SBT).ownerOf(_soulBoundTokenId);
     }
 
     function tokenCreator(uint256 tokenId) external view returns (address) {

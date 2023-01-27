@@ -184,4 +184,6 @@ interface IDerivativeNFT {
      */
     function burn(uint256 tokenId) external;
 
+    function getCreator() external view returns(address);
+
 }

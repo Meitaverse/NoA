@@ -29,19 +29,18 @@ import {
     ApprovalValueRecord,
 } from "../generated/schema"
 
-import { loadOrCreateAccount } from "./shared/accounts";
+import { BASIS_POINTS, ONE_BIG_INT, ZERO_ADDRESS_STRING, ZERO_BIG_DECIMAL, ZERO_BIG_INT } from "./shared/constants"; 
+import { loadOrCreateProfile } from "./shared/profile";
+import { loadOrCreateSBTAsset } from "./shared/sbtAsset";
 
 export function handleProfileCreated(event: ProfileCreated): void {
     log.info("handleProfileCreated, event.address: {}", [event.address.toHexString()])
 
-    let _idString = event.params.soulBoundTokenId.toString()
-    const profile = Profile.load(_idString) || new Profile(_idString)
-    let account = loadOrCreateAccount(event.params.wallet);
+    const profile = loadOrCreateProfile(event.params.wallet);
     if (profile) {
         profile.soulBoundTokenId = event.params.soulBoundTokenId
         profile.creator = event.params.creator
         profile.wallet = event.params.wallet
-        profile.account = account.id;
         profile.nickName = event.params.nickName
         profile.imageURI = event.params.imageURI
         profile.isRemove = false
@@ -89,7 +88,6 @@ export function handleBurnSBT(event: BurnSBT): void {
         profile.isRemove = true
         profile.timestamp = event.params.timestamp
         profile.save()
-        
     } 
 }
 
@@ -98,27 +96,33 @@ export function handleSBTTransfer(event: Transfer): void {
 
     let _idString = event.params._from.toHexString() + "-" + event.params._to.toHexString()+ "-" + event.block.timestamp.toString()
     const history = SBTTransferHistory.load(_idString) || new SBTTransferHistory(_idString)
+    
+    let from = loadOrCreateProfile(event.params._from)
+    let to = loadOrCreateProfile(event.params._to)
 
     if (history) {
-        history.from = event.params._from
-        history.to = event.params._to
+        history.from = from.id
+        history.to = to.id
         history.tokenId = event.params._tokenId
         history.timestamp = event.block.timestamp
         history.save()
+        
+        if (event.params._from.toHexString() == ZERO_ADDRESS_STRING) {
+            const profile_to = loadOrCreateProfile(event.params._to)
+            const sbtAsset_to = loadOrCreateSBTAsset(profile_to)
+            sbtAsset_to.balance = BigInt.fromI32(0)
+            sbtAsset_to.timestamp = event.block.timestamp
+            sbtAsset_to.save()
+        
+        }
 
-        let _idStringSBTAsset = event.params._tokenId.toString()
-        const sbtAsset = SBTAsset.load(_idStringSBTAsset) || new SBTAsset(_idStringSBTAsset)
-
-        if (sbtAsset) {
-            sbtAsset.wallet = event.params._to
-            sbtAsset.soulBoundTokenId = event.params._tokenId
-            if (event.params._from.toHexString() == '0x0000000000000000000000000000000000000000') {
-                sbtAsset.value = BigInt.fromI32(0)
-            } else {
-                //no change
-            }
-            sbtAsset.timestamp = event.block.timestamp
-            sbtAsset.save()
+        //burn
+        if (event.params._to.toHexString() == ZERO_ADDRESS_STRING) {
+            const profile_from = loadOrCreateProfile(event.params._from)
+            //remove 
+            store.remove("Profile", event.params._from.toHex());
+            store.remove("SBTAsset", event.params._from.toHex());
+        
         }
     }
 }
@@ -143,55 +147,57 @@ export function handleSBTTransferValue(event: TransferValue): void {
 
         const sbt = SBT.bind(event.address) 
 
-        if (event.params._fromTokenId.isZero()){
-             //mint value
+        if (!event.params._fromTokenId.isZero()) {
+            const result = sbt.try_ownerOf(event.params._fromTokenId)
+            if (result.reverted) {
+                log.warning('try_ownerOf, result.reverted is true', [])
+            } else {
+                log.info("try_ownerOf, result.value: {}", [result.value.toHex()])
 
-        } else {
-
-            let _idStringSBTAssetFrom = event.params._fromTokenId.toString()
-            const sbtAssetFrom = SBTAsset.load(_idStringSBTAssetFrom) //|| new SBTAsset(_idStringSBTAssetFrom)
-    
-            if (sbtAssetFrom) {
-               
-                const result = sbt.try_balanceOf1(event.params._fromTokenId)
+                const profile_from = loadOrCreateProfile(result.value)
+                const sbtAsset_from = loadOrCreateSBTAsset(profile_from)
         
-                if (result.reverted) {
-                    log.warning('try_balanceOf1, result.reverted is true', [])
+                const result2 = sbt.try_balanceOf1(event.params._fromTokenId)
+        
+                if (result2.reverted) {
+                    log.warning('try_balanceOf1, result2.reverted is true', [])
+                    sbtAsset_from.balance = sbtAsset_from.balance.minus(event.params._value)
                 } else {
-                    log.info("try_balanceOf1, result.value: {}", [result.value.toString()])
-                    sbtAssetFrom.value = result.value
+                    log.info("try_balanceOf1, result2.value: {}", [result2.value.toString()])
+                    sbtAsset_from.balance = result2.value
                 }
+                sbtAsset_from.timestamp = event.block.timestamp
+                sbtAsset_from.save()
+
                 
-                sbtAssetFrom.timestamp = event.block.timestamp
-                sbtAssetFrom.save()
             }
         }
 
-        if (event.params._toTokenId.isZero()){
-            //burn
+        if (!event.params._toTokenId.isZero()){
+            const result = sbt.try_ownerOf(event.params._toTokenId)
+            if (result.reverted) {
+                log.warning('try_ownerOf, result.reverted is true', [])
+            } else {
+                log.info("try_ownerOf, result.value: {}", [result.value.toHex()])
 
-        } else {
-            
-            let _idStringSBTAssetTo = event.params._toTokenId.toString()
-            const sbtAssetTo = SBTAsset.load(_idStringSBTAssetTo) || new SBTAsset(_idStringSBTAssetTo)
-    
-            if (sbtAssetTo) {
-
-                const result = sbt.try_balanceOf1(event.params._toTokenId)
+                const profile_to = loadOrCreateProfile(result.value)
+                const sbtAsset_to = loadOrCreateSBTAsset(profile_to)
+                    
+                const result2 = sbt.try_balanceOf1(event.params._toTokenId)
         
-                if (result.reverted) {
-                    log.warning('try_balanceOf1, result.reverted is true', [])
+                if (result2.reverted) {
+                    log.warning('try_balanceOf1, result2.reverted is true', [])
+                    sbtAsset_to.balance = sbtAsset_to.balance.plus(event.params._value)
                 } else {
-                    log.info("try_balanceOf1, result.value: {}", [result.value.toString()])
-                    sbtAssetTo.value = result.value
+                    log.info("try_balanceOf1, result2.value: {}", [result2.value.toString()])
+                    sbtAsset_to.balance = result2.value
                 }
-                             
-                sbtAssetTo.timestamp = event.block.timestamp
-                sbtAssetTo.save()
+                sbtAsset_to.timestamp = event.block.timestamp
+                sbtAsset_to.save()
+            
             }
-
+            
         }
-    
     } 
 }
 
@@ -208,12 +214,8 @@ export function handleSBTSlotChanged(event: SlotChanged): void {
         history.newSlot = event.params._newSlot
         history.timestamp = event.block.timestamp
         history.save()
-    
     } 
 }
-
-
-
 
 export function handleApproval(event: Approval): void {
     log.info("handleApproval, event.address: {}", [event.address.toHexString()])
@@ -242,7 +244,6 @@ export function handleApprovalForAll(event: ApprovalForAll): void {
         approvalForAllRecord.approved = event.params._approved
         approvalForAllRecord.timestamp = event.block.timestamp
         approvalForAllRecord.save()
-    
     } 
 }
 
@@ -258,6 +259,5 @@ export function handleApprovalValue(event: ApprovalValue): void {
         approvalValueRecord.value = event.params._value
         approvalValueRecord.timestamp = event.block.timestamp
         approvalValueRecord.save()
-    
     } 
 }

@@ -111,6 +111,7 @@ contract ManagerV2_BadRevision is
         uint256 projectId = _generateNextProjectId();
         _projectNameHashByEventId[keccak256(bytes(project.name))] = projectId;
         InteractionLogic.createProject(
+            msg.sender,
             _DNFT_IMPL,
             SBT,
             TREASURY,

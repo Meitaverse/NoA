@@ -98,7 +98,7 @@ library DataTypes {
      * @param salePrice price for sale
      * @param royaltyBasisPoints fee point of publish, base 10000, when royalty      
      * @param amount amount of publish
-     * @param name name of publication
+     * @param name name of publication, must unique
      * @param description description of publication
      * @param canCollect bool indicate can collect by other user, default is true
      * @param materialURIs array of  material URI,  ipfs or arweave uri
@@ -319,26 +319,6 @@ library DataTypes {
         /// @notice The sale price
         uint128 salePrice;
     }
-
-    // struct Sale {
-    //     uint256 soulBoundTokenId;
-    //     uint256 projectId;
-    //     uint256 tokenId;
-    //     uint256 tokenIdOfMarket;
-    //     uint32 startTime;
-    //     uint128 salePrice;
-    //     PriceType priceType;
-    //     uint128 onSellUnits; //on sell units
-    //     uint128 seledUnits; //selled units
-    //     uint128 min; //min units
-    //     uint128 max; //max units
-    //     address derivativeNFT; //sale asset
-    //     bool isOpen;
-    //     uint256 genesisSoulBoundTokenId;
-    //     uint256 genesisRoyaltyBasisPoints;
-    //     uint256 previousSoulBoundTokenId;
-    //     uint256 previousRoyaltyBasisPoints;
-    //  }
 
     /// @notice Stores the buy price details for a specific DNFT.
     /// @dev The struct is packed into a single slot to optimize gas.

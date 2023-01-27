@@ -172,7 +172,11 @@ contract Manager is
         uint256 hubId = _hubIdBySoulBoundTokenId[soulBoundTokenId];
         if (hubId == 0) revert Errors.HubNotExists();
 
+         address _sbt = IModuleGlobals(MODULE_GLOBALS).getSBT();
+         address creator = IERC3525(_sbt).ownerOf(soulBoundTokenId);
+
         InteractionLogic.updateHub(
+            creator,
             hubId,
             name, 
             description, 
@@ -189,6 +193,7 @@ contract Manager is
         nonReentrant
         returns (uint256) 
     {
+        
         _validateCallerIsSoulBoundTokenOwnerOrDispathcher(project.soulBoundTokenId);
         
         if (_hubIdBySoulBoundTokenId[project.soulBoundTokenId] != project.hubId) revert Errors.NotHubOwner();
@@ -197,7 +202,13 @@ contract Manager is
         }
         uint256 projectId = _generateNextProjectId();
         _projectNameHashByEventId[keccak256(bytes(project.name))] = projectId;
-        InteractionLogic.createProject(
+
+        address _sbt = IModuleGlobals(MODULE_GLOBALS).getSBT();
+         address creator = IERC3525(_sbt).ownerOf(project.soulBoundTokenId);
+
+
+        address derivativeNFT = InteractionLogic.createProject(
+            creator,
             _DNFT_IMPL,
             IModuleGlobals(MODULE_GLOBALS).getSBT(),
             IModuleGlobals(MODULE_GLOBALS).getTreasury(),
@@ -208,6 +219,9 @@ contract Manager is
             _derivativeNFTByProjectId,
             _projectInfoByProjectId
         );
+
+        // store derivativeNFT map to projectId
+        _projectIdToderivativeNFT[derivativeNFT] = projectId;
 
         return projectId;
     }
@@ -233,7 +247,7 @@ contract Manager is
         return fraction;
     }
  
-    //prepare publish, and transfer from SBT value to bank treasury while amount >1
+    /// @notice prepare publish, and transfer from SBT value to bank treasury while amount >1
     function prePublish(
         DataTypes.Publication calldata publication
     ) 

@@ -92,7 +92,6 @@ dataSources:
         - DerivativeNFTAirdroped
         - DispatcherSet
         - StateSet
-        - ValueChanged
       abis:
         - name: Manager
           file: ../artifacts/contracts/Manager.sol/Manager.json
@@ -108,16 +107,17 @@ dataSources:
         - event: HubCreated(indexed uint256,indexed address,indexed
             uint256,string,string,string,uint256)
           handler: handleHubCreated
-        - event: HubUpdated(indexed uint256,string,string,string,uint256)
+        - event: HubUpdated(indexed address,string,string,string,uint256)
           handler: handleHubUpdated
-        - event: PublishPrepared((uint256,uint256,uint256,uint256,uint256,uint256,string,string,bool,string[],uint256[],address,bytes,address,bytes),uint256,uint256,uint256,uint256)
+        - event: PublishPrepared((uint256,uint256,uint256,uint256,uint256,uint256,string,string,bool,string[],uint256[],address,bytes,address,bytes),uint256,uint256,uint256)
           handler: handlePublishPrepared
-        - event: PublishUpdated(uint256,uint256,uint256,uint256,uint256,string,string,string[],uint256[],uint256,uint256)
+        - event: PublishUpdated(uint256,uint256,uint256,uint256,uint256,uint256,string,string,string[],uint256[],uint256,uint256)
           handler: handlePublishUpdated
         - event: PublishCreated(indexed uint256,indexed uint256,uint256,uint256,indexed
             uint256,uint256,bytes,uint256)
           handler: handlePublishCreated
-        - event: DerivativeNFTDeployed(indexed uint256,indexed uint256,address,uint256)
+        - event: DerivativeNFTDeployed(address,indexed uint256,indexed
+            uint256,address,uint256)
           handler: handleDerivativeNFTDeployed
         - event: DerivativeNFTCollected(uint256,address,indexed uint256,indexed
             uint256,indexed uint256,uint256,uint256,uint256)
@@ -129,8 +129,6 @@ dataSources:
           handler: handleDispatcherSet
         - event: StateSet(indexed address,indexed uint8,indexed uint8,uint256)
           handler: handleStateSet
-        - event: ValueChanged(uint256,address)
-          handler: handleValueChanged
       file: ./src/manager-mapping.ts
   - kind: ethereum/contract
     name: BankTreasury
@@ -374,6 +372,8 @@ dataSources:
         - BuyPriceInvalidated
         - BuyPriceAccepted
       abis:
+        - name: DerivativeNFT
+          file: ../artifacts/contracts/DerivativeNFT.sol/DerivativeNFT.json
         - name: MarketPlace
           file: ../artifacts/contracts/MarketPlace.sol/MarketPlace.json
         - name: Events
@@ -409,7 +409,8 @@ dataSources:
           handler: handleOfferAccepted
         - event: OfferInvalidated(indexed address,indexed uint256)
           handler: handleOfferInvalidated
-        - event: BuyPriceSet(indexed address,indexed uint256,indexed address,uint256)
+        - event: BuyPriceSet((uint256,address,address,uint256,uint256,uint256,uint256,uint32,uint128,uint128,uint128),indexed
+            address)
           handler: handleBuyPriceSet
         - event: BuyPriceCanceled(indexed address,indexed uint256)
           handler: handleBuyPriceCanceled

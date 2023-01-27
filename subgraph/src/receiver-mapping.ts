@@ -23,6 +23,5 @@ export function handleReceiverReceived(event: ReceiverReceived): void {
         history.gas = event.params.gas
         history.timestamp = event.block.timestamp
         history.save()
-        
     } 
 }

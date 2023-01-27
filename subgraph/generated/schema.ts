@@ -69,15 +69,6 @@ export class Profile extends Entity {
     this.set("wallet", Value.fromBytes(value));
   }
 
-  get account(): string {
-    let value = this.get("account");
-    return value!.toString();
-  }
-
-  set account(value: string) {
-    this.set("account", Value.fromString(value));
-  }
-
   get nickName(): string {
     let value = this.get("nickName");
     return value!.toString();
@@ -148,22 +139,22 @@ export class SBTTransferHistory extends Entity {
     this.set("id", Value.fromString(value));
   }
 
-  get from(): Bytes {
+  get from(): string {
     let value = this.get("from");
-    return value!.toBytes();
+    return value!.toString();
   }
 
-  set from(value: Bytes) {
-    this.set("from", Value.fromBytes(value));
+  set from(value: string) {
+    this.set("from", Value.fromString(value));
   }
 
-  get to(): Bytes {
+  get to(): string {
     let value = this.get("to");
-    return value!.toBytes();
+    return value!.toString();
   }
 
-  set to(value: Bytes) {
-    this.set("to", Value.fromBytes(value));
+  set to(value: string) {
+    this.set("to", Value.fromString(value));
   }
 
   get tokenId(): BigInt {
@@ -216,31 +207,22 @@ export class SBTAsset extends Entity {
     this.set("id", Value.fromString(value));
   }
 
-  get wallet(): Bytes {
-    let value = this.get("wallet");
-    return value!.toBytes();
+  get profile(): string {
+    let value = this.get("profile");
+    return value!.toString();
   }
 
-  set wallet(value: Bytes) {
-    this.set("wallet", Value.fromBytes(value));
+  set profile(value: string) {
+    this.set("profile", Value.fromString(value));
   }
 
-  get soulBoundTokenId(): BigInt {
-    let value = this.get("soulBoundTokenId");
+  get balance(): BigInt {
+    let value = this.get("balance");
     return value!.toBigInt();
   }
 
-  set soulBoundTokenId(value: BigInt) {
-    this.set("soulBoundTokenId", Value.fromBigInt(value));
-  }
-
-  get value(): BigInt {
-    let value = this.get("value");
-    return value!.toBigInt();
-  }
-
-  set value(value: BigInt) {
-    this.set("value", Value.fromBigInt(value));
+  set balance(value: BigInt) {
+    this.set("balance", Value.fromBigInt(value));
   }
 
   get timestamp(): BigInt {
@@ -840,22 +822,13 @@ export class Hub extends Entity {
     this.set("id", Value.fromString(value));
   }
 
-  get soulBoundTokenId(): BigInt {
-    let value = this.get("soulBoundTokenId");
-    return value!.toBigInt();
+  get profile(): string {
+    let value = this.get("profile");
+    return value!.toString();
   }
 
-  set soulBoundTokenId(value: BigInt) {
-    this.set("soulBoundTokenId", Value.fromBigInt(value));
-  }
-
-  get creator(): Bytes {
-    let value = this.get("creator");
-    return value!.toBytes();
-  }
-
-  set creator(value: Bytes) {
-    this.set("creator", Value.fromBytes(value));
+  set profile(value: string) {
+    this.set("profile", Value.fromString(value));
   }
 
   get hubId(): BigInt {
@@ -935,31 +908,40 @@ export class Publication extends Entity {
     this.set("id", Value.fromString(value));
   }
 
-  get soulBoundTokenId(): BigInt {
-    let value = this.get("soulBoundTokenId");
+  get publishId(): BigInt {
+    let value = this.get("publishId");
     return value!.toBigInt();
   }
 
-  set soulBoundTokenId(value: BigInt) {
-    this.set("soulBoundTokenId", Value.fromBigInt(value));
+  set publishId(value: BigInt) {
+    this.set("publishId", Value.fromBigInt(value));
   }
 
-  get hubId(): BigInt {
-    let value = this.get("hubId");
-    return value!.toBigInt();
+  get profile(): string {
+    let value = this.get("profile");
+    return value!.toString();
   }
 
-  set hubId(value: BigInt) {
-    this.set("hubId", Value.fromBigInt(value));
+  set profile(value: string) {
+    this.set("profile", Value.fromString(value));
   }
 
-  get projectId(): BigInt {
-    let value = this.get("projectId");
-    return value!.toBigInt();
+  get hub(): string {
+    let value = this.get("hub");
+    return value!.toString();
   }
 
-  set projectId(value: BigInt) {
-    this.set("projectId", Value.fromBigInt(value));
+  set hub(value: string) {
+    this.set("hub", Value.fromString(value));
+  }
+
+  get project(): string {
+    let value = this.get("project");
+    return value!.toString();
+  }
+
+  set project(value: string) {
+    this.set("project", Value.fromString(value));
   }
 
   get salePrice(): BigInt {
@@ -1070,15 +1052,6 @@ export class Publication extends Entity {
     this.set("publishModuleInitData", Value.fromBytes(value));
   }
 
-  get publishId(): BigInt {
-    let value = this.get("publishId");
-    return value!.toBigInt();
-  }
-
-  set publishId(value: BigInt) {
-    this.set("publishId", Value.fromBigInt(value));
-  }
-
   get genesisPublishId(): BigInt {
     let value = this.get("genesisPublishId");
     return value!.toBigInt();
@@ -1156,13 +1129,13 @@ export class Project extends Entity {
     this.set("projectId", Value.fromBigInt(value));
   }
 
-  get soulBoundTokenId(): BigInt {
-    let value = this.get("soulBoundTokenId");
-    return value!.toBigInt();
+  get profile(): string {
+    let value = this.get("profile");
+    return value!.toString();
   }
 
-  set soulBoundTokenId(value: BigInt) {
-    this.set("soulBoundTokenId", Value.fromBigInt(value));
+  set profile(value: string) {
+    this.set("profile", Value.fromString(value));
   }
 
   get derivativeNFT(): Bytes {
@@ -1527,22 +1500,13 @@ export class WithdrawERC3525History extends Entity {
     this.set("id", Value.fromString(value));
   }
 
-  get fromTokenId(): BigInt {
-    let value = this.get("fromTokenId");
+  get toSoulBoundTokenId(): BigInt {
+    let value = this.get("toSoulBoundTokenId");
     return value!.toBigInt();
   }
 
-  set fromTokenId(value: BigInt) {
-    this.set("fromTokenId", Value.fromBigInt(value));
-  }
-
-  get toTokenId(): BigInt {
-    let value = this.get("toTokenId");
-    return value!.toBigInt();
-  }
-
-  set toTokenId(value: BigInt) {
-    this.set("toTokenId", Value.fromBigInt(value));
+  set toSoulBoundTokenId(value: BigInt) {
+    this.set("toSoulBoundTokenId", Value.fromBigInt(value));
   }
 
   get value(): BigInt {
@@ -4489,21 +4453,13 @@ export class Account extends Entity {
     this.set("id", Value.fromString(value));
   }
 
-  get profile(): string | null {
+  get profile(): string {
     let value = this.get("profile");
-    if (!value || value.kind == ValueKind.NULL) {
-      return null;
-    } else {
-      return value.toString();
-    }
+    return value!.toString();
   }
 
-  set profile(value: string | null) {
-    if (!value) {
-      this.unset("profile");
-    } else {
-      this.set("profile", Value.fromString(<string>value));
-    }
+  set profile(value: string) {
+    this.set("profile", Value.fromString(value));
   }
 
   get creator(): string | null {
@@ -7888,6 +7844,15 @@ export class NftMarketBuyNow extends Entity {
     this.set("derivativeNFT", Value.fromString(value));
   }
 
+  get project(): string {
+    let value = this.get("project");
+    return value!.toString();
+  }
+
+  set project(value: string) {
+    this.set("project", Value.fromString(value));
+  }
+
   get status(): string {
     let value = this.get("status");
     return value!.toString();
@@ -7913,6 +7878,42 @@ export class NftMarketBuyNow extends Entity {
 
   set amountInSBTValue(value: BigDecimal) {
     this.set("amountInSBTValue", Value.fromBigDecimal(value));
+  }
+
+  get tokenIdEscrow(): BigInt {
+    let value = this.get("tokenIdEscrow");
+    return value!.toBigInt();
+  }
+
+  set tokenIdEscrow(value: BigInt) {
+    this.set("tokenIdEscrow", Value.fromBigInt(value));
+  }
+
+  get onSellUnits(): BigInt {
+    let value = this.get("onSellUnits");
+    return value!.toBigInt();
+  }
+
+  set onSellUnits(value: BigInt) {
+    this.set("onSellUnits", Value.fromBigInt(value));
+  }
+
+  get seledUnits(): BigInt {
+    let value = this.get("seledUnits");
+    return value!.toBigInt();
+  }
+
+  set seledUnits(value: BigInt) {
+    this.set("seledUnits", Value.fromBigInt(value));
+  }
+
+  get startTime(): BigInt {
+    let value = this.get("startTime");
+    return value!.toBigInt();
+  }
+
+  set startTime(value: BigInt) {
+    this.set("startTime", Value.fromBigInt(value));
   }
 
   get dateCreated(): BigInt {

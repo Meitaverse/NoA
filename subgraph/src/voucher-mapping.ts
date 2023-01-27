@@ -33,7 +33,6 @@ export function handleMintNFTVoucher(event: MintNFTVoucher): void {
         history.sbtValue = event.params.sbtValue
         history.generateTimestamp = event.params.generateTimestamp
         history.save()
-        
     } 
 }
 
@@ -48,7 +47,6 @@ export function handleUserAmountLimitSet(event: UserAmountLimitSet): void {
         history.userAmountLimit = event.params.userAmountLimit
         history.timestamp = event.params.timestamp
         history.save()
-        
     } 
 }
 
@@ -66,7 +64,6 @@ export function handleGenerateVoucher(event: GenerateVoucher): void {
         voucherRecord.generateTimestamp = event.params.generateTimestamp
         voucherRecord.endTimestamp = event.params.endTimestamp
         voucherRecord.save()
-        
     } 
 }
 
@@ -110,7 +107,6 @@ export function handleTransferSingle(event: TransferSingle): void {
         voucherAssetFrom.value = voucherAssetFrom.value.plus(event.params.value)
         voucherAssetFrom.timestamp = event.block.timestamp
         voucherAssetFrom.save()
-        
     } 
 
     const voucherAssetTo = VoucherAsset.load(_idString) || new VoucherAsset(_idString)

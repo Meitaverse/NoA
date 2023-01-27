@@ -98,6 +98,7 @@ contract ManagerV2 is IManagerV2, NFTDerivativeProtocolMultiState, MockManagerV2
         uint256 projectId = _generateNextProjectId();
         _projectNameHashByEventId[keccak256(bytes(project.name))] = projectId;
         address derivativeNFT = InteractionLogic.createProject(
+             msg.sender,
             _DNFT_IMPL,
             SBT,
             TREASURY,

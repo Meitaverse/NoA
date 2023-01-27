@@ -1,34 +1,42 @@
 # Profile record
 type Profile @entity {
+  "The wallet's address"
   id: ID!
+
+  "The Soul Bound Token ID"
   soulBoundTokenId: BigInt!
+
   creator: Bytes!
+
   wallet: Bytes!
 
-  "The profile's account information"
-  account: Account!
-
   nickName: String!
+
   imageURI: String!
+
   isRemove: Boolean!
+
   timestamp: BigInt!
 }
 
 # SBT Transfer history
 type SBTTransferHistory @entity {
   id: ID!
-  from: Bytes!
-  to: Bytes!
+  from: Profile!
+  to: Profile!
   tokenId: BigInt!
   timestamp: BigInt!
 }
 
 # SBT Asset
 type SBTAsset @entity {
+  "The wallet's address"
   id: ID!
-  wallet: Bytes!
-  soulBoundTokenId: BigInt!
-  value: BigInt!
+
+  profile: Profile!
+
+  balance: BigInt!
+
   timestamp: BigInt!
 }
 
@@ -107,9 +115,11 @@ type DerivativeNFTImageURISetHistory @entity {
 
 # Hub
 type Hub @entity {
+  "The hub creator's address"
   id: ID!
-  soulBoundTokenId: BigInt!
-  creator: Bytes!
+
+  profile: Profile!
+
   hubId: BigInt!
   name: String!
   description: String!
@@ -119,10 +129,17 @@ type Hub @entity {
 
 # publication
 type Publication @entity {
+  "The Publication's id"
   id: ID!
-  soulBoundTokenId: BigInt!
-  hubId: BigInt!
-  projectId: BigInt!
+
+  publishId: BigInt!
+
+  profile: Profile!
+
+  hub: Hub!
+
+  project: Project!
+
   salePrice: BigInt!
   royaltyBasisPoints: BigInt!
   amount: BigInt!
@@ -135,7 +152,7 @@ type Publication @entity {
   collectModuleInitData: Bytes!
   publishModule: Bytes!
   publishModuleInitData: Bytes!
-  publishId: BigInt!
+
   genesisPublishId: BigInt!
   previousPublishId: BigInt!
   publishTaxAmount: BigInt!
@@ -146,7 +163,7 @@ type Publication @entity {
 type Project @entity {
   id: ID!
   projectId: BigInt!
-  soulBoundTokenId: BigInt!
+  profile: Profile!
   derivativeNFT: Bytes!
   timestamp: BigInt!
 }
@@ -506,26 +523,6 @@ type MarketPlaceERC3525ReceivedHistory @entity {
   timestamp: BigInt!
 }
 
-type PublishSaleRecord @entity {
-  id: ID!
-  soulBoundTokenId: BigInt!
-  projectId: BigInt!
-  tokenId: BigInt!
-  onSellUnits: BigInt!
-  saledUnits: BigInt!
-  startTime: BigInt!
-  preSalePrice: BigInt!
-  salePrice: BigInt!
-  priceType: Int!
-  min: BigInt!
-  max: BigInt!
-  derivativeNFT: Bytes!
-  tokenIdOfMarket: BigInt!
-  saleId: BigInt!
-  isRemove: Boolean!
-  timestamp: BigInt!
-}
-
 type TradedHistory @entity {
   id: ID!
   saleId: Int!
@@ -546,7 +543,7 @@ type Account @entity {
   id: ID!
 
   "Link to profile"
-  profile: Profile @derivedFrom(field: "account")
+  profile: Profile!
 
   "Link to creator details if this account is or ever was one"
   creator: Creator @derivedFrom(field: "account")
@@ -1438,6 +1435,9 @@ type NftMarketBuyNow @entity {
   "The NFT contract for this NFT"
   derivativeNFT: DerivativeNFTContract!
 
+  "The Project of this buy now if for"
+  project: Project!
+
   "The current status of this buy now"
   status: NftMarketBuyNowStatus!
 
@@ -1446,6 +1446,18 @@ type NftMarketBuyNow @entity {
 
   "The value being bought at for this NFT"
   amountInSBTValue: BigDecimal!
+
+  "The units put on sell for this NFT"
+  tokenIdEscrow: BigInt!
+
+  "The units put on sell for this NFT"
+  onSellUnits: BigInt!
+
+  "The units put on sell for this NFT"
+  seledUnits: BigInt!
+
+  "The date/time the buyer could buy in seconds since Unix epoch"
+  startTime: BigInt!
 
   "The date/time the buy now was initially created in seconds since Unix epoch"
   dateCreated: BigInt!

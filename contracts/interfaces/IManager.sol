@@ -174,7 +174,8 @@ interface IManager {
     ) external returns (uint256);
 
     /**
-     * @notice Prepare publish a Publication
+     * @notice Prepare publish a Publication.
+     *         A new publishId will be generated.
      *
      * @param publication  Data of Publication
      *

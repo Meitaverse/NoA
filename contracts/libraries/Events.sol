@@ -29,17 +29,15 @@ library Events {
      * @dev Emitted when prepare a publish
      *
      * @param publication The Publication data
-     * @param publishId The publish Id
+     * @param publishId The publish Id, 
      * @param previousPublishId The previous publish Id
      * @param publishTaxAmount The publish tax amount
-     * @param timestamp The current block timestamp.
      */
     event PublishPrepared(
         DataTypes.Publication publication,
         uint256 publishId,
         uint256 previousPublishId,
-        uint256 publishTaxAmount,
-        uint256 timestamp
+        uint256 publishTaxAmount
     );
 
     /**
@@ -58,6 +56,7 @@ library Events {
      * @param timestamp The current block timestamp.
      */
     event PublishUpdated(
+        uint256 projectId,
         uint256 publishId,
         uint256 soulBoundTokenId,
         uint256 salePrice,
@@ -121,14 +120,14 @@ library Events {
     /**
      * @dev Emitted when a hub is updated.
      *
-     * @param hubId The hub ID.
+     * @param creator The hub creator.
      * @param name The name set for the hub.
      * @param description The description set for the hub.
      * @param imageURI The image uri set for the profile.
      * @param timestamp The current block timestamp.
      */
     event HubUpdated(
-        uint256 indexed hubId,
+        address indexed creator,
         string name,
         string description,
         string imageURI,
@@ -384,12 +383,14 @@ library Events {
 
     /**
      * @dev Emitted when a DerivativeNFT clone is deployed using a lazy deployment pattern.
+     * @param creator The project creator.
      * @param projectId The project ID.
      * @param soulBoundTokenId The user's SoulBound token ID.
      * @param derivativeNFT The address of the newly deployed DerivativeNFT clone.
      * @param timestamp The current block timestamp.
      */
     event DerivativeNFTDeployed(
+        address creator,
         uint256 indexed projectId,
         uint256 indexed soulBoundTokenId,
         address derivativeNFT,
@@ -592,17 +593,18 @@ library Events {
      * @param tokenId The id of the DNFT.
      */
     event BuyPriceInvalidated(address indexed derivativeNFT, uint256 indexed tokenId);
+
     /**
      * @notice Emitted when a buy price is set by the owner of an DNFT.
      * @dev The DNFT is transferred into the market contract for escrow unless it was already escrowed,
      * e.g. for auction listing.
-     * @param derivativeNFT The address of the DNFT contract.
-     * @param tokenId The id of the DNFT.
+     * @param buyPrice The BuyPrice data.
      * @param seller The address of the DNFT owner which set the buy price.
-     * @param price The price of the DNFT.
      */
-    event BuyPriceSet(address indexed derivativeNFT, uint256 indexed tokenId, address indexed seller, uint256 price);
-
+    event BuyPriceSet(
+        DataTypes.BuyPrice buyPrice,
+        address indexed seller
+    );
 
     /**
      * @notice Emitted when an offer is accepted,
@@ -1113,12 +1115,6 @@ library Events {
         uint256 previousBalance, 
         uint256 newBalance
     );
-
-    /**
-     * @dev Emitted when the stored value changes
-     *  just for governor contract test
-     */
-    event ValueChanged(uint256 newValue, address caller);
 
     event RoyaltySet(
         uint256 indexed soulBoundTokenId,

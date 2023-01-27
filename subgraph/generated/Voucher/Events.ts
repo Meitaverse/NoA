@@ -281,20 +281,60 @@ export class BuyPriceSet__Params {
     this._event = event;
   }
 
-  get derivativeNFT(): Address {
-    return this._event.parameters[0].value.toAddress();
-  }
-
-  get tokenId(): BigInt {
-    return this._event.parameters[1].value.toBigInt();
+  get buyPrice(): BuyPriceSetBuyPriceStruct {
+    return changetype<BuyPriceSetBuyPriceStruct>(
+      this._event.parameters[0].value.toTuple()
+    );
   }
 
   get seller(): Address {
-    return this._event.parameters[2].value.toAddress();
+    return this._event.parameters[1].value.toAddress();
+  }
+}
+
+export class BuyPriceSetBuyPriceStruct extends ethereum.Tuple {
+  get soulBoundTokenIdSeller(): BigInt {
+    return this[0].toBigInt();
   }
 
-  get price(): BigInt {
-    return this._event.parameters[3].value.toBigInt();
+  get seller(): Address {
+    return this[1].toAddress();
+  }
+
+  get derivativeNFT(): Address {
+    return this[2].toAddress();
+  }
+
+  get projectId(): BigInt {
+    return this[3].toBigInt();
+  }
+
+  get publishId(): BigInt {
+    return this[4].toBigInt();
+  }
+
+  get tokenId(): BigInt {
+    return this[5].toBigInt();
+  }
+
+  get tokenIdEscrow(): BigInt {
+    return this[6].toBigInt();
+  }
+
+  get startTime(): BigInt {
+    return this[7].toBigInt();
+  }
+
+  get salePrice(): BigInt {
+    return this[8].toBigInt();
+  }
+
+  get onSellUnits(): BigInt {
+    return this[9].toBigInt();
+  }
+
+  get seledUnits(): BigInt {
+    return this[10].toBigInt();
   }
 }
 
@@ -601,20 +641,24 @@ export class DerivativeNFTDeployed__Params {
     this._event = event;
   }
 
-  get projectId(): BigInt {
-    return this._event.parameters[0].value.toBigInt();
+  get creator(): Address {
+    return this._event.parameters[0].value.toAddress();
   }
 
-  get soulBoundTokenId(): BigInt {
+  get projectId(): BigInt {
     return this._event.parameters[1].value.toBigInt();
   }
 
+  get soulBoundTokenId(): BigInt {
+    return this._event.parameters[2].value.toBigInt();
+  }
+
   get derivativeNFT(): Address {
-    return this._event.parameters[2].value.toAddress();
+    return this._event.parameters[3].value.toAddress();
   }
 
   get timestamp(): BigInt {
-    return this._event.parameters[3].value.toBigInt();
+    return this._event.parameters[4].value.toBigInt();
   }
 }
 
@@ -1135,8 +1179,8 @@ export class HubUpdated__Params {
     this._event = event;
   }
 
-  get hubId(): BigInt {
-    return this._event.parameters[0].value.toBigInt();
+  get creator(): Address {
+    return this._event.parameters[0].value.toAddress();
   }
 
   get name(): string {
@@ -1900,10 +1944,6 @@ export class PublishPrepared__Params {
   get publishTaxAmount(): BigInt {
     return this._event.parameters[3].value.toBigInt();
   }
-
-  get timestamp(): BigInt {
-    return this._event.parameters[4].value.toBigInt();
-  }
 }
 
 export class PublishPreparedPublicationStruct extends ethereum.Tuple {
@@ -1981,48 +2021,52 @@ export class PublishUpdated__Params {
     this._event = event;
   }
 
-  get publishId(): BigInt {
+  get projectId(): BigInt {
     return this._event.parameters[0].value.toBigInt();
   }
 
-  get soulBoundTokenId(): BigInt {
+  get publishId(): BigInt {
     return this._event.parameters[1].value.toBigInt();
   }
 
-  get salePrice(): BigInt {
+  get soulBoundTokenId(): BigInt {
     return this._event.parameters[2].value.toBigInt();
   }
 
-  get royaltyBasisPoints(): BigInt {
+  get salePrice(): BigInt {
     return this._event.parameters[3].value.toBigInt();
   }
 
-  get amount(): BigInt {
+  get royaltyBasisPoints(): BigInt {
     return this._event.parameters[4].value.toBigInt();
   }
 
-  get name(): string {
-    return this._event.parameters[5].value.toString();
+  get amount(): BigInt {
+    return this._event.parameters[5].value.toBigInt();
   }
 
-  get description(): string {
+  get name(): string {
     return this._event.parameters[6].value.toString();
   }
 
+  get description(): string {
+    return this._event.parameters[7].value.toString();
+  }
+
   get materialURIs(): Array<string> {
-    return this._event.parameters[7].value.toStringArray();
+    return this._event.parameters[8].value.toStringArray();
   }
 
   get fromTokenIds(): Array<BigInt> {
-    return this._event.parameters[8].value.toBigIntArray();
+    return this._event.parameters[9].value.toBigIntArray();
   }
 
   get addedPublishTaxes(): BigInt {
-    return this._event.parameters[9].value.toBigInt();
+    return this._event.parameters[10].value.toBigInt();
   }
 
   get timestamp(): BigInt {
-    return this._event.parameters[10].value.toBigInt();
+    return this._event.parameters[11].value.toBigInt();
   }
 }
 
@@ -2502,54 +2546,32 @@ export class UserAmountLimitSet__Params {
   }
 }
 
-export class ValueChanged extends ethereum.Event {
-  get params(): ValueChanged__Params {
-    return new ValueChanged__Params(this);
-  }
-}
-
-export class ValueChanged__Params {
-  _event: ValueChanged;
-
-  constructor(event: ValueChanged) {
-    this._event = event;
-  }
-
-  get newValue(): BigInt {
-    return this._event.parameters[0].value.toBigInt();
-  }
-
-  get caller(): Address {
-    return this._event.parameters[1].value.toAddress();
-  }
-}
-
 export class WithdrawnEarnestMoney extends ethereum.Event {
-  get params(): WithdrawERC3525__Params {
-    return new WithdrawERC3525__Params(this);
+  get params(): WithdrawnEarnestMoney__Params {
+    return new WithdrawnEarnestMoney__Params(this);
   }
 }
 
-export class WithdrawERC3525__Params {
+export class WithdrawnEarnestMoney__Params {
   _event: WithdrawnEarnestMoney;
 
   constructor(event: WithdrawnEarnestMoney) {
     this._event = event;
   }
 
-  get fromTokenId(): BigInt {
+  get toSoulBoundTokenId(): BigInt {
     return this._event.parameters[0].value.toBigInt();
   }
 
-  get toTokenId(): BigInt {
-    return this._event.parameters[1].value.toBigInt();
+  get to(): Address {
+    return this._event.parameters[1].value.toAddress();
   }
 
   get value(): BigInt {
     return this._event.parameters[2].value.toBigInt();
   }
 
-  get timestamp(): BigInt {
+  get availableBalance(): BigInt {
     return this._event.parameters[3].value.toBigInt();
   }
 }

@@ -13,7 +13,6 @@ import {
     DerivativeNFTAirdroped,
     DispatcherSet,
     StateSet,
-    ValueChanged,
 } from "../generated/Manager/Events"
 
 import {
@@ -32,6 +31,11 @@ import {
     Dispatcher,
     StateSetHistory,
 } from "../generated/schema"
+
+import { loadOrCreateProject } from "./shared/project";
+import { loadOrCreateHub } from "./shared/hub";
+import { loadOrCreateProfile } from "./shared/profile";
+import { loadOrCreatePublication } from "./shared/publication";
 
 export function handleEmergencyAdminSet(event: EmergencyAdminSet): void {
     log.info("handleEmergencyAdminSet, event.address: {}", [event.address.toHexString()])
@@ -64,119 +68,157 @@ export function handleManagerGovernanceSet(event: ManagerGovernanceSet): void {
 export function handleHubCreated(event: HubCreated): void {
     log.info("handleHubCreated, event.address: {}", [event.address.toHexString()])
 
-    let _idString = event.params.hubId.toString()
-    const hub = Hub.load(_idString) || new Hub(_idString)
-    if (hub) {
-        hub.soulBoundTokenId = event.params.soulBoundTokenId
-        hub.creator = event.params.creator
-        hub.hubId = event.params.hubId
-        hub.name = event.params.name
-        hub.description = event.params.description
-        hub.imageURI = event.params.imageURI
-        hub.timestamp = event.block.timestamp
-        hub.save()
-    } 
+    const profile = loadOrCreateProfile(event.params.creator)
+
+    const hub = loadOrCreateHub(profile) 
+
+    hub.profile = profile.id
+    hub.hubId = event.params.hubId
+    hub.name = event.params.name
+    hub.description = event.params.description
+    hub.imageURI = event.params.imageURI
+    hub.timestamp = event.block.timestamp
+    hub.save()
+    
 }
 
 export function handleHubUpdated(event: HubUpdated): void {
     log.info("handleHubUpdated, event.address: {}", [event.address.toHexString()])
 
-    let _idString =  event.params.hubId.toString()
-    const hub = Hub.load(_idString)
-    if (hub) {
-        hub.hubId = event.params.hubId
-        hub.name = event.params.name
-        hub.description = event.params.description
-        hub.imageURI = event.params.imageURI
-        hub.timestamp = event.block.timestamp
-        hub.save()
-    } 
+    const profile = loadOrCreateProfile(event.params.creator)
+
+    const hub = loadOrCreateHub(profile) 
+
+    hub.profile = profile.id
+    hub.name = event.params.name
+    hub.description = event.params.description
+    hub.imageURI = event.params.imageURI
+    hub.timestamp = event.block.timestamp
+    hub.save()
 }
 
 export function handlePublishPrepared(event: PublishPrepared): void {
     log.info("handlePublishPrepared, event.address: {}", [event.address.toHexString()])
 
-    let _idString = event.params.publishId.toString()
-    const publication = Publication.load(_idString) || new Publication(_idString)
-    if (publication) {
-        publication.soulBoundTokenId = event.params.publication.soulBoundTokenId
-        publication.hubId = event.params.publication.hubId
-        publication.projectId = event.params.publication.projectId
-        publication.salePrice = event.params.publication.salePrice
-        publication.royaltyBasisPoints = event.params.publication.royaltyBasisPoints
-        publication.amount = event.params.publication.amount
-        publication.name = event.params.publication.name
-        publication.description = event.params.publication.description
-        publication.canCollect = event.params.publication.canCollect
-        publication.materialURIs = event.params.publication.materialURIs
-        publication.fromTokenIds = event.params.publication.fromTokenIds
-        publication.collectModule = event.params.publication.collectModule
-        publication.collectModuleInitData = event.params.publication.collectModuleInitData
-        publication.publishModule = event.params.publication.publishModule
-        publication.publishModuleInitData = event.params.publication.publishModuleInitData
-        publication.publishId = event.params.publishId
-        publication.previousPublishId = event.params.previousPublishId
-        if (event.params.publication.fromTokenIds.length > 0 ) {
-            const manager = Manager.bind(event.address) 
-            const result = manager.try_getGenesisPublishIdByProjectId(event.params.publication.projectId)
-                if (result.reverted) {
-                    log.warning('try_getGenesisPublishIdByProjectId, result.reverted is true', [])
-                } else {
-                    log.info("try_getGenesisPublishIdByProjectId ok, result.value: {}", [result.value.toString()])
-                    publication.genesisPublishId = result.value
-                }
-        } else {
-            publication.genesisPublishId = event.params.publishId
-        }
-        publication.publishTaxAmount = event.params.publishTaxAmount
-        publication.timestamp = event.params.timestamp
-        publication.save()
-    } 
+    const manager = Manager.bind(event.address) 
+    const result = manager.try_getWalletBySoulBoundTokenId(event.params.publication.soulBoundTokenId)
+    if (result.reverted) {
+        log.warning('try_getWalletBySoulBoundTokenId, result.reverted is true', [])
+    } else {
+        log.info("try_getWalletBySoulBoundTokenId, result.value: {}", [result.value.toHex()])
+        let creator = result.value
+        const profile = loadOrCreateProfile(creator)
 
+        const hub = loadOrCreateHub(profile)
+
+        const result2 = manager.try_getDerivativeNFT(event.params.publication.projectId)
+        if (result2.reverted) {
+            log.warning('try_getDerivativeNFT, result.reverted is true', [])
+        } else {
+            let derivativeNFT = result2.value
+            const project = loadOrCreateProject(profile, derivativeNFT)
+
+
+            let publication = loadOrCreatePublication(creator, derivativeNFT,  event.params.publishId)
+            if (publication) {
+                publication.publishId = event.params.publishId
+                publication.profile = profile.id
+                publication.hub = hub.id
+                publication.project = project.id
+                publication.salePrice = event.params.publication.salePrice
+                publication.royaltyBasisPoints = event.params.publication.royaltyBasisPoints
+                publication.amount = event.params.publication.amount
+                publication.name = event.params.publication.name
+                publication.description = event.params.publication.description
+                publication.canCollect = event.params.publication.canCollect
+                publication.materialURIs = event.params.publication.materialURIs
+                publication.fromTokenIds = event.params.publication.fromTokenIds
+                publication.collectModule = event.params.publication.collectModule
+                publication.collectModuleInitData = event.params.publication.collectModuleInitData
+                publication.publishModule = event.params.publication.publishModule
+                publication.publishModuleInitData = event.params.publication.publishModuleInitData
+                publication.previousPublishId = event.params.previousPublishId
+                if (event.params.publication.fromTokenIds.length > 0 ) {
+                    const manager = Manager.bind(event.address) 
+                    const result = manager.try_getGenesisPublishIdByProjectId(event.params.publication.projectId)
+                        if (result.reverted) {
+                            log.warning('try_getGenesisPublishIdByProjectId, result.reverted is true', [])
+                        } else {
+                            log.info("try_getGenesisPublishIdByProjectId ok, result.value: {}", [result.value.toString()])
+                            publication.genesisPublishId = result.value
+                        }
+                } else {
+                    publication.genesisPublishId = event.params.publishId
+                }
+                publication.publishTaxAmount = event.params.publishTaxAmount
+                publication.timestamp = event.block.timestamp
+                publication.save()
+            } 
+        }
+    }
 }
 
 export function handlePublishUpdated(event: PublishUpdated): void {
     log.info("handlePublishUpdated, event.address: {}", [event.address.toHexString()])
+    const manager = Manager.bind(event.address) 
+    const result = manager.try_getWalletBySoulBoundTokenId(event.params.soulBoundTokenId)
+    if (result.reverted) {
+        log.warning('try_getWalletBySoulBoundTokenId, result.reverted is true', [])
+    } else {
+        log.info("try_getWalletBySoulBoundTokenId, result.value: {}", [result.value.toHex()])
+        let creator = result.value
+        const profile = loadOrCreateProfile(creator)
 
-    let _idString = event.params.publishId.toString()
-    const publication = Publication.load(_idString)
-    if (publication) {
-        publication.salePrice = event.params.salePrice
-        publication.royaltyBasisPoints = event.params.royaltyBasisPoints
-        publication.amount = event.params.amount
-        publication.name = event.params.name
-        publication.description = event.params.description
-        publication.materialURIs = event.params.materialURIs
-        publication.fromTokenIds = event.params.fromTokenIds
-        if (event.params.fromTokenIds.length > 0 ) {
-            const manager = Manager.bind(event.address) 
-            const result = manager.try_getGenesisPublishIdByProjectId(publication.projectId)
-                if (result.reverted) {
-                    log.warning('try_getGenesisPublishIdByProjectId, result.reverted is true', [])
-                } else {
-                    log.info("try_getGenesisPublishIdByProjectId ok, result.value: {}", [result.value.toString()])
-                    publication.genesisPublishId = result.value
-                }
+        const hub = loadOrCreateHub(profile)
+
+        const result2 = manager.try_getDerivativeNFT(event.params.projectId)
+        if (result2.reverted) {
+            log.warning('try_getDerivativeNFT, result.reverted is true', [])
         } else {
-            publication.genesisPublishId = event.params.publishId
-        }
+            let derivativeNFT = result2.value
+            const project = loadOrCreateProject(profile, derivativeNFT)
 
-        publication.publishId = event.params.publishId
-        publication.publishTaxAmount = publication.publishTaxAmount.plus(event.params.addedPublishTaxes)
-        publication.timestamp = event.params.timestamp
-        publication.save()
-    } 
+            let publication = loadOrCreatePublication(creator, derivativeNFT,  event.params.publishId)
+            if (publication) {
+                publication.salePrice = event.params.salePrice
+                publication.royaltyBasisPoints = event.params.royaltyBasisPoints
+                publication.amount = event.params.amount
+                publication.name = event.params.name
+                publication.description = event.params.description
+                publication.materialURIs = event.params.materialURIs
+                publication.fromTokenIds = event.params.fromTokenIds
+                if (event.params.fromTokenIds.length > 0 ) {
+                    const manager = Manager.bind(event.address) 
+                    const result = manager.try_getGenesisPublishIdByProjectId(event.params.projectId)
+                        if (result.reverted) {
+                            log.warning('try_getGenesisPublishIdByProjectId, result.reverted is true', [])
+                        } else {
+                            log.info("try_getGenesisPublishIdByProjectId ok, result.value: {}", [result.value.toString()])
+                            publication.genesisPublishId = result.value
+                        }
+                } else {
+                    publication.genesisPublishId = event.params.publishId
+                }
+        
+                publication.publishId = event.params.publishId
+                publication.publishTaxAmount = publication.publishTaxAmount.plus(event.params.addedPublishTaxes)
+                publication.timestamp = event.params.timestamp
+                publication.save()
+            } 
+        
+        }
+    }
 
 }
 
 export function handleDerivativeNFTDeployed(event: DerivativeNFTDeployed): void {
     log.info("handleDerivativeNFTDeployed, event.address: {}", [event.address.toHexString()])
-
-    let _idString = event.params.soulBoundTokenId.toString() + "-" +  event.params.projectId.toString()
-    const project = Project.load(_idString) || new Project(_idString)
+    const profile = loadOrCreateProfile(event.params.creator)
+    
+    const project = loadOrCreateProject(profile, event.params.derivativeNFT)
     if (project) {
-        project.soulBoundTokenId = event.params.soulBoundTokenId
         project.projectId = event.params.projectId
+        project.profile = profile.id
         project.derivativeNFT = event.params.derivativeNFT
         project.timestamp = event.block.timestamp
         project.save()
@@ -262,13 +304,4 @@ export function handleStateSet(event: StateSet): void {
         history.timestamp = event.params.timestamp
         history.save()
     } 
-}
-
-export function handleValueChanged(event: ValueChanged): void {
-    log.info("handleValueChanged, event.address: {}, value: {}, caller:{}", 
-        [
-            event.address.toHexString(),
-            event.params.newValue.toString(),
-            event.params.caller.toHexString()
-        ])
 }

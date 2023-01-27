@@ -549,6 +549,21 @@ export class DerivativeNFT extends ethereum.SmartContract {
     return ethereum.CallResult.fromValue(value[0].toAddress());
   }
 
+  getCreator(): Address {
+    let result = super.call("getCreator", "getCreator():(address)", []);
+
+    return result[0].toAddress();
+  }
+
+  try_getCreator(): ethereum.CallResult<Address> {
+    let result = super.tryCall("getCreator", "getCreator():(address)", []);
+    if (result.reverted) {
+      return new ethereum.CallResult();
+    }
+    let value = result.value;
+    return ethereum.CallResult.fromValue(value[0].toAddress());
+  }
+
   getDefaultRoyalty(): BigInt {
     let result = super.call(
       "getDefaultRoyalty",

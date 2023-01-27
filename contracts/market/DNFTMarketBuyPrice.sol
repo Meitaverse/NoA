@@ -132,12 +132,14 @@ abstract contract DNFTMarketBuyPrice is
 
     uint256 publishId = IDerivativeNFT(saleParam.derivativeNFT).getPublishIdByTokenId(saleParam.tokenId);
 
-    //save to  
+    //save to storage
     DataTypes.BuyPrice storage buyPrice = dnftContractToTokenIdToBuyPrice[saleParam.derivativeNFT][saleParam.tokenId];
     address seller = buyPrice.seller;
 
-    buyPrice.soulBoundTokenIdSeller = manager.getSoulBoundTokenIdByWallet(msg.sender);
-
+    buyPrice.soulBoundTokenIdSeller = saleParam.soulBoundTokenId;
+    buyPrice.tokenId = saleParam.tokenId;
+    buyPrice.derivativeNFT = saleParam.derivativeNFT;
+    
     if (buyPrice.salePrice == saleParam.salePrice && seller != address(0)) {
       revert Errors.DNFTMarketBuyPrice_Price_Already_Set();
     }
@@ -145,7 +147,6 @@ abstract contract DNFTMarketBuyPrice is
       // This ensures that no data is lost when storing the price as `uint96`.
       revert Errors.DNFTMarketBuyPrice_Price_Too_High();
     }
-
     buyPrice.projectId = projectId;    
     buyPrice.publishId = publishId;    
 
@@ -157,6 +158,7 @@ abstract contract DNFTMarketBuyPrice is
     if (newTokenId > 0 && leftUnits == saleParam.putOnListUnits) {
         return newTokenId;
     } 
+    
 
     buyPrice.onSellUnits = leftUnits;
     buyPrice.seledUnits = saleParam.putOnListUnits - leftUnits;
@@ -169,6 +171,7 @@ abstract contract DNFTMarketBuyPrice is
       //must approve manager before
       uint256 tokenIdEscrow = _transferToEscrow(saleParam.derivativeNFT, saleParam.tokenId, buyPrice.onSellUnits);
 
+      
       buyPrice.tokenIdEscrow = tokenIdEscrow;
 
       // The salePrice was not previously set for this DNFT, store the seller.
@@ -179,7 +182,10 @@ abstract contract DNFTMarketBuyPrice is
       revert Errors.DNFTMarketBuyPrice_Only_Owner_Can_Set_Price(seller);
     }
 
-    emit Events.BuyPriceSet(saleParam.derivativeNFT, saleParam.tokenId, msg.sender, saleParam.salePrice);
+    emit Events.BuyPriceSet(
+      buyPrice, 
+      msg.sender
+    );
 
     return newTokenId;
   }
