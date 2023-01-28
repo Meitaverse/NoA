@@ -79,6 +79,20 @@ type ApprovalForAllRecord @entity {
   timestamp: BigInt!
 }    
 
+type DnftAccountApproval @entity {
+  "tokenAddress-owner-spender"
+  id: ID!
+
+  "The token's contract"
+  dnftContract: DNftContract!
+
+  "The account which granted this approval"
+  owner: Account!
+
+  "The account which is authorized to transfer NFTs held by the owner"
+  spender: Account!
+}
+
 # ApprovalValue 
 type ApprovalValueRecord @entity {
   id: ID!

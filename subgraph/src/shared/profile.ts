@@ -14,7 +14,6 @@ export function loadOrCreateProfile(address: Address): Profile {
     profile.soulBoundTokenId = ZERO_BIG_INT;
     profile.nickName = '';
     profile.imageURI = '';
-    profile.isRemove = false;
     profile.timestamp = ZERO_BIG_INT;
     profile.save();
   }

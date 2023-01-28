@@ -208,6 +208,8 @@ library Errors {
   error NotSeller();
   error Cannot_Deposit_For_Lockup_With_SoulBoundTokenId_Zero();
   error Must_Lockup_Non_Zero_Amount();
+  error Must_Deposit_Non_Zero_Amount();
+  error Must_Escrow_Non_Zero_Amount();
   error Only_BITSOUL_Market_Allowed();
   error Expiration_Too_Far_In_Future();
   error Invalid_Lockup_Duration();
@@ -220,4 +222,5 @@ library Errors {
   error DNFTMarketOffer_BuyPrice_Insufficient_Units(uint256 units);
   error Insufficient_Escrow(uint256 amount);
   error SBT_No_Funds_To_Withdraw();
+  error Market_DNFT_Is_Not_Open(address dnft);
 }

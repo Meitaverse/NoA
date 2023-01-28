@@ -29,20 +29,24 @@ export class Manager__collectInputCollectDataStruct extends ethereum.Tuple {
 }
 
 export class Manager__createHubInputHubStruct extends ethereum.Tuple {
+  get hubOwner(): Address {
+    return this[0].toAddress();
+  }
+
   get soulBoundTokenId(): BigInt {
-    return this[0].toBigInt();
+    return this[1].toBigInt();
   }
 
   get name(): string {
-    return this[1].toString();
-  }
-
-  get description(): string {
     return this[2].toString();
   }
 
-  get imageURI(): string {
+  get description(): string {
     return this[3].toString();
+  }
+
+  get imageURI(): string {
+    return this[4].toString();
   }
 }
 
@@ -142,20 +146,24 @@ export class Manager__getGenesisAndPreviousInfoResult {
 }
 
 export class Manager__getHubInfoResultValue0Struct extends ethereum.Tuple {
+  get hubOwner(): Address {
+    return this[0].toAddress();
+  }
+
   get soulBoundTokenId(): BigInt {
-    return this[0].toBigInt();
+    return this[1].toBigInt();
   }
 
   get name(): string {
-    return this[1].toString();
-  }
-
-  get description(): string {
     return this[2].toString();
   }
 
-  get imageURI(): string {
+  get description(): string {
     return this[3].toString();
+  }
+
+  get imageURI(): string {
+    return this[4].toString();
   }
 }
 
@@ -491,7 +499,7 @@ export class Manager extends ethereum.SmartContract {
   createHub(hub: Manager__createHubInputHubStruct): BigInt {
     let result = super.call(
       "createHub",
-      "createHub((uint256,string,string,string)):(uint256)",
+      "createHub((address,uint256,string,string,string)):(uint256)",
       [ethereum.Value.fromTuple(hub)]
     );
 
@@ -503,7 +511,7 @@ export class Manager extends ethereum.SmartContract {
   ): ethereum.CallResult<BigInt> {
     let result = super.tryCall(
       "createHub",
-      "createHub((uint256,string,string,string)):(uint256)",
+      "createHub((address,uint256,string,string,string)):(uint256)",
       [ethereum.Value.fromTuple(hub)]
     );
     if (result.reverted) {
@@ -726,7 +734,7 @@ export class Manager extends ethereum.SmartContract {
   getHubInfo(hubId: BigInt): Manager__getHubInfoResultValue0Struct {
     let result = super.call(
       "getHubInfo",
-      "getHubInfo(uint256):((uint256,string,string,string))",
+      "getHubInfo(uint256):((address,uint256,string,string,string))",
       [ethereum.Value.fromUnsignedBigInt(hubId)]
     );
 
@@ -740,7 +748,7 @@ export class Manager extends ethereum.SmartContract {
   ): ethereum.CallResult<Manager__getHubInfoResultValue0Struct> {
     let result = super.tryCall(
       "getHubInfo",
-      "getHubInfo(uint256):((uint256,string,string,string))",
+      "getHubInfo(uint256):((address,uint256,string,string,string))",
       [ethereum.Value.fromUnsignedBigInt(hubId)]
     );
     if (result.reverted) {
@@ -1282,20 +1290,24 @@ export class CreateHubCall__Outputs {
 }
 
 export class CreateHubCallHubStruct extends ethereum.Tuple {
+  get hubOwner(): Address {
+    return this[0].toAddress();
+  }
+
   get soulBoundTokenId(): BigInt {
-    return this[0].toBigInt();
+    return this[1].toBigInt();
   }
 
   get name(): string {
-    return this[1].toString();
-  }
-
-  get description(): string {
     return this[2].toString();
   }
 
-  get imageURI(): string {
+  get description(): string {
     return this[3].toString();
+  }
+
+  get imageURI(): string {
+    return this[4].toString();
   }
 }
 

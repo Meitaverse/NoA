@@ -1,3 +1,57 @@
+
+type Account @entity {
+  "The account's address"
+  id: ID!
+
+  "Link to profile"
+  profile: Profile!
+
+  "Link to creator details if this account is or ever was one"
+  creator: Creator @derivedFrom(field: "account")
+
+  sbtAsset: SBTAsset!
+
+  "All NFTs currently owned by this account"
+  nfts: [DNFT!]! @derivedFrom(field: "owner")
+
+  "All NFTs currently owner or listed by this account"
+  nftsOwnedOrListed: [DNFT!]! @derivedFrom(field: "ownedOrListedBy")
+
+  "All auctions created by this account"
+  nftMarketAuctions: [NftMarketAuction!]! @derivedFrom(field: "seller")
+
+  "All bids placed by this account"
+  nftBidsPlaced: [NftMarketBid!]! @derivedFrom(field: "bidder")
+
+  "All bids accepted by this account"
+  nftBidsAccepted: [NftMarketBid!]! @derivedFrom(field: "seller")
+
+  "NFT transfers from this account to another"
+  nftTransfersOut: [NftTransfer!]! @derivedFrom(field: "from")
+
+  "NFT transfers to this account from another"
+  nftTransfersIn: [NftTransfer!]! @derivedFrom(field: "to")
+
+  "The total SBTValue earned by this account, excluding any NFTs minted by this creator"
+  netRevenueInSBTValue: BigDecimal!
+
+  "The total SBTValue earned by this account but still pending finalization, excluding any NFTs minted by this creator"
+  netRevenuePendingInSBTValue: BigDecimal!
+
+  "Approvals granted by this account, note this does not include nft.approvedSpender"
+  dnftAccountApprovals: [DnftAccountApproval!]! @derivedFrom(field: "owner")
+
+  "NFT actions initiated by this account"
+  nftHistory: [NftHistory!]! @derivedFrom(field: "actorAccount")
+
+  "All Fsbt entries related to this account."
+  fsbt: [Fsbt!]! @derivedFrom(field: "user")
+
+  "All offers made by this account"
+  nftOffersMade: [NftMarketOffer!]! @derivedFrom(field: "buyer")
+
+}
+
 # Profile record
 type Profile @entity {
   "The wallet's address"
@@ -14,28 +68,31 @@ type Profile @entity {
 
   imageURI: String!
 
-  isRemove: Boolean!
-
   timestamp: BigInt!
 }
 
 # SBT Transfer history
 type SBTTransferHistory @entity {
   id: ID!
-  from: Profile!
-  to: Profile!
+  from: Account!
+  to: Account!
   tokenId: BigInt!
   timestamp: BigInt!
 }
 
-# SBT Asset
+# SBT Token Asset
 type SBTAsset @entity {
   "The wallet's address"
   id: ID!
 
-  profile: Profile!
+  owner: Account!
 
   balance: BigInt!
+
+  "An account authorized to transfer this SBT, if one was approved"
+  approvedSpender: Account
+
+  sbtApprovalValues: [SBTApprovalValue!]! @derivedFrom(field: "owner")
 
   timestamp: BigInt!
 }
@@ -43,8 +100,8 @@ type SBTAsset @entity {
 # SBT transfer value history    
 type SBTTransferValueHistory @entity {
   id: ID!
-  fromSoulBoundTokenId: BigInt!
-  toSoulBoundTokenId: BigInt!
+  from: Account!
+  to: Account!
   value: BigInt!
   timestamp: BigInt!
 } 
@@ -52,7 +109,7 @@ type SBTTransferValueHistory @entity {
 # SBT Slot Changed history    
 type SBTSlotChangedHistory @entity {
   id: ID!
-  soulBoundTokenId: BigInt!
+  account: Account!
   oldSlot: BigInt!
   newSlot: BigInt!
   timestamp: BigInt!
@@ -62,7 +119,7 @@ type SBTSlotChangedHistory @entity {
 type MintSBTValueHistory @entity {
   id: ID!
   caller: Bytes!
-  soulBoundTokenId: BigInt!
+  account: Account!
   value: BigInt!
   timestamp: BigInt!
 } 
@@ -71,39 +128,41 @@ type MintSBTValueHistory @entity {
 type BurnSBTHistory @entity {
   id: ID!
   caller: Bytes!
-  soulBoundTokenId: BigInt!
+  account: Account!
   balance: BigInt!
   timestamp: BigInt!
 }    
-
-
-# Approval 
-type ApprovalRecord @entity {
+  
+# SBT ApprovalForAll
+type SBTAccountApproval @entity {
+  "tokenAddress-owner-spender"
   id: ID!
-  owner: Bytes!
-  approved: Bytes!
-  tokenId: BigInt!
-  timestamp: BigInt!
+
+  "The account which granted this approval"
+  owner: Account!
+
+  "The account which is authorized to transfer SBTs held by the owner"
+  spender: Account!
 }    
 
-# ApprovalForAll 
-type ApprovalForAllRecord @entity {
+# SBT ApprovalValue 
+type SBTApprovalValue @entity {
+  "tokenAddress-soulBoundTokenId-spender"
   id: ID!
-  owner: Bytes!
-  operator: Bytes!
-  approved: Boolean!
-  timestamp: BigInt!
-}    
+ 
+  "The Soul Bound Token Id"
+  soulBoundTokenId: BigInt!
 
-# ApprovalValue 
-type ApprovalValueRecord @entity {
-  id: ID!
-  tokenId: BigInt!
-  operator: Bytes!
+  owner: SBTAsset!
+
+  "The account which is authorized to transfer SBTs held by the owner"
+  spender: Account!
+
+  "The value of a token that a spender is allowed to manage."
   value: BigInt!
+
   timestamp: BigInt!
 }    
-
 
 # derivativeNFT ImageURI Set history    
 type DerivativeNFTImageURISetHistory @entity {
@@ -111,19 +170,23 @@ type DerivativeNFTImageURISetHistory @entity {
   soulBoundTokenId: BigInt!
   imageURI: String!
   timestamp: BigInt!
-}    
+}
 
 # Hub
 type Hub @entity {
   "The hub creator's address"
   id: ID!
 
-  profile: Profile!
+  hubOwner: Account!
 
   hubId: BigInt!
+
   name: String!
+
   description: String!
+
   imageURI: String!
+
   timestamp: BigInt!
 }
 
@@ -134,7 +197,7 @@ type Publication @entity {
 
   publishId: BigInt!
 
-  profile: Profile!
+  publisher: Account!
 
   hub: Hub!
 
@@ -152,29 +215,29 @@ type Publication @entity {
   collectModuleInitData: Bytes!
   publishModule: Bytes!
   publishModuleInitData: Bytes!
-
   genesisPublishId: BigInt!
   previousPublishId: BigInt!
   publishTaxAmount: BigInt!
   timestamp: BigInt!
 }
 
-#  Project and Derivative NFT contract
+#  Project in Derivative NFT contract
 type Project @entity {
   id: ID!
   projectId: BigInt!
-  profile: Profile!
-  derivativeNFT: Bytes!
+  projectCreator: Account!
+  hub: Hub!
+  derivativeNFT: DerivativeNFTContract!
   timestamp: BigInt!
 }
 
 # Publish Record
 type PublishRecord @entity {
   id: ID!
-  publishId: BigInt!
-  soulBoundTokenId: BigInt!
-  hubId: BigInt!
-  projectId: BigInt!
+  publisher: Account!
+  publication: Publication!
+  hub: Hub!
+  project: Project!
   newTokenId: BigInt!
   amount: BigInt!
   collectModuleInitData: Bytes!
@@ -184,12 +247,12 @@ type PublishRecord @entity {
 # DerivativeNFT Collected history
 type DerivativeNFTCollectedHistory @entity {
   id: ID!
-  projectId: BigInt!
-  derivativeNFT: Bytes!
-  fromSoulBoundTokenId: BigInt!
-  toSoulBoundTokenId: BigInt!
+  project: Project!
+  derivativeNFT: DerivativeNFTContract!
+  from: Account!
+  to: Account!
   tokenId: BigInt!
-  value: BigInt!
+  units: BigInt!
   newTokenId: BigInt!
   timestamp: BigInt!
 }
@@ -208,7 +271,7 @@ type DepositHistory @entity {
 # Bank Treasury WithdrawnEarnestMoney history 
 type WithdrawERC3525History @entity {
   id: ID!
-  toSoulBoundTokenId: BigInt!
+  withdrawer: Account!
   value: BigInt!
   timestamp: BigInt!
 }
@@ -294,11 +357,11 @@ type ProfileCreatorWhitelistedRecord @entity {
 # FeeCollectModule
 type FeesForCollectHistory @entity {
   id: ID!
-  ownershipSoulBoundTokenId: BigInt!
-  collectorSoulBoundTokenId: BigInt!
-  genesisSoulBoundTokenId: BigInt!
-  previousSoulBoundTokenId: BigInt!
-  publishId: BigInt!
+  owner: Account!
+  collector: Account!
+  genesisCreator: Account!
+  previousCreator: Account!
+  publish: Publication!
   tokenId: BigInt!
   collectUnits: BigInt!
   treasuryAmount: BigInt!
@@ -311,11 +374,11 @@ type FeesForCollectHistory @entity {
 # Airdrop history
 type DerivativeNFTAirdropedHistory @entity {
   id: ID!
-  projectId: BigInt!
-  derivativeNFT: Bytes!
-  fromSoulBoundTokenId: BigInt!
+  project: Project!
+  derivativeNFT: DerivativeNFTContract!
+  from: Account!
   tokenId: BigInt!
-  toSoulBoundTokenIds: [BigInt!]!
+  toAccounts: [Account!]!
   values: [BigInt!]!
   newTokenIds: [BigInt!]!
   timestamp: BigInt!
@@ -336,7 +399,7 @@ type ReceiverReceivedHistory @entity {
 # Dispatcher Set history
 type Dispatcher @entity {
   id: ID!
-  soulBoundTokenId: BigInt!
+  account: Account!
   dispatcher: Bytes!
   timestamp: BigInt!
 }
@@ -354,8 +417,8 @@ type StateSetHistory @entity {
 type ERC3525ReceivedHistory @entity {
   id: ID!
   operator: Bytes!
-  fromTokenId: BigInt!
-  toTokenId: BigInt!
+  from: Account!
+  to: Account!
   value: BigInt!
   data: Bytes!
   gas: BigInt!
@@ -484,7 +547,7 @@ type TemplateWhitelistedRecord @entity {
 # Bank treasury ExchangeSBTByEth history
 type ExchangeSBTByEthHistory @entity {
   id: ID!
-  soulBoundTokenId: BigInt!
+  account: Account!
   exchangeWallet: Bytes!
   sbtValue: BigInt!
   timestamp: BigInt!
@@ -493,7 +556,7 @@ type ExchangeSBTByEthHistory @entity {
 # Bank treasury ExchangeEthBySBTHistory history
 type ExchangeEthBySBTHistory @entity {
   id: ID!
-  soulBoundTokenId: BigInt!
+  account: Account!
   toWallet: Bytes!
   sbtValue: BigInt!
   exchangePrice: BigInt!
@@ -504,11 +567,10 @@ type ExchangeEthBySBTHistory @entity {
 # Market Place
 type Market @entity {
   id: ID!
-  derivativeNFT: Bytes!
+  derivativeNFT: DerivativeNFTContract!
   feePayType: Int!
   feeShareType: Int!
   royaltyBasisPoints: Int!
-  isRemove: Boolean!
   timestamp: BigInt!
 }
 
@@ -521,73 +583,6 @@ type MarketPlaceERC3525ReceivedHistory @entity {
   data: Bytes
   gas: BigInt!
   timestamp: BigInt!
-}
-
-type TradedHistory @entity {
-  id: ID!
-  saleId: Int!
-  buyer: Bytes!
-  tradeId: BigInt!
-  tradeTime: BigInt!
-  price: BigInt!
-  newTokenIdBuyer: BigInt!
-  tradedUnits: BigInt!
-  treasuryAmount: BigInt!
-  genesisAmount: BigInt!
-  previousAmount: BigInt!
-  adjustedAmount: BigInt!
-}
-
-type Account @entity {
-  "The account's address"
-  id: ID!
-
-  "Link to profile"
-  profile: Profile!
-
-  "Link to creator details if this account is or ever was one"
-  creator: Creator @derivedFrom(field: "account")
-
-  "All NFTs currently owned by this account"
-  nfts: [DNFT!]! @derivedFrom(field: "owner")
-
-  "All NFTs currently owner or listed by this account"
-  nftsOwnedOrListed: [DNFT!]! @derivedFrom(field: "ownedOrListedBy")
-
-  "All auctions created by this account"
-  nftMarketAuctions: [NftMarketAuction!]! @derivedFrom(field: "seller")
-
-  "All bids placed by this account"
-  nftBidsPlaced: [NftMarketBid!]! @derivedFrom(field: "bidder")
-
-  "All bids accepted by this account"
-  nftBidsAccepted: [NftMarketBid!]! @derivedFrom(field: "seller")
-
-  "NFT transfers from this account to another"
-  nftTransfersOut: [NftTransfer!]! @derivedFrom(field: "from")
-
-  "NFT transfers to this account from another"
-  nftTransfersIn: [NftTransfer!]! @derivedFrom(field: "to")
-
-  "The total SBTValue earned by this account, excluding any NFTs minted by this creator"
-  netRevenueInSBTValue: BigDecimal!
-
-  "The total SBTValue earned by this account but still pending finalization, excluding any NFTs minted by this creator"
-  netRevenuePendingInSBTValue: BigDecimal!
-
-  "Approvals granted by this account, note this does not include nft.approvedSpender"
-  nftAccountApprovals: [NftAccountApproval!]! @derivedFrom(field: "owner")
-
-  "NFT actions initiated by this account"
-  nftHistory: [NftHistory!]! @derivedFrom(field: "actorAccount")
-
-  "All Fsbt entries related to this account."
-  fsbt: [Fsbt!]! @derivedFrom(field: "user")
-
-  "All offers made by this account"
-  nftOffersMade: [NftMarketOffer!]! @derivedFrom(field: "buyer")
-
-  # nftFixedPriceSaleMints: [FixedPriceSaleMint!]! @derivedFrom(field: "buyer")
 }
 
 type Creator @entity {
@@ -613,10 +608,12 @@ type Creator @entity {
   netRevenuePendingInSBTValue: BigDecimal!
 }
 
-
 type DerivativeNFTContract @entity {
   "The contract's address"
   id: ID!
+
+  "The contract address"
+  contract: Bytes!
 
   "The token name"
   name: String
@@ -743,7 +740,7 @@ type NftTransfer @entity {
   transactionHash: Bytes!
 }
 
-type NftAccountApproval @entity {
+type DnftAccountApproval @entity {
   "tokenAddress-owner-spender"
   id: ID!
 
@@ -983,9 +980,6 @@ enum HistoricalEvent {
   "The payment address for this NFT has migrated to a new address"
   CreatorPaymentAddressMigrated
 
-  "The NFT was sold in a private sale"
-  PrivateSale
-
   "The auction was invalidated due to another action such as Buy Now"
   AuctionInvalidated
 
@@ -1033,8 +1027,6 @@ type NftHistory @entity {
   "The related auction for this change, if applicable"
   auction: NftMarketAuction
 
-  "The related private sale for this change, if applicable"
-  privateSale: PrivateSale
 
   "The related offer for this change, if applicable"
   offer: NftMarketOffer
@@ -1107,125 +1099,6 @@ type PercentSplit @entity {
   dateCreated: BigInt!
 }
 
-type FixedPriceSaleMint @entity {
-  "txHash"
-  id: ID!
-
-  "The fixed price sale for the mint"
-  fixedPriceSale: FixedPriceSale!
-
-  # "The accounts which bought this NFT, if applicable"
-  buyer: Account
-
-  "The total minted NFT count"
-  count: BigInt
-
-  "The first token id for the sequence minted."
-  firstTokenId: BigInt
-
-  "The total amount of proceeds from the sale in SBTValue"
-  amountInSBTValue: BigDecimal
-
-  "Referrer address for the sale, if applicable"
-  buyReferrer: Account
-
-  "Referral fee paid for the sale, if applicable"
-  buyReferrerFee: BigDecimal
-}
-
-type FixedPriceSale @entity {
-  "The address of the collection"
-  id: ID!
-
-  "The contract managing this fixed price sale"
-  nftMarketContract: NftMarketContract!
-
-  "The NFT contract for this NFT"
-  derivativeNFT: DerivativeNFTContract!
-
-  "The seller for the fixed price sale"
-  seller: Account!
-
-  "The cost to mint per NFT in SBTValue"
-  unitPriceInSBTValue: BigDecimal!
-
-  "The limit of mints allowed per account"
-  limitPerAccount: BigInt!
-
-  "The latest FixedPriceSaleMint events from this sale, if applicable"
-  latestMint: FixedPriceSaleMint
-
-  "The FixedPriceSaleMint events from this sale, if applicable"
-  mints: [FixedPriceSaleMint!] @derivedFrom(field: "fixedPriceSale")
-
-  "The total number of NFTS minted"
-  mintCount: BigInt!
-
-  "The total amount of proceeds from the sale in SBTValue"
-  amountInSBTValue: BigDecimal!
-
-  "The date/time the fixed price sale was initially created in seconds since Unix epoch"
-  dateCreated: BigInt!
-
-  "The tx hash where this fixed price sale was initially created"
-  transactionHashCreated: Bytes!
-
-  "How much the beneficiary earned from this sale, set once minted"
-  creatorRevenueInSBTValue: BigDecimal!
-
-  "How much the previous creator earned from this auction, set once there a bid is placed"
-  previousCreatorRevenueInSBTValue: BigDecimal
-
-  "How much Protocol earned from this sale, set once minted"
-  foundationRevenueInSBTValue: BigDecimal!
-
-  "Referral fee paid for the sale, if applicable"
-  buyReferrerFee: BigDecimal
-
-  "How much Foundation earned from this sale, set once accepted"
-  foundationProtocolFeeInSBTValue: BigDecimal!
-}
-
-type PrivateSale @entity {
-  "tx-logId"
-  id: ID!
-
-  "The NFT which was sold"
-  nft: DNFT!
-
-  "The account which sold this NFT"
-  seller: Account!
-
-  "The account which bought this NFT"
-  buyer: Account!
-
-  "The total sale price"
-  amountInSBTValue: BigDecimal!
-
-  "How much the creator earned from this sale"
-  creatorRevenueInSBTValue: BigDecimal!
-
-  "How much the previous creator earned from this auction, set once there a bid is placed"
-  previousCreatorRevenueInSBTValue: BigDecimal
-
-  "How much Foundation earned from this sale"
-  foundationRevenueInSBTValue: BigDecimal!
-
-  "How much the owner (if not the creator) earned from this sale"
-  ownerRevenueInSBTValue: BigDecimal!
-
-  "The date/time this sale was completed in seconds since Unix epoch"
-  dateSold: BigInt!
-
-  "The tx hash in which this was sold"
-  transactionHashSold: Bytes!
-
-  "The deadline at which this offer was set to expire, in seconds since Unix epoch"
-  deadline: BigInt!
-
-  "True if this is the first sale on Foundation and being sold by the creator"
-  isPrimarySale: Boolean!
-}
 
 type CollectionContract @entity {
   "contractAddress"

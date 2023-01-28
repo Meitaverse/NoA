@@ -46,6 +46,10 @@ abstract contract DNFTMarketBuyPrice is
     if ( units == 0 || maxPrice == 0 )
       revert Errors.InvalidParameter();
 
+    // validate martket is open for this contract?
+    if (!_getMarketInfo(derivativeNFT).isOpen)
+        revert Errors.Market_DNFT_Is_Not_Open(derivativeNFT);
+       
     address buyer = _getWallet(soulBoundTokenIdBuyer);
     
     if (soulBoundTokenIdBuyer == 0 || tokenId == 0 || buyer != msg.sender ) 
@@ -118,13 +122,9 @@ abstract contract DNFTMarketBuyPrice is
       revert Errors.NotProfileOwner();
     }
     
-    uint128 total = uint128(IERC3525(saleParam.derivativeNFT).balanceOf(saleParam.tokenId));
-    if(total == 0) revert Errors.TotalIsZero();
-    if(saleParam.putOnListUnits > total) revert Errors.UnitsGTTotal(); 
-
     // validate martket is open for this contract?
     if (!_getMarketInfo(saleParam.derivativeNFT).isOpen)
-        revert Errors.UnsupportedDerivativeNFT();
+        revert Errors.Market_DNFT_Is_Not_Open(saleParam.derivativeNFT);
         
     uint256 projectId = manager.getProjectIdByContract(saleParam.derivativeNFT);
     if (projectId == 0) 
@@ -159,7 +159,6 @@ abstract contract DNFTMarketBuyPrice is
         return newTokenId;
     } 
     
-
     buyPrice.onSellUnits = leftUnits;
     buyPrice.seledUnits = saleParam.putOnListUnits - leftUnits;
 
@@ -171,7 +170,6 @@ abstract contract DNFTMarketBuyPrice is
       //must approve manager before
       uint256 tokenIdEscrow = _transferToEscrow(saleParam.derivativeNFT, saleParam.tokenId, buyPrice.onSellUnits);
 
-      
       buyPrice.tokenIdEscrow = tokenIdEscrow;
 
       // The salePrice was not previously set for this DNFT, store the seller.

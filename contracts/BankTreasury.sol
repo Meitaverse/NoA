@@ -238,7 +238,7 @@ contract BankTreasury is
             revert Errors.BankTreasury_Only_Can_Transfer_SBT();
         }
         if (value == 0) {
-            revert Errors.Cannot_Deposit_For_Lockup_With_SoulBoundTokenId_Zero();
+            revert Errors.Must_Deposit_Non_Zero_Amount();
         }
 
         if (toTokenId == soulBoundTokenIdBankTreasury && value > 0) {

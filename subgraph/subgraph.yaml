@@ -111,7 +111,7 @@ dataSources:
           handler: handleHubUpdated
         - event: PublishPrepared((uint256,uint256,uint256,uint256,uint256,uint256,string,string,bool,string[],uint256[],address,bytes,address,bytes),uint256,uint256,uint256)
           handler: handlePublishPrepared
-        - event: PublishUpdated(uint256,uint256,uint256,uint256,uint256,uint256,string,string,string[],uint256[],uint256,uint256)
+        - event: PublishUpdated(uint256,uint256,uint256,uint256,uint256,uint256,uint256,string,string,string[],uint256[],uint256,uint256)
           handler: handlePublishUpdated
         - event: PublishCreated(indexed uint256,indexed uint256,uint256,uint256,indexed
             uint256,uint256,bytes,uint256)
@@ -156,7 +156,12 @@ dataSources:
         - BalanceLocked
         - BalanceUnlocked
         - OfferWithdrawn
+        - WithdrawnEarnestMoney
       abis:
+        - name: SBT
+          file: ../artifacts/contracts/NFTDerivativeProtocolTokenV1.sol/NFTDerivativeProtocolTokenV1.json
+        - name: BankTreasury
+          file: ../artifacts/contracts/BankTreasury.sol/BankTreasury.json
         - name: Events
           file: ../artifacts/contracts/libraries/Events.sol/Events.json
       eventHandlers:
@@ -195,6 +200,9 @@ dataSources:
         - event: OfferWithdrawn(indexed address,indexed uint256,address,indexed
             uint256,uint256)
           handler: handleOfferWithdrawn
+        - event: WithdrawnEarnestMoney(indexed uint256,indexed address,indexed
+            uint256,uint256)
+          handler: handleWithdrawnEarnestMoney
       file: ./src/bankTreasury-mapping.ts
   - kind: ethereum/contract
     name: Voucher
@@ -316,6 +324,12 @@ dataSources:
       entities:
         - FeesForCollect
       abis:
+        - name: ModuleGlobals
+          file: ../artifacts/contracts/modules/ModuleGlobals.sol/ModuleGlobals.json
+        - name: FeeCollectModule
+          file: ../artifacts/contracts/modules/collect/FeeCollectModule.sol/FeeCollectModule.json
+        - name: SBT
+          file: ../artifacts/contracts/NFTDerivativeProtocolTokenV1.sol/NFTDerivativeProtocolTokenV1.json
         - name: Events
           file: ../artifacts/contracts/libraries/Events.sol/Events.json
       eventHandlers:

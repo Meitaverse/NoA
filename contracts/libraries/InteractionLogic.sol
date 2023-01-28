@@ -36,6 +36,7 @@ library InteractionLogic {
         if (hubId == 0) revert Errors.HubIdIsZero();
         
          _hubInfos[hubId] = DataTypes.HubData({
+             hubOwner: creator,
              soulBoundTokenId : hub.soulBoundTokenId,
              name: hub.name,
              description: hub.description,

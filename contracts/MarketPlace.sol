@@ -168,6 +168,7 @@ contract MarketPlace is
         if (!hasRole(DEFAULT_ADMIN_ROLE, _msgSender())) revert Errors.Unauthorized();
     }
 
+    /// @notice When DNFT tranfer to market contract, via `escrow`
     function onERC3525Received(
         address operator,
         uint256 fromTokenId,
@@ -175,6 +176,14 @@ contract MarketPlace is
         uint256 value,
         bytes calldata data
     ) public override returns (bytes4) {
+        if (!markets[msg.sender].isOpen) {
+             revert Errors.Market_DNFT_Is_Not_Open(msg.sender);
+        }
+
+        if (value == 0) {
+            revert Errors.Must_Escrow_Non_Zero_Amount();
+        }
+
         emit Events.MarketPlaceERC3525Received(operator, fromTokenId, toTokenId, value, data, gasleft());
         return 0x009ce20b;
     }

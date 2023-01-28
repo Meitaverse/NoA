@@ -1,21 +1,21 @@
 // 
 
-import { Address } from "@graphprotocol/graph-ts";
+import { Address, BigInt } from "@graphprotocol/graph-ts";
 
-import { Profile, Project } from "../../generated/schema";
+import { Account, Hub, Project } from "../../generated/schema";
 import { ZERO_BIG_INT } from "./constants";
-import { loadOrCreateProfile } from "./profile";
+import { loadOrCreateNFTContract } from "../dnft";
 
-export function loadOrCreateProject(profile: Profile, derivativeNFTAddress: Address): Project {
-  // const profile = loadOrCreateProfile(creator)
+export function loadOrCreateProject(projectId : BigInt): Project { //account: Account, derivativeNFTAddress: Address
   
-  let addressHex = derivativeNFTAddress.toHex();
-  let project = Project.load(addressHex);
+  // let addressHex = derivativeNFTAddress.toHex();
+  let project = Project.load(projectId.toString());
   if (!project) {
-    project = new Project(addressHex);
-    project.derivativeNFT = derivativeNFTAddress;
+    project = new Project(projectId.toString());
+    // project.hub = hub.id
+    // project.derivativeNFT = loadOrCreateNFTContract(derivativeNFTAddress).id;
     project.projectId = ZERO_BIG_INT;
-    project.profile = profile.id;
+    // project.projectCreator = account.id;
     project.timestamp = ZERO_BIG_INT;
     project.save();
   }

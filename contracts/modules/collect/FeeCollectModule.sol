@@ -54,7 +54,6 @@ contract FeeCollectModule is FeeModuleBase, ModuleBase, ICollectModule {
     ///         This fee is calculated from the total protocol fee.
     uint256 private constant BUY_REFERRER_FEE_DENOMINATOR = BASIS_POINTS / 100; // 1%
 
-
     // publishId => ProfilePublicationData
     mapping(uint256 =>  ProfilePublicationData) internal _dataByPublicationByProfile;
 

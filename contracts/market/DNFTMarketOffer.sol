@@ -60,6 +60,10 @@ abstract contract DNFTMarketOffer is
     if ( units == 0 || minAmount == 0 )
       revert Errors.InvalidParameter();
 
+    // validate martket is open for this contract?
+    if (!_getMarketInfo(derivativeNFT).isOpen)
+        revert Errors.Market_DNFT_Is_Not_Open(derivativeNFT);
+       
     address account = _getWallet(soulBoundTokenId);
     if (account != msg.sender) {
       revert Errors.NotProfileOwner();
@@ -110,7 +114,11 @@ abstract contract DNFTMarketOffer is
   ) external payable returns (uint256 expiration) {
     if ( units == 0 || amount == 0 )
       revert Errors.InvalidParameter();    
-
+      
+    // validate martket is open for this contract?
+    if (!_getMarketInfo(derivativeNFT).isOpen)
+        revert Errors.Market_DNFT_Is_Not_Open(derivativeNFT);
+       
     address buyer = _getWallet(soulBoundTokenIdBuyer);
     if (buyer != msg.sender) {
       revert Errors.NotProfileOwner();

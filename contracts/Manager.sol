@@ -185,6 +185,7 @@ contract Manager is
         );
     }
  
+    /// @notice Only hub owner can creat projects
     function createProject(
         DataTypes.ProjectData calldata project
     ) 
@@ -204,8 +205,7 @@ contract Manager is
         _projectNameHashByEventId[keccak256(bytes(project.name))] = projectId;
 
         address _sbt = IModuleGlobals(MODULE_GLOBALS).getSBT();
-         address creator = IERC3525(_sbt).ownerOf(project.soulBoundTokenId);
-
+        address creator = IERC3525(_sbt).ownerOf(project.soulBoundTokenId);
 
         address derivativeNFT = InteractionLogic.createProject(
             creator,

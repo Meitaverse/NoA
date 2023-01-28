@@ -37,6 +37,7 @@ function _createNFTContract(address: Address): DerivativeNFTContract {
   if (!symbolResults.reverted) {
     derivativeNFT.symbol = symbolResults.value;
   }
+  derivativeNFT.contract = address
   //TODO
   derivativeNFT.baseURI = "ipfs://";
   derivativeNFT.save();

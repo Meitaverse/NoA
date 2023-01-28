@@ -58,6 +58,7 @@ library DataTypes {
     }
     
     struct HubData {
+        address hubOwner;
         uint256 soulBoundTokenId;
         string name;
         string description;
@@ -85,7 +86,7 @@ library DataTypes {
         string image;
         string metadataURI;
         address descriptor;
-        uint96  defaultRoyaltyPoints;
+        uint96 defaultRoyaltyPoints;
         FeeShareType feeShareType;
         bool permitByHubOwner;
     }

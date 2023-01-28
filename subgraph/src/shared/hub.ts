@@ -2,18 +2,20 @@
 
 import { BigInt, Address } from "@graphprotocol/graph-ts";
 
-import { Profile, Hub } from "../../generated/schema";
+import { Profile, Hub, Account } from "../../generated/schema";
 import { ZERO_BIG_INT } from "./constants";
-import { loadOrCreateProfile } from "./profile";
+import { loadOrCreateAccount } from "./accounts";
 
-export function loadOrCreateHub(profile: Profile): Hub {
+export function loadOrCreateHub(address: Address): Hub {
 
-    let addressHex = profile.wallet.toHex();
+    let addressHex = address.toHex();
+
+    let account = loadOrCreateAccount(address)
 
     let hub = Hub.load(addressHex);
     if (!hub) {
         hub = new Hub(addressHex);
-        hub.profile = profile.id;
+        hub.hubOwner = account.id;
         hub.hubId = ZERO_BIG_INT;
         hub.name = '';
         hub.description = '';

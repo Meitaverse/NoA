@@ -51,7 +51,7 @@ import { recordNftEvent, removePreviousTransferEvent } from "./shared/events";
 import { getLogId } from "./shared/ids";
 import { loadLatestOffer, outbidOrExpirePreviousOffer } from "./shared/offers";
 import { recordSale } from "./shared/revenue";
-import { loadOrCreateNFT } from "./dnft";
+import { loadOrCreateNFT, loadOrCreateNFTContract } from "./dnft";
 import { loadOrCreateProfile } from "./shared/profile";
 
 export function loadOrCreateNFTMarketContract(address: Address): NftMarketContract {
@@ -71,11 +71,10 @@ export function handleAddMarket(event: AddMarket): void {
     const market = Market.load(_idString) || new Market(_idString)
 
     if (market) {
-        market.derivativeNFT = event.params.derivativeNFT
+        market.derivativeNFT = loadOrCreateNFTContract(event.params.derivativeNFT).id;
         market.feePayType = event.params.feePayType
         market.feeShareType = event.params.feeShareType
         market.royaltyBasisPoints = event.params.royaltyBasisPoints
-        market.isRemove = false
         market.timestamp = event.block.timestamp
         market.save()
     } 
@@ -104,15 +103,7 @@ export function handleRemoveMarket(event: RemoveMarket): void {
     log.info("handleRemoveMarket, event.address: {}", [event.address.toHexString()])
 
     let _idString = event.params.derivativeNFT.toHexString()
-    const market = Market.load(_idString)
-
-    if (market) {
-        market.derivativeNFT = event.params.derivativeNFT
-        market.isRemove = true
-        market.timestamp = event.block.timestamp
-        market.save()
-        // store.remove("Market", _idString);
-    } 
+    store.remove("Market", _idString);
 }
 
 export function handleBuyPriceSet(event: BuyPriceSet): void {
@@ -122,9 +113,8 @@ export function handleBuyPriceSet(event: BuyPriceSet): void {
     let derivativeNFTContract = DerivativeNFT.bind(event.params.buyPrice.derivativeNFT)
     let result = derivativeNFTContract.try_getCreator();
     if (!result.reverted) {
-          const profile = loadOrCreateProfile(result.value);
       
-          let project = loadOrCreateProject(profile, event.params.buyPrice.derivativeNFT);
+          let project = loadOrCreateProject(event.params.buyPrice.projectId);
       
           let seller = loadOrCreateAccount(event.params.seller);
           let buyNow = loadLatestBuyNow(nft);

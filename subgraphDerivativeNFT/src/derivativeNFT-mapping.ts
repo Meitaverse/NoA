@@ -20,10 +20,13 @@ import {
     BurnDerivativeNFTHistory,
     BurnDerivativeNFTValueHistory,
     ApprovalRecord,
-    ApprovalForAllRecord,
+    // ApprovalForAllRecord,
+    DnftAccountApproval,
     ApprovalValueRecord,
     DerivativeNFTImageURI,
 } from "../generated/schema"
+import { loadOrCreateNFTContract } from "../../subgraph/src/dnft";
+import { loadOrCreateAccount } from "../../subgraph/src/shared/accounts";
 
 export function handleTransfer(event: Transfer): void {
     log.info("handleTransfer, event.address: {}, _from: {}", [event.address.toHexString(), event.params._from.toHexString()])
@@ -186,17 +189,29 @@ export function handleApproval(event: Approval): void {
 export function handleApprovalForAll(event: ApprovalForAll): void {
     log.info("handleApprovalForAll, event.address: {}", [event.address.toHexString()])
 
-    let _idString = event.params._owner.toHexString() + "-" + event.params._operator.toHexString() 
-    const approvalForAllRecord = ApprovalForAllRecord.load(_idString) || new ApprovalForAllRecord(_idString)
+    // let _idString = event.params._owner.toHexString() + "-" + event.params._operator.toHexString() 
+    // const approvalForAllRecord = ApprovalForAllRecord.load(_idString) || new ApprovalForAllRecord(_idString)
 
-    if (approvalForAllRecord) {
-        approvalForAllRecord.owner = event.params._owner
-        approvalForAllRecord.operator = event.params._operator
-        approvalForAllRecord.approved = event.params._approved
-        approvalForAllRecord.timestamp = event.block.timestamp
-        approvalForAllRecord.save()
+    // if (approvalForAllRecord) {
+    //     approvalForAllRecord.owner = event.params._owner
+    //     approvalForAllRecord.operator = event.params._operator
+    //     approvalForAllRecord.approved = event.params._approved
+    //     approvalForAllRecord.timestamp = event.block.timestamp
+    //     approvalForAllRecord.save()
     
-    } 
+    // } 
+
+    let id = event.address.toHex() + "-" + event.params._owner.toHex() + "-" + event.params._operator.toHex();
+    if (event.params._approved) {
+      let nft3525AccountApproval = new DnftAccountApproval(id);
+      let dnftContract = loadOrCreateNFTContract(event.address);
+      nft3525AccountApproval.dnftContract = dnftContract.id;
+      nft3525AccountApproval.owner = loadOrCreateAccount(event.params._owner).id;
+      nft3525AccountApproval.spender = loadOrCreateAccount(event.params._operator).id;
+      nft3525AccountApproval.save();
+    } else {
+      store.remove("DnftAccountApproval", id);
+    }
 }
 
 export function handleApprovalValue(event: ApprovalValue): void {

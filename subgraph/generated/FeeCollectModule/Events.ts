@@ -2021,52 +2021,56 @@ export class PublishUpdated__Params {
     this._event = event;
   }
 
-  get projectId(): BigInt {
+  get hubId(): BigInt {
     return this._event.parameters[0].value.toBigInt();
   }
 
-  get publishId(): BigInt {
+  get projectId(): BigInt {
     return this._event.parameters[1].value.toBigInt();
   }
 
-  get soulBoundTokenId(): BigInt {
+  get publishId(): BigInt {
     return this._event.parameters[2].value.toBigInt();
   }
 
-  get salePrice(): BigInt {
+  get soulBoundTokenId(): BigInt {
     return this._event.parameters[3].value.toBigInt();
   }
 
-  get royaltyBasisPoints(): BigInt {
+  get salePrice(): BigInt {
     return this._event.parameters[4].value.toBigInt();
   }
 
-  get amount(): BigInt {
+  get royaltyBasisPoints(): BigInt {
     return this._event.parameters[5].value.toBigInt();
   }
 
-  get name(): string {
-    return this._event.parameters[6].value.toString();
+  get amount(): BigInt {
+    return this._event.parameters[6].value.toBigInt();
   }
 
-  get description(): string {
+  get name(): string {
     return this._event.parameters[7].value.toString();
   }
 
+  get description(): string {
+    return this._event.parameters[8].value.toString();
+  }
+
   get materialURIs(): Array<string> {
-    return this._event.parameters[8].value.toStringArray();
+    return this._event.parameters[9].value.toStringArray();
   }
 
   get fromTokenIds(): Array<BigInt> {
-    return this._event.parameters[9].value.toBigIntArray();
+    return this._event.parameters[10].value.toBigIntArray();
   }
 
   get addedPublishTaxes(): BigInt {
-    return this._event.parameters[10].value.toBigInt();
+    return this._event.parameters[11].value.toBigInt();
   }
 
   get timestamp(): BigInt {
-    return this._event.parameters[11].value.toBigInt();
+    return this._event.parameters[12].value.toBigInt();
   }
 }
 

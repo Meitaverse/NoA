@@ -43,6 +43,7 @@ library Events {
     /**
      * @dev Emitted when update a publish while not publish on chain
      *
+     * @param hubId The hub Id
      * @param publishId The publish Id
      * @param soulBoundTokenId The soulBoundToken Id
      * @param salePrice The sale price while collet 
@@ -56,6 +57,7 @@ library Events {
      * @param timestamp The current block timestamp.
      */
     event PublishUpdated(
+        uint256 hubId,
         uint256 projectId,
         uint256 publishId,
         uint256 soulBoundTokenId,

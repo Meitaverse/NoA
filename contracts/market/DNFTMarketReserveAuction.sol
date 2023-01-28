@@ -123,7 +123,11 @@ abstract contract DNFTMarketReserveAuction is
   ) external onlyValidAuctionConfig(reservePrice) {
     if ( units == 0 || reservePrice == 0 )
       revert Errors.InvalidParameter();    
-
+      
+    // validate martket is open for this contract?
+    if (!_getMarketInfo(derivativeNFT).isOpen)
+        revert Errors.Market_DNFT_Is_Not_Open(derivativeNFT);
+       
     address account = _getWallet(soulBoundTokenId);
     if (account != msg.sender) {
       revert Errors.NotProfileOwner();
