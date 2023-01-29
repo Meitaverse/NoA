@@ -332,7 +332,7 @@ dataSources:
         - name: Events
           file: ../artifacts/contracts/libraries/Events.sol/Events.json
       eventHandlers:
-        - event: FeesForCollect(uint256,uint256,uint256,(uint256,uint256,uint256,uint256,uint256),(uint256,uint256,uint256,uint256,uint256))
+        - event: FeesForCollect(uint256,uint256,uint256,(uint256,uint256,uint256,uint256,uint256),(uint96,uint96,uint96,uint96,uint96))
           handler: handleFeesForCollect
       file: ./src/feeCollectModule-mapping.ts
   - kind: ethereum/contract
@@ -406,8 +406,7 @@ dataSources:
         - event: ReserveAuctionCreated(indexed address,indexed address,indexed
             uint256,uint256,uint256,uint256,uint256,uint256,uint256)
           handler: handleReserveAuctionCreated
-        - event: ReserveAuctionFinalized(indexed uint256,indexed address,indexed
-            address,(uint256,uint256,uint256,uint256,uint256))
+        - event: ReserveAuctionFinalized(indexed uint256,indexed address,indexed address,(uint96,uint96,uint96,uint96,uint96))
           handler: handleReserveAuctionFinalized
         - event: ReserveAuctionInvalidated(indexed uint256)
           handler: handleReserveAuctionInvalidated
@@ -416,8 +415,7 @@ dataSources:
         - event: OfferMade(indexed address,indexed uint256,indexed
             address,uint256,uint256)
           handler: handleOfferMade
-        - event: OfferAccepted(indexed address,indexed uint256,indexed
-            address,address,(uint256,uint256,uint256,uint256,uint256))
+        - event: OfferAccepted(indexed address,indexed uint256,indexed address,address,(uint96,uint96,uint96,uint96,uint96))
           handler: handleOfferAccepted
         - event: OfferInvalidated(indexed address,indexed uint256)
           handler: handleOfferInvalidated
@@ -427,7 +425,6 @@ dataSources:
           handler: handleBuyPriceCanceled
         - event: BuyPriceInvalidated(indexed address,indexed uint256)
           handler: handleBuyPriceInvalidated
-        - event: BuyPriceAccepted(indexed address,indexed uint256,indexed
-            uint256,address,address,(uint256,uint256,uint256,uint256,uint256),(uint256,uint256,uint256,uint256,uint256))
+        - event: BuyPriceAccepted(indexed address,indexed uint256,indexed uint256,address,address,(uint256,uint256,uint256,uint256,uint256),(uint96,uint96,uint96,uint96,uint96))
           handler: handleBuyPriceAccepted
       file: ./src/marketplace-mapping.ts

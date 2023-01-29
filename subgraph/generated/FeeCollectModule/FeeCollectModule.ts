@@ -154,7 +154,7 @@ export class FeeCollectModule extends ethereum.SmartContract {
   ): FeeCollectModule__getFeesResult {
     let result = super.call(
       "getFees",
-      "getFees(uint256,uint256):(uint16,uint256,(uint256,uint256,uint256,uint256,uint256))",
+      "getFees(uint256,uint32):(uint16,uint256,(uint96,uint96,uint96,uint96,uint96))",
       [
         ethereum.Value.fromUnsignedBigInt(publishId),
         ethereum.Value.fromUnsignedBigInt(collectUnits)
@@ -176,7 +176,7 @@ export class FeeCollectModule extends ethereum.SmartContract {
   ): ethereum.CallResult<FeeCollectModule__getFeesResult> {
     let result = super.tryCall(
       "getFees",
-      "getFees(uint256,uint256):(uint16,uint256,(uint256,uint256,uint256,uint256,uint256))",
+      "getFees(uint256,uint32):(uint16,uint256,(uint96,uint96,uint96,uint96,uint96))",
       [
         ethereum.Value.fromUnsignedBigInt(publishId),
         ethereum.Value.fromUnsignedBigInt(collectUnits)

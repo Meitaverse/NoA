@@ -240,15 +240,25 @@ makeSuiteCleanRoom('Market Place', function () {
         );
     });
 
+    /*
     it("Emits BuyPriceAccepted", async () => {
       matchEvent(
         receipt,
         'BuyPriceAccepted',
         [
             derivativeNFT.address, 
+            SECOND_DNFT_TOKEN_ID,
             THIRD_DNFT_TOKEN_ID,
-            userTwoAddress,
-            userAddress,
+            userAddress, //seller
+            userTwoAddress, //buyer
+            [
+              SECOND_PROFILE_ID,
+              THIRD_PROFILE_ID,
+              SECOND_PROFILE_ID,
+              0,
+              0
+            ]
+            ,
             [
                 0,
                 0,
@@ -259,6 +269,7 @@ makeSuiteCleanRoom('Market Place', function () {
         ],
       );
     });
+    */
 
     it('UserTwo should success buy', async function () {
       

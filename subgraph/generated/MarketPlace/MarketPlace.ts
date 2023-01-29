@@ -225,58 +225,6 @@ export class MarketPlace__getBuyPriceResult {
   }
 }
 
-export class MarketPlace__getFeesAndRecipientsResult {
-  value0: BigInt;
-  value1: BigInt;
-  value2: BigInt;
-  value3: BigInt;
-  value4: Address;
-
-  constructor(
-    value0: BigInt,
-    value1: BigInt,
-    value2: BigInt,
-    value3: BigInt,
-    value4: Address
-  ) {
-    this.value0 = value0;
-    this.value1 = value1;
-    this.value2 = value2;
-    this.value3 = value3;
-    this.value4 = value4;
-  }
-
-  toMap(): TypedMap<string, ethereum.Value> {
-    let map = new TypedMap<string, ethereum.Value>();
-    map.set("value0", ethereum.Value.fromUnsignedBigInt(this.value0));
-    map.set("value1", ethereum.Value.fromUnsignedBigInt(this.value1));
-    map.set("value2", ethereum.Value.fromUnsignedBigInt(this.value2));
-    map.set("value3", ethereum.Value.fromUnsignedBigInt(this.value3));
-    map.set("value4", ethereum.Value.fromAddress(this.value4));
-    return map;
-  }
-
-  getTreasuryFee(): BigInt {
-    return this.value0;
-  }
-
-  getCreatorRev(): BigInt {
-    return this.value1;
-  }
-
-  getPreviousCreatorRev(): BigInt {
-    return this.value2;
-  }
-
-  getSellerRev(): BigInt {
-    return this.value3;
-  }
-
-  getSeller(): Address {
-    return this.value4;
-  }
-}
-
 export class MarketPlace__getMarketInfoResultValue0Struct extends ethereum.Tuple {
   get isOpen(): boolean {
     return this[0].toBoolean();
@@ -355,32 +303,36 @@ export class MarketPlace__getReserveAuctionResultAuctionStruct extends ethereum.
     return this[4].toBigInt();
   }
 
+  get tokenIdInEscrow(): BigInt {
+    return this[5].toBigInt();
+  }
+
   get seller(): Address {
-    return this[5].toAddress();
+    return this[6].toAddress();
   }
 
   get duration(): BigInt {
-    return this[6].toBigInt();
-  }
-
-  get extensionDuration(): BigInt {
     return this[7].toBigInt();
   }
 
-  get endTime(): BigInt {
+  get extensionDuration(): BigInt {
     return this[8].toBigInt();
   }
 
+  get endTime(): BigInt {
+    return this[9].toBigInt();
+  }
+
   get bidder(): Address {
-    return this[9].toAddress();
+    return this[10].toAddress();
   }
 
   get soulBoundTokenIdBidder(): BigInt {
-    return this[10].toBigInt();
+    return this[11].toBigInt();
   }
 
   get amount(): BigInt {
-    return this[11].toBigInt();
+    return this[12].toBigInt();
   }
 }
 
@@ -409,6 +361,57 @@ export class MarketPlace__setBuyPriceInputSaleParamStruct extends ethereum.Tuple
 export class MarketPlace extends ethereum.SmartContract {
   static bind(address: Address): MarketPlace {
     return new MarketPlace("MarketPlace", address);
+  }
+
+  acceptOffer(
+    soulBoundTokenId: BigInt,
+    derivativeNFT: Address,
+    tokenId: BigInt,
+    units: BigInt,
+    offerFrom: Address,
+    minAmount: BigInt
+  ): BigInt {
+    let result = super.call(
+      "acceptOffer",
+      "acceptOffer(uint256,address,uint256,uint128,address,uint256):(uint256)",
+      [
+        ethereum.Value.fromUnsignedBigInt(soulBoundTokenId),
+        ethereum.Value.fromAddress(derivativeNFT),
+        ethereum.Value.fromUnsignedBigInt(tokenId),
+        ethereum.Value.fromUnsignedBigInt(units),
+        ethereum.Value.fromAddress(offerFrom),
+        ethereum.Value.fromUnsignedBigInt(minAmount)
+      ]
+    );
+
+    return result[0].toBigInt();
+  }
+
+  try_acceptOffer(
+    soulBoundTokenId: BigInt,
+    derivativeNFT: Address,
+    tokenId: BigInt,
+    units: BigInt,
+    offerFrom: Address,
+    minAmount: BigInt
+  ): ethereum.CallResult<BigInt> {
+    let result = super.tryCall(
+      "acceptOffer",
+      "acceptOffer(uint256,address,uint256,uint128,address,uint256):(uint256)",
+      [
+        ethereum.Value.fromUnsignedBigInt(soulBoundTokenId),
+        ethereum.Value.fromAddress(derivativeNFT),
+        ethereum.Value.fromUnsignedBigInt(tokenId),
+        ethereum.Value.fromUnsignedBigInt(units),
+        ethereum.Value.fromAddress(offerFrom),
+        ethereum.Value.fromUnsignedBigInt(minAmount)
+      ]
+    );
+    if (result.reverted) {
+      return new ethereum.CallResult();
+    }
+    let value = result.value;
+    return ethereum.CallResult.fromValue(value[0].toBigInt());
   }
 
   getAdminMember(index: BigInt): Address {
@@ -496,67 +499,6 @@ export class MarketPlace extends ethereum.SmartContract {
       new MarketPlace__getBuyPriceResult(
         value[0].toAddress(),
         value[1].toBigInt()
-      )
-    );
-  }
-
-  getFeesAndRecipients(
-    soulBoundTokenId: BigInt,
-    projectId: BigInt,
-    derivativeNFT: Address,
-    tokenId: BigInt,
-    amount: BigInt
-  ): MarketPlace__getFeesAndRecipientsResult {
-    let result = super.call(
-      "getFeesAndRecipients",
-      "getFeesAndRecipients(uint256,uint256,address,uint256,uint256):(uint256,uint256,uint256,uint256,address)",
-      [
-        ethereum.Value.fromUnsignedBigInt(soulBoundTokenId),
-        ethereum.Value.fromUnsignedBigInt(projectId),
-        ethereum.Value.fromAddress(derivativeNFT),
-        ethereum.Value.fromUnsignedBigInt(tokenId),
-        ethereum.Value.fromUnsignedBigInt(amount)
-      ]
-    );
-
-    return new MarketPlace__getFeesAndRecipientsResult(
-      result[0].toBigInt(),
-      result[1].toBigInt(),
-      result[2].toBigInt(),
-      result[3].toBigInt(),
-      result[4].toAddress()
-    );
-  }
-
-  try_getFeesAndRecipients(
-    soulBoundTokenId: BigInt,
-    projectId: BigInt,
-    derivativeNFT: Address,
-    tokenId: BigInt,
-    amount: BigInt
-  ): ethereum.CallResult<MarketPlace__getFeesAndRecipientsResult> {
-    let result = super.tryCall(
-      "getFeesAndRecipients",
-      "getFeesAndRecipients(uint256,uint256,address,uint256,uint256):(uint256,uint256,uint256,uint256,address)",
-      [
-        ethereum.Value.fromUnsignedBigInt(soulBoundTokenId),
-        ethereum.Value.fromUnsignedBigInt(projectId),
-        ethereum.Value.fromAddress(derivativeNFT),
-        ethereum.Value.fromUnsignedBigInt(tokenId),
-        ethereum.Value.fromUnsignedBigInt(amount)
-      ]
-    );
-    if (result.reverted) {
-      return new ethereum.CallResult();
-    }
-    let value = result.value;
-    return ethereum.CallResult.fromValue(
-      new MarketPlace__getFeesAndRecipientsResult(
-        value[0].toBigInt(),
-        value[1].toBigInt(),
-        value[2].toBigInt(),
-        value[3].toBigInt(),
-        value[4].toAddress()
       )
     );
   }
@@ -770,7 +712,7 @@ export class MarketPlace extends ethereum.SmartContract {
   ): MarketPlace__getReserveAuctionResultAuctionStruct {
     let result = super.call(
       "getReserveAuction",
-      "getReserveAuction(uint256):((uint256,address,uint256,uint256,uint128,address,uint256,uint256,uint256,address,uint256,uint256))",
+      "getReserveAuction(uint256):((uint256,address,uint256,uint256,uint128,uint256,address,uint256,uint256,uint256,address,uint256,uint256))",
       [ethereum.Value.fromUnsignedBigInt(auctionId)]
     );
 
@@ -784,7 +726,7 @@ export class MarketPlace extends ethereum.SmartContract {
   ): ethereum.CallResult<MarketPlace__getReserveAuctionResultAuctionStruct> {
     let result = super.tryCall(
       "getReserveAuction",
-      "getReserveAuction(uint256):((uint256,address,uint256,uint256,uint128,address,uint256,uint256,uint256,address,uint256,uint256))",
+      "getReserveAuction(uint256):((uint256,address,uint256,uint256,uint128,uint256,address,uint256,uint256,uint256,address,uint256,uint256))",
       [ethereum.Value.fromUnsignedBigInt(auctionId)]
     );
     if (result.reverted) {
@@ -853,38 +795,6 @@ export class MarketPlace extends ethereum.SmartContract {
     }
     let value = result.value;
     return ethereum.CallResult.fromValue(value[0].toBigInt());
-  }
-
-  getSellerOf(dnftContract: Address, tokenId: BigInt): Address {
-    let result = super.call(
-      "getSellerOf",
-      "getSellerOf(address,uint256):(address)",
-      [
-        ethereum.Value.fromAddress(dnftContract),
-        ethereum.Value.fromUnsignedBigInt(tokenId)
-      ]
-    );
-
-    return result[0].toAddress();
-  }
-
-  try_getSellerOf(
-    dnftContract: Address,
-    tokenId: BigInt
-  ): ethereum.CallResult<Address> {
-    let result = super.tryCall(
-      "getSellerOf",
-      "getSellerOf(address,uint256):(address)",
-      [
-        ethereum.Value.fromAddress(dnftContract),
-        ethereum.Value.fromUnsignedBigInt(tokenId)
-      ]
-    );
-    if (result.reverted) {
-      return new ethereum.CallResult();
-    }
-    let value = result.value;
-    return ethereum.CallResult.fromValue(value[0].toAddress());
   }
 
   isAdmin(account: Address): boolean {
@@ -1189,6 +1099,10 @@ export class AcceptOfferCall__Outputs {
 
   constructor(call: AcceptOfferCall) {
     this._call = call;
+  }
+
+  get value0(): BigInt {
+    return this._call.outputValues[0].value.toBigInt();
   }
 }
 

@@ -2219,7 +2219,7 @@ export class ReserveAuctionCreated__Params {
     return this._event.parameters[3].value.toBigInt();
   }
 
-  get tokenIdToEscrow(): BigInt {
+  get tokenIdInEscrow(): BigInt {
     return this._event.parameters[4].value.toBigInt();
   }
 
