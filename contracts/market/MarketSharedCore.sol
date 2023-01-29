@@ -14,24 +14,24 @@ abstract contract MarketSharedCore {
    * @param tokenId The id of the DNFT.
    * @return seller The seller which listed this DNFT for sale, or address(0) if not listed.
    */
-  function getSellerOf(address dnftContract, uint256 tokenId) external view returns (address payable seller) {
-    seller = _getSellerOf(dnftContract, tokenId);
-  }
+  // function getSellerOf(address dnftContract, uint256 tokenId) external view returns (address payable seller) {
+  //   seller = _getSellerOf(dnftContract, tokenId);
+  // }
 
-  /**
-   * @notice Checks who the seller for an DNFT is if listed in this market.
-   */
-  function _getSellerOf(address dnftContract, uint256 tokenId) internal view virtual returns (address payable seller);
+  // /**
+  //  * @notice Checks who the seller for an DNFT is if listed in this market.
+  //  */
+  // function _getSellerOf(address dnftContract, uint256 tokenId) internal view virtual returns (address payable seller);
 
-  /**
-   * @notice Checks who the seller for an DNFT is if listed in this market or returns the current owner.
-   */
+  // /**
+  //  * @notice Checks who the seller for an DNFT is if listed in this market or returns the current owner.
+  //  */
   
-  function _getSellerOrOwnerOf(address dnftContract, uint256 tokenId)
-    internal
-    view
-    virtual
-    returns (address payable sellerOrOwner);
+  // function _getSellerOrOwnerOf(address dnftContract, uint256 tokenId)
+  //   internal
+  //   view
+  //   virtual
+  //   returns (address payable sellerOrOwner);
   
 
   /**
@@ -39,5 +39,5 @@ abstract contract MarketSharedCore {
    * variables without shifting down storage in the inheritance chain.
    * See https://docs.openzeppelin.com/contracts/4.x/upgradeable#storage_gaps
    */
-  uint256[500] private __gap;
+  // uint256[500] private __gap;
 }

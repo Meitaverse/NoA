@@ -13,6 +13,7 @@ import {IDerivativeNFT} from "../interfaces/IDerivativeNFT.sol";
 
 import "../libraries/Constants.sol";
 import "./MarketSharedCore.sol";
+import "hardhat/console.sol";
 
 error DNFTMarketCore_Seller_Not_Found();
 
@@ -30,6 +31,13 @@ abstract contract DNFTMarketCore is Initializable, MarketSharedCore {
   function _getTreasuryData() internal virtual view returns (address, uint16);
 
   function _getMarketInfo(address derivativeNFT) internal virtual view returns (DataTypes.Market memory);
+
+  function _getTokenIdInEscrow(address derivativeNFT, uint256 tokenId) internal virtual returns (uint256);
+  
+  /**
+   * @notice Returns id to assign to the next auction.
+   */
+  function _getNextAndIncrementAuctionId() internal virtual returns (uint256);
 
 
   /**
@@ -64,7 +72,6 @@ abstract contract DNFTMarketCore is Initializable, MarketSharedCore {
     // No-op
   }
 
-
   /**
    * @notice Cancel the `msg.sender`'s offer if there is one, freeing up their SBT balance.
    * @dev This should be used when it does not make sense to keep the original offer around,
@@ -79,33 +86,37 @@ abstract contract DNFTMarketCore is Initializable, MarketSharedCore {
    * indicated that it's no longer pending authorization.
    */
   function _transferFromEscrow(
-    address derivativeNFT,
-    uint256 fromTokenId,
-    uint256 toTokenId,
-    uint128 units,
-    address authorizeSeller
+      address derivativeNFT,
+      uint256 tokenId,
+      address recipient,
+      uint128 units,
+      address authorizeSeller
   ) internal virtual{
     if (authorizeSeller != address(0)) {
       revert DNFTMarketCore_Seller_Not_Found();
     }
+    uint256 tokenIdInEscrow =  _getTokenIdInEscrow(derivativeNFT, tokenId);
+    // console.log("derivativeNFT:", derivativeNFT);
+    // console.log("tokenId:", tokenId);
+    console.log("tokenIdInEscrow:", tokenIdInEscrow);
 
-    //transfer units from escrow to toTokenId
-    IDerivativeNFT(derivativeNFT).transferValue(fromTokenId, toTokenId, uint256(units));
-
+    //transfer the tokenIdInEscrow from escrow to recipient
+    // IERC3525(derivativeNFT).transferFrom(address(this), recipient, tokenId);
+    IERC3525(derivativeNFT).transferFrom(address(this), recipient, 2);
   }
 
   /**
    * @notice Transfers the DNFT from escrow unless there is another reason for it to remain in escrow.
    */
   function _transferFromEscrowIfAvailable(
-    address derivativeNFT,
-    uint256 fromTokenId,
-    uint256 toTokenId,
-    uint128 units
+      address derivativeNFT,
+      uint256 tokenId,
+      address recipient,
+      uint128 units
   ) internal virtual {
-    _transferFromEscrow(derivativeNFT, fromTokenId, toTokenId, units, address(0));
+    _transferFromEscrow(derivativeNFT, tokenId, recipient, units, address(0));
   }
-
+ 
   /**
    * @notice Transfers an DNFT units into escrow,
    * if insufficient value , it will fail.
@@ -137,32 +148,32 @@ abstract contract DNFTMarketCore is Initializable, MarketSharedCore {
   /**
    * @inheritdoc MarketSharedCore
    */
-  function _getSellerOf(address derivativeNFT, uint256 tokenId)
-    internal
-    view
-    virtual
-    override
-    returns (address payable seller)
-  // solhint-disable-next-line no-empty-blocks
-  {
-    // No-op by default
-  }
+  // function _getSellerOf(address derivativeNFT, uint256 tokenId)
+  //   internal
+  //   view
+  //   virtual
+  //   override
+  //   returns (address payable seller)
+  // // solhint-disable-next-line no-empty-blocks
+  // {
+  //   // No-op by default
+  // }
 
   /**
    * @inheritdoc MarketSharedCore
    */
   
-  function _getSellerOrOwnerOf(address derivativeNFT, uint256 tokenId)
-    internal
-    view
-    override
-    returns (address payable sellerOrOwner)
-  {
-    sellerOrOwner = _getSellerOf(derivativeNFT, tokenId);
-    if (sellerOrOwner == address(0)) {
-      sellerOrOwner = payable(IERC3525(derivativeNFT).ownerOf(tokenId));
-    }
-  }
+  // function _getSellerOrOwnerOf(address derivativeNFT, uint256 tokenId)
+  //   internal
+  //   view
+  //   override
+  //   returns (address payable sellerOrOwner)
+  // {
+  //   sellerOrOwner = _getSellerOf(derivativeNFT, tokenId);
+  //   if (sellerOrOwner == address(0)) {
+  //     sellerOrOwner = payable(IERC3525(derivativeNFT).ownerOf(tokenId));
+  //   }
+  // }
   
 
   /**
@@ -171,7 +182,6 @@ abstract contract DNFTMarketCore is Initializable, MarketSharedCore {
    */
   function _isInActiveAuction(address derivativeNFT, uint256 tokenId) internal view virtual returns (bool);
 
-
   
   /**
    * @notice This empty reserved space is put in place to allow future versions to add new
@@ -179,5 +189,5 @@ abstract contract DNFTMarketCore is Initializable, MarketSharedCore {
    * See https://docs.openzeppelin.com/contracts/4.x/upgradeable#storage_gaps
    * @dev 50 slots were consumed by adding `ReentrancyGuard`.
    */
-  uint256[450] private __gap;
+  // uint256[450] private __gap;
 }

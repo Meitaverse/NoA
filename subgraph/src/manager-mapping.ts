@@ -71,9 +71,10 @@ export function handleManagerGovernanceSet(event: ManagerGovernanceSet): void {
 export function handleHubCreated(event: HubCreated): void {
     log.info("handleHubCreated, event.address: {}", [event.address.toHexString()])
 
-    const hubOwner = loadOrCreateAccount(event.params.creator)
+    const hubOwner = loadOrCreateAccount(event.params.hubOwner)
 
-    const hub = loadOrCreateHub(event.params.creator) 
+    const hub = loadOrCreateHub(event.params.hubId) 
+    hubOwner.hub = hub.id
 
     hub.hubOwner = hubOwner.id
     hub.hubId = event.params.hubId
@@ -88,9 +89,9 @@ export function handleHubCreated(event: HubCreated): void {
 export function handleHubUpdated(event: HubUpdated): void {
     log.info("handleHubUpdated, event.address: {}", [event.address.toHexString()])
 
-    const hubOwner = loadOrCreateAccount(event.params.creator)
+    const hubOwner = loadOrCreateAccount(event.params.hubOwner)
 
-    const hub = loadOrCreateHub(event.params.creator) 
+    const hub = loadOrCreateHub(event.params.hubId) 
 
     hub.hubOwner = hubOwner.id
     hub.name = event.params.name
@@ -112,52 +113,47 @@ export function handlePublishPrepared(event: PublishPrepared): void {
         let publisher = result.value
         const profilePublisher = loadOrCreateAccount(publisher)
         
-        const resultHubInfo = manager.try_getHubInfo(event.params.publication.hubId)
-        if (!resultHubInfo.reverted) {
-            
-            const hubOwner = loadOrCreateAccount(resultHubInfo.value.hubOwner)
-    
-            const hub = loadOrCreateHub(resultHubInfo.value.hubOwner)
 
-            const project = loadOrCreateProject(event.params.publication.projectId)
+        const hub = loadOrCreateHub(event.params.publication.hubId)
 
-            let publication = loadOrCreatePublication(event.params.publishId)
-            if (publication) {
-                publication.publishId = event.params.publishId
-                publication.publisher = profilePublisher.id
-                publication.hub = hub.id
-                publication.project = project.id
-                publication.salePrice = event.params.publication.salePrice
-                publication.royaltyBasisPoints = event.params.publication.royaltyBasisPoints
-                publication.amount = event.params.publication.amount
-                publication.name = event.params.publication.name
-                publication.description = event.params.publication.description
-                publication.canCollect = event.params.publication.canCollect
-                publication.materialURIs = event.params.publication.materialURIs
-                publication.fromTokenIds = event.params.publication.fromTokenIds
-                publication.collectModule = event.params.publication.collectModule
-                publication.collectModuleInitData = event.params.publication.collectModuleInitData
-                publication.publishModule = event.params.publication.publishModule
-                publication.publishModuleInitData = event.params.publication.publishModuleInitData
-                publication.previousPublishId = event.params.previousPublishId
-                if (event.params.publication.fromTokenIds.length > 0 ) {
-                    const manager = Manager.bind(event.address) 
-                    const result = manager.try_getGenesisPublishIdByProjectId(event.params.publication.projectId)
-                        if (result.reverted) {
-                            log.warning('try_getGenesisPublishIdByProjectId, result.reverted is true', [])
-                        } else {
-                            log.info("try_getGenesisPublishIdByProjectId ok, result.value: {}", [result.value.toString()])
-                            publication.genesisPublishId = result.value
-                        }
-                } else {
-                    publication.genesisPublishId = event.params.publishId
-                }
-                publication.publishTaxAmount = event.params.publishTaxAmount
-                publication.timestamp = event.block.timestamp
-                publication.save()
-            } 
-            
-        }
+        const project = loadOrCreateProject(event.params.publication.projectId)
+
+        let publication = loadOrCreatePublication(event.params.publishId)
+        if (publication) {
+            publication.publishId = event.params.publishId
+            publication.publisher = profilePublisher.id
+            publication.hub = hub.id
+            publication.project = project.id
+            publication.salePrice = event.params.publication.salePrice
+            publication.royaltyBasisPoints = event.params.publication.royaltyBasisPoints
+            publication.amount = event.params.publication.amount
+            publication.name = event.params.publication.name
+            publication.description = event.params.publication.description
+            publication.canCollect = event.params.publication.canCollect
+            publication.materialURIs = event.params.publication.materialURIs
+            publication.fromTokenIds = event.params.publication.fromTokenIds
+            publication.collectModule = event.params.publication.collectModule
+            publication.collectModuleInitData = event.params.publication.collectModuleInitData
+            publication.publishModule = event.params.publication.publishModule
+            publication.publishModuleInitData = event.params.publication.publishModuleInitData
+            publication.previousPublishId = event.params.previousPublishId
+            if (event.params.publication.fromTokenIds.length > 0 ) {
+                const manager = Manager.bind(event.address) 
+                const result = manager.try_getGenesisPublishIdByProjectId(event.params.publication.projectId)
+                    if (result.reverted) {
+                        log.warning('try_getGenesisPublishIdByProjectId, result.reverted is true', [])
+                    } else {
+                        log.info("try_getGenesisPublishIdByProjectId ok, result.value: {}", [result.value.toString()])
+                        publication.genesisPublishId = result.value
+                    }
+            } else {
+                publication.genesisPublishId = event.params.publishId
+            }
+            publication.publishTaxAmount = event.params.publishTaxAmount
+            publication.timestamp = event.block.timestamp
+            publication.save()
+        } 
+        
     }
 }
 
@@ -222,35 +218,30 @@ export function handlePublishCreated(event: PublishCreated): void {
         const publisher = loadOrCreateAccount(publisherAddr)
         let publication = Publication.load(event.params.publishId.toString());
        
-        const resultHubInfo = manager.try_getHubInfo(event.params.hubId)
-        if (!resultHubInfo.reverted) {
+        const hub = loadOrCreateHub(event.params.hubId)
+        
+        const project = loadOrCreateProject(event.params.projectId)
+        
+        const publishRecord = loadOrCreatePublishRecord(
+            publisher, 
+            hub, 
+            project, 
+            event.params.publishId
+        ) 
+        
+        if (publishRecord) {
+            publishRecord.publisher = publisher.id
+            if (publication) publishRecord.publication = publication.id
+            publishRecord.hub = hub.id
+            publishRecord.project = project.id
+            publishRecord.newTokenId = event.params.newTokenId
+            publishRecord.amount = event.params.amount
+            publishRecord.collectModuleInitData = event.params.collectModuleInitData
+            publishRecord.timestamp = event.block.timestamp
+            publishRecord.save()
+        } 
             
-            const hubOwner = loadOrCreateAccount(resultHubInfo.value.hubOwner)
-    
-            const hub = loadOrCreateHub(resultHubInfo.value.hubOwner)
-           
-            const project = loadOrCreateProject(event.params.projectId)
-            
-            const publishRecord = loadOrCreatePublishRecord(
-                publisher, 
-                hub, 
-                project, 
-                event.params.publishId
-            ) 
-            
-            if (publishRecord) {
-                publishRecord.publisher = publisher.id
-                if (publication) publishRecord.publication = publication.id
-                publishRecord.hub = hub.id
-                publishRecord.project = project.id
-                publishRecord.newTokenId = event.params.newTokenId
-                publishRecord.amount = event.params.amount
-                publishRecord.collectModuleInitData = event.params.collectModuleInitData
-                publishRecord.timestamp = event.block.timestamp
-                publishRecord.save()
-            } 
-            
-        }
+        
     }
 }
 

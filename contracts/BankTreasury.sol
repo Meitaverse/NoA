@@ -234,6 +234,7 @@ contract BankTreasury is
         uint256 value,
         bytes calldata data
     ) public override returns (bytes4) {
+        //console.log('BankTreasury onERC3525Received, msg.sender:', msg.sender);
         if (msg.sender != address(IModuleGlobals(MODULE_GLOBALS).getSBT())) {
             revert Errors.BankTreasury_Only_Can_Transfer_SBT();
         }
@@ -246,8 +247,8 @@ contract BankTreasury is
             DataTypes.AccountInfo storage accountInfo = accountToInfo[fromTokenId];
             _addBalanceTo(accountInfo, value);
         }
-
-        emit Events.ERC3525Received(operator, fromTokenId, toTokenId, value, data, gasleft());
+        
+        emit Events.ERC3525Received(msg.sender, operator, fromTokenId, toTokenId, value, data, gasleft());
 
         return 0x009ce20b;
     }
@@ -402,7 +403,7 @@ contract BankTreasury is
      * The results returned are sorted by expiry, with the earliest expiry date first.
      * @param soulBoundTokenId The soulBoundTokenId to query the locked balance of.
      * @return expiries The time at which each outstanding lockup bucket expires.
-     * @return amounts The number of FETH tokens which will expire for each outstanding lockup bucket.
+     * @return amounts The number of earnest money which will expire for each outstanding lockup bucket.
      */
     function getLockups(uint256 soulBoundTokenId) external view returns (uint256[] memory expiries, uint256[] memory amounts) {
         DataTypes.AccountInfo storage accountInfo = accountToInfo[soulBoundTokenId];
@@ -446,10 +447,10 @@ contract BankTreasury is
     }
 
     /**
-     * @notice Returns the total balance of an account, including locked FETH tokens.
+     * @notice Returns the total balance of an account, including locked earnest money tokens.
      * @dev Use `balanceOf` to get the number of tokens available for transfer or withdrawal.
      * @param soulBoundTokenId The soulBoundTokenId to query the total balance of.
-     * @return balance The total FETH balance tracked for this account.
+     * @return balance The total earnest money balance tracked for this account.
      */
     function totalBalanceOf(uint256 soulBoundTokenId) external view returns (uint256 balance) {
         DataTypes.AccountInfo storage accountInfo = accountToInfo[soulBoundTokenId];
@@ -643,6 +644,8 @@ contract BankTreasury is
         }
 
         unchecked {
+            //TODO
+            
             if (payValue != royaltyAmounts.treasuryAmount + 
                             royaltyAmounts.genesisAmount +
                             royaltyAmounts.previousAmount + 
@@ -652,6 +655,7 @@ contract BankTreasury is
             {
                 revert Errors.InvalidRoyalties();
             }
+            
 
             _deductBalanceFrom(_freeFromEscrow(fromSoulBoundTokenId), payValue);
             _addBalanceTo(_freeFromEscrow(soulBoundTokenIdBankTreasury), royaltyAmounts.treasuryAmount);

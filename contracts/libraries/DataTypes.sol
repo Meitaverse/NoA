@@ -58,7 +58,6 @@ library DataTypes {
     }
     
     struct HubData {
-        address hubOwner;
         uint256 soulBoundTokenId;
         string name;
         string description;
@@ -295,11 +294,11 @@ library DataTypes {
     }
 
     struct RoyaltyAmounts {
-       uint256 treasuryAmount;
-       uint256 genesisAmount;
-       uint256 previousAmount;
-       uint256 referrerAmount;
-       uint256 adjustedAmount;
+       uint96 treasuryAmount;
+       uint96 genesisAmount;
+       uint96 previousAmount;
+       uint96 referrerAmount;
+       uint96 adjustedAmount;
     }
 
     struct SaleParam {
@@ -313,9 +312,6 @@ library DataTypes {
         
         /// @notice The uints want put on list
         uint128 putOnListUnits;
-
-        /// @notice The start time on sell
-        uint32 startTime;
 
         /// @notice The sale price
         uint128 salePrice;
@@ -346,9 +342,6 @@ library DataTypes {
         /// @notice When DNFT is escrowed, a new tokenId is generated.
         uint256 tokenIdEscrow;
 
-        /// @notice The start time on sell
-        uint32 startTime;
-
         /// @notice The current buy price set for this DNFT.
         uint128 salePrice;
 
@@ -369,7 +362,7 @@ library DataTypes {
 
         /// @notice The amount, in wei, of the highest offer.
         uint96 amount;
-
+        
         /// @notice The address of the collector who made this offer.
         address buyer;
 
@@ -393,6 +386,8 @@ library DataTypes {
         uint256 tokenId;
         /// @notice The units of auction.
         uint128 units;
+        /// @notice The id of the DNFT in escrow.
+        uint256 tokenIdInEscrow;
         /// @notice The owner of the DNFT which listed it in auction.
         address payable seller;
         /// @notice The duration for this auction.
@@ -423,7 +418,7 @@ library DataTypes {
         /// @notice The id of the DNFT.
         uint256 tokenId;
         /// @notice The id to escrow
-        uint256 tokenIdToEscrow;
+        uint256 tokenIdInEscrow;
         /// @notice The units of this reserve auction.
         uint128 units;
         /// @notice The id of escrow.
@@ -448,7 +443,7 @@ library DataTypes {
         // uint64 bidReferrerAddressSlot1;
         /// @notice The latest price of the DNFT in this auction.
         /// @dev This is set to the reserve price, and then to the highest bid once the auction has started.
-        uint256 amount;
+        uint96 amount;
     }    
 
 

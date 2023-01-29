@@ -6,16 +6,16 @@ import { Profile, Hub, Account } from "../../generated/schema";
 import { ZERO_BIG_INT } from "./constants";
 import { loadOrCreateAccount } from "./accounts";
 
-export function loadOrCreateHub(address: Address): Hub {
+export function loadOrCreateHub(hubId: BigInt): Hub {
 
-    let addressHex = address.toHex();
+    // let addressHex = address.toHex();
 
-    let account = loadOrCreateAccount(address)
+    // let account = loadOrCreateAccount(address)
 
-    let hub = Hub.load(addressHex);
+    let hub = Hub.load(hubId.toString());
     if (!hub) {
-        hub = new Hub(addressHex);
-        hub.hubOwner = account.id;
+        hub = new Hub(hubId.toString());
+        // hub.hubOwner = account.id;
         hub.hubId = ZERO_BIG_INT;
         hub.name = '';
         hub.description = '';

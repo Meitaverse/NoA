@@ -137,7 +137,6 @@ contract NFTDerivativeProtocolTokenV2 is
     ) external  { 
          //call only by BankTreasury or FeeCollectModule or publishModule  or Voucher
         ERC3525Upgradeable._transferValue(fromTokenId_, toTokenId_, value_);
-        
     }
 
     //-- orverride -- //

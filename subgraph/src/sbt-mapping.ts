@@ -207,7 +207,6 @@ export function handleSBTTransferValue(event: TransferValue): void {
     } 
 }
 
-
 export function handleSBTSlotChanged(event: SlotChanged): void {
     log.info("handleSBTSlotChanged, event.address: {}", [event.address.toHexString()])
 
@@ -229,8 +228,7 @@ export function handleSBTSlotChanged(event: SlotChanged): void {
             history.newSlot = event.params._newSlot
             history.timestamp = event.block.timestamp
             history.save()
-        } 
-        
+        }
     }
 }
 

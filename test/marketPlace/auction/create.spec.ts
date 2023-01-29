@@ -1,14 +1,15 @@
 import { BigNumber } from '@ethersproject/bignumber';
 import { parseEther } from '@ethersproject/units';
 import '@nomiclabs/hardhat-ethers';
+import { TransactionReceipt, TransactionResponse } from '@ethersproject/providers';
 import { expect } from 'chai';
 import { 
   ERC20__factory,
   DerivativeNFT,
   DerivativeNFT__factory,
- } from '../../typechain';
-import { MAX_UINT256, ZERO_ADDRESS } from '../helpers/constants';
-import { ERRORS } from '../helpers/errors';
+ } from '../../../typechain';
+import { ONE_HOUR, ONE_DAY, ONE_THOUSAND_DAY } from '../../helpers/constants';
+import { ERRORS } from '../../helpers/errors';
 
 import { 
   createProfileReturningTokenId,
@@ -17,7 +18,7 @@ import {
   matchEvent,
   getTimestamp, 
   waitForTx 
-} from '../helpers/utils';
+} from '../../helpers/utils';
 
 import {
   abiCoder,
@@ -60,7 +61,7 @@ import {
   deployer,
   voucherContract,
   marketPlaceContract
-} from '../__setup.spec';
+} from '../../__setup.spec';
 
 let derivativeNFT: DerivativeNFT;
 
@@ -68,6 +69,10 @@ const Default_royaltyBasisPoints = 50; //
 const SALE_ID = 1;
 const THIRD_DNFT_TOKEN_ID =3;
 const SALE_PRICE = 100;
+const OFFER_PRICE = 120;
+
+let receipt: TransactionReceipt;
+let auctionId = 0;
 
 makeSuiteCleanRoom('Market Place', function () {
 
@@ -99,7 +104,13 @@ makeSuiteCleanRoom('Market Place', function () {
         ).to.eq(THIRD_PROFILE_ID);
 
       await manager.connect(governance).mintSBTValue(THIRD_PROFILE_ID, parseEther('10'));
-
+      
+      // @notice MUST deposit SBT value into bank treasury before buy
+      await sbtContract.connect(userTwo)['transferFrom(uint256,uint256,uint256)'](THIRD_PROFILE_ID, FIRST_PROFILE_ID, parseEther('1'));
+      
+      expect(await bankTreasuryContract['balanceOf(uint256)'](THIRD_PROFILE_ID)).to.eq(parseEther('1'));
+      
+      
       expect(await manager.getWalletBySoulBoundTokenId(SECOND_PROFILE_ID)).to.eq(userAddress);
       expect(await manager.getWalletBySoulBoundTokenId(THIRD_PROFILE_ID)).to.eq(userTwoAddress);
       
@@ -145,6 +156,15 @@ makeSuiteCleanRoom('Market Place', function () {
       await manager.getDerivativeNFT(FIRST_PROJECT_ID),
       user
     );
+      
+    await expect(
+        marketPlaceContract.connect(governance).addMarket(
+          derivativeNFT.address,
+            0,
+            0,
+            50,
+        )
+    ).to.not.be.reverted;
 
     const publishModuleinitData = abiCoder.encode(
       ['address', 'uint256'],
@@ -188,53 +208,84 @@ makeSuiteCleanRoom('Market Place', function () {
         await derivativeNFT.ownerOf(FIRST_DNFT_TOKEN_ID)
       ).to.eq(userAddress);
 
-      await derivativeNFT.setApprovalForAll(marketPlaceContract.address, true);
+      await derivativeNFT.connect(user).setApprovalForAll(marketPlaceContract.address, true);
+     
+      // Create an auction
+      receipt = await waitForTx(
+            marketPlaceContract.connect(user).createReserveAuction(
+                SECOND_PROFILE_ID,
+                derivativeNFT.address, 
+                FIRST_DNFT_TOKEN_ID, 
+                11,
+                SALE_PRICE
+            )
+      );
 
+      auctionId = (await marketPlaceContract.connect(user).getReserveAuctionIdFor(
+        derivativeNFT.address, 
+        FIRST_DNFT_TOKEN_ID, 
+      )).toNumber();
+      console.log('\n\t getReserveAuctionIdFor, auctionId:', auctionId)
+      console.log('\n\t userAddress:', userAddress)
+            
+
+
+      let info = await marketPlaceContract.getReserveAuction(1);
+      console.log('\n\t getReserveAuction')
+      console.log('\t\t  --- soulBoundTokenId:', info.soulBoundTokenId)
+      console.log('\t\t  --- derivativeNFT:', info.derivativeNFT)
+      console.log('\t\t  --- projectId:', info.projectId)
+      console.log('\t\t  --- tokenId:', info.tokenId)
+      console.log('\t\t  --- units:', info.units)
+      console.log('\t\t  --- tokenIdInEscrow:', info.tokenIdInEscrow)
+      console.log('\t\t  --- seller:', info.seller)
+      console.log('\t\t  --- duration:', info.duration)
+      console.log('\t\t  --- extensionDuration:', info.extensionDuration)
+      console.log('\t\t  --- endTime:', info.endTime)
+      console.log('\t\t  --- bidder:', info.bidder)
+      console.log('\t\t  --- soulBoundTokenIdBidder:', info.soulBoundTokenIdBidder)
+      console.log('\t\t  --- amount:', info.amount)
+
+    
   });
 
-  context('MarketPlace', function () {
-    context('Negatives', function () {
-      it('User should fail to add market with non operator', async function () {
 
-        await expect(
-          marketPlaceContract.connect(user).addMarket(
-            derivativeNFT.address,
-             0,
-             0,
-             50,
-          )
-        ).to.be.revertedWith("Operator: caller does not have the Operator role");
+  context('Should create auction', function () {
+    
 
-      });
+    it("Emits ReserveAuctionCreated", async () => {
 
-      it('User should fail to setBuyPrice with not owner of dNFT', async function () {
-        await expect( 
-          marketPlaceContract.connect(userTwo).setBuyPrice(
-            {
-              soulBoundTokenId: SECOND_PROFILE_ID,
-              derivativeNFT: derivativeNFT.address, 
-              tokenId: FIRST_DNFT_TOKEN_ID,
-              putOnListUnits: 100,
-              salePrice: SALE_PRICE,
-            })
-        ).to.be.reverted;
-      });
-
-      it('User should fail to setBuyPrice with none exists dNFT tokenId', async function () {
-        await expect( 
-          marketPlaceContract.connect(user).setBuyPrice(
-            {
-              soulBoundTokenId: SECOND_PROFILE_ID,
-              derivativeNFT: derivativeNFT.address, 
-              tokenId: SECOND_DNFT_TOKEN_ID,
-              putOnListUnits: 100, //revert UnitsGTTotal
-              salePrice: SALE_PRICE,
-            })
-        ).to.be.reverted;
-      });
+      matchEvent(
+        receipt,
+        'ReserveAuctionCreated',
+        [
+            userAddress, // seller
+            derivativeNFT.address, // DNFT contract
+            FIRST_DNFT_TOKEN_ID,   //tokenId
+            11,                    //units
+            SECOND_DNFT_TOKEN_ID,  //token id in escrow
+            ONE_THOUSAND_DAY, // duration
+            60 * 15, // 15 min extensionDuration
+            SALE_PRICE, // reservePrice
+            auctionId,
+        ],
+      );
 
     });
 
+
+    it("DNFT is in escrow", async () => {
+        expect(
+            await derivativeNFT.ownerOf(SECOND_DNFT_TOKEN_ID)
+          ).to.eq(marketPlaceContract.address);
+
+
+        expect(
+            await derivativeNFT['balanceOf(uint256)'](SECOND_DNFT_TOKEN_ID)
+        ).to.be.equal(11);
+    });
+
   });
+  
 
 });

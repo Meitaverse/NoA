@@ -286,10 +286,6 @@ export class BuyPriceSet__Params {
       this._event.parameters[0].value.toTuple()
     );
   }
-
-  get seller(): Address {
-    return this._event.parameters[1].value.toAddress();
-  }
 }
 
 export class BuyPriceSetBuyPriceStruct extends ethereum.Tuple {
@@ -321,20 +317,16 @@ export class BuyPriceSetBuyPriceStruct extends ethereum.Tuple {
     return this[6].toBigInt();
   }
 
-  get startTime(): BigInt {
+  get salePrice(): BigInt {
     return this[7].toBigInt();
   }
 
-  get salePrice(): BigInt {
+  get onSellUnits(): BigInt {
     return this[8].toBigInt();
   }
 
-  get onSellUnits(): BigInt {
-    return this[9].toBigInt();
-  }
-
   get seledUnits(): BigInt {
-    return this[10].toBigInt();
+    return this[9].toBigInt();
   }
 }
 
@@ -731,28 +723,32 @@ export class ERC3525Received__Params {
     this._event = event;
   }
 
-  get operator(): Address {
+  get sender(): Address {
     return this._event.parameters[0].value.toAddress();
   }
 
-  get fromTokenId(): BigInt {
-    return this._event.parameters[1].value.toBigInt();
+  get operator(): Address {
+    return this._event.parameters[1].value.toAddress();
   }
 
-  get toTokenId(): BigInt {
+  get fromTokenId(): BigInt {
     return this._event.parameters[2].value.toBigInt();
   }
 
-  get value(): BigInt {
+  get toTokenId(): BigInt {
     return this._event.parameters[3].value.toBigInt();
   }
 
+  get value(): BigInt {
+    return this._event.parameters[4].value.toBigInt();
+  }
+
   get data(): Bytes {
-    return this._event.parameters[4].value.toBytes();
+    return this._event.parameters[5].value.toBytes();
   }
 
   get gas(): BigInt {
-    return this._event.parameters[5].value.toBigInt();
+    return this._event.parameters[6].value.toBigInt();
   }
 }
 
@@ -1111,7 +1107,7 @@ export class HubCreated__Params {
     return this._event.parameters[0].value.toBigInt();
   }
 
-  get creator(): Address {
+  get hubOwner(): Address {
     return this._event.parameters[1].value.toAddress();
   }
 
@@ -1179,24 +1175,28 @@ export class HubUpdated__Params {
     this._event = event;
   }
 
-  get creator(): Address {
-    return this._event.parameters[0].value.toAddress();
+  get hubId(): BigInt {
+    return this._event.parameters[0].value.toBigInt();
+  }
+
+  get hubOwner(): Address {
+    return this._event.parameters[1].value.toAddress();
   }
 
   get name(): string {
-    return this._event.parameters[1].value.toString();
-  }
-
-  get description(): string {
     return this._event.parameters[2].value.toString();
   }
 
-  get imageURI(): string {
+  get description(): string {
     return this._event.parameters[3].value.toString();
   }
 
+  get imageURI(): string {
+    return this._event.parameters[4].value.toString();
+  }
+
   get timestamp(): BigInt {
-    return this._event.parameters[4].value.toBigInt();
+    return this._event.parameters[5].value.toBigInt();
   }
 }
 
@@ -1307,28 +1307,32 @@ export class MarketPlaceERC3525Received__Params {
     this._event = event;
   }
 
-  get operator(): Address {
+  get sender(): Address {
     return this._event.parameters[0].value.toAddress();
   }
 
-  get fromTokenId(): BigInt {
-    return this._event.parameters[1].value.toBigInt();
+  get operator(): Address {
+    return this._event.parameters[1].value.toAddress();
   }
 
-  get toTokenId(): BigInt {
+  get fromTokenId(): BigInt {
     return this._event.parameters[2].value.toBigInt();
   }
 
-  get value(): BigInt {
+  get toTokenId(): BigInt {
     return this._event.parameters[3].value.toBigInt();
   }
 
+  get value(): BigInt {
+    return this._event.parameters[4].value.toBigInt();
+  }
+
   get data(): Bytes {
-    return this._event.parameters[4].value.toBytes();
+    return this._event.parameters[5].value.toBytes();
   }
 
   get gas(): BigInt {
-    return this._event.parameters[5].value.toBigInt();
+    return this._event.parameters[6].value.toBigInt();
   }
 }
 

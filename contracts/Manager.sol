@@ -145,8 +145,11 @@ contract Manager is
         uint256 hubId = _generateNextHubId();
         _hubIdBySoulBoundTokenId[hub.soulBoundTokenId] = hubId;
 
+        address _sbt = IModuleGlobals(MODULE_GLOBALS).getSBT();
+        address hubOwner = IERC3525(_sbt).ownerOf(hub.soulBoundTokenId);
+
         InteractionLogic.createHub(
-            msg.sender,
+            hubOwner,
             hubId,
             hub, 
             _hubInfos

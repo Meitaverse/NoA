@@ -401,12 +401,8 @@ export class MarketPlace__setBuyPriceInputSaleParamStruct extends ethereum.Tuple
     return this[3].toBigInt();
   }
 
-  get startTime(): BigInt {
-    return this[4].toBigInt();
-  }
-
   get salePrice(): BigInt {
-    return this[5].toBigInt();
+    return this[4].toBigInt();
   }
 }
 
@@ -1013,7 +1009,7 @@ export class MarketPlace extends ethereum.SmartContract {
   setBuyPrice(saleParam: MarketPlace__setBuyPriceInputSaleParamStruct): BigInt {
     let result = super.call(
       "setBuyPrice",
-      "setBuyPrice((uint256,address,uint256,uint128,uint32,uint128)):(uint256)",
+      "setBuyPrice((uint256,address,uint256,uint128,uint128)):(uint256)",
       [ethereum.Value.fromTuple(saleParam)]
     );
 
@@ -1025,7 +1021,7 @@ export class MarketPlace extends ethereum.SmartContract {
   ): ethereum.CallResult<BigInt> {
     let result = super.tryCall(
       "setBuyPrice",
-      "setBuyPrice((uint256,address,uint256,uint128,uint32,uint128)):(uint256)",
+      "setBuyPrice((uint256,address,uint256,uint128,uint128)):(uint256)",
       [ethereum.Value.fromTuple(saleParam)]
     );
     if (result.reverted) {
@@ -1837,12 +1833,8 @@ export class SetBuyPriceCallSaleParamStruct extends ethereum.Tuple {
     return this[3].toBigInt();
   }
 
-  get startTime(): BigInt {
-    return this[4].toBigInt();
-  }
-
   get salePrice(): BigInt {
-    return this[5].toBigInt();
+    return this[4].toBigInt();
   }
 }
 

@@ -9,7 +9,11 @@ type Account @entity {
   "Link to creator details if this account is or ever was one"
   creator: Creator @derivedFrom(field: "account")
 
+  "Link to SBT Asset "
   sbtAsset: SBTAsset!
+
+  "Link to Hub "
+  hub: Hub!
 
   "All NFTs currently owned by this account"
   nfts: [DNFT!]! @derivedFrom(field: "owner")
@@ -416,6 +420,7 @@ type StateSetHistory @entity {
 # Bank treasury ERC3525Received history
 type ERC3525ReceivedHistory @entity {
   id: ID!
+  sender: Bytes!
   operator: Bytes!
   from: Account!
   to: Account!
@@ -576,6 +581,7 @@ type Market @entity {
 
 type MarketPlaceERC3525ReceivedHistory @entity {
   id: ID!
+  sender: Bytes!
   operator: Bytes!
   fromTokenId: BigInt!
   toTokenId: BigInt!
@@ -1328,9 +1334,6 @@ type NftMarketBuyNow @entity {
 
   "The units put on sell for this NFT"
   seledUnits: BigInt!
-
-  "The date/time the buyer could buy in seconds since Unix epoch"
-  startTime: BigInt!
 
   "The date/time the buy now was initially created in seconds since Unix epoch"
   dateCreated: BigInt!

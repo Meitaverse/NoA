@@ -10,6 +10,8 @@ import "./MarketSharedCore.sol";
 import "./DNFTMarketCore.sol";
 import {MarketFees} from "./MarketFees.sol";
 
+// import "hardhat/console.sol";
+
 /**
  * @title Allows sellers to set a buy price of their DNFTs that may be accepted and instantly transferred to the buyer.
  * @notice DNFTs with a buy price set are escrowed in the market contract.
@@ -43,7 +45,7 @@ abstract contract DNFTMarketBuyPrice is
     uint256 maxPrice,
     uint256 soulBoundTokenIdReferrer
   ) public {
-    if ( units == 0 || maxPrice == 0 )
+    if ( soulBoundTokenIdBuyer == 0 || tokenId == 0 || units == 0 || maxPrice == 0 )
       revert Errors.InvalidParameter();
 
     // validate martket is open for this contract?
@@ -52,8 +54,8 @@ abstract contract DNFTMarketBuyPrice is
        
     address buyer = _getWallet(soulBoundTokenIdBuyer);
     
-    if (soulBoundTokenIdBuyer == 0 || tokenId == 0 || buyer != msg.sender ) 
-      revert Errors.InvalidParameter();
+    if (buyer != msg.sender ) 
+      revert Errors.Unauthorized();
 
     DataTypes.BuyPrice storage buyPrice = dnftContractToTokenIdToBuyPrice[derivativeNFT][tokenId];
     if (buyPrice.salePrice > maxPrice) {
@@ -79,9 +81,13 @@ abstract contract DNFTMarketBuyPrice is
    * @param tokenId The id of the DNFT.
    * @param units The units of the DNFT.
    */
-  function cancelBuyPrice(address derivativeNFT, uint256 tokenId, uint128 units) external  { 
+  function cancelBuyPrice(
+    address derivativeNFT, 
+    uint256 tokenId, 
+    uint128 units
+  ) external { 
 
-    uint256 tokenIdEscrow = dnftContractToTokenIdToBuyPrice[derivativeNFT][tokenId].tokenIdEscrow;
+    // uint256 tokenIdEscrow = dnftContractToTokenIdToBuyPrice[derivativeNFT][tokenId].tokenIdEscrow;
     address seller = dnftContractToTokenIdToBuyPrice[derivativeNFT][tokenId].seller;
     if (seller == address(0)) {
       // This check is redundant with the next one, but done in order to provide a more clear error message.
@@ -94,7 +100,7 @@ abstract contract DNFTMarketBuyPrice is
     delete dnftContractToTokenIdToBuyPrice[derivativeNFT][tokenId];
 
     // Transfer the DNFT units back to the owner if it is not listed in auction.
-    _transferFromEscrowIfAvailable(derivativeNFT, tokenIdEscrow, tokenId, units);
+    _transferFromEscrowIfAvailable(derivativeNFT, tokenId, seller, units);
 
     emit Events.BuyPriceCanceled(derivativeNFT, tokenId);
   }
@@ -108,7 +114,6 @@ abstract contract DNFTMarketBuyPrice is
    *      --derivativeNFT: DNFT contract addrss
    *      --tokenId: DNFT token id
    *      --putOnListUnits: The uints want put on list
-   *      --startTime: The start time on sell
    *      --salePrice: The sale price, amount
    */
   function setBuyPrice(
@@ -117,10 +122,6 @@ abstract contract DNFTMarketBuyPrice is
     if ( saleParam.putOnListUnits == 0 || saleParam.salePrice == 0 )
       revert Errors.InvalidParameter();
 
-    address account = _getWallet(saleParam.soulBoundTokenId);
-    if (account != msg.sender) {
-      revert Errors.NotProfileOwner();
-    }
     
     // validate martket is open for this contract?
     if (!_getMarketInfo(saleParam.derivativeNFT).isOpen)
@@ -155,7 +156,7 @@ abstract contract DNFTMarketBuyPrice is
     (newTokenId, leftUnits) = _autoAcceptOffer(saleParam);
 
     // offer is done
-    if (newTokenId > 0 && leftUnits == saleParam.putOnListUnits) {
+    if (newTokenId > 0 && leftUnits == 0) {
         return newTokenId;
     } 
     
@@ -181,10 +182,8 @@ abstract contract DNFTMarketBuyPrice is
     }
 
     emit Events.BuyPriceSet(
-      buyPrice, 
-      msg.sender
+      buyPrice
     );
-
     return newTokenId;
   }
 
@@ -214,7 +213,9 @@ abstract contract DNFTMarketBuyPrice is
    */
   function _beforeAuctionStarted(address derivativeNFT, uint256 tokenId) internal virtual override(DNFTMarketCore) {
     DataTypes.BuyPrice storage buyPrice = dnftContractToTokenIdToBuyPrice[derivativeNFT][tokenId];
+    
     if (buyPrice.seller != address(0)) {
+
       // A buy price was set for this DNFT, invalidate it.
       _invalidateBuyPrice(derivativeNFT, tokenId);
     }
@@ -247,7 +248,7 @@ abstract contract DNFTMarketBuyPrice is
     // The seller was already authorized when the buyPrice was set originally set.
     uint256 newTokenIdBuyer = IDerivativeNFT(derivativeNFT).split(
             buyPrice.publishId, 
-            tokenId, 
+            buyPrice.tokenIdEscrow, 
             msg.sender,
             units
     );
@@ -265,20 +266,19 @@ abstract contract DNFTMarketBuyPrice is
       collectFeeUsers,
       buyPrice.projectId,
       derivativeNFT,
-      tokenId,
-      units * buyPrice.salePrice
+      buyPrice.tokenId,
+      uint96(units * buyPrice.salePrice)
     );
-    
+
     emit Events.BuyPriceAccepted( 
       derivativeNFT,
-      tokenId, 
+      buyPrice.tokenId, 
       newTokenIdBuyer,
       buyPrice.seller, 
-      msg.sender, 
+      msg.sender,  //buyer
       collectFeeUsers,
       royaltyAmounts
     );
-
   }
 
   /**
@@ -296,14 +296,14 @@ abstract contract DNFTMarketBuyPrice is
    */
   function _transferFromEscrowIfAvailable(
     address derivativeNFT,
-    uint256 fromTokenId,
-    uint256 toTokenId,
+    uint256 tokenId,
+    address recipient,
     uint128 units
   ) internal virtual override {
-    address seller = dnftContractToTokenIdToBuyPrice[derivativeNFT][toTokenId].seller;
+    address seller = dnftContractToTokenIdToBuyPrice[derivativeNFT][tokenId].seller;
     if (seller == address(0)) {
       // A buy price has been set for this DNFT so it should remain in escrow.
-      super._transferFromEscrowIfAvailable(derivativeNFT, fromTokenId, toTokenId, units);
+      super._transferFromEscrowIfAvailable(derivativeNFT, tokenId, recipient, units);
     }
   }
 
@@ -347,23 +347,23 @@ abstract contract DNFTMarketBuyPrice is
    * @dev Returns the seller if there is a buy price set for this DNFT, otherwise
    * bubbles the call up for other considerations.
    */
-  function _getSellerOf(address derivativeNFT, uint256 tokenId)
-    internal
-    view
-    virtual
-    override(MarketSharedCore, DNFTMarketCore)
-    returns (address payable seller)
-  {
-    seller = dnftContractToTokenIdToBuyPrice[derivativeNFT][tokenId].seller;
-    if (seller == address(0)) {
-      seller = super._getSellerOf(derivativeNFT, tokenId);
-    }
-  }
+  // function _getSellerOf(address derivativeNFT, uint256 tokenId)
+  //   internal
+  //   view
+  //   virtual
+  //   override(MarketSharedCore, DNFTMarketCore)
+  //   returns (address payable seller)
+  // {
+  //   seller = dnftContractToTokenIdToBuyPrice[derivativeNFT][tokenId].seller;
+  //   if (seller == address(0)) {
+  //     seller = super._getSellerOf(derivativeNFT, tokenId);
+  //   }
+  // }
 
   /**
    * @notice This empty reserved space is put in place to allow future versions to add new
    * variables without shifting down storage in the inheritance chain.
    * See https://docs.openzeppelin.com/contracts/4.x/upgradeable#storage_gaps
    */
-  uint256[1_000] private __gap;
+  // uint256[1_000] private __gap;
 }

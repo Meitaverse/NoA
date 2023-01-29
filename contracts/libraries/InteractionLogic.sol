@@ -27,7 +27,7 @@ library InteractionLogic {
     using Strings for uint256;
     
     function createHub(
-        address creator,
+        address hubOwner,
         uint256 hubId,
         DataTypes.HubData memory hub,
         mapping(uint256 => DataTypes.HubData) storage _hubInfos
@@ -36,7 +36,7 @@ library InteractionLogic {
         if (hubId == 0) revert Errors.HubIdIsZero();
         
          _hubInfos[hubId] = DataTypes.HubData({
-             hubOwner: creator,
+            //  hubOwner: creator,
              soulBoundTokenId : hub.soulBoundTokenId,
              name: hub.name,
              description: hub.description,
@@ -45,7 +45,7 @@ library InteractionLogic {
 
         emit Events.HubCreated(
             hub.soulBoundTokenId, 
-            creator, 
+            hubOwner, 
             hubId,
             hub.name,
             hub.description,
@@ -56,7 +56,7 @@ library InteractionLogic {
     }
     
     function updateHub(
-        address creator,
+        address hubOwner,
         uint256 hubId,
         string memory name,
         string memory description,
@@ -71,13 +71,13 @@ library InteractionLogic {
         hubData.imageURI = imageURI;
  
         emit Events.HubUpdated(
-            creator, 
+            hubId,
+            hubOwner, 
             name,
             description,
             imageURI,
             uint32(block.timestamp)
         );
-
     }
 
     function createProject(

@@ -42,7 +42,7 @@ export function loadOrCreateFsbtEscrow<T extends EscrowEvent>(event: T, account:
     fsbtEscrow.dateExpiry = event.params.expiration;
   }
 
-  // Ensure that the escrow is associated with the account's FETH balance
+  // Ensure that the escrow is associated with the account's earnest money balance
   let fsbtAccount = loadOrCreateFsbt(account, event.block);
   fsbtAccount.save();
   fsbtEscrow.fsbt = fsbtAccount.id;

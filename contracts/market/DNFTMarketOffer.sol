@@ -3,15 +3,9 @@
 pragma solidity ^0.8.13;
 
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
-import "@openzeppelin/contracts-upgradeable/utils/AddressUpgradeable.sol";
-import "@openzeppelin/contracts-upgradeable/security/ReentrancyGuardUpgradeable.sol";
-// import {SafeMathUpgradeable} from "@openzeppelin/contracts-upgradeable/utils/math/SafeMathUpgradeable.sol";
-// import "../libraries/SafeMathUpgradeable128.sol";
 import {DataTypes} from "../libraries/DataTypes.sol";
 import {Events} from "../libraries/Events.sol";
 import {Errors} from "../libraries/Errors.sol";
-import {IManager} from "../interfaces/IManager.sol";
-import "@solvprotocol/erc-3525/contracts/IERC3525.sol";
 
 import "./DNFTMarketCore.sol";
 import {MarketFees} from "./MarketFees.sol";
@@ -56,7 +50,7 @@ abstract contract DNFTMarketOffer is
     uint128 units,
     address offerFrom,
     uint256 minAmount
-  ) external {
+  ) external returns (uint256){
     if ( units == 0 || minAmount == 0 )
       revert Errors.InvalidParameter();
 
@@ -79,12 +73,13 @@ abstract contract DNFTMarketOffer is
     } else if (offer.units < units) {
        revert Errors.DNFTMarketOffer_Offer_Insufficient_Units(offer.units);
     }
+    
     // Validate the buyer
     if (offer.buyer != offerFrom) {
       revert Errors.DNFTMarketOffer_Offer_From_Does_Not_Match(offer.buyer);
     }
 
-    _acceptOffer(soulBoundTokenId, derivativeNFT, tokenId, units);
+   return _acceptOffer(soulBoundTokenId, derivativeNFT, tokenId, units);
   }
 
   /**
@@ -169,7 +164,7 @@ abstract contract DNFTMarketOffer is
     // The SBT contract guarantees that the expiration fits into 32 bits.
     offer.expiration = uint32(expiration);
     offer.amount = uint96(amount);
-    offer.units = uint128(units);
+    offer.units = units;
     offer.soulBoundTokenIdReferrer = soulBoundTokenIdReferrer;
 
     emit Events.OfferMade(derivativeNFT, tokenId, msg.sender, units * amount, expiration);
@@ -189,21 +184,27 @@ abstract contract DNFTMarketOffer is
     ) private returns(uint256 newTokenId){
     DataTypes.Offer memory offer = nftContractToIdToOffer[derivativeNFT][tokenId];
 
-    // Remove offer when units is all buy.
-    if (offer.units == units)
-      delete nftContractToIdToOffer[derivativeNFT][tokenId];
+    // Remove offer
+    delete nftContractToIdToOffer[derivativeNFT][tokenId];
    
     // Withdraw earnest money from the buyer's account in the BankTreasury contract.
-    treasury.marketWithdrawLocked(offer.buyer, offer.soulBoundTokenIdBuyer, msg.sender, soulBoundTokenIdOwner, offer.expiration, offer.amount);
+    treasury.marketWithdrawLocked(
+      offer.buyer, 
+      offer.soulBoundTokenIdBuyer, 
+      msg.sender, 
+      soulBoundTokenIdOwner, 
+      offer.expiration, 
+      offer.amount
+    );
 
     uint256 publishId = IDerivativeNFT(derivativeNFT).getPublishIdByTokenId(tokenId);
-  
+
     // Transfer the DNFT to the buyer.
     uint256 newTokenIdBuyer = IDerivativeNFT(derivativeNFT).split(
-            publishId, 
-            tokenId, 
-            msg.sender,
-            units
+        publishId, 
+        tokenId, 
+        offer.buyer,
+        units
     );
 
     uint256 projectId = manager.getProjectIdByContract(derivativeNFT);
@@ -224,16 +225,18 @@ abstract contract DNFTMarketOffer is
       projectId,
       derivativeNFT,
       newTokenIdBuyer,
-      units * offer.amount
+      uint96(units * offer.amount)
     );
 
     emit Events.OfferAccepted(
       derivativeNFT, 
       newTokenIdBuyer, 
       offer.buyer, 
-      msg.sender, 
+      msg.sender,  //seller
       royaltyAmounts
     );
+    
+    return newTokenIdBuyer;
   }
 
   /**
@@ -258,10 +261,17 @@ abstract contract DNFTMarketOffer is
     }
     
     uint128 leftUnits;
-    if (offer.units > saleParam.putOnListUnits) {
+    if (offer.units < saleParam.putOnListUnits) {
       leftUnits = saleParam.putOnListUnits - offer.units;
     }
-    uint256 newTokenId =  _acceptOffer(saleParam.soulBoundTokenId, saleParam.derivativeNFT, saleParam.tokenId, offer.units);
+
+    uint256 newTokenId =  _acceptOffer(
+            saleParam.soulBoundTokenId, 
+            saleParam.derivativeNFT, 
+            saleParam.tokenId, 
+            offer.units
+    );
+
     return (newTokenId, leftUnits);
   }
 
@@ -352,5 +362,5 @@ abstract contract DNFTMarketOffer is
    * variables without shifting down storage in the inheritance chain.
    * See https://docs.openzeppelin.com/contracts/4.x/upgradeable#storage_gaps
    */
-  uint256[1_000] private __gap;
+  // uint256[1_000] private __gap;
 }

@@ -2,29 +2,29 @@
 
 pragma solidity ^0.8.13;
 
-import "@openzeppelin/contracts-upgradeable/utils/AddressUpgradeable.sol";
-import {SafeMathUpgradeable} from "@openzeppelin/contracts-upgradeable/utils/math/SafeMathUpgradeable.sol";
-import "../libraries/SafeMathUpgradeable128.sol";
+// import "@openzeppelin/contracts-upgradeable/utils/AddressUpgradeable.sol";
+// import {SafeMathUpgradeable} from "@openzeppelin/contracts-upgradeable/utils/math/SafeMathUpgradeable.sol";
+// import "../libraries/SafeMathUpgradeable128.sol";
 import {IManager} from "../interfaces/IManager.sol";
 import {IBankTreasury} from '../interfaces/IBankTreasury.sol';
 import {INFTDerivativeProtocolTokenV1} from "../interfaces/INFTDerivativeProtocolTokenV1.sol";
 import {Events} from "../libraries/Events.sol";
 import {Errors} from "../libraries/Errors.sol";
 import {DataTypes} from '../libraries/DataTypes.sol';
-import "../libraries/ArrayLibrary.sol";
+// import "../libraries/ArrayLibrary.sol";
 import "../libraries/Constants.sol";
 import "./DNFTMarketCore.sol";
 import "./MarketSharedCore.sol";
 
 abstract contract MarketFees is  MarketSharedCore, DNFTMarketCore {
-    using AddressUpgradeable for address;
-    using SafeMathUpgradeable for uint256;
-    using SafeMathUpgradeable128 for uint128;
-    using ArrayLibrary for uint256[];
+    // using AddressUpgradeable for address;
+    // using SafeMathUpgradeable for uint256;
+    // using SafeMathUpgradeable128 for uint128;
+    // using ArrayLibrary for uint256[];
     
     /// @notice The fee collected by the buy referrer for sales facilitated by this market contract.
     ///         This fee is calculated from the total protocol fee.
-    uint256 private constant BUY_REFERRER_FEE_DENOMINATOR = BASIS_POINTS / 100; // 1%
+    uint16 private constant BUY_REFERRER_FEE_DENOMINATOR = 100; //BASIS_POINTS / 100; // 1%
 
     IManager internal immutable manager;
     IBankTreasury internal immutable treasury;
@@ -48,7 +48,7 @@ abstract contract MarketFees is  MarketSharedCore, DNFTMarketCore {
         uint256 projectId,
         address derivativeNFT,
         uint256 tokenId,
-        uint256 payValue
+        uint96 payValue
     )
         internal
         returns (
@@ -66,8 +66,8 @@ abstract contract MarketFees is  MarketSharedCore, DNFTMarketCore {
         );
 
         if (market.feePayType == DataTypes.FeePayType.BUYER_PAY) {
-            //Transfer SBT Value = payValue +  treasuryAmount
-            payValue += royaltyAmounts.treasuryAmount;
+            //Transfer SBT Value = payValue + treasuryAmount
+            payValue = payValue + royaltyAmounts.treasuryAmount;
         }
 
         treasury.saveFundsToUserRevenue(
@@ -79,62 +79,62 @@ abstract contract MarketFees is  MarketSharedCore, DNFTMarketCore {
 
     }
 
-     /**
-     * @notice Returns how funds will be distributed for a sale at the given price point.
-     * @param soulBoundTokenId The soulBoundTokenId of owner 
-     * @param projectId The project id
-     * @param derivativeNFT The address of the DNFT contract.
-     * @param tokenId The id of the DNFT.
-     * @param amount The units * price
-     * @return treasuryFee How much will be sent to the Foundation treasury and/or referrals.
-     * @return creatorRev How much will be sent across all the genesis creator defined.
-     * @return previousCreatorRev How much will be sent across all the previous creator defined.
-     * @return sellerRev How much will be sent to the owner/seller of the DNFT.
-     * If the DNFT is being sold by the creator, this may be 0 and the full revenue will appear as `creatorRev`.
-     * @return seller The address of the owner of the DNFT.
-     * If `sellerRev` is 0, this may be `address(0)`.
-     */
-    function getFeesAndRecipients(
-        uint256 soulBoundTokenId,
-        uint256 projectId,
-        address derivativeNFT,
-        uint256 tokenId,
-        uint256 amount 
-    )
-        external
-        view
-        returns (
-            uint256 treasuryFee,
-            uint256 creatorRev,
-            uint256 previousCreatorRev,
-            uint256 sellerRev,
-            address payable seller
-        )
-    {
+    //  /**
+    //  * @notice Returns how funds will be distributed for a sale at the given price point.
+    //  * @param soulBoundTokenId The soulBoundTokenId of owner 
+    //  * @param projectId The project id
+    //  * @param derivativeNFT The address of the DNFT contract.
+    //  * @param tokenId The id of the DNFT.
+    //  * @param amount The units * price
+    //  * @return treasuryFee How much will be sent to the Foundation treasury and/or referrals.
+    //  * @return creatorRev How much will be sent across all the genesis creator defined.
+    //  * @return previousCreatorRev How much will be sent across all the previous creator defined.
+    //  * @return sellerRev How much will be sent to the owner/seller of the DNFT.
+    //  * If the DNFT is being sold by the creator, this may be 0 and the full revenue will appear as `creatorRev`.
+    //  * @return seller The address of the owner of the DNFT.
+    //  * If `sellerRev` is 0, this may be `address(0)`.
+    //  */
+    // function getFeesAndRecipients(
+    //     uint256 soulBoundTokenId,
+    //     uint256 projectId,
+    //     address derivativeNFT,
+    //     uint256 tokenId,
+    //     uint96 amount 
+    // )
+    //     external
+    //     view
+    //     returns (
+    //         uint256 treasuryFee,
+    //         uint256 creatorRev,
+    //         uint256 previousCreatorRev,
+    //         uint256 sellerRev,
+    //         address payable seller
+    //     )
+    // {
 
-        DataTypes.CollectFeeUsers memory collectFeeUsers =  DataTypes.CollectFeeUsers({
-                ownershipSoulBoundTokenId: soulBoundTokenId,
-                collectorSoulBoundTokenId: manager.getSoulBoundTokenIdByWallet(msg.sender),
-                genesisSoulBoundTokenId: 0,
-                previousSoulBoundTokenId: 0,
-                referrerSoulBoundTokenId: 0
-        });        
+    //     DataTypes.CollectFeeUsers memory collectFeeUsers =  DataTypes.CollectFeeUsers({
+    //             ownershipSoulBoundTokenId: soulBoundTokenId,
+    //             collectorSoulBoundTokenId: manager.getSoulBoundTokenIdByWallet(msg.sender),
+    //             genesisSoulBoundTokenId: 0,
+    //             previousSoulBoundTokenId: 0,
+    //             referrerSoulBoundTokenId: 0
+    //     });        
 
-        seller = _getSellerOrOwnerOf(derivativeNFT, tokenId);
+    //     seller = _getSellerOrOwnerOf(derivativeNFT, tokenId);
 
-        (DataTypes.RoyaltyAmounts memory royaltyAmounts,  ) = _getFees(
-            collectFeeUsers,
-            projectId,
-            derivativeNFT,
-            tokenId,
-            amount
-        );
+    //     (DataTypes.RoyaltyAmounts memory royaltyAmounts,  ) = _getFees(
+    //         collectFeeUsers,
+    //         projectId,
+    //         derivativeNFT,
+    //         tokenId,
+    //         amount
+    //     );
 
-       treasuryFee = royaltyAmounts.treasuryAmount;
-       creatorRev = royaltyAmounts.genesisAmount;
-       previousCreatorRev = royaltyAmounts.previousAmount;
-       sellerRev = royaltyAmounts.adjustedAmount;
-    }
+    //    treasuryFee = royaltyAmounts.treasuryAmount;
+    //    creatorRev = royaltyAmounts.genesisAmount;
+    //    previousCreatorRev = royaltyAmounts.previousAmount;
+    //    sellerRev = royaltyAmounts.adjustedAmount;
+    // }
 
     /**
      * @notice Calculates how funds should be distributed for the given sale details.
@@ -147,7 +147,7 @@ abstract contract MarketFees is  MarketSharedCore, DNFTMarketCore {
             uint256 projectId,
             address derivativeNFT,
             uint256 tokenId,
-            uint256 payValue
+            uint96 payValue
     )
         private
         view
@@ -170,8 +170,10 @@ abstract contract MarketFees is  MarketSharedCore, DNFTMarketCore {
             collectFeeUsers.genesisSoulBoundTokenId = soulBoundTokenId_gengesis;
             collectFeeUsers.previousSoulBoundTokenId = soulBoundTokenId_previous;
 
+        unchecked {
+
             // calculate fees
-            royaltyAmounts.treasuryAmount = payValue.mul(protocolFeeInBasisPoints).div(BASIS_POINTS);
+            royaltyAmounts.treasuryAmount = uint96(payValue * protocolFeeInBasisPoints / BASIS_POINTS);
 
             if (collectFeeUsers.referrerSoulBoundTokenId != 0 && 
                 collectFeeUsers.referrerSoulBoundTokenId != collectFeeUsers.ownershipSoulBoundTokenId &&
@@ -179,14 +181,14 @@ abstract contract MarketFees is  MarketSharedCore, DNFTMarketCore {
                 protocolFeeInBasisPoints > 0 &&
                 protocolFeeInBasisPoints < BUY_REFERRER_FEE_DENOMINATOR) {           
                 //1%
-                royaltyAmounts.referrerAmount = payValue.mul(BUY_REFERRER_FEE_DENOMINATOR).div(BASIS_POINTS);
+                royaltyAmounts.referrerAmount = uint96(payValue * BUY_REFERRER_FEE_DENOMINATOR / BASIS_POINTS);
                 royaltyAmounts.treasuryAmount -= royaltyAmounts.referrerAmount; 
             }
 
             market = _getMarketInfo(derivativeNFT);
             if (market.feeShareType == DataTypes.FeeShareType.LEVEL_TWO) {
-                royaltyAmounts.genesisAmount = payValue.mul(royaltyBasisPoints_gengesis).div(BASIS_POINTS);
-                royaltyAmounts.previousAmount = payValue.mul(royaltyBasisPoints_previous).div(BASIS_POINTS);
+                royaltyAmounts.genesisAmount = uint96(payValue * royaltyBasisPoints_gengesis / BASIS_POINTS);
+                royaltyAmounts.previousAmount = uint96(payValue * royaltyBasisPoints_previous / BASIS_POINTS);
 
                 if (market.feePayType == DataTypes.FeePayType.BUYER_PAY) {
                     royaltyAmounts.adjustedAmount = payValue - royaltyAmounts.genesisAmount - royaltyAmounts.previousAmount;
@@ -195,7 +197,7 @@ abstract contract MarketFees is  MarketSharedCore, DNFTMarketCore {
                 }
 
             } else if (market.feeShareType == DataTypes.FeeShareType.LEVEL_FIVE) {
-                royaltyAmounts.genesisAmount = payValue.mul(market.royaltyBasisPoints).div(BASIS_POINTS);
+                royaltyAmounts.genesisAmount =  uint96(payValue * market.royaltyBasisPoints / BASIS_POINTS);
                 royaltyAmounts.previousAmount = 0;
                 
                 if (market.feePayType == DataTypes.FeePayType.BUYER_PAY) {
@@ -204,6 +206,7 @@ abstract contract MarketFees is  MarketSharedCore, DNFTMarketCore {
                     royaltyAmounts.adjustedAmount = payValue - royaltyAmounts.treasuryAmount - royaltyAmounts.referrerAmount - royaltyAmounts.genesisAmount;
                 }
             }
+        }
     }
 
 

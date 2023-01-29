@@ -77,6 +77,15 @@ export class Account extends Entity {
     this.set("sbtAsset", Value.fromString(value));
   }
 
+  get hub(): string {
+    let value = this.get("hub");
+    return value!.toString();
+  }
+
+  set hub(value: string) {
+    this.set("hub", Value.fromString(value));
+  }
+
   get nfts(): Array<string> {
     let value = this.get("nfts");
     return value!.toStringArray();
@@ -2875,6 +2884,15 @@ export class ERC3525ReceivedHistory extends Entity {
     this.set("id", Value.fromString(value));
   }
 
+  get sender(): Bytes {
+    let value = this.get("sender");
+    return value!.toBytes();
+  }
+
+  set sender(value: Bytes) {
+    this.set("sender", Value.fromBytes(value));
+  }
+
   get operator(): Bytes {
     let value = this.get("operator");
     return value!.toBytes();
@@ -4163,6 +4181,15 @@ export class MarketPlaceERC3525ReceivedHistory extends Entity {
 
   set id(value: string) {
     this.set("id", Value.fromString(value));
+  }
+
+  get sender(): Bytes {
+    let value = this.get("sender");
+    return value!.toBytes();
+  }
+
+  set sender(value: Bytes) {
+    this.set("sender", Value.fromBytes(value));
   }
 
   get operator(): Bytes {
@@ -7030,15 +7057,6 @@ export class NftMarketBuyNow extends Entity {
 
   set seledUnits(value: BigInt) {
     this.set("seledUnits", Value.fromBigInt(value));
-  }
-
-  get startTime(): BigInt {
-    let value = this.get("startTime");
-    return value!.toBigInt();
-  }
-
-  set startTime(value: BigInt) {
-    this.set("startTime", Value.fromBigInt(value));
   }
 
   get dateCreated(): BigInt {

@@ -102,7 +102,7 @@ library Events {
      * @dev Emitted when a hub is created.
      *
      * @param soulBoundTokenId The newly created profile's token ID.
-     * @param creator The profile creator, who created the token with the given profile ID.
+     * @param hubOwner The profile creator, who created the token with the given profile ID.
      * @param hubId The hub ID.
      * @param name The name set for the hub.
      * @param description The description set for the hub.
@@ -111,7 +111,7 @@ library Events {
      */
     event HubCreated(
         uint256 indexed soulBoundTokenId,
-        address indexed creator,
+        address indexed hubOwner,
         uint256 indexed hubId,
         string name,
         string description,
@@ -122,14 +122,16 @@ library Events {
     /**
      * @dev Emitted when a hub is updated.
      *
-     * @param creator The hub creator.
+     * @param hubId The hub id.
+     * @param hubOwner The hub creator.
      * @param name The name set for the hub.
      * @param description The description set for the hub.
      * @param imageURI The image uri set for the profile.
      * @param timestamp The current block timestamp.
      */
     event HubUpdated(
-        address indexed creator,
+        uint256 indexed hubId,
+        address indexed hubOwner,
         string name,
         string description,
         string imageURI,
@@ -174,6 +176,7 @@ library Events {
     /**
      * @dev Emitted when the bank treasury receive ERC3525 tokens
      *
+     * @param sender The msg.sender.
      * @param operator The operator who called by.
      * @param fromTokenId The from token id
      * @param toTokenId The to token id
@@ -182,9 +185,10 @@ library Events {
      * @param gas The gas left
      */    
     event ERC3525Received(
+        address indexed sender, 
         address indexed operator, 
         uint256 indexed fromTokenId, 
-        uint256 indexed toTokenId, 
+        uint256 toTokenId, 
         uint256 value, 
         bytes data, 
         uint256 gas
@@ -480,6 +484,7 @@ library Events {
     /**
      * @dev Emitted when the market place receive ERC3525 tokens
      *
+     * @param sender The msg.sender
      * @param operator The operator who called by.
      * @param fromTokenId The from token id
      * @param toTokenId The to token id
@@ -488,9 +493,10 @@ library Events {
      * @param gas The gas left
      */    
     event MarketPlaceERC3525Received(
+        address indexed sender,
         address indexed operator, 
         uint256 indexed fromTokenId, 
-        uint256 indexed toTokenId, 
+        uint256 toTokenId, 
         uint256 value, 
         bytes data, 
         uint256 gas
@@ -601,11 +607,9 @@ library Events {
      * @dev The DNFT is transferred into the market contract for escrow unless it was already escrowed,
      * e.g. for auction listing.
      * @param buyPrice The BuyPrice data.
-     * @param seller The address of the DNFT owner which set the buy price.
      */
     event BuyPriceSet(
-        DataTypes.BuyPrice buyPrice,
-        address indexed seller
+        DataTypes.BuyPrice buyPrice
     );
 
     /**
@@ -686,7 +690,7 @@ library Events {
      * @param derivativeNFT The address of the DNFT contract.
      * @param tokenId The id of the DNFT.
      * @param units The units of the DNFT.
-     * @param tokenIdToEscrow The escrow token id of the DNFT.
+     * @param tokenIdInEscrow The escrow token id of the DNFT.
      * @param duration The duration of the auction (always 24-hours).
      * @param extensionDuration The duration of the auction extension window (always 15-minutes).
      * @param reservePrice The reserve price to kick off the auction.
@@ -697,7 +701,7 @@ library Events {
         address indexed derivativeNFT,
         uint256 indexed tokenId,
         uint256 units,
-        uint256 tokenIdToEscrow,
+        uint256 tokenIdInEscrow,
         uint256 duration,
         uint256 extensionDuration,
         uint256 reservePrice,

@@ -19,5 +19,7 @@ export function loadOrCreateSBTAsset(address: Address): SBTAsset {
         sbtAsset.timestamp = ZERO_BIG_INT;
         sbtAsset.save();
     }
+    account.sbtAsset = sbtAsset.id;
+    
     return sbtAsset as SBTAsset;
 }

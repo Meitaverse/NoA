@@ -8,6 +8,7 @@ import "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
 import "@openzeppelin/contracts/utils/introspection/IERC165.sol";
 import "@solvprotocol/erc-3525/contracts/IERC3525Receiver.sol";
 import "@solvprotocol/erc-3525/contracts/IERC3525.sol";
+import "@openzeppelin/contracts/utils/Counters.sol";
 import './libraries/Constants.sol';
 import {IMarketPlace} from "./interfaces/IMarketPlace.sol";
 import {DataTypes} from './libraries/DataTypes.sol';
@@ -16,7 +17,6 @@ import {Errors} from "./libraries/Errors.sol";
 import {MarketLogic} from './libraries/MarketLogic.sol';
 import {MarketPlaceStorage} from  "./storage/MarketPlaceStorage.sol";
 import {IModuleGlobals} from "./interfaces/IModuleGlobals.sol";
-import {DNFTMarketAuction} from "./market/DNFTMarketAuction.sol";
 import {MarketSharedCore} from "./market/MarketSharedCore.sol";
 import {DNFTMarketCore} from "./market/DNFTMarketCore.sol";
 import {MarketFees} from "./market/MarketFees.sol";
@@ -26,7 +26,7 @@ import {DNFTMarketReserveAuction} from "./market/DNFTMarketReserveAuction.sol";
 import {AdminRoleEnumerable} from "./market/AdminRoleEnumerable.sol";
 import {OperatorRoleEnumerable} from "./market/OperatorRoleEnumerable.sol";
 
-import "hardhat/console.sol";
+
 
 contract MarketPlace is
     Initializable,
@@ -35,7 +35,6 @@ contract MarketPlace is
     MarketSharedCore,
     DNFTMarketCore,
     MarketFees,
-    DNFTMarketAuction,
     DNFTMarketReserveAuction,    
     DNFTMarketBuyPrice,
     DNFTMarketOffer,
@@ -46,6 +45,7 @@ contract MarketPlace is
     OperatorRoleEnumerable,
     UUPSUpgradeable
 {
+    using Counters for Counters.Counter;
 
     /// @custom:oz-upgrades-unsafe-allow constructor
     constructor(
@@ -58,13 +58,22 @@ contract MarketPlace is
     MarketFees(manager, treasury, sbt)
     initializer {}
 
-    function initialize(address admin) external override initializer {
+    function initialize(address admin) external initializer {
         AdminRoleEnumerable._initializeAdminRole(admin);
         __Pausable_init();
         __UUPSUpgradeable_init();
     }
 
     // --- override --- //
+
+    /**
+     * @notice Returns id to assign to the next auction.
+     */
+    function _getNextAndIncrementAuctionId() internal virtual override returns (uint256) {
+        _nextAuctionId.increment();
+        return uint24(_nextAuctionId.current());
+    }
+
     function _getWallet(uint256 soulBoundTokenId) internal virtual view override returns(address) {
         if (MODULE_GLOBALS == address(0)) revert Errors.ModuleGlobasNotSet();
         address _sbt = IModuleGlobals(MODULE_GLOBALS).getSBT();
@@ -89,23 +98,23 @@ contract MarketPlace is
 
     function _transferFromEscrow(
         address derivativeNFT,
-        uint256 fromTokenId,
-        uint256 toTokenId,
+        uint256 tokenId,
+        address recipient,
         uint128 units,
         address authorizeSeller
     ) internal override(DNFTMarketCore, DNFTMarketReserveAuction){
         // This is a no-op function required to avoid compile errors.
-        super._transferFromEscrow(derivativeNFT, fromTokenId, toTokenId, units, authorizeSeller);
+        super._transferFromEscrow(derivativeNFT, tokenId, recipient, units, authorizeSeller);
     }
  
     function _transferFromEscrowIfAvailable(
         address derivativeNFT,
-        uint256 fromTokenId,
-        uint256 toTokenId,
+        uint256 tokenId,
+        address recipient,
         uint128 units
     ) internal override(DNFTMarketCore, DNFTMarketReserveAuction, DNFTMarketBuyPrice) {
         // This is a no-op function required to avoid compile errors.
-        super._transferFromEscrowIfAvailable(derivativeNFT, fromTokenId, toTokenId, units);
+        super._transferFromEscrowIfAvailable(derivativeNFT, tokenId, recipient, units);
     }
 
     function _transferToEscrow(address derivativeNFT, uint256 tokenId, uint128 onSellUnits)
@@ -117,15 +126,15 @@ contract MarketPlace is
         return super._transferToEscrow(derivativeNFT, tokenId, onSellUnits);
     }
         
-    function _getSellerOf(address derivativeNFT, uint256 tokenId)
-        internal
-        view
-        override(MarketSharedCore, DNFTMarketCore, DNFTMarketReserveAuction, DNFTMarketBuyPrice)
-        returns (address payable seller)
-    {
-        // This is a no-op function required to avoid compile errors.
-        seller = super._getSellerOf(derivativeNFT, tokenId);
-    }
+    // function _getSellerOf(address derivativeNFT, uint256 tokenId)
+    //     internal
+    //     view
+    //     override(MarketSharedCore, DNFTMarketCore, DNFTMarketReserveAuction, DNFTMarketBuyPrice)
+    //     returns (address payable seller)
+    // {
+    //     // This is a no-op function required to avoid compile errors.
+    //     seller = super._getSellerOf(derivativeNFT, tokenId);
+    // }
 
     function pause() public onlyAdmin {
         _pause();
@@ -176,18 +185,24 @@ contract MarketPlace is
         uint256 value,
         bytes calldata data
     ) public override returns (bytes4) {
+        // console.log('onERC3525Received:', msg.sender);
+        // console.log('onERC3525Received, operator:', operator);
         if (!markets[msg.sender].isOpen) {
-             revert Errors.Market_DNFT_Is_Not_Open(msg.sender);
+            revert Errors.Market_DNFT_Is_Not_Open(msg.sender);
         }
+        
+        // console.log('Market Place, onERC3525Received, fromTokenId:', fromTokenId);
+        // console.log('Market Place, onERC3525Received, toTokenId:', toTokenId);
+        // console.log('Market Place, onERC3525Received, value:', value);
+        //TODO
+        // if (value == 0) {
+        //     revert Errors.Must_Escrow_Non_Zero_Amount();
+        // }
 
-        if (value == 0) {
-            revert Errors.Must_Escrow_Non_Zero_Amount();
-        }
-
-        emit Events.MarketPlaceERC3525Received(operator, fromTokenId, toTokenId, value, data, gasleft());
+        emit Events.MarketPlaceERC3525Received(msg.sender, operator, fromTokenId, toTokenId, value, data, gasleft());
         return 0x009ce20b;
     }
-
+    
     //must set after moduleGlobals deployed
     function setGlobalModule(address moduleGlobals) 
         external

@@ -87,6 +87,7 @@ export function handleMarketPlaceERC3525Received(event: MarketPlaceERC3525Receiv
     const history = MarketPlaceERC3525ReceivedHistory.load(_idString) || new MarketPlaceERC3525ReceivedHistory(_idString)
 
     if (history) {
+        history.sender = event.params.sender
         history.operator = event.params.operator
         history.fromTokenId = event.params.fromTokenId
         history.toTokenId = event.params.toTokenId
@@ -116,7 +117,7 @@ export function handleBuyPriceSet(event: BuyPriceSet): void {
       
           let project = loadOrCreateProject(event.params.buyPrice.projectId);
       
-          let seller = loadOrCreateAccount(event.params.seller);
+          let seller = loadOrCreateAccount(event.params.buyPrice.seller);
           let buyNow = loadLatestBuyNow(nft);
           if (!buyNow) {
             buyNow = new NftMarketBuyNow(getLogId(event));
@@ -131,7 +132,6 @@ export function handleBuyPriceSet(event: BuyPriceSet): void {
           buyNow.amountInSBTValue = amountInSBTValue;
           buyNow.onSellUnits = event.params.buyPrice.onSellUnits;
           buyNow.seledUnits = event.params.buyPrice.seledUnits;
-          buyNow.startTime = event.params.buyPrice.startTime;
           buyNow.dateCreated = event.block.timestamp;
           buyNow.transactionHashCreated = event.transaction.hash;
           buyNow.save();
@@ -154,9 +154,8 @@ export function handleBuyPriceSet(event: BuyPriceSet): void {
           nft.mostRecentBuyNow = buyNow.id;
           nft.ownedOrListedBy = seller.id;
           nft.save();
-    }
-    
-  }
+    }  
+}
 
 
 export function handleBuyPriceAccepted(event: BuyPriceAccepted): void {
