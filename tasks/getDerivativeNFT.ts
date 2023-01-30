@@ -50,8 +50,6 @@ task("getDerivativeNFT", "get DerivativeNFT function")
   const userTwoAddress = userTwo.address;
   const userThreeAddress = userThree.address;
   
-
-
   const managerImpl = await loadContract(hre, Manager__factory, "ManagerImpl");
   const manager = await loadContract(hre, Manager__factory, "Manager");
   const bankTreasury = await loadContract(hre, BankTreasury__factory, "BankTreasury");

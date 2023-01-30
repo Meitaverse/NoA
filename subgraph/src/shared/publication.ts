@@ -8,45 +8,10 @@ import { loadOrCreateAccount } from "./accounts";
 import { loadHub } from "./hub";
 import { loadProject } from "./project";
 
-export function createPublication(
-  publisherAddress: Address, 
-  hubId: BigInt, projectId: 
-  BigInt, publishId: BigInt
+export function loadPublication(
+   publishId: BigInt
 ): Publication {
   let publication = Publication.load(publishId.toString());
-
-  if (!publication) {
-    const publisher = loadOrCreateAccount(publisherAddress)
-    const hub = loadHub(hubId)
-    const project = loadProject(projectId)
-
-    if (publisher && hub && project) {
-      
-      publication = new Publication(publishId.toString());
-      publication.publishId = publishId;
-      publication.publisher = publisher.id;
-      publication.hub = hub.id;
-      publication.project = project.id;
-      publication.salePrice = ZERO_BIG_INT;
-      publication.royaltyBasisPoints = ZERO_BIG_INT;
-      publication.amount = ZERO_BIG_INT;
-      publication.name = '';
-      publication.description = '';
-      publication.canCollect = true;
-      publication.materialURIs = [];
-      publication.fromTokenIds = [];
-      publication.collectModule = Address.zero();
-      publication.collectModuleInitData = Bytes.fromI32(0);
-      publication.publishModule = Address.zero();
-      publication.publishModuleInitData = Bytes.fromI32(0);
-      publication.genesisPublishId = ZERO_BIG_INT;
-      publication.previousPublishId = ZERO_BIG_INT;
-      publication.publishTaxAmount = ZERO_BIG_INT;
-      publication.timestamp = ZERO_BIG_INT;
-      publication.save();
-    }
-
-  }
   return publication as Publication;
 }
 

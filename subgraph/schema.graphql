@@ -1,3 +1,4 @@
+# see https://www.learnblockchain.cn/article/2566
 
 type Account @entity {
   "The account's address"
@@ -11,6 +12,9 @@ type Account @entity {
 
   "Link to SBT Asset "
   sbtAsset: SBTAsset
+
+  "Link to dNFT collection "
+  dnftCollection: DnftCollection
 
   "Link to Hub "
   hub: Hub
@@ -30,11 +34,11 @@ type Account @entity {
   "All bids accepted by this account"
   nftBidsAccepted: [NftMarketBid!]! @derivedFrom(field: "seller")
 
-  "NFT transfers from this account to another"
-  nftTransfersOut: [NftTransfer!]! @derivedFrom(field: "from")
+  "dNFT transfers from this account to another"
+  nftTransfersOut: [DnftTransfer!]! @derivedFrom(field: "from")
 
-  "NFT transfers to this account from another"
-  nftTransfersIn: [NftTransfer!]! @derivedFrom(field: "to")
+  "dNFT transfers to this account from another"
+  nftTransfersIn: [DnftTransfer!]! @derivedFrom(field: "to")
 
   "The total SBTValue earned by this account, excluding any NFTs minted by this creator"
   netRevenueInSBTValue: BigDecimal!
@@ -42,10 +46,13 @@ type Account @entity {
   "The total SBTValue earned by this account but still pending finalization, excluding any NFTs minted by this creator"
   netRevenuePendingInSBTValue: BigDecimal!
 
-  "Approvals granted by this account, note this does not include nft.approvedSpender"
+  "Approvals granted by this account, note this does not include dnft.approvedSpender"
   dnftAccountApprovals: [DnftAccountApproval!]! @derivedFrom(field: "owner")
 
-  "NFT actions initiated by this account"
+  "ApprovalValues granted by this account"
+  dnftApprovalValues: [DnftApprovalValue!]! @derivedFrom(field: "owner")
+
+  "dNFT actions initiated by this account"
   nftHistory: [NftHistory!]! @derivedFrom(field: "actorAccount")
 
   "All Fsbt entries related to this account."
@@ -193,6 +200,8 @@ type Hub @entity {
 
   hubId: BigInt!
 
+  projects: [Project!]!@derivedFrom(field: "hub")
+
   name: String!
 
   description: String!
@@ -233,41 +242,48 @@ type Publication @entity {
   timestamp: BigInt!
 }
 
-#  Project in Derivative NFT contract
+#  Project in Derivative dNFT contract
 type Project @entity {
   id: ID!
+
   projectId: BigInt!
-  projectCreator: Account!
-  hub: Hub!
+  
   derivativeNFT: DerivativeNFTContract!
+
+  projectCreator: Account!
+
+  hub: Hub!
+
+  publications: [Publication!]! @derivedFrom(field: "project")
+  
+  publishs: [Publish!]! @derivedFrom(field: "project")
+
   timestamp: BigInt!
 }
 
 # Publish Record
-type PublishRecord @entity {
+type Publish @entity {
   id: ID!
+
   publisher: Account!
+
   publication: Publication!
+
   hub: Hub!
+
   project: Project!
+
+  derivativeNFT: DerivativeNFTContract!
+
+  "The dNFT this publish is for"
+  dnft: DNFT!
+
   newTokenId: BigInt!
   amount: BigInt!
   collectModuleInitData: Bytes!
   timestamp: BigInt!
 }
 
-# DerivativeNFT Collected history
-type DerivativeNFTCollectedHistory @entity {
-  id: ID!
-  project: Project!
-  derivativeNFT: DerivativeNFTContract!
-  from: Account!
-  to: Account!
-  tokenId: BigInt!
-  units: BigInt!
-  newTokenId: BigInt!
-  timestamp: BigInt!
-}
 
 # Bank Contract Deposit event
 type DepositHistory @entity {
@@ -327,7 +343,7 @@ type ExecuteTransactionERC3525History @entity {
   timestamp: BigInt!
 }
 
-# Voucher NFT
+# Voucher dNFT
 type NFTVoucherHistory @entity {
   id: ID!
   soulBoundTokenId: BigInt!
@@ -645,129 +661,6 @@ type DerivativeNFTContract @entity {
   nfts: [DNFT!]! @derivedFrom(field: "derivativeNFT")
 }
 
-type DNFT @entity {
-  "tokenContractAddress-tokenId"
-  id: ID!
-
-  "The token's contract"
-  derivativeNFT: DerivativeNFTContract!
-
-  "The tokenId for this specific NFT"
-  tokenId: BigInt!
-
-  "The content path for the metadata of this NFT on IPFS"
-  tokenIPFSPath: String
-
-  "The creator of this NFT"
-  creator: Creator
-
-  "The date/time when this NFT was minted in seconds since Unix epoch"
-  dateMinted: BigInt!
-
-  "The transfer details where this NFT was minted"
-  mintedTransfer: NftTransfer
-
-  "The current owner of this NFT"
-  owner: Account!
-
-  "The current owner or the owner who listed the NFT"
-  ownedOrListedBy: Account!
-
-  "An account authorized to transfer this NFT, if one was approved"
-  approvedSpender: Account
-
-  "All transfers that have occurred for this NFT"
-  transfers: [NftTransfer!] @derivedFrom(field: "nft")
-
-  "All bids ever placed for this NFT"
-  bids: [NftMarketBid!]! @derivedFrom(field: "nft")
-
-  "The total SBTValue for sales of this NFT"
-  netSalesInSBTValue: BigDecimal!
-
-  "The total SBTValue for sales of this NFT but still pending finalization"
-  netSalesPendingInSBTValue: BigDecimal!
-
-  "The total SBTValue earned by the creator from this NFT"
-  netRevenueInSBTValue: BigDecimal!
-
-  "The total SBTValue earned by this creator from this NFT but still pending finalization"
-  netRevenuePendingInSBTValue: BigDecimal!
-
-  "True if the NFT has not yet been sold in the Foundation market"
-  isFirstSale: Boolean!
-
-  "All auctions which were created for this NFT"
-  auctions: [NftMarketAuction!]! @derivedFrom(field: "nft")
-
-  "The current or last previous auction for this NFT"
-  mostRecentAuction: NftMarketAuction
-
-  "The current or last auction for this NFT which has not been canceled, if any"
-  mostRecentActiveAuction: NftMarketAuction
-
-  "The last auction for this NFT which was finalized, if there was one"
-  latestFinalizedAuction: NftMarketAuction
-
-  "The event history for this NFT"
-  nftHistory: [NftHistory!]! @derivedFrom(field: "nft")
-
-  "An optional address to receive revenue and creator royalty payments generated by this NFT"
-  tokenCreatorPaymentAddress: Bytes
-
-  "A reference to the split details defined by the tokenCreatorPaymentAddress, if that address is a PercentSplit"
-  percentSplit: PercentSplit
-
-  "The most recent sale price in the Foundation marketplace, if there has been one"
-  lastSalePriceInSBTValue: BigDecimal
-
-  "All offers made for this NFT"
-  nftOffers: [NftMarketOffer!]! @derivedFrom(field: "nft")
-
-  "The most recent offer made for this NFT, which may or may not still be valid"
-  mostRecentOffer: NftMarketOffer
-
-  "The most recent buy now for this NFT, which may or may not still be valid"
-  mostRecentBuyNow: NftMarketBuyNow
-
-  "All buy nows made for this NFT"
-  nftBuyNows: [NftMarketBuyNow!]! @derivedFrom(field: "nft")
-}
-
-type NftTransfer @entity {
-  "tx-logId"
-  id: ID!
-
-  "The NFT which was transferred"
-  nft: DNFT!
-
-  "The source of the transfer, 0 when the token was minted"
-  from: Account!
-
-  "The destination of the transfer, 0 when the token is burned"
-  to: Account!
-
-  "The date/time of the transfer in seconds since Unix epoch"
-  dateTransferred: BigInt!
-
-  "The tx hash where the transfer occurred"
-  transactionHash: Bytes!
-}
-
-type DnftAccountApproval @entity {
-  "tokenAddress-owner-spender"
-  id: ID!
-
-  "The token's contract"
-  derivativeNFT: DerivativeNFTContract!
-
-  "The account which granted this approval"
-  owner: Account!
-
-  "The account which is authorized to transfer NFTs held by the owner"
-  spender: Account!
-}
-
 type NftMarketContract @entity {
   "The contract's address"
   id: ID!
@@ -783,7 +676,7 @@ enum NftMarketAuctionStatus {
   "This auction was canceled before the reserve price was hit"
   Canceled
 
-  "This auction was finalized and the NFT has been transferred to the winner"
+  "This auction was finalized and the dNFT has been transferred to the winner"
   Finalized
 
   "This auction was invalidated due to another action such as Buy Now"
@@ -800,16 +693,16 @@ type NftMarketAuction @entity {
   "The id for this auction"
   auctionId: BigInt!
 
-  "The NFT being sold in this auction"
-  nft: DNFT!
+  "The dNFT being sold in this auction"
+  dnft: DNFT!
 
-  "The NFT contract for this NFT"
+  "The dNFT contract for this dNFT"
   derivativeNFT: DerivativeNFTContract!
 
   "The current status of this auction"
   status: NftMarketAuctionStatus!
 
-  "The NFT owner currently offering the NFT for sale"
+  "The dNFT owner currently offering the dNFT for sale"
   seller: Account!
 
   "The date/time the auction was initially created in seconds since Unix epoch"
@@ -901,7 +794,7 @@ enum NftMarketBidStatus {
   "This bid was outbid by another user"
   Outbid
 
-  "This bid won the auction and was finalized, completing the NFT transfer"
+  "This bid won the auction and was finalized, completing the dNFT transfer"
   FinalizedWinner
 }
 
@@ -912,8 +805,8 @@ type NftMarketBid @entity {
   "The auction this bid was for"
   nftMarketAuction: NftMarketAuction!
 
-  "The NFT being sold in this auction"
-  nft: DNFT!
+  "The dNFT being sold in this auction"
+  dnft: DNFT!
 
   "The account which placed the bid"
   bidder: Account!
@@ -936,7 +829,7 @@ type NftMarketBid @entity {
   "The tx hash that moved this bid out of Active status, if applicable"
   transactionHashLeftActiveStatus: Bytes
 
-  "The account which offered this NFT for sale"
+  "The account which offered this dNFT for sale"
   seller: Account!
 
   "True if this bid caused the end time of an auction to be extended"
@@ -955,76 +848,76 @@ enum Marketplace {
 }
 
 enum HistoricalEvent {
-  "The original mint event for this NFT"
+  "The original mint event for this dNFT"
   Minted
 
-  "The NFT has been listed for sale"
+  "The dNFT has been listed for sale"
   Listed
 
-  "The NFT was unlisted from the market"
+  "The dNFT was unlisted from the market"
   Unlisted
 
   "The price for this listing has been modified"
   PriceChanged
 
-  "A bid for the NFT has been made"
+  "A bid for the dNFT has been made"
   Bid
 
-  "The NFT has been sold, this status is not reflected until the auction has been settled"
+  "The dNFT has been sold, this status is not reflected until the auction has been settled"
   Sold
 
-  "The sale has been settled on-chain and the NFT was transferred to the new owner"
+  "The sale has been settled on-chain and the dNFT was transferred to the new owner"
   Settled
 
-  "The NFT was transferred from one address to another"
+  "The dNFT was transferred from one address to another"
   Transferred
 
-  "The NFT was burned and now no longer available on-chain"
+  "The dNFT was burned and now no longer available on-chain"
   Burned
 
   "The creator has been migrated to a new account"
   CreatorMigrated
 
-  "The current owner of this NFT has migrated to a new account"
+  "The current owner of this dNFT has migrated to a new account"
   OwnerMigrated
 
   "The seller for the current auction has migrated to a new account"
   SellerMigrated
 
-  "The payment address for this NFT has migrated to a new address"
+  "The payment address for this dNFT has migrated to a new address"
   CreatorPaymentAddressMigrated
 
   "The auction was invalidated due to another action such as Buy Now"
   AuctionInvalidated
 
-  "The NFT received an offer"
+  "The dNFT received an offer"
   OfferMade
 
-  "The latest offer for an NFT was increased"
+  "The latest offer for an dNFT was increased"
   OfferChanged
 
-  "The offer for this NFT expired before it was expired, this status is not reflected until another action is performed"
+  "The offer for this dNFT expired before it was expired, this status is not reflected until another action is performed"
   OfferExpired
 
-  "The offer for this NFT was accepted"
+  "The offer for this dNFT was accepted"
   OfferAccepted
 
-  "The offer for this NFT is no longer valid due to another action such as Buy Now"
+  "The offer for this dNFT is no longer valid due to another action such as Buy Now"
   OfferInvalidated
 
-  "The offer for this NFT was canceled"
+  "The offer for this dNFT was canceled"
   OfferCanceled
 
-  "The NFT had a buy now price set"
+  "The dNFT had a buy now price set"
   BuyPriceSet
 
-  "The buy now for this NFT was accepted"
+  "The buy now for this dNFT was accepted"
   BuyPriceAccepted
 
-  "The buy now for this NFT is no longer valid due to another action such as auction kick off"
+  "The buy now for this dNFT is no longer valid due to another action such as auction kick off"
   BuyPriceInvalidated
 
-  "The buy now for this NFT was canceled"
+  "The buy now for this dNFT was canceled"
   BuyPriceCanceled
 }
 
@@ -1032,8 +925,8 @@ type NftHistory @entity {
   "tx-logId-eventType"
   id: ID!
 
-  "The NFT being sold in this auction"
-  nft: DNFT!
+  "The dNFT being sold in this auction"
+  dnft: DNFT!
 
   "The type of action that this row represents"
   event: HistoricalEvent!
@@ -1048,13 +941,13 @@ type NftHistory @entity {
   "The related buy now for this change, if applicable"
   buyNow: NftMarketBuyNow
 
-  "The contract which processed this event, may be a marketplace or the NFT itself"
+  "The contract which processed this event, may be a marketplace or the dNFT itself"
   contractAddress: Bytes!
 
   "The date/time of this event in seconds since Unix epoch"
   date: BigInt!
 
-  "Which market which facilitated this transaction, null when the action was specific to the NFT itself"
+  "Which market which facilitated this transaction, null when the action was specific to the dNFT itself"
   marketplace: Marketplace
 
   "The transaction hash where this event occurred"
@@ -1066,7 +959,7 @@ type NftHistory @entity {
   "The msg.sender for the transaction associated with this event"
   txOrigin: Account!
 
-  "The destination of the NFT for events where the NFT was transferred, null if n/a"
+  "The destination of the dNFT for events where the dNFT was transferred, null if n/a"
   nftRecipient: Account
 
   "The value amount associated with this event, in SBTValue. Null if unknown or n/a"
@@ -1160,10 +1053,10 @@ type NftMarketOffer @entity {
   "The contract managing this offer"
   nftMarketContract: NftMarketContract!
 
-  "The NFT this offer is for"
-  nft: DNFT!
+  "The dNFT this offer is for"
+  dnft: DNFT!
 
-  "The NFT contract for this NFT"
+  "The dNFT contract for this dNFT"
   derivativeNFT: DerivativeNFTContract!
 
   "The current status of this offer"
@@ -1175,7 +1068,7 @@ type NftMarketOffer @entity {
   "The seller which accepted this offer, if applicable"
   seller: Account
 
-  "The value being offered for this NFT"
+  "The value being offered for this dNFT"
   amountInSBTValue: BigDecimal!
 
   "The date/time the offer was initially created in seconds since Unix epoch"
@@ -1269,10 +1162,10 @@ type NftMarketBuyNow @entity {
   "The contract managing this buy now"
   nftMarketContract: NftMarketContract!
 
-  "The NFT this buy now is for"
-  nft: DNFT!
+  "The dNFT this buy now is for"
+  dnft: DNFT!
 
-  "The NFT contract for this NFT"
+  "The dNFT contract for this dNFT"
   derivativeNFT: DerivativeNFTContract!
 
   "The Project of this buy now if for"
@@ -1281,19 +1174,19 @@ type NftMarketBuyNow @entity {
   "The current status of this buy now"
   status: NftMarketBuyNowStatus!
 
-  "The seller which owns the NFT."
+  "The seller which owns the dNFT."
   seller: Account!
 
-  "The value being bought at for this NFT"
+  "The value being bought at for this dNFT"
   amountInSBTValue: BigDecimal!
 
-  "The units put on sell for this NFT"
+  "The units put on sell for this dNFT"
   tokenIdEscrow: BigInt!
 
-  "The units put on sell for this NFT"
+  "The units put on sell for this dNFT"
   onSellUnits: BigInt!
 
-  "The units put on sell for this NFT"
+  "The units put on sell for this dNFT"
   seledUnits: BigInt!
 
   "The date/time the buy now was initially created in seconds since Unix epoch"
@@ -1302,7 +1195,7 @@ type NftMarketBuyNow @entity {
   "The tx hash where this buy now was initially created"
   transactionHashCreated: Bytes!
 
-  "The nft recipient, if applicable"
+  "The dnft recipient, if applicable"
   buyer: Account
 
   "The date/time the buy now was canceled in seconds since Unix epoch, if applicable"
@@ -1349,4 +1242,266 @@ type NftMarketBuyNow @entity {
 
   "How much Foundation earned from this buy now, set once accepted"
   foundationProtocolFeeInSBTValue: BigDecimal
+}
+
+### DNFT ###
+
+
+type DNFT @entity {
+  "tokenContractAddress-tokenId"
+  id: ID!
+
+  "The token's contract"
+  derivativeNFT: DerivativeNFTContract!
+
+  "The tokenId for this specific dNFT"
+  tokenId: BigInt!
+ 
+  "Link to dNFT ImageURI"
+  imageURI: DnftImageURI
+
+  "The content path for the metadata of this dNFT on IPFS"
+  tokenIPFSPath: String
+
+  "The creator of this dNFT"
+  creator: Creator
+
+  "The date/time when this dNFT was minted in seconds since Unix epoch"
+  dateMinted: BigInt!
+
+  "The transfer details where this dNFT was minted"
+  mintedTransfer: DnftTransfer
+
+  "The current owner of this dNFT"
+  owner: Account!
+
+  "The current owner or the owner who listed the dNFT"
+  ownedOrListedBy: Account!
+
+  "An account authorized to transfer this dNFT, if one was approved"
+  approvedSpender: Account
+
+  "All dNFT collection that have collected for this dNFT"
+  dnftCollections: [DnftCollection!] @derivedFrom(field: "dnft")
+
+  "All transfers that have occurred for this dNFT"
+  transfers: [DnftTransfer!] @derivedFrom(field: "dnft")
+
+  "All transferValues that have occurred for this dNFT"
+  transferValues: [DnftTransferValue!] @derivedFrom(field: "dnft")
+
+  "All bids ever placed for this dNFT"
+  bids: [NftMarketBid!]! @derivedFrom(field: "dnft")
+
+  "All history ever collected for this dNFT"
+  collectedHistories: [DnftCollectedHistory!]! @derivedFrom(field: "dnft")
+
+  "The total SBTValue for sales of this dNFT"
+  netSalesInSBTValue: BigDecimal!
+
+  "The total SBTValue for sales of this dNFT but still pending finalization"
+  netSalesPendingInSBTValue: BigDecimal!
+
+  "The total SBTValue earned by the creator from this dNFT"
+  netRevenueInSBTValue: BigDecimal!
+
+  "The total SBTValue earned by this creator from this dNFT but still pending finalization"
+  netRevenuePendingInSBTValue: BigDecimal!
+
+  "True if the dNFT has not yet been sold in the Foundation market"
+  isFirstSale: Boolean!
+
+  "All auctions which were created for this dNFT"
+  auctions: [NftMarketAuction!]! @derivedFrom(field: "dnft")
+
+  "The current or last previous auction for this dNFT"
+  mostRecentAuction: NftMarketAuction
+
+  "The current or last auction for this dNFT which has not been canceled, if any"
+  mostRecentActiveAuction: NftMarketAuction
+
+  "The last auction for this dNFT which was finalized, if there was one"
+  latestFinalizedAuction: NftMarketAuction
+
+  "The event history for this dNFT"
+  nftHistory: [NftHistory!]! @derivedFrom(field: "dnft")
+
+  "An optional address to receive revenue and creator royalty payments generated by this dNFT"
+  tokenCreatorPaymentAddress: Bytes
+
+  "A reference to the split details defined by the tokenCreatorPaymentAddress, if that address is a PercentSplit"
+  percentSplit: PercentSplit
+
+  "The most recent sale price in the Foundation marketplace, if there has been one"
+  lastSalePriceInSBTValue: BigDecimal
+
+  "All offers made for this dNFT"
+  nftOffers: [NftMarketOffer!]! @derivedFrom(field: "dnft")
+
+  "The most recent offer made for this dNFT, which may or may not still be valid"
+  mostRecentOffer: NftMarketOffer
+
+  "The most recent buy now for this dNFT, which may or may not still be valid"
+  mostRecentBuyNow: NftMarketBuyNow
+
+  "All buy nows made for this dNFT"
+  nftBuyNows: [NftMarketBuyNow!]! @derivedFrom(field: "dnft")
+}
+
+type DnftTransfer @entity {
+  "tx-logId"
+  id: ID!
+
+  "The DNFT which was transferred"
+  dnft: DNFT!
+
+  "The source of the transfer, 0 when the token was minted"
+  from: Account!
+
+  "The destination of the transfer, 0 when the token is burned"
+  to: Account!
+
+  tokenId: BigInt!
+
+  "The date/time of the transfer in seconds since Unix epoch"
+  dateTransferred: BigInt!
+
+  "The tx hash where the transfer occurred"
+  transactionHash: Bytes!
+
+}
+
+# DNFT Collected history
+type DnftCollectedHistory @entity {
+  id: ID!
+  project: Project!
+  derivativeNFT: DerivativeNFTContract!
+
+  "The dNFT this publish is for"
+  dnft: DNFT!
+
+  from: Account!
+  to: Account!
+  tokenId: BigInt!
+  units: BigInt!
+  newTokenId: BigInt!
+  timestamp: BigInt!
+}
+
+#  DNFT collection
+type DnftCollection @entity {
+  "tokenContractAddress-tokenId"
+  id: ID!
+
+  "The DNFT which was transferred"
+  dnft: DNFT!
+
+  "The current owner of this dNFT"
+  owner: Account!
+
+  publish: Publication!
+
+  tokenId: BigInt!
+
+  value: BigInt!
+
+  timestamp: BigInt!
+}
+
+
+#  DNFT transfer value history    
+type DnftTransferValue @entity {
+  id: ID!
+
+  "The DNFT which was transferred"
+  dnft: DNFT!
+
+  from: Account!
+
+  to: Account!
+
+  value: BigInt!
+
+  timestamp: BigInt!
+} 
+
+#  DNFT Slot Changed history    
+type DnftSlotChanged @entity {
+  id: ID!
+
+  "The token's contract"
+  derivativeNFT: DerivativeNFTContract!
+
+  tokenId: BigInt!
+
+  oldSlot: BigInt!
+
+  newSlot: BigInt!
+
+  timestamp: BigInt!
+} 
+
+# DNFT burn history    
+type DnftBurn @entity {
+  id: ID!
+
+  "The token's contract"
+  derivativeNFT: DerivativeNFTContract!
+
+  project: Project!
+
+  tokenId: BigInt!
+
+  owner: Account!
+
+  timestamp: BigInt!
+}    
+
+
+# DNFT account ApprovalForAll 
+type DnftAccountApproval @entity {
+  "tokenAddress-owner-spender"
+  id: ID!
+
+  "The token's contract"
+  derivativeNFT: DerivativeNFTContract!
+
+  "The account which granted this approval"
+  owner: Account!
+
+  "The account which is authorized to transfer NFTs held by the owner"
+  spender: Account!
+}
+
+# DNFT ApprovalValue 
+type DnftApprovalValue @entity {
+  id: ID!
+
+  "The token's contract"
+  derivativeNFT: DerivativeNFTContract!
+
+  "The account which granted this approval"
+  owner: Account!
+
+  tokenId: BigInt!
+
+  operator: Account!
+
+  value: BigInt!
+  
+  timestamp: BigInt!
+}    
+
+#  DNFT image uri  
+type DnftImageURI @entity {
+  id: ID!
+
+  "The token's contract"
+  derivativeNFT: DerivativeNFTContract!
+
+  tokenId: BigInt!
+
+  imageURI: String!
+
+  timestamp: BigInt!
 }

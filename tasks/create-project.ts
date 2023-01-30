@@ -28,7 +28,7 @@ import {
 
 import { loadContract } from "./config";
 
-import { exportDerivativeSubgraphNetworksJson } from "./subgraph";
+import { exportSubgraphNetworksJson } from "./subgraph";
 
 import { deployContract, waitForTx , ProtocolState, Error, findEvent} from './helpers/utils';
 
@@ -135,7 +135,7 @@ task("create-project", "create-project function")
       user
     );
 
-    await exportDerivativeSubgraphNetworksJson(hre, derivativeNFT, 'DerivativeNFT');
+    await exportSubgraphNetworksJson(hre, derivativeNFT, "DerivativeNFT" /*projectInfo.name*/);
 
   //   //addMarket
   //   await waitForTx(

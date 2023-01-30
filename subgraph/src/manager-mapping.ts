@@ -24,20 +24,21 @@ import {
     ManagerGovernanceSetHistory,
     Hub,
     Publication,
-    PublishRecord,
-    DerivativeNFTCollectedHistory,
+    Publish,
+    DnftCollectedHistory,
     Project,
     DerivativeNFTAirdropedHistory,
     Dispatcher,
     StateSetHistory,
+    Account,
 } from "../generated/schema"
 
 import { loadProject } from "./shared/project";
 import { loadHub } from "./shared/hub";
-import { createPublication } from "./shared/publication";
-import { loadOrCreatePublishRecord } from "./shared/publish";
+import { loadPublication } from "./shared/publication";
+import { loadPublish } from "./shared/publish";
 import { loadOrCreateAccount } from "./shared/accounts";
-import { loadOrCreateNFTContract } from "./dnft";
+import { loadOrCreateDNFT, loadOrCreateDNFTContract } from "./dnft";
 import { loadOrCreateSoulBoundToken } from "./shared/soulBoundToken";
 
 export function handleEmergencyAdminSet(event: EmergencyAdminSet): void {
@@ -119,12 +120,7 @@ export function handlePublishPrepared(event: PublishPrepared): void {
     
         if (publisher && hub && project) {
     
-            let publication = createPublication(
-                publisherAddr,
-                event.params.publication.hubId,
-                event.params.publication.projectId,
-                event.params.publishId
-            )
+            let publication  = new Publication(event.params.publishId.toString());
             
             publication.publishId = event.params.publishId
             publication.publisher = publisher.id
@@ -208,7 +204,7 @@ export function handleDerivativeNFTDeployed(event: DerivativeNFTDeployed): void 
         project.projectId = event.params.projectId;
         project.projectCreator = projectCreator.id;
         project.hub = hub.id
-        project.derivativeNFT = loadOrCreateNFTContract(event.params.derivativeNFT).id;
+        project.derivativeNFT = loadOrCreateDNFTContract(event.params.derivativeNFT).id;
         project.timestamp = event.block.timestamp;
         project.save();
     }
@@ -226,26 +222,25 @@ export function handlePublishCreated(event: PublishCreated): void {
         const publication = Publication.load(event.params.publishId.toString());
         const hub = loadHub( event.params.hubId)
         const project = loadProject(event.params.projectId)
+        let derivativeNFT = Address.fromHexString(project.derivativeNFT)
+        let dnft = loadOrCreateDNFT(Address.fromBytes(derivativeNFT), event.params.newTokenId, event);
+        
 
         if (publisher && publication && hub && project) {
 
-            const publishRecord = loadOrCreatePublishRecord(
-                publisher, 
-                hub, 
-                project, 
-                publication,
-                event.params.publishId
-            ) 
+            const publish = new Publish(event.params.publishId.toString());
             
-            publishRecord.publisher = publisher.id
-            publishRecord.publication = publication.id
-            publishRecord.hub = hub.id
-            publishRecord.project = project.id
-            publishRecord.newTokenId = event.params.newTokenId
-            publishRecord.amount = event.params.amount
-            publishRecord.collectModuleInitData = event.params.collectModuleInitData
-            publishRecord.timestamp = event.block.timestamp
-            publishRecord.save()
+            publish.publisher = publisher.id
+            publish.publication = publication.id
+            publish.hub = hub.id
+            publish.project = project.id
+            publish.derivativeNFT = project.derivativeNFT //loadOrCreateDNFTContract(Address.fromBytes(derivativeNFT)).id
+            publish.dnft = dnft.id
+            publish.newTokenId = event.params.newTokenId
+            publish.amount = event.params.amount
+            publish.collectModuleInitData = event.params.collectModuleInitData
+            publish.timestamp = event.block.timestamp
+            publish.save()
             
         }
     }
@@ -264,18 +259,21 @@ export function handleDerivativeNFTCollected(event: DerivativeNFTCollected): voi
 
         const from = loadOrCreateAccount(fromWallet)
         const to =  loadOrCreateAccount(toWallet)
-        const derivativeNFT = loadOrCreateNFTContract(event.params.derivativeNFT)
+        const derivativeNFT = loadOrCreateDNFTContract(event.params.derivativeNFT)
         const project = loadProject(event.params.projectId)
+        let dnft = loadOrCreateDNFT(event.params.derivativeNFT, event.params.tokenId, event);
+      
         if (from && to && derivativeNFT && project) {
             
-            let _idString = event.params.projectId.toString() + "-" + event.params.tokenId.toString() + "-" + event.params.timestamp.toString()
-            const history = DerivativeNFTCollectedHistory.load(_idString) || new DerivativeNFTCollectedHistory(_idString)
+            let _idString = event.params.derivativeNFT.toHex() + "-" + event.params.projectId.toString() + "-" + event.params.tokenId.toString()
+            const history = DnftCollectedHistory.load(_idString) || new DnftCollectedHistory(_idString)
             if (history) {
 
-                if(project) history.project = project.id
-                if(derivativeNFT) history.derivativeNFT = derivativeNFT.id;
+                if (project) history.project = project.id
+                if (derivativeNFT) history.derivativeNFT = derivativeNFT.id;
                 if (from) history.from = from.id;
                 if (to) history.to = to.id
+                if (dnft) history.dnft = dnft.id
                 history.tokenId = event.params.tokenId
                 history.units = event.params.value
                 history.newTokenId = event.params.newTokenId
@@ -299,24 +297,13 @@ export function handleDerivativeNFTAirdroped(event: DerivativeNFTAirdroped): voi
         if (from && project ) {
             let _idString = event.params.projectId.toString() + "-" + event.params.tokenId.toString() + "-" + event.params.timestamp.toString()
             const history = DerivativeNFTAirdropedHistory.load(_idString) || new DerivativeNFTAirdropedHistory(_idString)
-
             if (history) {
-
                 history.project = project.id
-                history.derivativeNFT = loadOrCreateNFTContract(event.params.derivativeNFT).id;
+                history.derivativeNFT = loadOrCreateDNFTContract(event.params.derivativeNFT).id;
                 history.from = from.id
                 history.tokenId = event.params.tokenId
-                //TODO
-                // for (let index = 0; index <  event.params.toSoulBoundTokenIds.length; index++) {
-                   
-                //     const sbtTo = loadOrCreateSoulBoundToken(event.params.toSoulBoundTokenIds[index])
-                //     if (sbtTo) {
-                //         let to = loadOrCreateAccount(Address.fromBytes(sbtTo.wallet)).id
-                //         history.toAccounts.push(to)    
-                //     }
-                // }
-                history.toAccounts = event.params.toSoulBoundTokenIds
                 history.values = event.params.values
+                history.toAccounts = event.params.toSoulBoundTokenIds
                 history.newTokenIds = event.params.newTokenIds
                 history.timestamp = event.params.timestamp
                 history.save()

@@ -435,3 +435,44 @@ dataSources:
             uint256,address,address,(uint256,uint256,uint256,uint256,uint256),(uint96,uint96,uint96,uint96,uint96))
           handler: handleBuyPriceAccepted
       file: ./src/marketplace-mapping.ts
+  - kind: ethereum/contract
+    name: DerivativeNFT
+    network: mainnet
+    source:
+      abi: DerivativeNFT
+      address: "0x9bd03768a7DCc129555dE410FF8E85528A4F88b5"
+      startBlock: 1
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.6
+      language: wasm/assemblyscript
+      entities:
+        - Approval
+        - ApprovalForAll
+        - ApprovalValue
+        - Transfer
+        - TransferValue
+        - SlotChanged
+        - BurnToken
+        - DerivativeNFTImageURISet
+      abis:
+        - name: DerivativeNFT
+          file: ../artifacts/contracts/DerivativeNFT.sol/DerivativeNFT.json
+      eventHandlers:
+        - event: Approval(indexed address,indexed address,indexed uint256)
+          handler: handleDNFTApproval
+        - event: ApprovalForAll(indexed address,indexed address,bool)
+          handler: handleDNFTApprovalForAll
+        - event: ApprovalValue(indexed uint256,indexed address,uint256)
+          handler: handleDNFTApprovalValue
+        - event: Transfer(indexed address,indexed address,indexed uint256)
+          handler: handleDNFTTransfer
+        - event: TransferValue(indexed uint256,indexed uint256,uint256)
+          handler: handleDNFTTransferValue
+        - event: SlotChanged(indexed uint256,indexed uint256,indexed uint256)
+          handler: handleDNFTSlotChanged
+        - event: BurnToken(uint256,uint256,address,uint256)
+          handler: handleDNFTBurnToken
+        - event: DerivativeNFTImageURISet(indexed uint256,string,uint256)
+          handler: handleDNFTImageURISet
+      file: ./src/dnft/derivativeNFT-mapping.ts

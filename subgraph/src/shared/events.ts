@@ -28,7 +28,7 @@ export function recordNftEvent(
   buyNow: NftMarketBuyNow | null = null,
 ): void {
   let historicalEvent = new NftHistory(getEventId(event, eventType));
-  historicalEvent.nft = nft.id;
+  historicalEvent.dnft = nft.id;
   historicalEvent.event = eventType;
   if (auction) {
     historicalEvent.auction = auction.id;
