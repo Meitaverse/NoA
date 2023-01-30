@@ -93,19 +93,24 @@ task("create-hub", "create-hub function")
     "\t\t--- HubCreated, hubId: ", hubId
   );
 
+  let hubOwner = event.args.hubOwner.toString();
+  console.log(
+    "\t\t--- HubCreated, hubOwner: ", hubOwner
+  );
+
   let hubInfo = await manager.connect(user).getHubInfo(hubId);
 
   console.log(
-    "\n\t--- hub info - soulBoundTokenId:  ", hubInfo.soulBoundTokenId.toNumber()
+    "\t\t--- hub info - soulBoundTokenId:  ", hubInfo.soulBoundTokenId.toNumber()
   );
   console.log(
-    "\t--- hub info - name:  ", hubInfo.name
+    "\t\t--- hub info - name:  ", hubInfo.name
   );
   console.log(
-    "\t--- hub info - description:  ", hubInfo.description
+    "\t\t--- hub info - description:  ", hubInfo.description
   );
   console.log(
-    "\t--- hub info - imageURI:  ", hubInfo.imageURI
+    "\t\t--- hub info - imageURI:  ", hubInfo.imageURI
   );
 
 

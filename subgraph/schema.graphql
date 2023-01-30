@@ -6,14 +6,14 @@ type Account @entity {
   "Link to profile"
   profile: Profile!
 
-  "Link to creator details if this account is or ever was one"
-  creator: Creator @derivedFrom(field: "account")
+  #"Link to creator details if this account is or ever was one"
+  #creator: Creator @derivedFrom(field: "account")
 
   "Link to SBT Asset "
-  sbtAsset: SBTAsset!
+  sbtAsset: SBTAsset
 
   "Link to Hub "
-  hub: Hub!
+  hub: Hub
 
   "All NFTs currently owned by this account"
   nfts: [DNFT!]! @derivedFrom(field: "owner")
@@ -73,6 +73,14 @@ type Profile @entity {
   imageURI: String!
 
   timestamp: BigInt!
+}
+
+# SoulBoundToken record
+type SoulBoundToken @entity {
+  "The Soul Bound Token Id"
+  id: ID!
+
+  wallet: Bytes!
 }
 
 # SBT Transfer history
@@ -382,7 +390,7 @@ type DerivativeNFTAirdropedHistory @entity {
   derivativeNFT: DerivativeNFTContract!
   from: Account!
   tokenId: BigInt!
-  toAccounts: [Account!]!
+  toAccounts: [BigInt!]!
   values: [BigInt!]!
   newTokenIds: [BigInt!]!
   timestamp: BigInt!
@@ -1103,53 +1111,6 @@ type PercentSplit @entity {
 
   "The date/time this split was initially created in seconds since Unix epoch"
   dateCreated: BigInt!
-}
-
-
-type CollectionContract @entity {
-  "contractAddress"
-  id: ID!
-
-  "A reference to the DerivativeNFTContract instance"
-  derivativeNFT: DerivativeNFTContract!
-
-  "The creator account which created this collection"
-  creator: Creator!
-
-  "factoryAddress-templateVersion"
-  version: String!
-
-  "The date/time the collection was created in seconds since Unix epoch"
-  dateCreated: BigInt!
-
-  "The date/time the collection was self destructed in seconds since Unix epoch if applicable, this resets if the collection is re-created"
-  dateSelfDestructed: BigInt
-}
-
-type NftDropCollectionContract @entity {
-  "contractAddress"
-  id: ID!
-
-  "A reference to the DerivativeNFTContract instance"
-  derivativeNFT: DerivativeNFTContract!
-
-  "The creator account which created this collection"
-  creator: Creator!
-
-  "The additional minter role grant address, if applicable"
-  approvedMinter: Account
-
-  "The payment address which receives the proceeds for the primary sale and royalties on secondary sale."
-  paymentAddress: Account!
-
-  "factoryAddress-templateVersion"
-  version: String!
-
-  "The date/time the collection was created in seconds since Unix epoch"
-  dateCreated: BigInt!
-
-  "The date/time the collection was self destructed in seconds since Unix epoch if applicable, this resets if the collection is re-created"
-  dateSelfDestructed: BigInt
 }
 
 type Fsbt @entity {

@@ -32,13 +32,13 @@ import {
     StateSetHistory,
 } from "../generated/schema"
 
-import { loadOrCreateProject } from "./shared/project";
-import { loadOrCreateHub } from "./shared/hub";
-import { loadOrCreateProfile } from "./shared/profile";
-import { loadOrCreatePublication } from "./shared/publication";
+import { loadProject } from "./shared/project";
+import { loadHub } from "./shared/hub";
+import { createPublication } from "./shared/publication";
 import { loadOrCreatePublishRecord } from "./shared/publish";
 import { loadOrCreateAccount } from "./shared/accounts";
 import { loadOrCreateNFTContract } from "./dnft";
+import { loadOrCreateSoulBoundToken } from "./shared/soulBoundToken";
 
 export function handleEmergencyAdminSet(event: EmergencyAdminSet): void {
     log.info("handleEmergencyAdminSet, event.address: {}", [event.address.toHexString()])
@@ -69,59 +69,65 @@ export function handleManagerGovernanceSet(event: ManagerGovernanceSet): void {
 }
 
 export function handleHubCreated(event: HubCreated): void {
-    log.info("handleHubCreated, event.address: {}", [event.address.toHexString()])
+    log.info("handleHubCreated, event.address: {}, hubOwner: {}", 
+        [
+            event.address.toHexString(),
+            event.params.hubOwner.toHexString()
+        ]
+    )
 
     const hubOwner = loadOrCreateAccount(event.params.hubOwner)
+    if (hubOwner) {
+        const hub = new Hub(event.params.hubId.toString());
 
-    const hub = loadOrCreateHub(event.params.hubId) 
-    hubOwner.hub = hub.id
-
-    hub.hubOwner = hubOwner.id
-    hub.hubId = event.params.hubId
-    hub.name = event.params.name
-    hub.description = event.params.description
-    hub.imageURI = event.params.imageURI
-    hub.timestamp = event.block.timestamp
-    hub.save()
-    
+        hubOwner.hub = hub.id
+        hub.hubOwner = hubOwner.id
+        hub.hubId = event.params.hubId
+        hub.name = event.params.name
+        hub.description = event.params.description
+        hub.imageURI = event.params.imageURI
+        hub.timestamp = event.block.timestamp
+        hub.save()
+    }
 }
 
 export function handleHubUpdated(event: HubUpdated): void {
     log.info("handleHubUpdated, event.address: {}", [event.address.toHexString()])
 
-    const hubOwner = loadOrCreateAccount(event.params.hubOwner)
-
-    const hub = loadOrCreateHub(event.params.hubId) 
-
-    hub.hubOwner = hubOwner.id
-    hub.name = event.params.name
-    hub.description = event.params.description
-    hub.imageURI = event.params.imageURI
-    hub.timestamp = event.block.timestamp
-    hub.save()
+    const hub = loadHub(event.params.hubId) 
+    if (hub) {
+        hub.name = event.params.name
+        hub.description = event.params.description
+        hub.imageURI = event.params.imageURI
+        hub.timestamp = event.block.timestamp
+        hub.save()
+    }
 }
 
 export function handlePublishPrepared(event: PublishPrepared): void {
     log.info("handlePublishPrepared, event.address: {}", [event.address.toHexString()])
 
-    const manager = Manager.bind(event.address) 
-    const result = manager.try_getWalletBySoulBoundTokenId(event.params.publication.soulBoundTokenId)
-    if (result.reverted) {
-        log.warning('try_getWalletBySoulBoundTokenId, result.reverted is true', [])
-    } else {
-        log.info("try_getWalletBySoulBoundTokenId, result.value: {}", [result.value.toHex()])
-        let publisher = result.value
-        const profilePublisher = loadOrCreateAccount(publisher)
-        
+    let publisherAddr = Address.zero()
 
-        const hub = loadOrCreateHub(event.params.publication.hubId)
+    const sbt = loadOrCreateSoulBoundToken(event.params.publication.soulBoundTokenId)
+    if (sbt) {
+        publisherAddr = Address.fromBytes(sbt.wallet) 
 
-        const project = loadOrCreateProject(event.params.publication.projectId)
-
-        let publication = loadOrCreatePublication(event.params.publishId)
-        if (publication) {
+        const publisher = loadOrCreateAccount(publisherAddr)
+        const hub = loadHub(event.params.publication.hubId)
+        const project = loadProject(event.params.publication.projectId)
+    
+        if (publisher && hub && project) {
+    
+            let publication = createPublication(
+                publisherAddr,
+                event.params.publication.hubId,
+                event.params.publication.projectId,
+                event.params.publishId
+            )
+            
             publication.publishId = event.params.publishId
-            publication.publisher = profilePublisher.id
+            publication.publisher = publisher.id
             publication.hub = hub.id
             publication.project = project.id
             publication.salePrice = event.params.publication.salePrice
@@ -152,9 +158,11 @@ export function handlePublishPrepared(event: PublishPrepared): void {
             publication.publishTaxAmount = event.params.publishTaxAmount
             publication.timestamp = event.block.timestamp
             publication.save()
-        } 
         
+        }
     }
+    
+        
 }
 
 export function handlePublishUpdated(event: PublishUpdated): void {
@@ -191,47 +199,46 @@ export function handlePublishUpdated(event: PublishUpdated): void {
 
 export function handleDerivativeNFTDeployed(event: DerivativeNFTDeployed): void {
     log.info("handleDerivativeNFTDeployed, event.address: {}", [event.address.toHexString()])
-    const projectCreator = loadOrCreateAccount(event.params.creator)
     
-    //TODO try_getProjectInfo
-
-    const project = loadOrCreateProject(event.params.projectId)
-    if (project) {
-        project.projectId = event.params.projectId
-        project.projectCreator = projectCreator.id
-        project.derivativeNFT = loadOrCreateNFTContract(event.params.derivativeNFT).id; 
-        project.timestamp = event.block.timestamp
-        project.save()
-    } 
+    const projectCreator = loadOrCreateAccount(event.params.creator) 
+  
+    const hub = loadHub(event.params.hubId)
+    if (hub) {
+        const project = new Project(event.params.projectId.toString());
+        project.projectId = event.params.projectId;
+        project.projectCreator = projectCreator.id;
+        project.hub = hub.id
+        project.derivativeNFT = loadOrCreateNFTContract(event.params.derivativeNFT).id;
+        project.timestamp = event.block.timestamp;
+        project.save();
+    }
 }
 
 export function handlePublishCreated(event: PublishCreated): void {
     log.info("handlePublishCreated, event.address: {}", [event.address.toHexString()])
+    
+    let publisherAddr = Address.zero()
+    const sbt = loadOrCreateSoulBoundToken(event.params.soulBoundTokenId)
+    if (sbt) {
+        publisherAddr = Address.fromBytes(sbt.wallet) 
 
-    const manager = Manager.bind(event.address) 
-    const result = manager.try_getWalletBySoulBoundTokenId(event.params.soulBoundTokenId)
-    if (result.reverted) {
-        log.warning('try_getWalletBySoulBoundTokenId, result.reverted is true', [])
-    } else {
-        log.info("try_getWalletBySoulBoundTokenId, result.value: {}", [result.value.toHex()])
-        let publisherAddr = result.value
         const publisher = loadOrCreateAccount(publisherAddr)
-        let publication = Publication.load(event.params.publishId.toString());
-       
-        const hub = loadOrCreateHub(event.params.hubId)
-        
-        const project = loadOrCreateProject(event.params.projectId)
-        
-        const publishRecord = loadOrCreatePublishRecord(
-            publisher, 
-            hub, 
-            project, 
-            event.params.publishId
-        ) 
-        
-        if (publishRecord) {
+        const publication = Publication.load(event.params.publishId.toString());
+        const hub = loadHub( event.params.hubId)
+        const project = loadProject(event.params.projectId)
+
+        if (publisher && publication && hub && project) {
+
+            const publishRecord = loadOrCreatePublishRecord(
+                publisher, 
+                hub, 
+                project, 
+                publication,
+                event.params.publishId
+            ) 
+            
             publishRecord.publisher = publisher.id
-            if (publication) publishRecord.publication = publication.id
+            publishRecord.publication = publication.id
             publishRecord.hub = hub.id
             publishRecord.project = project.id
             publishRecord.newTokenId = event.params.newTokenId
@@ -239,35 +246,42 @@ export function handlePublishCreated(event: PublishCreated): void {
             publishRecord.collectModuleInitData = event.params.collectModuleInitData
             publishRecord.timestamp = event.block.timestamp
             publishRecord.save()
-        } 
             
-        
+        }
     }
 }
 
 export function handleDerivativeNFTCollected(event: DerivativeNFTCollected): void {
     log.info("handleDerivativeNFTCollected, event.address: {}", [event.address.toHexString()])
 
-    const manager = Manager.bind(event.address) 
+    let fromWallet = Address.zero()
+    let toWallet = Address.zero()
+    const sbtFrom = loadOrCreateSoulBoundToken(event.params.fromSoulBoundTokenId)
+    const sbtTo = loadOrCreateSoulBoundToken(event.params.toSoulBoundTokenId)
+    if (sbtFrom && sbtTo) {
+        fromWallet = Address.fromBytes(sbtFrom.wallet) 
+        toWallet = Address.fromBytes(sbtTo.wallet) 
 
-    const resultFrom = manager.try_getWalletBySoulBoundTokenId(event.params.fromSoulBoundTokenId)
-    const resultTo = manager.try_getWalletBySoulBoundTokenId(event.params.toSoulBoundTokenId)
+        const from = loadOrCreateAccount(fromWallet)
+        const to =  loadOrCreateAccount(toWallet)
+        const derivativeNFT = loadOrCreateNFTContract(event.params.derivativeNFT)
+        const project = loadProject(event.params.projectId)
+        if (from && to && derivativeNFT && project) {
+            
+            let _idString = event.params.projectId.toString() + "-" + event.params.tokenId.toString() + "-" + event.params.timestamp.toString()
+            const history = DerivativeNFTCollectedHistory.load(_idString) || new DerivativeNFTCollectedHistory(_idString)
+            if (history) {
 
-    if (!resultFrom.reverted && !resultTo.reverted) {
-        const project = loadOrCreateProject(event.params.projectId)
-
-        let _idString = event.params.projectId.toString() + "-" + event.params.tokenId.toString() + "-" + event.params.timestamp.toString()
-        const history = DerivativeNFTCollectedHistory.load(_idString) || new DerivativeNFTCollectedHistory(_idString)
-        if (history) {
-            history.project = project.id
-            history.derivativeNFT = loadOrCreateNFTContract(event.params.derivativeNFT).id;
-            history.from = loadOrCreateAccount(resultFrom.value).id
-            history.to = loadOrCreateAccount(resultTo.value).id
-            history.tokenId = event.params.tokenId
-            history.units = event.params.value
-            history.newTokenId = event.params.newTokenId
-            history.timestamp = event.params.timestamp
-            history.save()
+                if(project) history.project = project.id
+                if(derivativeNFT) history.derivativeNFT = derivativeNFT.id;
+                if (from) history.from = from.id;
+                if (to) history.to = to.id
+                history.tokenId = event.params.tokenId
+                history.units = event.params.value
+                history.newTokenId = event.params.newTokenId
+                history.timestamp = event.params.timestamp
+                history.save()
+            }
         } 
     }
 }
@@ -275,32 +289,38 @@ export function handleDerivativeNFTCollected(event: DerivativeNFTCollected): voi
 export function handleDerivativeNFTAirdroped(event: DerivativeNFTAirdroped): void {
     log.info("handleDerivativeNFTAirdroped, event.address: {}", [event.address.toHexString()])
     
-    const manager = Manager.bind(event.address) 
-    const resultFrom = manager.try_getWalletBySoulBoundTokenId(event.params.fromSoulBoundTokenId)
-    if (!resultFrom.reverted) {
+    let fromWallet = Address.zero()
+    const sbtFrom = loadOrCreateSoulBoundToken(event.params.fromSoulBoundTokenId)
+    if (sbtFrom) {
+        fromWallet = Address.fromBytes(sbtFrom.wallet) 
+        const from = loadOrCreateAccount(fromWallet)
+        const project = loadProject(event.params.projectId)
 
-        const from = loadOrCreateAccount(resultFrom.value)
+        if (from && project ) {
+            let _idString = event.params.projectId.toString() + "-" + event.params.tokenId.toString() + "-" + event.params.timestamp.toString()
+            const history = DerivativeNFTAirdropedHistory.load(_idString) || new DerivativeNFTAirdropedHistory(_idString)
 
-        const project = loadOrCreateProject(event.params.projectId)
+            if (history) {
 
-        let _idString = event.params.projectId.toString() + "-" + event.params.tokenId.toString() + "-" + event.params.timestamp.toString()
-        const history = DerivativeNFTAirdropedHistory.load(_idString) || new DerivativeNFTAirdropedHistory(_idString)
-        if (history) {
-            history.project = project.id
-            history.derivativeNFT = loadOrCreateNFTContract(event.params.derivativeNFT).id;
-            history.from = from.id
-            history.tokenId = event.params.tokenId
-            for (let index = 0; index <  event.params.toSoulBoundTokenIds.length; index++) {
-                let result = manager.try_getWalletBySoulBoundTokenId(event.params.toSoulBoundTokenIds[index])
-                if (!result.reverted) {
-                    let to = loadOrCreateAccount(resultFrom.value).id
-                    history.toAccounts[index] = to
-                }
+                history.project = project.id
+                history.derivativeNFT = loadOrCreateNFTContract(event.params.derivativeNFT).id;
+                history.from = from.id
+                history.tokenId = event.params.tokenId
+                //TODO
+                // for (let index = 0; index <  event.params.toSoulBoundTokenIds.length; index++) {
+                   
+                //     const sbtTo = loadOrCreateSoulBoundToken(event.params.toSoulBoundTokenIds[index])
+                //     if (sbtTo) {
+                //         let to = loadOrCreateAccount(Address.fromBytes(sbtTo.wallet)).id
+                //         history.toAccounts.push(to)    
+                //     }
+                // }
+                history.toAccounts = event.params.toSoulBoundTokenIds
+                history.values = event.params.values
+                history.newTokenIds = event.params.newTokenIds
+                history.timestamp = event.params.timestamp
+                history.save()
             }
-            history.values = event.params.values
-            history.newTokenIds = event.params.newTokenIds
-            history.timestamp = event.params.timestamp
-            history.save()
         } 
     }
 }
@@ -308,20 +328,21 @@ export function handleDerivativeNFTAirdroped(event: DerivativeNFTAirdroped): voi
 export function handleDispatcherSet(event: DispatcherSet): void {
     log.info("handleDispatcherSet, event.address: {}", [event.address.toHexString()])
    
-    const manager = Manager.bind(event.address) 
-    const result = manager.try_getWalletBySoulBoundTokenId(event.params.soulBoundTokenId)
-    if (!result.reverted) {
+    const sbt = loadOrCreateSoulBoundToken(event.params.soulBoundTokenId)
+    if (sbt) {    
 
-        const account = loadOrCreateAccount(result.value)
+        const account = loadOrCreateAccount(Address.fromBytes(sbt.wallet) )
+        if (account) {
 
-        let _idString = event.params.soulBoundTokenId.toString()
-        const dispatcher = Dispatcher.load(_idString) || new Dispatcher(_idString)
-        
-        if (dispatcher) {
-            dispatcher.account = account.id
-            dispatcher.dispatcher = event.params.dispatcher
-            dispatcher.timestamp = event.params.timestamp
-            dispatcher.save()
+            let _idString = event.params.soulBoundTokenId.toString()
+            const dispatcher = Dispatcher.load(_idString) || new Dispatcher(_idString)
+            
+            if (dispatcher) {
+                dispatcher.account = account.id
+                dispatcher.dispatcher = event.params.dispatcher
+                dispatcher.timestamp = event.params.timestamp
+                dispatcher.save()
+            }
         }
     }
 }

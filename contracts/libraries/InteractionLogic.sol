@@ -30,14 +30,14 @@ library InteractionLogic {
         address hubOwner,
         uint256 hubId,
         DataTypes.HubData memory hub,
-        mapping(uint256 => DataTypes.HubData) storage _hubInfos
+        mapping(uint256 => DataTypes.HubInfoData) storage _hubInfos
     ) external {
         
         if (hubId == 0) revert Errors.HubIdIsZero();
         
-         _hubInfos[hubId] = DataTypes.HubData({
-            //  hubOwner: creator,
+         _hubInfos[hubId] = DataTypes.HubInfoData({
              soulBoundTokenId : hub.soulBoundTokenId,
+             hubOwner: hubOwner,
              name: hub.name,
              description: hub.description,
              imageURI: hub.imageURI
@@ -56,23 +56,22 @@ library InteractionLogic {
     }
     
     function updateHub(
-        address hubOwner,
         uint256 hubId,
         string memory name,
         string memory description,
         string memory imageURI,
-        mapping(uint256 => DataTypes.HubData) storage _hubInfos
+        mapping(uint256 => DataTypes.HubInfoData) storage _hubInfos
     ) external {
         
         if (hubId == 0) revert Errors.HubIdIsZero();
-        DataTypes.HubData storage hubData = _hubInfos[hubId];
-        hubData.name = name;
-        hubData.description = description;
-        hubData.imageURI = imageURI;
+        DataTypes.HubInfoData storage hubInfoData = _hubInfos[hubId];
+        hubInfoData.name = name;
+        hubInfoData.description = description;
+        hubInfoData.imageURI = imageURI;
  
         emit Events.HubUpdated(
             hubId,
-            hubOwner, 
+            hubInfoData.hubOwner, 
             name,
             description,
             imageURI,
@@ -150,6 +149,7 @@ library InteractionLogic {
 
         emit Events.DerivativeNFTDeployed(
             creator,
+            project.hubId,
             projectId, 
             project.soulBoundTokenId,
             derivativeNFT, 

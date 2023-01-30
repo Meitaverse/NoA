@@ -51,8 +51,8 @@ export class Account extends Entity {
     this.set("profile", Value.fromString(value));
   }
 
-  get creator(): string | null {
-    let value = this.get("creator");
+  get sbtAsset(): string | null {
+    let value = this.get("sbtAsset");
     if (!value || value.kind == ValueKind.NULL) {
       return null;
     } else {
@@ -60,30 +60,29 @@ export class Account extends Entity {
     }
   }
 
-  set creator(value: string | null) {
+  set sbtAsset(value: string | null) {
     if (!value) {
-      this.unset("creator");
+      this.unset("sbtAsset");
     } else {
-      this.set("creator", Value.fromString(<string>value));
+      this.set("sbtAsset", Value.fromString(<string>value));
     }
   }
 
-  get sbtAsset(): string {
-    let value = this.get("sbtAsset");
-    return value!.toString();
-  }
-
-  set sbtAsset(value: string) {
-    this.set("sbtAsset", Value.fromString(value));
-  }
-
-  get hub(): string {
+  get hub(): string | null {
     let value = this.get("hub");
-    return value!.toString();
+    if (!value || value.kind == ValueKind.NULL) {
+      return null;
+    } else {
+      return value.toString();
+    }
   }
 
-  set hub(value: string) {
-    this.set("hub", Value.fromString(value));
+  set hub(value: string | null) {
+    if (!value) {
+      this.unset("hub");
+    } else {
+      this.set("hub", Value.fromString(<string>value));
+    }
   }
 
   get nfts(): Array<string> {
@@ -287,6 +286,47 @@ export class Profile extends Entity {
 
   set timestamp(value: BigInt) {
     this.set("timestamp", Value.fromBigInt(value));
+  }
+}
+
+export class SoulBoundToken extends Entity {
+  constructor(id: string) {
+    super();
+    this.set("id", Value.fromString(id));
+  }
+
+  save(): void {
+    let id = this.get("id");
+    assert(id != null, "Cannot save SoulBoundToken entity without an ID");
+    if (id) {
+      assert(
+        id.kind == ValueKind.STRING,
+        `Entities of type SoulBoundToken must have an ID of type String but the id '${id.displayData()}' is of type ${id.displayKind()}`
+      );
+      store.set("SoulBoundToken", id.toString(), this);
+    }
+  }
+
+  static load(id: string): SoulBoundToken | null {
+    return changetype<SoulBoundToken | null>(store.get("SoulBoundToken", id));
+  }
+
+  get id(): string {
+    let value = this.get("id");
+    return value!.toString();
+  }
+
+  set id(value: string) {
+    this.set("id", Value.fromString(value));
+  }
+
+  get wallet(): Bytes {
+    let value = this.get("wallet");
+    return value!.toBytes();
+  }
+
+  set wallet(value: Bytes) {
+    this.set("wallet", Value.fromBytes(value));
   }
 }
 
@@ -2576,13 +2616,13 @@ export class DerivativeNFTAirdropedHistory extends Entity {
     this.set("tokenId", Value.fromBigInt(value));
   }
 
-  get toAccounts(): Array<string> {
+  get toAccounts(): Array<BigInt> {
     let value = this.get("toAccounts");
-    return value!.toStringArray();
+    return value!.toBigIntArray();
   }
 
-  set toAccounts(value: Array<string>) {
-    this.set("toAccounts", Value.fromStringArray(value));
+  set toAccounts(value: Array<BigInt>) {
+    this.set("toAccounts", Value.fromBigIntArray(value));
   }
 
   get values(): Array<BigInt> {
@@ -6085,209 +6125,6 @@ export class PercentSplit extends Entity {
 
   set dateCreated(value: BigInt) {
     this.set("dateCreated", Value.fromBigInt(value));
-  }
-}
-
-export class CollectionContract extends Entity {
-  constructor(id: string) {
-    super();
-    this.set("id", Value.fromString(id));
-  }
-
-  save(): void {
-    let id = this.get("id");
-    assert(id != null, "Cannot save CollectionContract entity without an ID");
-    if (id) {
-      assert(
-        id.kind == ValueKind.STRING,
-        `Entities of type CollectionContract must have an ID of type String but the id '${id.displayData()}' is of type ${id.displayKind()}`
-      );
-      store.set("CollectionContract", id.toString(), this);
-    }
-  }
-
-  static load(id: string): CollectionContract | null {
-    return changetype<CollectionContract | null>(
-      store.get("CollectionContract", id)
-    );
-  }
-
-  get id(): string {
-    let value = this.get("id");
-    return value!.toString();
-  }
-
-  set id(value: string) {
-    this.set("id", Value.fromString(value));
-  }
-
-  get derivativeNFT(): string {
-    let value = this.get("derivativeNFT");
-    return value!.toString();
-  }
-
-  set derivativeNFT(value: string) {
-    this.set("derivativeNFT", Value.fromString(value));
-  }
-
-  get creator(): string {
-    let value = this.get("creator");
-    return value!.toString();
-  }
-
-  set creator(value: string) {
-    this.set("creator", Value.fromString(value));
-  }
-
-  get version(): string {
-    let value = this.get("version");
-    return value!.toString();
-  }
-
-  set version(value: string) {
-    this.set("version", Value.fromString(value));
-  }
-
-  get dateCreated(): BigInt {
-    let value = this.get("dateCreated");
-    return value!.toBigInt();
-  }
-
-  set dateCreated(value: BigInt) {
-    this.set("dateCreated", Value.fromBigInt(value));
-  }
-
-  get dateSelfDestructed(): BigInt | null {
-    let value = this.get("dateSelfDestructed");
-    if (!value || value.kind == ValueKind.NULL) {
-      return null;
-    } else {
-      return value.toBigInt();
-    }
-  }
-
-  set dateSelfDestructed(value: BigInt | null) {
-    if (!value) {
-      this.unset("dateSelfDestructed");
-    } else {
-      this.set("dateSelfDestructed", Value.fromBigInt(<BigInt>value));
-    }
-  }
-}
-
-export class NftDropCollectionContract extends Entity {
-  constructor(id: string) {
-    super();
-    this.set("id", Value.fromString(id));
-  }
-
-  save(): void {
-    let id = this.get("id");
-    assert(
-      id != null,
-      "Cannot save NftDropCollectionContract entity without an ID"
-    );
-    if (id) {
-      assert(
-        id.kind == ValueKind.STRING,
-        `Entities of type NftDropCollectionContract must have an ID of type String but the id '${id.displayData()}' is of type ${id.displayKind()}`
-      );
-      store.set("NftDropCollectionContract", id.toString(), this);
-    }
-  }
-
-  static load(id: string): NftDropCollectionContract | null {
-    return changetype<NftDropCollectionContract | null>(
-      store.get("NftDropCollectionContract", id)
-    );
-  }
-
-  get id(): string {
-    let value = this.get("id");
-    return value!.toString();
-  }
-
-  set id(value: string) {
-    this.set("id", Value.fromString(value));
-  }
-
-  get derivativeNFT(): string {
-    let value = this.get("derivativeNFT");
-    return value!.toString();
-  }
-
-  set derivativeNFT(value: string) {
-    this.set("derivativeNFT", Value.fromString(value));
-  }
-
-  get creator(): string {
-    let value = this.get("creator");
-    return value!.toString();
-  }
-
-  set creator(value: string) {
-    this.set("creator", Value.fromString(value));
-  }
-
-  get approvedMinter(): string | null {
-    let value = this.get("approvedMinter");
-    if (!value || value.kind == ValueKind.NULL) {
-      return null;
-    } else {
-      return value.toString();
-    }
-  }
-
-  set approvedMinter(value: string | null) {
-    if (!value) {
-      this.unset("approvedMinter");
-    } else {
-      this.set("approvedMinter", Value.fromString(<string>value));
-    }
-  }
-
-  get paymentAddress(): string {
-    let value = this.get("paymentAddress");
-    return value!.toString();
-  }
-
-  set paymentAddress(value: string) {
-    this.set("paymentAddress", Value.fromString(value));
-  }
-
-  get version(): string {
-    let value = this.get("version");
-    return value!.toString();
-  }
-
-  set version(value: string) {
-    this.set("version", Value.fromString(value));
-  }
-
-  get dateCreated(): BigInt {
-    let value = this.get("dateCreated");
-    return value!.toBigInt();
-  }
-
-  set dateCreated(value: BigInt) {
-    this.set("dateCreated", Value.fromBigInt(value));
-  }
-
-  get dateSelfDestructed(): BigInt | null {
-    let value = this.get("dateSelfDestructed");
-    if (!value || value.kind == ValueKind.NULL) {
-      return null;
-    } else {
-      return value.toBigInt();
-    }
-  }
-
-  set dateSelfDestructed(value: BigInt | null) {
-    if (!value) {
-      this.unset("dateSelfDestructed");
-    } else {
-      this.set("dateSelfDestructed", Value.fromBigInt(<BigInt>value));
-    }
   }
 }
 

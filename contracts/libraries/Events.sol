@@ -397,6 +397,7 @@ library Events {
      */
     event DerivativeNFTDeployed(
         address creator,
+        uint256 indexed hubId,
         uint256 indexed projectId,
         uint256 indexed soulBoundTokenId,
         address derivativeNFT,

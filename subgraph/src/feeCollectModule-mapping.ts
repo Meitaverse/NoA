@@ -17,10 +17,9 @@ import {
 } from "../generated/FeeCollectModule/SBT"
 
 import {
-    FeesForCollectHistory,
+    FeesForCollectHistory, Publication,
 } from "../generated/schema"
 import { loadOrCreateAccount } from "./shared/accounts";
-import { loadOrCreatePublication } from "./shared/publication";
 
 export function handleFeesForCollect(event: FeesForCollect): void {
     log.info("handleFeesForCollect, event.address: {}", [event.address.toHexString()])
@@ -43,26 +42,33 @@ export function handleFeesForCollect(event: FeesForCollect): void {
                 !resultGenesisCreator.reverted &&
                 !resultPreviousCreator.reverted
                 ) {
-                    let _idString = event.params.collectFeeUsers.collectorSoulBoundTokenId.toString() + "-" +  event.block.timestamp.toString()
-                    const history = FeesForCollectHistory.load(_idString) || new FeesForCollectHistory(_idString)
-                    
-                    let publication = loadOrCreatePublication(event.params.publishId)
 
-                    if (history) {
-                        history.owner = loadOrCreateAccount(resultOwner.value).id
-                        history.collector = loadOrCreateAccount(resultCollector.value).id
-                        history.genesisCreator = loadOrCreateAccount(resultGenesisCreator.value).id
-                        history.previousCreator = loadOrCreateAccount(resultPreviousCreator.value).id
-                        history.publish = publication.id
-                        history.tokenId = event.params.tokenId
-                        history.collectUnits = event.params.collectUnits
-                        history.treasuryAmount = event.params.royaltyAmounts.treasuryAmount
-                        history.genesisAmount = event.params.royaltyAmounts.genesisAmount
-                        history.previousAmount = event.params.royaltyAmounts.previousAmount
-                        history.adjustedAmount = event.params.royaltyAmounts.adjustedAmount
-                        history.timestamp = event.block.timestamp
-                        history.save()
-                    } 
+                    let publication = Publication.load(event.params.publishId.toString());
+ 
+                    if (publication) {
+                        
+                        let _idString = event.params.collectFeeUsers.collectorSoulBoundTokenId.toString() + "-" +  event.block.timestamp.toString()
+                        const history = FeesForCollectHistory.load(_idString) || new FeesForCollectHistory(_idString)
+                    
+                        if (history) {
+
+                            history.owner = loadOrCreateAccount(resultOwner.value).id
+                            history.collector = loadOrCreateAccount(resultCollector.value).id
+                            history.genesisCreator = loadOrCreateAccount(resultGenesisCreator.value).id
+                            history.previousCreator = loadOrCreateAccount(resultPreviousCreator.value).id
+                            history.publish = publication.id
+                            history.tokenId = event.params.tokenId
+                            history.collectUnits = event.params.collectUnits
+                            history.treasuryAmount = event.params.royaltyAmounts.treasuryAmount
+                            history.genesisAmount = event.params.royaltyAmounts.genesisAmount
+                            history.previousAmount = event.params.royaltyAmounts.previousAmount
+                            history.adjustedAmount = event.params.royaltyAmounts.adjustedAmount
+                            history.timestamp = event.block.timestamp
+                            history.save()
+                        }
+
+                    }
+                    
             }
         }
     }

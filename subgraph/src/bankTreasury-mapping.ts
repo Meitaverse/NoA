@@ -56,7 +56,6 @@ import { toETH } from "./shared/conversions";
 import { BASIS_POINTS, ONE_BIG_INT, ZERO_ADDRESS_STRING, ZERO_BIG_DECIMAL, ZERO_BIG_INT } from "./shared/constants"; 
 import { loadOrCreateFsbt, loadOrCreateFsbtEscrow } from "./shared/fsbt";
 import { loadOrCreateSBTAsset } from "./shared/sbtAsset";
-import { loadOrCreateProfile } from "./shared/profile";
 
 export function handleDepositByFallback(event: DepositByFallback): void {
     log.info("handleDepositByFallback, event.address: {}", [event.address.toHexString()])
@@ -89,6 +88,7 @@ export function handleERC3525Received(event: ERC3525Received): void {
             let _idString = event.params.operator.toHexString()+ "-" + event.params.fromTokenId.toString() + "-" + event.block.timestamp.toString()
             const history = ERC3525ReceivedHistory.load(_idString) || new ERC3525ReceivedHistory(_idString)
             if (history) {
+                history.sender = event.params.sender
                 history.operator = event.params.operator
                 history.from = loadOrCreateAccount(resultFrom.value).id
                 history.to = loadOrCreateAccount(resultTo.value).id

@@ -67,7 +67,11 @@ task("add-market", "add-market function")
   console.log(
       "\t--- ModuleGlobals governance address: ", await moduleGlobals.getGovernance()
     );
-  
+
+  await waitForTx(
+      marketPlace.connect(governance).grantOperator(governance.address)
+  );
+
     const SECOND_PROFILE_ID =2; 
     const FIRST_HUB_ID =1; 
 
@@ -117,10 +121,10 @@ task("add-market", "add-market function")
     //addMarket
     await waitForTx(
       marketPlace.connect(governance).addMarket(
-         derivativeNFT.address,
-        0,
-        0,
-        50
+          derivativeNFT.address,
+          0,
+          0,
+          50
         )
     );
     
@@ -130,8 +134,6 @@ task("add-market", "add-market function")
     console.log('\n\t--- marketInfo.feeShareType : ', marketInfo.feeShareType);
     console.log('\n\t--- marketInfo.royaltyBasisPoints : ', marketInfo.royaltyBasisPoints);
 
-
-      
     const FIRST_DNFT_TOKEN_ID = 1;
     console.log('\n\t--- ownerOf FIRST_DNFT_TOKEN_ID : ', await derivativeNFT.ownerOf(FIRST_DNFT_TOKEN_ID));
     console.log('\t--- balanceOf FIRST_DNFT_TOKEN_ID : ', (await derivativeNFT["balanceOf(uint256)"](FIRST_DNFT_TOKEN_ID)).toNumber());

@@ -441,7 +441,6 @@ import { MarketPlaceLibraryAddresses } from '../typechain/factories/contracts/Ma
         await waitForTx( sbtContract.connect(deployer).grantRole(transferValueRole, bankTreasuryContract.address));
         await waitForTx( sbtContract.connect(deployer).grantRole(transferValueRole, voucherContract.address));
         
-        const feeModuleRole = await bankTreasuryContract.FEEMODULE_ROLE();
         await waitForTx(
           bankTreasuryContract.connect(deployer).grantFeeModule(feeCollectModule.address)
         );
@@ -449,6 +448,10 @@ import { MarketPlaceLibraryAddresses } from '../typechain/factories/contracts/Ma
           bankTreasuryContract.connect(deployer).grantFeeModule(marketPlaceContract.address)
         );
 
+        await waitForTx(
+            marketPlaceContract.connect(governance).grantOperator(governance.address)
+        );
+          
         console.log('\n\t-- Add publishModule,feeCollectModule,template to moduleGlobals whitelists --');
         await waitForTx( moduleGlobals.connect(governance).whitelistPublishModule(publishModule.address, true));
         await waitForTx( moduleGlobals.connect(governance).whitelistCollectModule(feeCollectModule.address, true));

@@ -83,14 +83,11 @@ type DnftAccountApproval @entity {
   "tokenAddress-owner-spender"
   id: ID!
 
-  "The token's contract"
-  dnftContract: DNftContract!
-
   "The account which granted this approval"
-  owner: Account!
+  owner: Bytes!
 
   "The account which is authorized to transfer NFTs held by the owner"
-  spender: Account!
+  spender: Bytes!
 }
 
 # ApprovalValue 

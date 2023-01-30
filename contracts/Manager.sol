@@ -145,11 +145,11 @@ contract Manager is
         uint256 hubId = _generateNextHubId();
         _hubIdBySoulBoundTokenId[hub.soulBoundTokenId] = hubId;
 
-        address _sbt = IModuleGlobals(MODULE_GLOBALS).getSBT();
-        address hubOwner = IERC3525(_sbt).ownerOf(hub.soulBoundTokenId);
+        //address _sbt = IModuleGlobals(MODULE_GLOBALS).getSBT();
+        //address hubOwner = IERC3525(_sbt).ownerOf(hub.soulBoundTokenId);
 
         InteractionLogic.createHub(
-            hubOwner,
+            msg.sender,
             hubId,
             hub, 
             _hubInfos
@@ -175,11 +175,11 @@ contract Manager is
         uint256 hubId = _hubIdBySoulBoundTokenId[soulBoundTokenId];
         if (hubId == 0) revert Errors.HubNotExists();
 
-         address _sbt = IModuleGlobals(MODULE_GLOBALS).getSBT();
-         address creator = IERC3525(_sbt).ownerOf(soulBoundTokenId);
+        // address _sbt = IModuleGlobals(MODULE_GLOBALS).getSBT();
+        // address creator = IERC3525(_sbt).ownerOf(soulBoundTokenId);
 
         InteractionLogic.updateHub(
-            creator,
+            //creator,
             hubId,
             name, 
             description, 
@@ -323,7 +323,7 @@ contract Manager is
         nonReentrant
     {
          DataTypes.PublishData storage publishData = _projectDataByPublishId[publishId];
-         DataTypes.HubData storage hub = _hubInfos[publishData.publication.hubId];
+         DataTypes.HubInfoData storage hub = _hubInfos[publishData.publication.hubId];
 
         _validateCallerIsSoulBoundTokenOwnerOrDispathcher(hub.soulBoundTokenId);
         
@@ -510,7 +510,7 @@ contract Manager is
        return _genesisPublishIdByProjectId[projectId];   
     }
 
-    function getHubInfo(uint256 hubId) external view returns(DataTypes.HubData memory) {
+    function getHubInfo(uint256 hubId) external view returns(DataTypes.HubInfoData memory) {
         return _hubInfos[hubId];
     }
 

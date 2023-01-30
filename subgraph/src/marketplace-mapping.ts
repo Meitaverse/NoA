@@ -42,7 +42,7 @@ import {
 } from "../generated/MarketPlace/MarketPlace"
 
 
-import { loadOrCreateProject } from "./shared/project";
+import { loadProject } from "./shared/project";
 import { loadOrCreateAccount } from "./shared/accounts";
 import { loadLatestBuyNow } from "./shared/buyNow";
 import { BASIS_POINTS, ONE_BIG_INT, ZERO_ADDRESS_STRING, ZERO_BIG_DECIMAL, ZERO_BIG_INT } from "./shared/constants";
@@ -52,7 +52,6 @@ import { getLogId } from "./shared/ids";
 import { loadLatestOffer, outbidOrExpirePreviousOffer } from "./shared/offers";
 import { recordSale } from "./shared/revenue";
 import { loadOrCreateNFT, loadOrCreateNFTContract } from "./dnft";
-import { loadOrCreateProfile } from "./shared/profile";
 
 export function loadOrCreateNFTMarketContract(address: Address): NftMarketContract {
     let nftMarketContract = NftMarketContract.load(address.toHex());
@@ -99,7 +98,6 @@ export function handleMarketPlaceERC3525Received(event: MarketPlaceERC3525Receiv
     } 
 }
 
-
 export function handleRemoveMarket(event: RemoveMarket): void {
     log.info("handleRemoveMarket, event.address: {}", [event.address.toHexString()])
 
@@ -111,50 +109,53 @@ export function handleBuyPriceSet(event: BuyPriceSet): void {
     log.info("handleBuyPriceSet, event.address: {}", [event.address.toHexString()])
     let nft = loadOrCreateNFT(event.params.buyPrice.derivativeNFT, event.params.buyPrice.tokenId, event);
     
-    let derivativeNFTContract = DerivativeNFT.bind(event.params.buyPrice.derivativeNFT)
-    let result = derivativeNFTContract.try_getCreator();
-    if (!result.reverted) {
+    // let derivativeNFTContract = DerivativeNFT.bind(event.params.buyPrice.derivativeNFT)
+    // let result = derivativeNFTContract.try_getCreator();
+    // if (!result.reverted) {
       
-          let project = loadOrCreateProject(event.params.buyPrice.projectId);
-      
+          let project = loadProject(event.params.buyPrice.projectId);
           let seller = loadOrCreateAccount(event.params.buyPrice.seller);
-          let buyNow = loadLatestBuyNow(nft);
-          if (!buyNow) {
-            buyNow = new NftMarketBuyNow(getLogId(event));
+          if (project && seller) {
+
+            let buyNow = loadLatestBuyNow(nft);
+            if (!buyNow) {
+              buyNow = new NftMarketBuyNow(getLogId(event));
+            }
+            
+            let amountInSBTValue = toETH(event.params.buyPrice.salePrice);
+            buyNow.nftMarketContract = loadOrCreateNFTMarketContract(event.address).id;
+            buyNow.nft = nft.id;
+            buyNow.derivativeNFT = nft.derivativeNFT;
+            buyNow.status = "Open";
+            buyNow.seller = seller.id;
+            buyNow.project = project.id;
+            buyNow.amountInSBTValue = amountInSBTValue;
+            buyNow.onSellUnits = event.params.buyPrice.onSellUnits;
+            buyNow.seledUnits = event.params.buyPrice.seledUnits;
+            buyNow.dateCreated = event.block.timestamp;
+            buyNow.transactionHashCreated = event.transaction.hash;
+            buyNow.save();
+            removePreviousTransferEvent(event);
+            recordNftEvent(
+              event,
+              nft,
+              "BuyPriceSet",
+              seller,
+              null,
+              "Foundation",
+              amountInSBTValue,
+              null,
+              null,
+              null,
+              null,
+              null,
+              buyNow,
+            );
+            nft.mostRecentBuyNow = buyNow.id;
+            nft.ownedOrListedBy = seller.id;
+            nft.save();
           }
-          let amountInSBTValue = toETH(event.params.buyPrice.salePrice);
-          buyNow.nftMarketContract = loadOrCreateNFTMarketContract(event.address).id;
-          buyNow.nft = nft.id;
-          buyNow.derivativeNFT = nft.derivativeNFT;
-          buyNow.status = "Open";
-          buyNow.seller = seller.id;
-          buyNow.project = project.id;
-          buyNow.amountInSBTValue = amountInSBTValue;
-          buyNow.onSellUnits = event.params.buyPrice.onSellUnits;
-          buyNow.seledUnits = event.params.buyPrice.seledUnits;
-          buyNow.dateCreated = event.block.timestamp;
-          buyNow.transactionHashCreated = event.transaction.hash;
-          buyNow.save();
-          removePreviousTransferEvent(event);
-          recordNftEvent(
-            event,
-            nft,
-            "BuyPriceSet",
-            seller,
-            null,
-            "Foundation",
-            amountInSBTValue,
-            null,
-            null,
-            null,
-            null,
-            null,
-            buyNow,
-          );
-          nft.mostRecentBuyNow = buyNow.id;
-          nft.ownedOrListedBy = seller.id;
-          nft.save();
-    }  
+    // }  
 }
 
 
@@ -275,6 +276,8 @@ function loadAuction(marketAddress: Address, auctionId: BigInt): NftMarketAuctio
 }
 
 export function handleReserveAuctionBidPlaced(event: ReserveAuctionBidPlaced): void {
+    
+  /*
     let auction = loadAuction(event.address, event.params.auctionId);
     if (!auction) {
       return;
@@ -405,6 +408,8 @@ export function handleReserveAuctionBidPlaced(event: ReserveAuctionBidPlaced): v
     market.save();
   
     recordNftEvent(event, nft as DNFT, "Bid", bidder, auction, "Foundation", currentBid.amountInSBTValue);
+
+    */
   }
   
   export function handleReserveAuctionCanceled(event: ReserveAuctionCanceled): void {

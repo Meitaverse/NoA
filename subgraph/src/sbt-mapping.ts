@@ -31,6 +31,7 @@ import { BASIS_POINTS, ONE_BIG_INT, ZERO_ADDRESS_STRING, ZERO_BIG_DECIMAL, ZERO_
 import { loadOrCreateProfile } from "./shared/profile";
 import { loadOrCreateSBTAsset } from "./shared/sbtAsset";
 import { loadOrCreateAccount } from "./shared/accounts";
+import { loadOrCreateSoulBoundToken } from "./shared/soulBoundToken";
 
 export function handleProfileCreated(event: ProfileCreated): void {
     log.info("handleProfileCreated, event.address: {}", [event.address.toHexString()])
@@ -44,6 +45,12 @@ export function handleProfileCreated(event: ProfileCreated): void {
         profile.imageURI = event.params.imageURI
         profile.timestamp = event.params.timestamp
         profile.save()
+
+        const sbt = loadOrCreateSoulBoundToken(event.params.soulBoundTokenId)
+        if (sbt) {
+            sbt.wallet = event.params.wallet
+            sbt.save()
+        }
         
     } 
 }
@@ -51,14 +58,10 @@ export function handleProfileCreated(event: ProfileCreated): void {
 export function handleMintSBTValue(event: MintSBTValue): void {
     log.info("handleMintSBTValue, event.address: {}", [event.address.toHexString()])
     
-    const sbt = SBT.bind(event.address) 
-    const result = sbt.try_ownerOf(event.params.soulBoundTokenId)
-    if (result.reverted) {
-        log.warning('try_ownerOf, result.reverted is true', [])
-    } else {
-        log.info("try_ownerOf, result.value: {}", [result.value.toHex()])
-
-        const account = loadOrCreateAccount(result.value)
+    const sbt = loadOrCreateSoulBoundToken(event.params.soulBoundTokenId)
+    if (sbt) {    
+        let wallet = Address.fromBytes(sbt.wallet)
+        const account = loadOrCreateAccount(wallet)
 
         let _idString = event.params.soulBoundTokenId.toString() + "-" + event.params.timestamp.toString()
         const history = MintSBTValueHistory.load(_idString) || new MintSBTValueHistory(_idString)
@@ -76,25 +79,23 @@ export function handleMintSBTValue(event: MintSBTValue): void {
 export function handleBurnSBT(event: BurnSBT): void {
     log.info("handleBurnSBT, event.address: {}", [event.address.toHexString()])
 
-    let _idString = event.params.soulBoundTokenId.toString() + "-" + event.params.timestamp.toString()
-    const history = BurnSBTHistory.load(_idString) || new BurnSBTHistory(_idString)
+    const sbt = loadOrCreateSoulBoundToken(event.params.soulBoundTokenId)
+    if (sbt) {        
+        let wallet = Address.fromBytes(sbt.wallet)
+        const account = loadOrCreateAccount(wallet)
+        if (account) {
 
-    const sbt = SBT.bind(event.address) 
-    const result = sbt.try_ownerOf(event.params.soulBoundTokenId)
-    if (result.reverted) {
-        log.warning('try_ownerOf, result.reverted is true', [])
-    } else {
-        log.info("try_ownerOf, result.value: {}", [result.value.toHex()])
-
-        const account = loadOrCreateAccount(result.value)
-   
-        if (history) {
-            history.caller = event.params.caller
-            history.account = account.id
-            history.balance = event.params.balance
-            history.timestamp = event.params.timestamp
-            history.save()
-        } 
+            let _idString = event.params.soulBoundTokenId.toString() + "-" + event.params.timestamp.toString()
+            const history = BurnSBTHistory.load(_idString) || new BurnSBTHistory(_idString)
+            if (history) {
+                history.caller = event.params.caller
+                history.account = account.id
+                history.balance = event.params.balance
+                history.timestamp = event.params.timestamp
+                history.save()
+            } 
+        }
+        
         
     }
 }
@@ -142,25 +143,16 @@ export function handleSBTTransferValue(event: TransferValue): void {
     ])
 
     const sbt = SBT.bind(event.address)
-    let from = Address.zero();
-    let to = Address.zero();
+    let from = Address.zero()
+    let to = Address.zero()
 
     if (!event.params._fromTokenId.isZero()) {
-        const result = sbt.try_ownerOf(event.params._fromTokenId)
-        if (result.reverted) {
-            log.warning('try_ownerOf, result.reverted is true', [])
-        } else {
-            log.info("try_ownerOf, result.value: {}", [result.value.toHex()])
-            from = result.value
-           
+        const sbtFrom = loadOrCreateSoulBoundToken(event.params._fromTokenId)
+        if (sbtFrom) { 
+            from = Address.fromBytes(sbtFrom.wallet) 
             const sbtAsset_from = loadOrCreateSBTAsset(from)
-    
             const result2 = sbt.try_balanceOf1(event.params._fromTokenId)
-    
-            if (result2.reverted) {
-                log.warning('try_balanceOf1, result2.reverted is true', [])
-                sbtAsset_from.balance = sbtAsset_from.balance.minus(event.params._value)
-            } else {
+            if (!result2.reverted) {
                 log.info("try_balanceOf1, result2.value: {}", [result2.value.toString()])
                 sbtAsset_from.balance = result2.value
             }
@@ -170,21 +162,14 @@ export function handleSBTTransferValue(event: TransferValue): void {
     }
 
     if (!event.params._toTokenId.isZero()){
-        const result = sbt.try_ownerOf(event.params._toTokenId)
-        if (result.reverted) {
-            log.warning('try_ownerOf, result.reverted is true', [])
-        } else {
-            log.info("try_ownerOf, result.value: {}", [result.value.toHex()])
-            to = result.value
-            
+        const sbtTo = loadOrCreateSoulBoundToken(event.params._toTokenId)
+        if (sbtTo) {
+            to = Address.fromBytes(sbtTo.wallet) 
             const sbtAsset_to = loadOrCreateSBTAsset(to)
                 
             const result2 = sbt.try_balanceOf1(event.params._toTokenId)
     
-            if (result2.reverted) {
-                log.warning('try_balanceOf1, result2.reverted is true', [])
-                sbtAsset_to.balance = sbtAsset_to.balance.plus(event.params._value)
-            } else {
+            if (!result2.reverted) {
                 log.info("try_balanceOf1, result2.value: {}", [result2.value.toString()])
                 sbtAsset_to.balance = result2.value
             }
@@ -210,25 +195,24 @@ export function handleSBTTransferValue(event: TransferValue): void {
 export function handleSBTSlotChanged(event: SlotChanged): void {
     log.info("handleSBTSlotChanged, event.address: {}", [event.address.toHexString()])
 
-    const sbt = SBT.bind(event.address) 
-    const result = sbt.try_ownerOf(event.params._tokenId)
-    if (result.reverted) {
-        log.warning('try_ownerOf, result.reverted is true', [])
-    } else {
-        log.info("try_ownerOf, result.value: {}", [result.value.toHex()])
+    const sbt = loadOrCreateSoulBoundToken(event.params._tokenId)
+    if (sbt) {    
+        let wallet = Address.fromBytes(sbt.wallet) 
+        const account = loadOrCreateAccount(wallet)
+        if (account) {
 
-        const account = loadOrCreateAccount(result.value)
-
-        let _idString = event.params._tokenId.toHexString() + "-" + event.block.timestamp.toString()
-        const history = SBTSlotChangedHistory.load(_idString) || new SBTSlotChangedHistory(_idString)
-    
-        if (history) {
-            history.account = account.id
-            history.oldSlot = event.params._oldSlot
-            history.newSlot = event.params._newSlot
-            history.timestamp = event.block.timestamp
-            history.save()
+            let _idString = event.params._tokenId.toHexString() + "-" + event.block.timestamp.toString()
+            const history = SBTSlotChangedHistory.load(_idString) || new SBTSlotChangedHistory(_idString)
+        
+            if (history) {
+                history.account = account.id
+                history.oldSlot = event.params._oldSlot
+                history.newSlot = event.params._newSlot
+                history.timestamp = event.block.timestamp
+                history.save()
+            }
         }
+
     }
 }
 
@@ -265,13 +249,9 @@ export function handleApprovalValue(event: ApprovalValue): void {
     let _idString = event.address.toHex() + "-" + event.params._tokenId.toString() + "-" + event.params._operator.toHexString() 
     const sbtApprovalValue = SBTApprovalValue.load(_idString) || new SBTApprovalValue(_idString)
     if (sbtApprovalValue) {
-        const sbt = SBT.bind(event.address) 
-        const result = sbt.try_ownerOf(event.params._tokenId)
-        if (result.reverted) {
-            log.warning('try_ownerOf, result.reverted is true', [])
-        } else {
-            log.info("try_ownerOf, result.value: {}", [result.value.toHex()])
-            let owner = result.value
+        const sbt = loadOrCreateSoulBoundToken(event.params._tokenId)
+        if (sbt) {   
+            let owner = Address.fromBytes(sbt.wallet) 
             let sbtAssetOwner = loadOrCreateSBTAsset(owner)
             const spender = loadOrCreateAccount(event.params._operator)
 

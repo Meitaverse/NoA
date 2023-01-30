@@ -146,16 +146,20 @@ export class Manager__getHubInfoResultValue0Struct extends ethereum.Tuple {
     return this[0].toBigInt();
   }
 
-  get name(): string {
-    return this[1].toString();
+  get hubOwner(): Address {
+    return this[1].toAddress();
   }
 
-  get description(): string {
+  get name(): string {
     return this[2].toString();
   }
 
-  get imageURI(): string {
+  get description(): string {
     return this[3].toString();
+  }
+
+  get imageURI(): string {
+    return this[4].toString();
   }
 }
 
@@ -726,7 +730,7 @@ export class Manager extends ethereum.SmartContract {
   getHubInfo(hubId: BigInt): Manager__getHubInfoResultValue0Struct {
     let result = super.call(
       "getHubInfo",
-      "getHubInfo(uint256):((uint256,string,string,string))",
+      "getHubInfo(uint256):((uint256,address,string,string,string))",
       [ethereum.Value.fromUnsignedBigInt(hubId)]
     );
 
@@ -740,7 +744,7 @@ export class Manager extends ethereum.SmartContract {
   ): ethereum.CallResult<Manager__getHubInfoResultValue0Struct> {
     let result = super.tryCall(
       "getHubInfo",
-      "getHubInfo(uint256):((uint256,string,string,string))",
+      "getHubInfo(uint256):((uint256,address,string,string,string))",
       [ethereum.Value.fromUnsignedBigInt(hubId)]
     );
     if (result.reverted) {

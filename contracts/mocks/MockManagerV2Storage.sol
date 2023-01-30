@@ -26,7 +26,7 @@ abstract contract MockManagerV2Storage {
             'EIP712Domain(string name,string version,uint256 chainId,address verifyingContract)'
         );
 
-    mapping(uint256 => DataTypes.HubData) internal _hubInfos;
+    mapping(uint256 => DataTypes.HubInfoData) internal _hubInfos;
     mapping(uint256 => uint256) internal _hubIdBySoulBoundTokenId;
     mapping(bytes32 => uint256) internal _projectNameHashByEventId; //用于判断project name是否重复
     mapping(uint256 => DataTypes.ProjectData) internal _projectInfoByProjectId;

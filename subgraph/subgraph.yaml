@@ -93,6 +93,8 @@ dataSources:
         - DispatcherSet
         - StateSet
       abis:
+        - name: DerivativeNFT
+          file: ../artifacts/contracts/DerivativeNFT.sol/DerivativeNFT.json
         - name: Manager
           file: ../artifacts/contracts/Manager.sol/Manager.json
         - name: Events
@@ -116,7 +118,7 @@ dataSources:
         - event: PublishCreated(indexed uint256,indexed uint256,uint256,uint256,indexed
             uint256,uint256,bytes,uint256)
           handler: handlePublishCreated
-        - event: DerivativeNFTDeployed(address,indexed uint256,indexed
+        - event: DerivativeNFTDeployed(address,indexed uint256,indexed uint256,indexed
             uint256,address,uint256)
           handler: handleDerivativeNFTDeployed
         - event: DerivativeNFTCollected(uint256,address,indexed uint256,indexed
@@ -169,7 +171,8 @@ dataSources:
           handler: handleDeposit
         - event: DepositByFallback(indexed address,uint256,bytes,indexed address,uint256)
           handler: handleDepositByFallback
-        - event: ERC3525Received(indexed address,indexed address,indexed uint256,uint256,uint256,bytes,uint256)
+        - event: ERC3525Received(indexed address,indexed address,indexed
+            uint256,uint256,uint256,bytes,uint256)
           handler: handleERC3525Received
         - event: ExchangeSBTByEth(indexed uint256,indexed address,indexed uint256,uint256)
           handler: handleExchangeSBTByEth
@@ -392,7 +395,8 @@ dataSources:
         - name: Events
           file: ../artifacts/contracts/libraries/Events.sol/Events.json
       eventHandlers:
-        - event: MarketPlaceERC3525Received(indexed address,indexed address,indexed uint256,uint256,uint256,bytes,uint256)
+        - event: MarketPlaceERC3525Received(indexed address,indexed address,indexed
+            uint256,uint256,uint256,bytes,uint256)
           handler: handleMarketPlaceERC3525Received
         - event: AddMarket(address,uint8,uint8,uint16)
           handler: handleAddMarket
@@ -406,7 +410,8 @@ dataSources:
         - event: ReserveAuctionCreated(indexed address,indexed address,indexed
             uint256,uint256,uint256,uint256,uint256,uint256,uint256)
           handler: handleReserveAuctionCreated
-        - event: ReserveAuctionFinalized(indexed uint256,indexed address,indexed address,(uint96,uint96,uint96,uint96,uint96))
+        - event: ReserveAuctionFinalized(indexed uint256,indexed address,indexed
+            address,(uint96,uint96,uint96,uint96,uint96))
           handler: handleReserveAuctionFinalized
         - event: ReserveAuctionInvalidated(indexed uint256)
           handler: handleReserveAuctionInvalidated
@@ -415,7 +420,8 @@ dataSources:
         - event: OfferMade(indexed address,indexed uint256,indexed
             address,uint256,uint256)
           handler: handleOfferMade
-        - event: OfferAccepted(indexed address,indexed uint256,indexed address,address,(uint96,uint96,uint96,uint96,uint96))
+        - event: OfferAccepted(indexed address,indexed uint256,indexed
+            address,address,(uint96,uint96,uint96,uint96,uint96))
           handler: handleOfferAccepted
         - event: OfferInvalidated(indexed address,indexed uint256)
           handler: handleOfferInvalidated
@@ -425,6 +431,7 @@ dataSources:
           handler: handleBuyPriceCanceled
         - event: BuyPriceInvalidated(indexed address,indexed uint256)
           handler: handleBuyPriceInvalidated
-        - event: BuyPriceAccepted(indexed address,indexed uint256,indexed uint256,address,address,(uint256,uint256,uint256,uint256,uint256),(uint96,uint96,uint96,uint96,uint96))
+        - event: BuyPriceAccepted(indexed address,indexed uint256,indexed
+            uint256,address,address,(uint256,uint256,uint256,uint256,uint256),(uint96,uint96,uint96,uint96,uint96))
           handler: handleBuyPriceAccepted
       file: ./src/marketplace-mapping.ts

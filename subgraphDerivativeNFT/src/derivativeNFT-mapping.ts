@@ -20,13 +20,10 @@ import {
     BurnDerivativeNFTHistory,
     BurnDerivativeNFTValueHistory,
     ApprovalRecord,
-    // ApprovalForAllRecord,
     DnftAccountApproval,
     ApprovalValueRecord,
     DerivativeNFTImageURI,
 } from "../generated/schema"
-import { loadOrCreateNFTContract } from "../../subgraph/src/dnft";
-import { loadOrCreateAccount } from "../../subgraph/src/shared/accounts";
 
 export function handleTransfer(event: Transfer): void {
     log.info("handleTransfer, event.address: {}, _from: {}", [event.address.toHexString(), event.params._from.toHexString()])
@@ -204,10 +201,10 @@ export function handleApprovalForAll(event: ApprovalForAll): void {
     let id = event.address.toHex() + "-" + event.params._owner.toHex() + "-" + event.params._operator.toHex();
     if (event.params._approved) {
       let nft3525AccountApproval = new DnftAccountApproval(id);
-      let dnftContract = loadOrCreateNFTContract(event.address);
-      nft3525AccountApproval.dnftContract = dnftContract.id;
-      nft3525AccountApproval.owner = loadOrCreateAccount(event.params._owner).id;
-      nft3525AccountApproval.spender = loadOrCreateAccount(event.params._operator).id;
+    //   let dnftContract = loadOrCreateNFTContract(event.address);
+    //   nft3525AccountApproval.dnftContract = dnftContract.id;
+      nft3525AccountApproval.owner = event.params._owner;  //loadOrCreateAccount(event.params._owner).id;
+      nft3525AccountApproval.spender = event.params._operator; //loadOrCreateAccount(event.params._operator).id;
       nft3525AccountApproval.save();
     } else {
       store.remove("DnftAccountApproval", id);

@@ -64,6 +64,14 @@ library DataTypes {
         string imageURI;
     }
 
+    struct HubInfoData {
+        uint256 soulBoundTokenId;
+        address hubOwner;
+        string name;
+        string description;
+        string imageURI;
+    }
+
     /**
      * @dev  Store Organizer create project 
      * @param hubId hub id

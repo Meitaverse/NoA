@@ -2,7 +2,7 @@ import { Address, BigInt, ethereum, store } from "@graphprotocol/graph-ts";
 
 import {
   DerivativeNFT
-} from "../generated/MarketPlace/DerivativeNFT"
+} from "../generated/Manager/DerivativeNFT"
 
 import {
   DNFT,

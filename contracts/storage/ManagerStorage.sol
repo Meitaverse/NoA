@@ -28,7 +28,7 @@ abstract contract ManagerStorage {
 
     
     // hubId => HubData
-    mapping(uint256 => DataTypes.HubData) internal _hubInfos;
+    mapping(uint256 => DataTypes.HubInfoData) internal _hubInfos;
 
     //soulBoundTokenId => hub
     mapping(uint256 => uint256) internal _hubIdBySoulBoundTokenId;
