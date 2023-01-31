@@ -1,5 +1,29 @@
 # NFT Derivative Protocol Main Subgraph
-
+## Query accounts
+```
+{
+  accounts {
+    id,
+    hub {
+      id
+    }
+    profile {
+      id,
+      nickName
+    }
+    sbtAsset {
+      id
+      balance
+    }
+    dnftCollection
+    {
+      id
+      tokenId
+      value
+    }
+  }
+}
+```
 ## Module全局设置相关
 
 ### 查询预发布PublishModule白名单

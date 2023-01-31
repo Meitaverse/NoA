@@ -9,14 +9,14 @@ type Account @entity {
   #"Link to creator details if this account is or ever was one"
   creator: Creator @derivedFrom(field: "account")
 
-  "Link to SBT Asset "
-  sbtAsset: SBTAsset
+  "Link to SBT Asset"
+  sbtAsset: SBTAsset @derivedFrom(field: "owner")
 
-  "Link to dNFT collection "
-  dnftCollection: DnftCollection
+  "Link to dNFT collection"
+  dnftCollection: DnftCollection @derivedFrom(field: "owner")
 
   "Link to Hub "
-  hub: Hub
+  hub: Hub @derivedFrom(field: "hubOwner")
 
   "All NFTs currently owned by this account"
   nfts: [DNFT!]! @derivedFrom(field: "owner")
@@ -1386,8 +1386,6 @@ type DnftCollection @entity {
 
   "The current owner of this dNFT"
   owner: Account!
-
- #publish: Publish!
 
   tokenId: BigInt!
 
