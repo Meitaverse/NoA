@@ -32,6 +32,7 @@ import { loadOrCreateProfile } from "./shared/profile";
 import { loadOrCreateSBTAsset } from "./shared/sbtAsset";
 import { loadOrCreateAccount } from "./shared/accounts";
 import { loadOrCreateSoulBoundToken } from "./shared/soulBoundToken";
+import { getLogId } from "./shared/ids";
 
 export function handleProfileCreated(event: ProfileCreated): void {
     log.info("handleProfileCreated, event.address: {}", [event.address.toHexString()])
@@ -63,7 +64,7 @@ export function handleMintSBTValue(event: MintSBTValue): void {
         let wallet = Address.fromBytes(sbt.wallet)
         const account = loadOrCreateAccount(wallet)
 
-        let _idString = event.params.soulBoundTokenId.toString() + "-" + event.params.timestamp.toString()
+        let _idString = getLogId(event) 
         const history = MintSBTValueHistory.load(_idString) || new MintSBTValueHistory(_idString)
     
         if (history) {
@@ -85,7 +86,7 @@ export function handleBurnSBT(event: BurnSBT): void {
         const account = loadOrCreateAccount(wallet)
         if (account) {
 
-            let _idString = event.params.soulBoundTokenId.toString() + "-" + event.params.timestamp.toString()
+            let _idString = getLogId(event)
             const history = BurnSBTHistory.load(_idString) || new BurnSBTHistory(_idString)
             if (history) {
                 history.caller = event.params.caller
@@ -103,7 +104,7 @@ export function handleBurnSBT(event: BurnSBT): void {
 export function handleSBTTransfer(event: Transfer): void {
     log.info("handleSBTTransfer, event.address: {}, _from: {}", [event.address.toHexString(), event.params._from.toHexString()])
 
-    let _idString = event.params._from.toHexString() + "-" + event.params._to.toHexString()+ "-" + event.block.timestamp.toString()
+    let _idString = getLogId(event)
     const history = SBTTransferHistory.load(_idString) || new SBTTransferHistory(_idString)
     
     let from = loadOrCreateProfile(event.params._from)
@@ -178,7 +179,7 @@ export function handleSBTTransferValue(event: TransferValue): void {
         }
     }
 
-    let _idString = event.params._fromTokenId.toHexString() + "-" + event.params._toTokenId.toHexString()+ "-" + event.block.timestamp.toString()
+    let _idString = getLogId(event)
     const history = SBTTransferValueHistory.load(_idString) || new SBTTransferValueHistory(_idString)
 
     if (history) {
@@ -201,7 +202,7 @@ export function handleSBTSlotChanged(event: SlotChanged): void {
         const account = loadOrCreateAccount(wallet)
         if (account) {
 
-            let _idString = event.params._tokenId.toHexString() + "-" + event.block.timestamp.toString()
+            let _idString = getLogId(event) 
             const history = SBTSlotChangedHistory.load(_idString) || new SBTSlotChangedHistory(_idString)
         
             if (history) {

@@ -13,8 +13,8 @@ import {
 import { loadOrCreateAccount } from "./shared/accounts";
 import { ZERO_ADDRESS_STRING, ZERO_BIG_DECIMAL } from "./shared/constants";
 import { loadOrCreateCreator } from "./shared/creators";
-import { recordDnftEvent, removePreviousTransferEvent } from "./shared/events";
 import { getLogId } from "./shared/ids";
+import { loadOrCreatePublish } from "./shared/publish";
 
 export function loadOrCreateDNFTContract(address: Address): DerivativeNFTContract {
   let derivativeNFT = DerivativeNFTContract.load(address.toHex());
@@ -56,7 +56,24 @@ export function loadOrCreateDNFT(address: Address, id: BigInt, event: ethereum.E
     dnft.derivativeNFT = loadOrCreateDNFTContract(address).id;
     dnft.tokenId = id;
     dnft.dateMinted = event.block.timestamp;
+
     let contract = DerivativeNFT.bind(address);
+
+    const resultPublish = contract.try_getPublishIdByTokenId(id)
+    if (resultPublish.reverted) {
+        log.info("resultPublish.reverted --- in loadOrCreateDNFT, tokenId:{}", [
+          dnft.tokenId.toString(),
+        ])
+
+    } else {
+        log.info("!resultPublish.reverted --- in loadOrCreateDNFT, tokenId:{}, result.value: {}", [
+          dnft.tokenId.toString(),
+          resultPublish.value.toString()
+        ])
+        dnft.publish = loadOrCreatePublish(resultPublish.value).id
+        dnft.project = loadOrCreatePublish(resultPublish.value).project
+    }
+    
     let ownerResult = contract.try_ownerOf(id);
     if (!ownerResult.reverted) {
       log.info("!ownerResult.reverted --- in loadOrCreateDNFT, tokenId:{}", [

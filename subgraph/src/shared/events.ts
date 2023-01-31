@@ -3,7 +3,7 @@ import { BigDecimal, BigInt, Bytes, ethereum, store } from "@graphprotocol/graph
 import {
   Account,
   DNFT,
-  NftHistory,
+  DnftHistory,
   NftMarketAuction,
   NftMarketBuyNow,
   NftMarketOffer,
@@ -27,7 +27,7 @@ export function recordDnftEvent(
   offer: NftMarketOffer | null = null,
   buyNow: NftMarketBuyNow | null = null,
 ): void {
-  let historicalEvent = new NftHistory(getEventId(event, eventType));
+  let historicalEvent = new DnftHistory(getEventId(event, eventType));
   historicalEvent.dnft = dnft.id;
   historicalEvent.event = eventType;
   if (auction) {
@@ -62,9 +62,9 @@ export function recordDnftEvent(
 export function removePreviousTransferEvent(event: ethereum.Event): void {
   // There may be multiple logs that occurred since the last transfer event
   for (let i = event.logIndex.minus(ONE_BIG_INT); i.ge(ZERO_BIG_INT); i = i.minus(ONE_BIG_INT)) {
-    let previousEvent = NftHistory.load(getPreviousEventId(event, "Transferred", i));
+    let previousEvent = DnftHistory.load(getPreviousEventId(event, "Transferred", i));
     if (previousEvent) {
-      store.remove("NftHistory", previousEvent.id);
+      store.remove("DnftHistory", previousEvent.id);
       return;
     }
   }

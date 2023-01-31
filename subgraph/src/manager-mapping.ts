@@ -27,7 +27,7 @@ import {
     Publish,
     DnftCollectedHistory,
     Project,
-    DerivativeNFTAirdropedHistory,
+    DnftAirdropedHistory,
     Dispatcher,
     StateSetHistory,
     Account,
@@ -35,8 +35,7 @@ import {
 
 import { loadProject } from "./shared/project";
 import { loadHub } from "./shared/hub";
-import { loadPublication } from "./shared/publication";
-import { loadPublish } from "./shared/publish";
+import { loadOrCreatePublish } from "./shared/publish";
 import { loadOrCreateAccount } from "./shared/accounts";
 import { loadOrCreateDNFT, loadOrCreateDNFTContract } from "./dnft";
 import { loadOrCreateSoulBoundToken } from "./shared/soulBoundToken";
@@ -106,22 +105,22 @@ export function handleHubUpdated(event: HubUpdated): void {
 }
 
 export function handlePublishPrepared(event: PublishPrepared): void {
-    log.info("handlePublishPrepared, event.address: {}", [event.address.toHexString()])
-
-    let publisherAddr = Address.zero()
+    log.info("handlePublishPrepared, publishId: {}, previousPublishId: {}", [
+        event.params.publishId.toString(),
+        event.params.previousPublishId.toString(),
+    ])
 
     const sbt = loadOrCreateSoulBoundToken(event.params.publication.soulBoundTokenId)
     if (sbt) {
-        publisherAddr = Address.fromBytes(sbt.wallet) 
 
-        const publisher = loadOrCreateAccount(publisherAddr)
+        const publisher = loadOrCreateAccount(Address.fromBytes(sbt.wallet) )
         const hub = loadHub(event.params.publication.hubId)
         const project = loadProject(event.params.publication.projectId)
     
         if (publisher && hub && project) {
     
             let publication  = new Publication(event.params.publishId.toString());
-            
+           
             publication.publishId = event.params.publishId
             publication.publisher = publisher.id
             publication.hub = hub.id
@@ -139,16 +138,16 @@ export function handlePublishPrepared(event: PublishPrepared): void {
             publication.publishModule = event.params.publication.publishModule
             publication.publishModuleInitData = event.params.publication.publishModuleInitData
             publication.previousPublishId = event.params.previousPublishId
+
             if (event.params.publication.fromTokenIds.length > 0 ) {
-                const manager = Manager.bind(event.address) 
-                const result = manager.try_getGenesisPublishIdByProjectId(event.params.publication.projectId)
-                    if (result.reverted) {
-                        log.warning('try_getGenesisPublishIdByProjectId, result.reverted is true', [])
-                    } else {
-                        log.info("try_getGenesisPublishIdByProjectId ok, result.value: {}", [result.value.toString()])
-                        publication.genesisPublishId = result.value
-                    }
+                
+                   let publicationFrom = Publication.load(event.params.publication.projectId.toString())
+                   if (publicationFrom) {
+                        publication.genesisPublishId = publicationFrom.genesisPublishId
+                   }
+
             } else {
+                log.info('fromTokenIds.length is zero', [])
                 publication.genesisPublishId = event.params.publishId
             }
             publication.publishTaxAmount = event.params.publishTaxAmount
@@ -157,8 +156,6 @@ export function handlePublishPrepared(event: PublishPrepared): void {
         
         }
     }
-    
-        
 }
 
 export function handlePublishUpdated(event: PublishUpdated): void {
@@ -174,14 +171,10 @@ export function handlePublishUpdated(event: PublishUpdated): void {
         publication.materialURIs = event.params.materialURIs
         publication.fromTokenIds = event.params.fromTokenIds
         if (event.params.fromTokenIds.length > 0 ) {
-            const manager = Manager.bind(event.address) 
-            const result = manager.try_getGenesisPublishIdByProjectId(event.params.projectId)
-                if (result.reverted) {
-                    log.warning('try_getGenesisPublishIdByProjectId, result.reverted is true', [])
-                } else {
-                    log.info("try_getGenesisPublishIdByProjectId ok, result.value: {}", [result.value.toString()])
-                    publication.genesisPublishId = result.value
-                }
+            let publicationFrom = Publication.load(event.params.projectId.toString())
+            if (publicationFrom) {
+                publication.genesisPublishId = publicationFrom.genesisPublishId
+            }
         } else {
             publication.genesisPublishId = event.params.publishId
         }
@@ -213,34 +206,31 @@ export function handleDerivativeNFTDeployed(event: DerivativeNFTDeployed): void 
 export function handlePublishCreated(event: PublishCreated): void {
     log.info("handlePublishCreated, event.address: {}", [event.address.toHexString()])
     
-    let publisherAddr = Address.zero()
     const sbt = loadOrCreateSoulBoundToken(event.params.soulBoundTokenId)
     if (sbt) {
-        publisherAddr = Address.fromBytes(sbt.wallet) 
 
-        const publisher = loadOrCreateAccount(publisherAddr)
+        const publisher = loadOrCreateAccount(Address.fromBytes(sbt.wallet) )
         const publication = Publication.load(event.params.publishId.toString());
         const hub = loadHub( event.params.hubId)
         const project = loadProject(event.params.projectId)
-        let derivativeNFT = Address.fromHexString(project.derivativeNFT)
-        let dnft = loadOrCreateDNFT(Address.fromBytes(derivativeNFT), event.params.newTokenId, event);
+        let dnft = loadOrCreateDNFT(Address.fromString(project.derivativeNFT), event.params.newTokenId, event);
         
-
         if (publisher && publication && hub && project) {
 
-            const publish = new Publish(event.params.publishId.toString());
-            
-            publish.publisher = publisher.id
-            publish.publication = publication.id
-            publish.hub = hub.id
-            publish.project = project.id
-            publish.derivativeNFT = project.derivativeNFT //loadOrCreateDNFTContract(Address.fromBytes(derivativeNFT)).id
-            publish.dnft = dnft.id
-            publish.newTokenId = event.params.newTokenId
-            publish.amount = event.params.amount
-            publish.collectModuleInitData = event.params.collectModuleInitData
-            publish.timestamp = event.block.timestamp
-            publish.save()
+            const publish = loadOrCreatePublish(event.params.publishId);
+            if (publish) {
+                publish.publisher = publisher.id
+                publish.publication = publication.id
+                publish.hub = hub.id
+                publish.project = project.id
+                publish.derivativeNFT = project.derivativeNFT 
+                publish.dnft = dnft.id
+                publish.newTokenId = event.params.newTokenId
+                publish.amount = event.params.amount
+                publish.collectModuleInitData = event.params.collectModuleInitData
+                publish.timestamp = event.block.timestamp
+                publish.save()
+            }
             
         }
     }
@@ -293,10 +283,10 @@ export function handleDerivativeNFTAirdroped(event: DerivativeNFTAirdroped): voi
         fromWallet = Address.fromBytes(sbtFrom.wallet) 
 
         let _idString = event.params.projectId.toString() + "-" + event.params.tokenId.toString() + "-" + event.params.timestamp.toString()
-        const history = DerivativeNFTAirdropedHistory.load(_idString) || new DerivativeNFTAirdropedHistory(_idString)
+        const history = DnftAirdropedHistory.load(_idString) || new DnftAirdropedHistory(_idString)
         if (history) {
             history.project = loadProject(event.params.projectId).id
-            history.publish = loadPublish(event.params.publishId).id
+            history.publish = loadOrCreatePublish(event.params.publishId).id
             history.derivativeNFT = loadOrCreateDNFTContract(event.params.derivativeNFT).id;
             history.from =  loadOrCreateAccount(fromWallet).id
             history.tokenId = event.params.tokenId
@@ -306,7 +296,6 @@ export function handleDerivativeNFTAirdroped(event: DerivativeNFTAirdroped): voi
             history.timestamp = event.params.timestamp
             history.save()
         }
-        
     }
 }
 

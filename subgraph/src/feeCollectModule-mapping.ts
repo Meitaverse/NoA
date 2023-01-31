@@ -20,7 +20,7 @@ import {
     FeesForCollectHistory, Publication,
 } from "../generated/schema"
 import { loadOrCreateAccount } from "./shared/accounts";
-import { loadPublish } from "./shared/publish";
+import { loadOrCreatePublish } from "./shared/publish";
 import { loadOrCreateSoulBoundToken } from "./shared/soulBoundToken";
 import { ZERO_ADDRESS } from "../../test/helpers/constants";
 
@@ -68,7 +68,7 @@ export function handleFeesForCollect(event: FeesForCollect): void {
         history.collector = loadOrCreateAccount(collector).id
         history.genesisCreator = loadOrCreateAccount(genesisCreator).id
         history.previousCreator = loadOrCreateAccount(previousCreator).id
-        history.publish = loadPublish(event.params.publishId).id
+        history.publish = loadOrCreatePublish(event.params.publishId).id
         history.tokenId = event.params.tokenId
         history.collectUnits = event.params.collectUnits
         history.treasuryAmount = event.params.royaltyAmounts.treasuryAmount
