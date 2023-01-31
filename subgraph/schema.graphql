@@ -7,7 +7,7 @@ type Account @entity {
   profile: Profile!
 
   #"Link to creator details if this account is or ever was one"
-  # creator: Creator @derivedFrom(field: "account")
+  creator: Creator @derivedFrom(field: "account")
 
   "Link to SBT Asset "
   sbtAsset: SBTAsset

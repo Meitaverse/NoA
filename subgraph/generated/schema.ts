@@ -51,6 +51,23 @@ export class Account extends Entity {
     this.set("profile", Value.fromString(value));
   }
 
+  get creator(): string | null {
+    let value = this.get("creator");
+    if (!value || value.kind == ValueKind.NULL) {
+      return null;
+    } else {
+      return value.toString();
+    }
+  }
+
+  set creator(value: string | null) {
+    if (!value) {
+      this.unset("creator");
+    } else {
+      this.set("creator", Value.fromString(<string>value));
+    }
+  }
+
   get sbtAsset(): string | null {
     let value = this.get("sbtAsset");
     if (!value || value.kind == ValueKind.NULL) {
