@@ -19,19 +19,13 @@ Run `yarn quick-test --network hardhat` to run the unit tests
 
 ## The Graph
 
-### Login AWS Server: 
+### Start docker-compose
 
-Start docker-compose
 ```
 $ yarn graph-local-node-start
 ```
 
-Stop docker-compose
-```
-$ yarn graph-local-node-stop
-```
-
-### 查看docker 日志
+### How to cat docker logs
 ```
 $ yarn node-logs  
 
@@ -40,6 +34,19 @@ $ yarn graph-node-logs
 ```
 
 ## Accounts
+
+### Mnemonic
+hardard node for develop
+```
+test test test test test test test test test test test junk
+```
+
+### PrivateKey
+```
+0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80
+```
+
+### Acconts
 ```
 $ yarn hardhat accounts --network local 
 Accounts
@@ -83,9 +90,8 @@ $ yarn hardhat full-deploy
   	
 ```
 
-
-## 部署主合约的subgraph
-### 1. 执行 Graph Node 相关命令
+## Deploy subgraph node
+### 1. graph codegen and build
 ```
 $ yarn graph-local-codegen && yarn graph-local-build
 
@@ -97,37 +103,10 @@ Subgraph endpoints:
 Queries (HTTP):     http://localhost:8000/subgraphs/name/NoA/MySubgraph
 ```
 
-### 2. 查询相关子图数据
-```
-main.schema.graphql.md
-```
+### 2. Query subgraph
 
+docs/main.schema.graphql.md
 
-## 部署DerivativeNFT subgraph
-### 1. 获取DerivativeNFT 合约地址
-```
-$ yarn hardhat getDerivativeNFT --projectid 1 --network local
-
-//输出:
-	---projectid:  1
-	---derivativeNFT address:  0x3B02fF1e626Ed7a8fd6eC5299e2C54e1421B626B
-```
-
-### 2. 生成代码
-
-```
-$ yarn graph-derivativeNFT-codegen && yarn graph-derivativeNFT-build
-```
-
-### 3. 部署到graph node
-```
-$ yarn create-derivativeNFT-subgraph-node && yarn deploy-derivativeNFT-subgraph-node
-```
-
-### 4. 查询相关子图数据
-```
-derivativeNFT.schema.graphql.md
-```
 
 ## Governance
 
@@ -144,3 +123,4 @@ derivativeNFT.schema.graphql.md
 ## NFT Market Place support Royalty Registry
 
 [Royalty Registry](https://royaltyregistry.xyz/)
+

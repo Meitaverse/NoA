@@ -56,6 +56,8 @@ import { toETH } from "./shared/conversions";
 import { BASIS_POINTS, ONE_BIG_INT, ZERO_ADDRESS_STRING, ZERO_BIG_DECIMAL, ZERO_BIG_INT } from "./shared/constants"; 
 import { loadOrCreateFsbt, loadOrCreateFsbtEscrow } from "./shared/fsbt";
 import { loadOrCreateSBTAsset } from "./shared/sbtAsset";
+import { loadOrCreateSoulBoundToken } from "./shared/soulBoundToken";
+import { ZERO_ADDRESS } from "../../test/helpers/constants";
 
 export function handleDepositByFallback(event: DepositByFallback): void {
     log.info("handleDepositByFallback, event.address: {}", [event.address.toHexString()])
@@ -76,31 +78,26 @@ export function handleDepositByFallback(event: DepositByFallback): void {
 export function handleERC3525Received(event: ERC3525Received): void {
     log.info("handleERC3525Received, event.address: {}", [event.address.toHexString()])
 
-    const bankTreasury = BankTreasury.bind(event.address) 
-    const result = bankTreasury.try_getSBT()
-    if (!result.reverted) {
+    const sbtFrom = loadOrCreateSoulBoundToken(event.params.fromTokenId)
+    const sbtTo = loadOrCreateSoulBoundToken(event.params.fromTokenId)
 
-        const sbt = SBT.bind(result.value) 
-        const resultFrom = sbt.try_ownerOf(event.params.fromTokenId)
-        const resultTo = sbt.try_ownerOf(event.params.toTokenId)
-        if (!resultFrom.reverted && !resultTo.reverted) {
-
-            let _idString = event.params.operator.toHexString()+ "-" + event.params.fromTokenId.toString() + "-" + event.block.timestamp.toString()
-            const history = ERC3525ReceivedHistory.load(_idString) || new ERC3525ReceivedHistory(_idString)
-            if (history) {
-                history.sender = event.params.sender
-                history.operator = event.params.operator
-                history.from = loadOrCreateAccount(resultFrom.value).id
-                history.to = loadOrCreateAccount(resultTo.value).id
-                history.value = event.params.value
-                history.data = event.params.data
-                history.gas = event.params.gas
-                history.timestamp = event.block.timestamp
-                history.save()
-            } 
-        }
+    if (sbtFrom.wallet.toHex() != ZERO_ADDRESS &&  
+        sbtTo.wallet.toHex() != ZERO_ADDRESS
+        ) {
+        let _idString = event.params.operator.toHexString()+ "-" + event.params.fromTokenId.toString() + "-" + event.block.timestamp.toString()
+        const history = ERC3525ReceivedHistory.load(_idString) || new ERC3525ReceivedHistory(_idString)
+        if (history) {
+            history.sender = event.params.sender
+            history.operator = event.params.operator
+            history.from = loadOrCreateAccount(Address.fromBytes(sbtFrom.wallet)).id
+            history.to = loadOrCreateAccount(Address.fromBytes(sbtTo.wallet)).id
+            history.value = event.params.value
+            history.data = event.params.data
+            history.gas = event.params.gas
+            history.timestamp = event.block.timestamp
+            history.save()
+        } 
     }
-    
 }
 
 export function handleExchangeSBTByEth(event: ExchangeSBTByEth): void {
@@ -109,22 +106,14 @@ export function handleExchangeSBTByEth(event: ExchangeSBTByEth): void {
     let _idString = event.params.soulBoundTokenId.toString()+ "-" + event.params.exchangeWallet.toHexString() + "-" + event.params.timestamp.toString()
     const history = ExchangeSBTByEthHistory.load(_idString) || new ExchangeSBTByEthHistory(_idString)
     if (history) {
-        const bankTreasury = BankTreasury.bind(event.address) 
-        const result = bankTreasury.try_getSBT()
-        if (!result.reverted) {
+        const sbtAccount = loadOrCreateSoulBoundToken(event.params.soulBoundTokenId)
     
-            const sbt = SBT.bind(result.value) 
-            const resultAccount= sbt.try_ownerOf(event.params.soulBoundTokenId)
-            if (!resultAccount.reverted ) {
-
-                history.account = loadOrCreateAccount(resultAccount.value).id
-                history.exchangeWallet = event.params.exchangeWallet
-                history.sbtValue       = event.params.sbtValue
-                history.timestamp      = event.params.timestamp
-                history.save()
-
-            }
-    
+        if (sbtAccount.wallet.toHex() != ZERO_ADDRESS ) {
+            history.account = loadOrCreateAccount(Address.fromBytes(sbtAccount.wallet)).id
+            history.exchangeWallet = event.params.exchangeWallet
+            history.sbtValue       = event.params.sbtValue
+            history.timestamp      = event.params.timestamp
+            history.save()
         }
     } 
 }
@@ -135,23 +124,17 @@ export function handleExchangeEthBySBT(event: ExchangeEthBySBT): void {
     let _idString = event.params.soulBoundTokenId.toString()+ "-" + event.params.toWallet.toHexString() + "-" + event.params.timestamp.toString()
     const history = ExchangeEthBySBTHistory.load(_idString) || new ExchangeEthBySBTHistory(_idString)
     if (history) {
-        const bankTreasury = BankTreasury.bind(event.address) 
-        const result = bankTreasury.try_getSBT()
-        if (!result.reverted) {
-    
-            const sbt = SBT.bind(result.value) 
-            const resultAccount= sbt.try_ownerOf(event.params.soulBoundTokenId)
-            if (!resultAccount.reverted ) {
 
-                history.account =  loadOrCreateAccount(resultAccount.value).id
-                history.toWallet = event.params.toWallet
-                history.sbtValue = event.params.sbtValue
-                history.exchangePrice = event.params.exchangePrice
-                history.ethAmount = event.params.ethAmount
-                history.timestamp = event.params.timestamp
-                history.save()
+        const sbtAccount = loadOrCreateSoulBoundToken(event.params.soulBoundTokenId)
 
-            }
+        if (sbtAccount.wallet.toHex() != ZERO_ADDRESS ) {
+            history.account =  loadOrCreateAccount(Address.fromBytes(sbtAccount.wallet)).id
+            history.toWallet = event.params.toWallet
+            history.sbtValue = event.params.sbtValue
+            history.exchangePrice = event.params.exchangePrice
+            history.ethAmount = event.params.ethAmount
+            history.timestamp = event.params.timestamp
+            history.save()
         }
     } 
 }

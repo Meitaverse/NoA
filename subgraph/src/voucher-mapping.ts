@@ -18,6 +18,7 @@ import {
     VoucherRecord,
     VoucherAsset,
 } from "../generated/schema"
+import { loadOrCreateAccount } from "./shared/accounts";
 
 export function handleMintNFTVoucher(event: MintNFTVoucher): void {
     log.info("handleMintNFTVoucher, event.address: {}", [event.address.toHexString()])
@@ -27,7 +28,7 @@ export function handleMintNFTVoucher(event: MintNFTVoucher): void {
 
     if (history) {
         history.soulBoundTokenId = event.params.soulBoundTokenId
-        history.account = event.params.account
+        history.account = loadOrCreateAccount(event.params.account).id
         history.vouchType = event.params.vouchType
         history.tokenId = event.params.tokenId
         history.sbtValue = event.params.sbtValue

@@ -124,8 +124,7 @@ dataSources:
         - event: DerivativeNFTCollected(uint256,address,indexed uint256,indexed
             uint256,indexed uint256,uint256,uint256,uint256)
           handler: handleDerivativeNFTCollected
-        - event: DerivativeNFTAirdroped(uint256,address,indexed uint256,indexed
-            uint256,uint256[],uint256[],uint256[],uint256)
+        - event: DerivativeNFTAirdroped(uint256,uint256,address,uint256,uint256,uint256[],uint256[],uint256[],uint256)
           handler: handleDerivativeNFTAirdroped
         - event: DispatcherSet(indexed uint256,indexed address,uint256)
           handler: handleDispatcherSet

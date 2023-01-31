@@ -47,7 +47,7 @@ import { loadOrCreateAccount } from "./shared/accounts";
 import { loadLatestBuyNow } from "./shared/buyNow";
 import { BASIS_POINTS, ONE_BIG_INT, ZERO_ADDRESS_STRING, ZERO_BIG_DECIMAL, ZERO_BIG_INT } from "./shared/constants";
 import { toETH } from "./shared/conversions";
-import { recordNftEvent, removePreviousTransferEvent } from "./shared/events";
+import { recordDnftEvent, removePreviousTransferEvent } from "./shared/events";
 import { getLogId } from "./shared/ids";
 import { loadLatestOffer, outbidOrExpirePreviousOffer } from "./shared/offers";
 import { recordSale } from "./shared/revenue";
@@ -108,54 +108,50 @@ export function handleRemoveMarket(event: RemoveMarket): void {
 export function handleBuyPriceSet(event: BuyPriceSet): void {
     log.info("handleBuyPriceSet, event.address: {}", [event.address.toHexString()])
     let nft = loadOrCreateDNFT(event.params.buyPrice.derivativeNFT, event.params.buyPrice.tokenId, event);
-    
-    // let derivativeNFTContract = DerivativeNFT.bind(event.params.buyPrice.derivativeNFT)
-    // let result = derivativeNFTContract.try_getCreator();
-    // if (!result.reverted) {
-      
-          let project = loadProject(event.params.buyPrice.projectId);
-          let seller = loadOrCreateAccount(event.params.buyPrice.seller);
-          if (project && seller) {
 
-            let buyNow = loadLatestBuyNow(nft);
-            if (!buyNow) {
-              buyNow = new NftMarketBuyNow(getLogId(event));
-            }
-            
-            let amountInSBTValue = toETH(event.params.buyPrice.salePrice);
-            buyNow.nftMarketContract = loadOrCreateNFTMarketContract(event.address).id;
-            buyNow.dnft = nft.id;
-            buyNow.derivativeNFT = nft.derivativeNFT;
-            buyNow.status = "Open";
-            buyNow.seller = seller.id;
-            buyNow.project = project.id;
-            buyNow.amountInSBTValue = amountInSBTValue;
-            buyNow.onSellUnits = event.params.buyPrice.onSellUnits;
-            buyNow.seledUnits = event.params.buyPrice.seledUnits;
-            buyNow.dateCreated = event.block.timestamp;
-            buyNow.transactionHashCreated = event.transaction.hash;
-            buyNow.save();
-            removePreviousTransferEvent(event);
-            recordNftEvent(
-              event,
-              nft,
-              "BuyPriceSet",
-              seller,
-              null,
-              "Foundation",
-              amountInSBTValue,
-              null,
-              null,
-              null,
-              null,
-              null,
-              buyNow,
-            );
-            nft.mostRecentBuyNow = buyNow.id;
-            nft.ownedOrListedBy = seller.id;
-            nft.save();
-          }
-    // }  
+    let project = loadProject(event.params.buyPrice.projectId);
+    let seller = loadOrCreateAccount(event.params.buyPrice.seller);
+    if (project && seller) {
+
+      let buyNow = loadLatestBuyNow(nft);
+      if (!buyNow) {
+        buyNow = new NftMarketBuyNow(getLogId(event));
+      }
+      
+      let amountInSBTValue = toETH(event.params.buyPrice.salePrice);
+      buyNow.nftMarketContract = loadOrCreateNFTMarketContract(event.address).id;
+      buyNow.dnft = nft.id;
+      buyNow.derivativeNFT = nft.derivativeNFT;
+      buyNow.status = "Open";
+      buyNow.seller = seller.id;
+      buyNow.project = project.id;
+      buyNow.amountInSBTValue = amountInSBTValue;
+      buyNow.onSellUnits = event.params.buyPrice.onSellUnits;
+      buyNow.seledUnits = event.params.buyPrice.seledUnits;
+      buyNow.dateCreated = event.block.timestamp;
+      buyNow.transactionHashCreated = event.transaction.hash;
+      buyNow.save();
+      removePreviousTransferEvent(event);
+      recordDnftEvent(
+        event,
+        nft,
+        "BuyPriceSet",
+        seller,
+        null,
+        "Foundation",
+        amountInSBTValue,
+        null,
+        null,
+        null,
+        null,
+        null,
+        buyNow,
+      );
+      nft.mostRecentBuyNow = buyNow.id;
+      nft.ownedOrListedBy = seller.id;
+      nft.save();
+    }
+
 }
 
 
@@ -187,7 +183,7 @@ export function handleBuyPriceAccepted(event: BuyPriceAccepted): void {
     buyNow.save();
   
     removePreviousTransferEvent(event);
-    recordNftEvent(
+    recordDnftEvent(
       event,
       nft,
       "BuyPriceAccepted",
@@ -224,7 +220,7 @@ export function handleBuyPriceInvalidated(event: BuyPriceInvalidated): void {
     buyNow.dateInvalidated = event.block.timestamp;
     buyNow.transactionHashInvalidated = event.transaction.hash;
     buyNow.save();
-    recordNftEvent(
+    recordDnftEvent(
       event,
       nft,
       "BuyPriceInvalidated",
@@ -254,7 +250,7 @@ export function handleBuyPriceCanceled(event: BuyPriceCanceled): void {
     buyNow.transactionHashCanceled = event.transaction.hash;
     buyNow.save();
     removePreviousTransferEvent(event);
-    recordNftEvent(
+    recordDnftEvent(
       event,
       nft,
       "BuyPriceCanceled",
@@ -407,7 +403,7 @@ export function handleReserveAuctionBidPlaced(event: ReserveAuctionBidPlaced): v
     market.numberOfBidsPlaced = market.numberOfBidsPlaced.plus(ONE_BIG_INT);
     market.save();
   
-    recordNftEvent(event, nft as DNFT, "Bid", bidder, auction, "Foundation", currentBid.amountInSBTValue);
+    recordDnftEvent(event, nft as DNFT, "Bid", bidder, auction, "Foundation", currentBid.amountInSBTValue);
 
     */
   }
@@ -428,7 +424,7 @@ export function handleReserveAuctionBidPlaced(event: ReserveAuctionBidPlaced): v
     nft.save();
   
     removePreviousTransferEvent(event);
-    recordNftEvent(
+    recordDnftEvent(
       event,
       DNFT.load(auction.dnft) as DNFT,
       "Unlisted",
@@ -465,7 +461,7 @@ export function handleReserveAuctionBidPlaced(event: ReserveAuctionBidPlaced): v
     nft.save();
   
     removePreviousTransferEvent(event);
-    recordNftEvent(event, nft as DNFT, "Listed", seller, auction, "Foundation", auction.reservePriceInSBTValue);
+    recordDnftEvent(event, nft as DNFT, "Listed", seller, auction, "Foundation", auction.reservePriceInSBTValue);
   }
   
   export function handleReserveAuctionFinalized(event: ReserveAuctionFinalized): void {
@@ -531,7 +527,7 @@ export function handleReserveAuctionBidPlaced(event: ReserveAuctionBidPlaced): v
     );
 
     // TODO: Ideally this row would be added when the auction ended instead of waiting for settlement
-    recordNftEvent(
+    recordDnftEvent(
       event,
       nft as DNFT,
       "Sold",
@@ -545,7 +541,7 @@ export function handleReserveAuctionBidPlaced(event: ReserveAuctionBidPlaced): v
 
     removePreviousTransferEvent(event);
 
-    recordNftEvent(
+    recordDnftEvent(
       event,
       nft as DNFT,
       "Settled",
@@ -566,7 +562,7 @@ export function handleReserveAuctionUpdated(event: ReserveAuctionUpdated): void 
     auction.reservePriceInSBTValue = toETH(event.params.reservePrice);
     auction.save();
   
-    recordNftEvent(
+    recordDnftEvent(
       event,
       DNFT.load(auction.dnft) as DNFT,
       "PriceChanged",
@@ -592,7 +588,7 @@ export function handleReserveAuctionInvalidated(event: ReserveAuctionInvalidated
     nft.mostRecentActiveAuction = nft.latestFinalizedAuction;
     nft.save();
   
-    recordNftEvent(event, nft, "AuctionInvalidated", Account.load(auction.seller) as Account, auction, "Foundation");
+    recordDnftEvent(event, nft, "AuctionInvalidated", Account.load(auction.seller) as Account, auction, "Foundation");
 }
 
 export function handleOfferAccepted(event: OfferAccepted): void {
@@ -622,7 +618,7 @@ export function handleOfferAccepted(event: OfferAccepted): void {
     offer.isPrimarySale = nft.isFirstSale && offer.seller == nft.creator;
     offer.save();
     removePreviousTransferEvent(event); // Only applicable if the NFT was escrowed
-    recordNftEvent(
+    recordDnftEvent(
       event,
       nft,
       "OfferAccepted",
@@ -657,7 +653,7 @@ export function handleOfferInvalidated(event: OfferInvalidated): void {
     offer.dateInvalidated = event.block.timestamp;
     offer.transactionHashInvalidated = event.transaction.hash;
     offer.save();
-    recordNftEvent(event, nft, "OfferInvalidated", buyer, null, "Foundation", null, null, null, null, null, offer);
+    recordDnftEvent(event, nft, "OfferInvalidated", buyer, null, "Foundation", null, null, null, null, null, offer);
 }
 
 export function handleOfferMade(event: OfferMade): void {
@@ -676,7 +672,7 @@ export function handleOfferMade(event: OfferMade): void {
     offer.transactionHashCreated = event.transaction.hash;
     offer.dateExpires = event.params.expiration;
     offer.save();
-    recordNftEvent(
+    recordDnftEvent(
       event,
       nft,
       isIncrease ? "OfferChanged" : "OfferMade",

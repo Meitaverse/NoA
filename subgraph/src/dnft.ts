@@ -1,4 +1,4 @@
-import { Address, BigInt, ethereum, store } from "@graphprotocol/graph-ts";
+import { log, Address, BigInt, ethereum, store } from "@graphprotocol/graph-ts";
 
 import {
   DerivativeNFT
@@ -13,7 +13,7 @@ import {
 import { loadOrCreateAccount } from "./shared/accounts";
 import { ZERO_ADDRESS_STRING, ZERO_BIG_DECIMAL } from "./shared/constants";
 import { loadOrCreateCreator } from "./shared/creators";
-import { recordNftEvent, removePreviousTransferEvent } from "./shared/events";
+import { recordDnftEvent, removePreviousTransferEvent } from "./shared/events";
 import { getLogId } from "./shared/ids";
 
 export function loadOrCreateDNFTContract(address: Address): DerivativeNFTContract {
@@ -59,8 +59,14 @@ export function loadOrCreateDNFT(address: Address, id: BigInt, event: ethereum.E
     let contract = DerivativeNFT.bind(address);
     let ownerResult = contract.try_ownerOf(id);
     if (!ownerResult.reverted) {
+      log.info("!ownerResult.reverted --- in loadOrCreateDNFT, tokenId:{}", [
+        dnft.tokenId.toString(),
+      ])
       dnft.owner = loadOrCreateAccount(ownerResult.value).id;
     } else {
+      log.info("ownerResult.reverted --- in loadOrCreateDNFT, tokenId:{}", [
+        dnft.tokenId.toString(),
+      ])
       dnft.owner = loadOrCreateAccount(Address.zero()).id;
     }
     dnft.ownedOrListedBy = dnft.owner;

@@ -74,7 +74,7 @@ contract DerivativeNFT is
     address internal _banktreasury;
     address internal _marketPlace;
 
-    uint96 internal _royaltyBasisPoints; //版税佣金点数, 本协议将版税的10%及金库固定税收5%设置为
+    uint96 internal _royaltyBasisPoints; 
 
     //tokenId => publishId
     mapping(uint256 => uint256) internal _tokenIdByPublishId;

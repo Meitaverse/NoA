@@ -291,24 +291,22 @@ export function handleDerivativeNFTAirdroped(event: DerivativeNFTAirdroped): voi
     const sbtFrom = loadOrCreateSoulBoundToken(event.params.fromSoulBoundTokenId)
     if (sbtFrom) {
         fromWallet = Address.fromBytes(sbtFrom.wallet) 
-        const from = loadOrCreateAccount(fromWallet)
-        const project = loadProject(event.params.projectId)
 
-        if (from && project ) {
-            let _idString = event.params.projectId.toString() + "-" + event.params.tokenId.toString() + "-" + event.params.timestamp.toString()
-            const history = DerivativeNFTAirdropedHistory.load(_idString) || new DerivativeNFTAirdropedHistory(_idString)
-            if (history) {
-                history.project = project.id
-                history.derivativeNFT = loadOrCreateDNFTContract(event.params.derivativeNFT).id;
-                history.from = from.id
-                history.tokenId = event.params.tokenId
-                history.values = event.params.values
-                history.toAccounts = event.params.toSoulBoundTokenIds
-                history.newTokenIds = event.params.newTokenIds
-                history.timestamp = event.params.timestamp
-                history.save()
-            }
-        } 
+        let _idString = event.params.projectId.toString() + "-" + event.params.tokenId.toString() + "-" + event.params.timestamp.toString()
+        const history = DerivativeNFTAirdropedHistory.load(_idString) || new DerivativeNFTAirdropedHistory(_idString)
+        if (history) {
+            history.project = loadProject(event.params.projectId).id
+            history.publish = loadPublish(event.params.publishId).id
+            history.derivativeNFT = loadOrCreateDNFTContract(event.params.derivativeNFT).id;
+            history.from =  loadOrCreateAccount(fromWallet).id
+            history.tokenId = event.params.tokenId
+            history.values = event.params.values
+            history.toAccounts = event.params.toSoulBoundTokenIds
+            history.newTokenIds = event.params.newTokenIds
+            history.timestamp = event.params.timestamp
+            history.save()
+        }
+        
     }
 }
 

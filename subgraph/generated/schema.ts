@@ -227,6 +227,15 @@ export class Account extends Entity {
   set nftOffersMade(value: Array<string>) {
     this.set("nftOffersMade", Value.fromStringArray(value));
   }
+
+  get nftVoucherHistories(): Array<string> {
+    let value = this.get("nftVoucherHistories");
+    return value!.toStringArray();
+  }
+
+  set nftVoucherHistories(value: Array<string>) {
+    this.set("nftVoucherHistories", Value.fromStringArray(value));
+  }
 }
 
 export class Profile extends Entity {
@@ -926,70 +935,6 @@ export class SBTApprovalValue extends Entity {
   }
 }
 
-export class DerivativeNFTImageURISetHistory extends Entity {
-  constructor(id: string) {
-    super();
-    this.set("id", Value.fromString(id));
-  }
-
-  save(): void {
-    let id = this.get("id");
-    assert(
-      id != null,
-      "Cannot save DerivativeNFTImageURISetHistory entity without an ID"
-    );
-    if (id) {
-      assert(
-        id.kind == ValueKind.STRING,
-        `Entities of type DerivativeNFTImageURISetHistory must have an ID of type String but the id '${id.displayData()}' is of type ${id.displayKind()}`
-      );
-      store.set("DerivativeNFTImageURISetHistory", id.toString(), this);
-    }
-  }
-
-  static load(id: string): DerivativeNFTImageURISetHistory | null {
-    return changetype<DerivativeNFTImageURISetHistory | null>(
-      store.get("DerivativeNFTImageURISetHistory", id)
-    );
-  }
-
-  get id(): string {
-    let value = this.get("id");
-    return value!.toString();
-  }
-
-  set id(value: string) {
-    this.set("id", Value.fromString(value));
-  }
-
-  get soulBoundTokenId(): BigInt {
-    let value = this.get("soulBoundTokenId");
-    return value!.toBigInt();
-  }
-
-  set soulBoundTokenId(value: BigInt) {
-    this.set("soulBoundTokenId", Value.fromBigInt(value));
-  }
-
-  get imageURI(): string {
-    let value = this.get("imageURI");
-    return value!.toString();
-  }
-
-  set imageURI(value: string) {
-    this.set("imageURI", Value.fromString(value));
-  }
-
-  get timestamp(): BigInt {
-    let value = this.get("timestamp");
-    return value!.toBigInt();
-  }
-
-  set timestamp(value: BigInt) {
-    this.set("timestamp", Value.fromBigInt(value));
-  }
-}
-
 export class Hub extends Entity {
   constructor(id: string) {
     super();
@@ -1608,70 +1553,6 @@ export class DepositHistory extends Entity {
   }
 }
 
-export class WithdrawERC3525History extends Entity {
-  constructor(id: string) {
-    super();
-    this.set("id", Value.fromString(id));
-  }
-
-  save(): void {
-    let id = this.get("id");
-    assert(
-      id != null,
-      "Cannot save WithdrawERC3525History entity without an ID"
-    );
-    if (id) {
-      assert(
-        id.kind == ValueKind.STRING,
-        `Entities of type WithdrawERC3525History must have an ID of type String but the id '${id.displayData()}' is of type ${id.displayKind()}`
-      );
-      store.set("WithdrawERC3525History", id.toString(), this);
-    }
-  }
-
-  static load(id: string): WithdrawERC3525History | null {
-    return changetype<WithdrawERC3525History | null>(
-      store.get("WithdrawERC3525History", id)
-    );
-  }
-
-  get id(): string {
-    let value = this.get("id");
-    return value!.toString();
-  }
-
-  set id(value: string) {
-    this.set("id", Value.fromString(value));
-  }
-
-  get withdrawer(): string {
-    let value = this.get("withdrawer");
-    return value!.toString();
-  }
-
-  set withdrawer(value: string) {
-    this.set("withdrawer", Value.fromString(value));
-  }
-
-  get value(): BigInt {
-    let value = this.get("value");
-    return value!.toBigInt();
-  }
-
-  set value(value: BigInt) {
-    this.set("value", Value.fromBigInt(value));
-  }
-
-  get timestamp(): BigInt {
-    let value = this.get("timestamp");
-    return value!.toBigInt();
-  }
-
-  set timestamp(value: BigInt) {
-    this.set("timestamp", Value.fromBigInt(value));
-  }
-}
-
 export class Transaction extends Entity {
   constructor(id: string) {
     super();
@@ -2088,13 +1969,13 @@ export class NFTVoucherHistory extends Entity {
     this.set("soulBoundTokenId", Value.fromBigInt(value));
   }
 
-  get account(): Bytes {
+  get account(): string {
     let value = this.get("account");
-    return value!.toBytes();
+    return value!.toString();
   }
 
-  set account(value: Bytes) {
-    this.set("account", Value.fromBytes(value));
+  set account(value: string) {
+    this.set("account", Value.fromString(value));
   }
 
   get vouchType(): i32 {
@@ -2549,6 +2430,15 @@ export class DerivativeNFTAirdropedHistory extends Entity {
 
   set project(value: string) {
     this.set("project", Value.fromString(value));
+  }
+
+  get publish(): string {
+    let value = this.get("publish");
+    return value!.toString();
+  }
+
+  set publish(value: string) {
+    this.set("publish", Value.fromString(value));
   }
 
   get derivativeNFT(): string {
@@ -7326,15 +7216,6 @@ export class DnftCollection extends Entity {
 
   set owner(value: string) {
     this.set("owner", Value.fromString(value));
-  }
-
-  get publish(): string {
-    let value = this.get("publish");
-    return value!.toString();
-  }
-
-  set publish(value: string) {
-    this.set("publish", Value.fromString(value));
   }
 
   get tokenId(): BigInt {

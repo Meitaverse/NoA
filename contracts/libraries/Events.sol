@@ -461,6 +461,7 @@ library Events {
      * @dev Emitted when derivativeNFT is airdrop by owner
      * 
      * @param projectId The project id of derivativeNFT.
+     * @param publishId The publish id of derivativeNFT.
      * @param derivativeNFT The derivativeNFT contract address
      * @param fromSoulBoundTokenId The from SoulBoundTokenId, owner of derivativeNFT
      * @param tokenId The token id of the derivativeNFT
@@ -471,9 +472,10 @@ library Events {
      */
     event DerivativeNFTAirdroped(
         uint256 projectId,
+        uint256 publishId,
         address derivativeNFT,
-        uint256 indexed fromSoulBoundTokenId,
-        uint256 indexed tokenId,
+        uint256 fromSoulBoundTokenId,
+        uint256 tokenId,
         uint256[] toSoulBoundTokenIds,
         uint256[] values,
         uint256[] newTokenIds,
@@ -743,7 +745,6 @@ library Events {
 
    
     //Bank Treasury
-    // Custom events
     /**
      * @notice Emitted when SBT tokens are locked up by the Foundation market for 24-25 hours
      * and may include newly deposited SBT Value which is added to the account's total SBT balance.
@@ -791,7 +792,6 @@ library Events {
     /**
      * @dev Emitted when ether send to bank treasury contract
      *
-     * 
      * @param sender The sender 
      * @param amount The amount
      * @param sender The receiver 
@@ -807,7 +807,6 @@ library Events {
     /**
      * @dev Emitted when ether send to bank treasury contract
      *
-     * 
      * @param sender The sender 
      * @param amount The amount
      * @param data msg.data 
@@ -825,7 +824,6 @@ library Events {
     /**
      * @dev Emitted when transcation is submit
      *
-     * 
      * @param owner The owner 
      * @param txIndex The index of tx
      * @param to The to 
@@ -843,7 +841,6 @@ library Events {
     /**
      * @dev Emitted when transcation is confirm
      *
-     * 
      * @param owner The owner 
      * @param txIndex The index of tx
      */
@@ -855,7 +852,6 @@ library Events {
     /**
      * @dev Emitted when transcation is revoke confirm
      *
-     * 
      * @param owner The owner 
      * @param txIndex The index of tx
      */
@@ -867,7 +863,6 @@ library Events {
     /**
      * @dev Emitted when transcation is execute
      *
-     * 
      * @param owner The owner 
      * @param txIndex The index of tx
      * @param value The value of transcation
@@ -883,7 +878,6 @@ library Events {
     /**
      * @dev Emitted when ERC3525 transcation is execute
      *
-     * 
      * @param owner The owner 
      * @param txIndex The index of tx
      * @param fromTokenId The from tokenId of transcation

@@ -26,11 +26,12 @@ import {
 import { loadOrCreateDNFTContract, loadOrCreateDNFT } from "../dnft";
 import { ZERO_ADDRESS_STRING, ZERO_BIG_DECIMAL } from "../shared/constants";
 import { loadOrCreateAccount } from "../shared/accounts";
-import { recordNftEvent } from "../shared/events";
+import { recordDnftEvent } from "../shared/events";
 import { getLogId } from "../shared/ids";
 import { loadProject } from "../shared/project";
 import { loadOrCreateSoulBoundToken } from "../shared/soulBoundToken";
 import { loadOrCreateDnftImageURI } from "../shared/dnftImageURI";
+import { loadPublish } from "../shared/publish";
 
 function getDNFTId(address: Address, id: BigInt): string {
     return address.toHex() + "-" + id.toString();
@@ -66,20 +67,20 @@ export function handleDNFTTransfer(event: Transfer): void {
         dnft.ownedOrListedBy = dnft.owner;
 
         if (event.params._to.toHex() == ZERO_ADDRESS_STRING) {
-        // Burn
-        recordNftEvent(event, dnft as DNFT, "Burned", loadOrCreateAccount(event.params._from));
+            // Burn
+            recordDnftEvent(event, dnft as DNFT, "Burned", loadOrCreateAccount(event.params._from));
         } else {
-        // Transfer
-        recordNftEvent(
-            event,
-            dnft as DNFT,
-            "Transferred",
-            loadOrCreateAccount(event.params._from),
-            null,
-            null,
-            null,
-            loadOrCreateAccount(event.params._to),
-        );
+            // Transfer
+            recordDnftEvent(
+                event,
+                dnft as DNFT,
+                "Transferred",
+                loadOrCreateAccount(event.params._from),
+                null,
+                null,
+                null,
+                loadOrCreateAccount(event.params._to),
+            );
         }
     }
 
@@ -107,108 +108,112 @@ export function handleDNFTTransferValue(event: TransferValue): void {
         event.params._value.toString()
     ])
 
+    const derivativeNFT = DerivativeNFT.bind(event.address) 
+
     const sbtFrom = loadOrCreateSoulBoundToken(event.params._fromTokenId)
     const sbtTo = loadOrCreateSoulBoundToken(event.params._toTokenId)
     if (sbtFrom && sbtTo) {   
-        
-        let _idString = event.address.toHex() + "-" + event.params._fromTokenId.toString() + "-" + event.params._toTokenId.toHexString()
-        const dnftTransferValue = DnftTransferValue.load(_idString) || new DnftTransferValue(_idString)
-    
-        if (dnftTransferValue) {
-            let dnftFrom = loadOrCreateDNFT(event.address, event.params._fromTokenId, event);
-
-            if (dnftFrom) {
-                dnftTransferValue.dnft = dnftFrom.id
-            }
-            dnftTransferValue.from = loadOrCreateAccount(Address.fromBytes(sbtFrom.wallet)).id
-            dnftTransferValue.to = loadOrCreateAccount(Address.fromBytes(sbtTo.wallet)).id
-            dnftTransferValue.value = event.params._value
-            dnftTransferValue.timestamp = event.block.timestamp
-            dnftTransferValue.save()
-    
-            const derivativeNFT = DerivativeNFT.bind(event.address) 
-    
-            if (event.params._fromTokenId.isZero()){
-                //mint value
-    
-            } else {
-    
-                let _idStringFrom = event.address.toHex() + "-" + event.params._fromTokenId.toString()
-                const collectionFrom = DnftCollection.load(_idStringFrom) 
-        
-                if (collectionFrom) {
-                    collectionFrom.owner = loadOrCreateAccount(Address.fromBytes(sbtFrom.wallet)).id
-                    collectionFrom.tokenId = event.params._fromTokenId;
-                    
-                    const result2 = derivativeNFT.try_getPublishIdByTokenId(event.params._fromTokenId)
-                    if (result2.reverted) {
-                        log.warning('try_getPublishIdByTokenId, result2.reverted is true', [])
-                    } else {
-                        log.info("try_getPublishIdByTokenId, result2.value: {}", [result2.value.toString()])
-                        collectionFrom.publish = loadProject(result2.value).id
-                    }
-
-                    if (dnftFrom) {
-                        collectionFrom.dnft = dnftFrom.id
-                    }
-                    
-                    const result = derivativeNFT.try_balanceOf1(event.params._fromTokenId)
-                    if (result.reverted) {
-                        log.warning('try_balanceOf1, result.reverted is true', [])
-                        collectionFrom.value = collectionFrom.value.minus(event.params._value)
-                    } else {
-                        log.info("try_balanceOf1, result.value: {}", [result.value.toString()])
-                        collectionFrom.value = result.value
-                    }
-                    
-                    collectionFrom.timestamp = event.block.timestamp
-                    collectionFrom.save()
-                }
-            }
-    
-            if (event.params._toTokenId.isZero()){
-                //burn
-    
-            } else {
-                
-                let _idStringTo = event.address.toHex() + "-" + event.params._toTokenId.toString()
-                const collectionTo = DnftCollection.load(_idStringTo) || new DnftCollection(_idStringTo)
-        
-                if (collectionTo) {
-                    collectionTo.owner = loadOrCreateAccount(Address.fromBytes(sbtTo.wallet)).id
-                    collectionTo.tokenId = event.params._toTokenId;
-
-                    const result2 = derivativeNFT.try_getPublishIdByTokenId(event.params._toTokenId)
-                    if (result2.reverted) {
-                        log.warning('try_getPublishIdByTokenId, result2.reverted is true', [])
-                    } else {
-                        log.info("try_getPublishIdByTokenId, result2.value: {}", [result2.value.toString()])
-                        collectionTo.publish = loadProject(result2.value).id
-                    }
-
-
-                    // let dnftIdTo = getDNFTId(event.address, event.params._toTokenId);
-                    // let dnftTo = DNFT.load(dnftIdTo)
-                    let dnftTo = loadOrCreateDNFT(event.address, event.params._toTokenId, event);
-                    if (dnftTo) {
-                        collectionTo.dnft = dnftTo.id
-                    }
-                    const result = derivativeNFT.try_balanceOf1(event.params._toTokenId)
             
-                    if (result.reverted) {
-                        log.warning('try_balanceOf1, result.reverted is true', [])
-                        collectionTo.value = collectionTo.value.plus(event.params._value)
+        if (event.params._fromTokenId.isZero()){
+            //mint value
 
-                    } else {
-                        log.info("try_balanceOf1, result.value: {}", [result.value.toString()])
-                        collectionTo.value = result.value
-                    }
-                                    
-                    collectionTo.timestamp = event.block.timestamp
-                    collectionTo.save()
+            //TODO
+
+        } else {
+            log.info("dnftFrom ---loadOrCreateDNFT, _fromTokenId:{}", [
+                event.params._fromTokenId.toString(),
+            ])
+            let dnftFrom = loadOrCreateDNFT(event.address, event.params._fromTokenId, event);
+            let _idString = event.address.toHex() + "-" + event.params._fromTokenId.toString() + "-" + event.params._toTokenId.toHexString()
+            
+            const dnftTransferValue = DnftTransferValue.load(_idString) || new DnftTransferValue(_idString)
+        
+            if (dnftTransferValue) {
+                if (dnftFrom) {
+                    dnftTransferValue.dnft = dnftFrom.id
                 }
+                dnftTransferValue.from = loadOrCreateAccount(Address.fromBytes(sbtFrom.wallet)).id
+                dnftTransferValue.to = loadOrCreateAccount(Address.fromBytes(sbtTo.wallet)).id
+                dnftTransferValue.value = event.params._value
+                dnftTransferValue.timestamp = event.block.timestamp
+                dnftTransferValue.save()
+            }
+        
+            let _idStringFrom = event.address.toHex() + "-" + event.params._fromTokenId.toString()
+            const collectionFrom = DnftCollection.load(_idStringFrom) 
+    
+            if (collectionFrom) {
+                collectionFrom.owner = loadOrCreateAccount(Address.fromBytes(sbtFrom.wallet)).id
+                collectionFrom.tokenId = event.params._fromTokenId;
+                
+                const result2 = derivativeNFT.try_getPublishIdByTokenId(event.params._fromTokenId)
+                if (result2.reverted) {
+                    log.warning('try_getPublishIdByTokenId, result2.reverted is true', [])
+                } else {
+                    log.info("try_getPublishIdByTokenId, result2.value: {}", [result2.value.toString()])
+                }
+
+                if (dnftFrom) {
+                    collectionFrom.dnft = dnftFrom.id
+                }
+                
+                const result = derivativeNFT.try_balanceOf1(event.params._fromTokenId)
+                if (result.reverted) {
+                    log.warning('try_balanceOf1, result.reverted is true', [])
+                    collectionFrom.value = collectionFrom.value.minus(event.params._value)
+                } else {
+                    log.info("try_balanceOf1, result.value: {}", [result.value.toString()])
+                    collectionFrom.value = result.value
+                }
+                
+                collectionFrom.timestamp = event.block.timestamp
+                collectionFrom.save()
             }
         }
+
+        if (event.params._toTokenId.isZero()){
+            //burn
+            //TODO
+
+        } else {
+            
+            let _idStringTo = event.address.toHex() + "-" + event.params._toTokenId.toString()
+            const collectionTo = DnftCollection.load(_idStringTo) || new DnftCollection(_idStringTo)
+    
+            if (collectionTo) {
+                collectionTo.owner = loadOrCreateAccount(Address.fromBytes(sbtTo.wallet)).id
+                collectionTo.tokenId = event.params._toTokenId;
+
+                const result2 = derivativeNFT.try_getPublishIdByTokenId(event.params._toTokenId)
+                if (result2.reverted) {
+                    log.warning('try_getPublishIdByTokenId, result2.reverted is true', [])
+                } else {
+                    log.info("try_getPublishIdByTokenId, result2.value: {}", [result2.value.toString()])
+                }
+
+                log.info("dnftTo ---loadOrCreateDNFT, _toTokenId:{}", [
+                    event.params._toTokenId.toString(),
+                ])
+                let dnftTo = loadOrCreateDNFT(event.address, event.params._toTokenId, event);
+                if (dnftTo) {
+                    collectionTo.dnft = dnftTo.id
+                }
+                const result = derivativeNFT.try_balanceOf1(event.params._toTokenId)
+        
+                if (result.reverted) {
+                    log.warning('try_balanceOf1, result.reverted is true', [])
+                    collectionTo.value = collectionTo.value.plus(event.params._value)
+
+                } else {
+                    log.info("try_balanceOf1, result.value: {}", [result.value.toString()])
+                    collectionTo.value = result.value
+                }
+                                
+                collectionTo.timestamp = event.block.timestamp
+                collectionTo.save()
+            }
+        }
+        
     }
 }
 

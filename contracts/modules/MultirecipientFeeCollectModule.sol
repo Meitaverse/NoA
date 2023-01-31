@@ -31,7 +31,7 @@ struct RecipientData {
 struct MultirecipientFeeCollectModuleInitData {
     uint256 projectId;
     uint256 salePrice;
-    uint16[] royaltyPoints; //税点数组
+    uint16[] royaltyPoints;
 }
 
 /**
@@ -210,7 +210,6 @@ contract MultirecipientFeeCollectModule is BaseFeeCollectModule {
          
         uint256 payFees = collectUnits.mul(_dataByPublicationByProfile[projectId].salePrice) * fraction;
 
-        //社区金库地址及税点
         (address treasury, uint16 treasuryFee) = _treasuryData();
         uint256 treasuryAmount = (payFees * treasuryFee) / BASIS_POINTS;
         uint256[] memory royalties = new uint256[](recipients.length);

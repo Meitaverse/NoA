@@ -1,7 +1,7 @@
 import { ethereum } from "@graphprotocol/graph-ts";
 
 import { Account, DNFT, NftMarketOffer } from "../../generated/schema";
-import { recordNftEvent } from "./events";
+import { recordDnftEvent } from "./events";
 
 export function loadLatestOffer(nft: DNFT): NftMarketOffer | null {
   if (!nft.mostRecentOffer) {
@@ -32,7 +32,7 @@ export function outbidOrExpirePreviousOffer(
     offer.status = "Expired";
     offer.save();
     let buyer = Account.load(offer.buyer) as Account; // Buyer was set on offer made
-    recordNftEvent(
+    recordDnftEvent(
       event,
       nft,
       "OfferExpired",

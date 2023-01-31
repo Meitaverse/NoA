@@ -12,9 +12,9 @@ import { loadOrCreateAccount } from "./accounts";
 import { ONE_BIG_INT, ZERO_BIG_INT } from "./constants";
 import { getEventId, getPreviousEventId } from "./ids";
 
-export function recordNftEvent(
+export function recordDnftEvent(
   event: ethereum.Event,
-  nft: DNFT,
+  dnft: DNFT,
   eventType: string,
   actorAccount: Account,
   auction: NftMarketAuction | null = null,
@@ -28,7 +28,7 @@ export function recordNftEvent(
   buyNow: NftMarketBuyNow | null = null,
 ): void {
   let historicalEvent = new NftHistory(getEventId(event, eventType));
-  historicalEvent.dnft = nft.id;
+  historicalEvent.dnft = dnft.id;
   historicalEvent.event = eventType;
   if (auction) {
     historicalEvent.auction = auction.id;
