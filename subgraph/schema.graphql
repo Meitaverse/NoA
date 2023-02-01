@@ -360,8 +360,8 @@ type Project @entity {
   "All publications in this project"
   publications: [Publication!]! @derivedFrom(field: "project")
   
-  "All publishs in this project"
-  publishs: [Publish!]! @derivedFrom(field: "project")
+  "All publishes in this project"
+  publishes: [Publish!]! @derivedFrom(field: "project")
 
   "All dNFT Token in this project"
   dnfts: [DNFT!]! @derivedFrom(field: "project")
@@ -1405,6 +1405,7 @@ type DNFT @entity {
 
   "An account authorized to transfer this dNFT, if one was approved"
   approvedSpender: Account
+
 
   "All dNFT collection that have collected for this dNFT"
   dnftCollections: [DnftCollection!] @derivedFrom(field: "dnft")

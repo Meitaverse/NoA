@@ -1407,13 +1407,13 @@ export class Project extends Entity {
     this.set("publications", Value.fromStringArray(value));
   }
 
-  get publishs(): Array<string> {
-    let value = this.get("publishs");
+  get publishes(): Array<string> {
+    let value = this.get("publishes");
     return value!.toStringArray();
   }
 
-  set publishs(value: Array<string>) {
-    this.set("publishs", Value.fromStringArray(value));
+  set publishes(value: Array<string>) {
+    this.set("publishes", Value.fromStringArray(value));
   }
 
   get dnfts(): Array<string> {

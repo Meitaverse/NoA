@@ -105,8 +105,7 @@ Queries (HTTP):     http://localhost:8000/subgraphs/name/NoA/MySubgraph
 
 ### 2. Query subgraph
 
-docs/main.schema.graphql.md
-
+[GraphQL Doc - zh](docs/zh/main.schema.graphql.md)
 
 ## Governance
 
@@ -123,4 +122,5 @@ docs/main.schema.graphql.md
 ## NFT Market Place support Royalty Registry
 
 [Royalty Registry](https://royaltyregistry.xyz/)
+
 

@@ -194,7 +194,7 @@ export function handleDNFTTransferValue(event: TransferValue): void {
                 
                 collectionFrom.timestamp = event.block.timestamp
                 collectionFrom.save()
-                
+
             }
 
             if (event.params._toTokenId.isZero()){
