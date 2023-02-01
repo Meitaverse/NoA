@@ -10,6 +10,9 @@ import {Events} from "../libraries/Events.sol";
 import {Errors} from "../libraries/Errors.sol";
 import {DataTypes} from '../libraries/DataTypes.sol';
 import {IDerivativeNFT} from "../interfaces/IDerivativeNFT.sol";
+import {IManager} from "../interfaces/IManager.sol";
+import {IBankTreasury} from '../interfaces/IBankTreasury.sol';
+import {INFTDerivativeProtocolTokenV1} from "../interfaces/INFTDerivativeProtocolTokenV1.sol";
 
 import "../libraries/Constants.sol";
 import "./MarketSharedCore.sol";
@@ -25,7 +28,30 @@ error DNFTMarketCore_Seller_Not_Found();
 abstract contract DNFTMarketCore is Initializable, MarketSharedCore {
   using AddressUpgradeable for address;
   using AddressUpgradeable for address payable;
+    
+  /// @notice The fee collected by the buy referrer for sales facilitated by this market contract.
+  ///         This fee is calculated from the total protocol fee.
+  uint16 internal constant BUY_REFERRER_FEE_DENOMINATOR = 100; //BASIS_POINTS / 100; // 1%
   
+
+  // IManager internal immutable manager;
+  IBankTreasury internal immutable treasury;
+  // INFTDerivativeProtocolTokenV1 internal immutable sbt;
+
+  /// @notice Store derivativeNFT contract to projectId
+  // mapping(address => uint256) private derivativeNFTToProjectId;
+  
+
+  constructor(
+      // address manager_,
+      address treasury_
+      // address sbt_
+  ) {
+      // manager = IManager(manager_);
+      treasury = IBankTreasury(treasury_);
+      // sbt = INFTDerivativeProtocolTokenV1(sbt_);
+  }
+
   function _getWallet(uint256 soulBoundTokenId) internal virtual returns(address);
 
   function _getTreasuryData() internal virtual view returns (address, uint16);
@@ -181,7 +207,7 @@ abstract contract DNFTMarketCore is Initializable, MarketSharedCore {
    * @return Returns false if the auction has ended, even if it has not yet been settled.
    */
   function _isInActiveAuction(address derivativeNFT, uint256 tokenId) internal view virtual returns (bool);
-
+  
   
   /**
    * @notice This empty reserved space is put in place to allow future versions to add new

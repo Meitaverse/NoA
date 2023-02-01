@@ -10,9 +10,10 @@ import {IDerivativeNFT} from "../interfaces/IDerivativeNFT.sol";
 import {ICollectModule} from '../interfaces/ICollectModule.sol';
 import {Strings} from '@openzeppelin/contracts/utils/Strings.sol';
 import {IERC3525} from "@solvprotocol/erc-3525/contracts/IERC3525.sol";
-
+import "@openzeppelin/contracts-upgradeable/utils/AddressUpgradeable.sol";
 import "@solvprotocol/erc-3525/contracts/ERC3525Upgradeable.sol";
 import {Clones} from '@openzeppelin/contracts/proxy/Clones.sol';
+import "../libraries/BytesLibrary.sol";
 
 /**
  * @title InteractionLogic
@@ -25,6 +26,8 @@ import {Clones} from '@openzeppelin/contracts/proxy/Clones.sol';
 
 library InteractionLogic {
     using Strings for uint256;
+    using BytesLibrary for bytes;
+    using AddressUpgradeable for address;
     
     function createHub(
         address hubOwner,
@@ -132,7 +135,11 @@ library InteractionLogic {
         DataTypes.ProjectData memory project,
         address receiver_
     ) private returns (address) {
-        address derivativeNFT = Clones.clone(derivativeImpl);
+        address derivativeNFT = Clones.predictDeterministicAddress(derivativeImpl, keccak256(abi.encode(projectId)));
+        if (!derivativeNFT.isContract()) {
+            Clones.cloneDeterministic(derivativeImpl, keccak256(abi.encode(projectId)));
+        }
+
         IDerivativeNFT(derivativeNFT).initialize(
             sbt,
             treasury,  

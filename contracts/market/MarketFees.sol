@@ -11,7 +11,6 @@ import {INFTDerivativeProtocolTokenV1} from "../interfaces/INFTDerivativeProtoco
 import {Events} from "../libraries/Events.sol";
 import {Errors} from "../libraries/Errors.sol";
 import {DataTypes} from '../libraries/DataTypes.sol';
-// import "../libraries/ArrayLibrary.sol";
 import "../libraries/Constants.sol";
 import "./DNFTMarketCore.sol";
 import "./MarketSharedCore.sol";
@@ -20,12 +19,8 @@ abstract contract MarketFees is  MarketSharedCore, DNFTMarketCore {
     // using AddressUpgradeable for address;
     // using SafeMathUpgradeable for uint256;
     // using SafeMathUpgradeable128 for uint128;
-    // using ArrayLibrary for uint256[];
-    
-    /// @notice The fee collected by the buy referrer for sales facilitated by this market contract.
-    ///         This fee is calculated from the total protocol fee.
-    uint16 private constant BUY_REFERRER_FEE_DENOMINATOR = 100; //BASIS_POINTS / 100; // 1%
-
+    // using ArrayLibrary for uint256[]; 
+/*
     IManager internal immutable manager;
     IBankTreasury internal immutable treasury;
     INFTDerivativeProtocolTokenV1 internal immutable sbt;
@@ -39,10 +34,11 @@ abstract contract MarketFees is  MarketSharedCore, DNFTMarketCore {
         treasury = IBankTreasury(treasury_);
         sbt = INFTDerivativeProtocolTokenV1(sbt_);
     }
-
+*/
     /**
      * @notice Distributes funds to foundation, creator recipients, buy referrer and DNFT owner after a sale.
      */
+    /*
     function _distributeFunds(
         DataTypes.CollectFeeUsers memory collectFeeUsers,
         uint256 projectId,
@@ -78,6 +74,7 @@ abstract contract MarketFees is  MarketSharedCore, DNFTMarketCore {
         );
 
     }
+    */
 
     //  /**
     //  * @notice Returns how funds will be distributed for a sale at the given price point.
@@ -142,6 +139,7 @@ abstract contract MarketFees is  MarketSharedCore, DNFTMarketCore {
      * be split with the royalty recipients defined for that DNFT.
      */
     // solhint-disable-next-line code-complexity
+    /*
     function _getFees(
             DataTypes.CollectFeeUsers memory collectFeeUsers,
             uint256 projectId,
@@ -162,9 +160,9 @@ abstract contract MarketFees is  MarketSharedCore, DNFTMarketCore {
             
         (
             uint256 soulBoundTokenId_gengesis,
-            uint256 royaltyBasisPoints_gengesis,
+            uint256 royaltyBasisPoint_gengesis,
             uint256 soulBoundTokenId_previous,
-            uint256 royaltyBasisPoints_previous
+            uint256 royaltyBasisPoint_previous
         ) =  manager.getGenesisAndPreviousInfo(projectId, tokenId);
             
             collectFeeUsers.genesisSoulBoundTokenId = soulBoundTokenId_gengesis;
@@ -187,8 +185,8 @@ abstract contract MarketFees is  MarketSharedCore, DNFTMarketCore {
 
             market = _getMarketInfo(derivativeNFT);
             if (market.feeShareType == DataTypes.FeeShareType.LEVEL_TWO) {
-                royaltyAmounts.genesisAmount = uint96(payValue * royaltyBasisPoints_gengesis / BASIS_POINTS);
-                royaltyAmounts.previousAmount = uint96(payValue * royaltyBasisPoints_previous / BASIS_POINTS);
+                royaltyAmounts.genesisAmount = uint96(payValue * royaltyBasisPoint_gengesis / BASIS_POINTS);
+                royaltyAmounts.previousAmount = uint96(payValue * royaltyBasisPoint_previous / BASIS_POINTS);
 
                 if (market.feePayType == DataTypes.FeePayType.BUYER_PAY) {
                     royaltyAmounts.adjustedAmount = payValue - royaltyAmounts.genesisAmount - royaltyAmounts.previousAmount;
@@ -197,7 +195,7 @@ abstract contract MarketFees is  MarketSharedCore, DNFTMarketCore {
                 }
 
             } else if (market.feeShareType == DataTypes.FeeShareType.LEVEL_FIVE) {
-                royaltyAmounts.genesisAmount =  uint96(payValue * market.royaltyBasisPoints / BASIS_POINTS);
+                royaltyAmounts.genesisAmount =  uint96(payValue * market.royaltySharesPoints / BASIS_POINTS);
                 royaltyAmounts.previousAmount = 0;
                 
                 if (market.feePayType == DataTypes.FeePayType.BUYER_PAY) {
@@ -208,24 +206,9 @@ abstract contract MarketFees is  MarketSharedCore, DNFTMarketCore {
             }
         }
     }
+    */
 
 
-    /**
-     * @notice Try to use bidder in teasury SBT balance to pay first.
-     * @dev Transfer SBT value to treasury if revenueAmounts is not enough for.
-     * This helper should not be used anywhere that may lead to locked assets.
-     * @param soulBoundTokenIdBidder The SBT id of bidder
-     * @param amount The amount(price) to place bid.
-     */
-    // solhint-disable-next-line code-complexity
-    function _tryUseEarnestMoneyForPay(
-        uint256 soulBoundTokenIdBidder,
-        uint256 amount
-    ) internal {
-        treasury.useEarnestMoneyForPay(
-            soulBoundTokenIdBidder,
-            amount
-        );
-    }
+
 
 }

@@ -19,10 +19,12 @@ import './Constants.sol';
  */
 library MarketLogic {
     function addMarket(
-       address derivativeNFT_,
+        address derivativeNFT_,
+        uint256 projectId_,
+        address collectModule_,
         DataTypes.FeePayType feePayType_,
         DataTypes.FeeShareType feeShareType_,
-        uint16 royaltyBasisPoints_,
+        uint16 royaltySharesPoints_,
         mapping(address => DataTypes.Market) storage markets
     ) external {
         if (derivativeNFT_ == address(0x0)) revert Errors.InvalidParameter();
@@ -30,13 +32,17 @@ library MarketLogic {
         markets[derivativeNFT_].isOpen = true;
         markets[derivativeNFT_].feePayType = DataTypes.FeePayType(feePayType_);
         markets[derivativeNFT_].feeShareType = DataTypes.FeeShareType(feeShareType_);
-        markets[derivativeNFT_].royaltyBasisPoints = royaltyBasisPoints_;
-
+        markets[derivativeNFT_].royaltySharesPoints = royaltySharesPoints_;
+        markets[derivativeNFT_].projectId = projectId_;
+        markets[derivativeNFT_].collectModule = collectModule_;
+        
         emit Events.AddMarket(
             derivativeNFT_,
+            projectId_,
             feePayType_,
             feeShareType_,
-            royaltyBasisPoints_
+            royaltySharesPoints_,
+            collectModule_
         );
     }
 

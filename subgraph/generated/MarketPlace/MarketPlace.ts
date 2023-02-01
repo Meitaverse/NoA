@@ -238,8 +238,16 @@ export class MarketPlace__getMarketInfoResultValue0Struct extends ethereum.Tuple
     return this[2].toI32();
   }
 
-  get royaltyBasisPoints(): i32 {
+  get royaltySharesPoints(): i32 {
     return this[3].toI32();
+  }
+
+  get projectId(): BigInt {
+    return this[4].toBigInt();
+  }
+
+  get collectModule(): Address {
+    return this[5].toAddress();
   }
 }
 
@@ -531,7 +539,7 @@ export class MarketPlace extends ethereum.SmartContract {
   ): MarketPlace__getMarketInfoResultValue0Struct {
     let result = super.call(
       "getMarketInfo",
-      "getMarketInfo(address):((bool,uint8,uint8,uint16))",
+      "getMarketInfo(address):((bool,uint8,uint8,uint16,uint256,address))",
       [ethereum.Value.fromAddress(derivativeNFT)]
     );
 
@@ -545,7 +553,7 @@ export class MarketPlace extends ethereum.SmartContract {
   ): ethereum.CallResult<MarketPlace__getMarketInfoResultValue0Struct> {
     let result = super.tryCall(
       "getMarketInfo",
-      "getMarketInfo(address):((bool,uint8,uint8,uint16))",
+      "getMarketInfo(address):((bool,uint8,uint8,uint16,uint256,address))",
       [ethereum.Value.fromAddress(derivativeNFT)]
     );
     if (result.reverted) {
@@ -1001,20 +1009,12 @@ export class ConstructorCall__Inputs {
     this._call = call;
   }
 
-  get manager(): Address {
+  get treasury(): Address {
     return this._call.inputValues[0].value.toAddress();
   }
 
-  get treasury(): Address {
-    return this._call.inputValues[1].value.toAddress();
-  }
-
-  get sbt(): Address {
-    return this._call.inputValues[2].value.toAddress();
-  }
-
   get duration(): BigInt {
-    return this._call.inputValues[3].value.toBigInt();
+    return this._call.inputValues[1].value.toBigInt();
   }
 }
 
@@ -1127,16 +1127,24 @@ export class AddMarketCall__Inputs {
     return this._call.inputValues[0].value.toAddress();
   }
 
+  get projectId_(): BigInt {
+    return this._call.inputValues[1].value.toBigInt();
+  }
+
+  get collectModule_(): Address {
+    return this._call.inputValues[2].value.toAddress();
+  }
+
   get feePayType_(): i32 {
-    return this._call.inputValues[1].value.toI32();
+    return this._call.inputValues[3].value.toI32();
   }
 
   get feeShareType_(): i32 {
-    return this._call.inputValues[2].value.toI32();
+    return this._call.inputValues[4].value.toI32();
   }
 
-  get royaltyBasisPoints_(): i32 {
-    return this._call.inputValues[3].value.toI32();
+  get royaltySharesPoints_(): i32 {
+    return this._call.inputValues[5].value.toI32();
   }
 }
 

@@ -224,17 +224,17 @@ library PublishLogic {
 
         uint256 projectId = _projectDataByPublishId[collectData.publishId].publication.projectId;
 
-        //新生成的tokenId也需要用collectModule来处理
+        //new tokenId use the same collectModule
         _pubByIdByProfile[projectId][newTokenId].collectModule = _pubByIdByProfile[projectId][tokenId].collectModule;
 
         uint256 ownershipSoulBoundTokenId = _projectDataByPublishId[collectData.publishId].publication.soulBoundTokenId;
 
-        //后续调用processCollect进行处理，此机制能扩展出联动合约调用
-        ICollectModule(_pubByIdByProfile[projectId][tokenId].collectModule).processCollect(
+        //processCollect: fees and royalties process
+        DataTypes.RoyaltyAmounts memory royaltyAmounts = ICollectModule(_pubByIdByProfile[projectId][tokenId].collectModule).processCollect(
             ownershipSoulBoundTokenId,
             collectData.collectorSoulBoundTokenId,
             collectData.publishId,
-            collectData.collectUnits,
+            uint96(collectData.collectUnits * _projectDataByPublishId[collectData.publishId].publication.salePrice),
             collectData.data 
         );
 
@@ -246,7 +246,7 @@ library PublishLogic {
             tokenId,
             collectData.collectUnits,
             newTokenId,
-            block.timestamp
+            royaltyAmounts
         );
     }
     

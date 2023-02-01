@@ -6,7 +6,7 @@ import "@openzeppelin/contracts-upgradeable/utils/structs/EnumerableSetUpgradeab
 import "@openzeppelin/contracts/utils/Counters.sol";
 import "@solvprotocol/erc-3525/contracts/IERC3525.sol";
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
-
+import {Clones} from '@openzeppelin/contracts/proxy/Clones.sol';
 import {IERC3525Metadata} from "@solvprotocol/erc-3525/contracts/extensions/IERC3525Metadata.sol";
 import {IDerivativeNFT} from "./interfaces/IDerivativeNFT.sol";
 import "./interfaces/INFTDerivativeProtocolTokenV1.sol";
@@ -20,7 +20,6 @@ import {PublishLogic} from './libraries/PublishLogic.sol';
 import {ManagerStorage} from  "./storage/ManagerStorage.sol";
 import "./libraries/SafeMathUpgradeable128.sol";
 import {IBankTreasury} from "./interfaces/IBankTreasury.sol";
-import {Clones} from '@openzeppelin/contracts/proxy/Clones.sol';
 import {VersionedInitializable} from './upgradeability/VersionedInitializable.sol';
 import {IModuleGlobals} from "./interfaces/IModuleGlobals.sol";
 import "hardhat/console.sol";
@@ -81,6 +80,11 @@ contract Manager is
     //-- external -- //
     function getReceiver() external view returns (address) {
         return _RECEIVER;
+    }
+    
+    function getDeverivateNFTAddress(uint256 projectId) external view returns (address deverivateNFTInstance) {
+        bytes32 salt = keccak256(abi.encode(projectId));
+        deverivateNFTInstance = Clones.predictDeterministicAddress(_DNFT_IMPL, salt);
     }
 
     function mintSBTValue(uint256 soulBoundTokenId, uint256 value) 

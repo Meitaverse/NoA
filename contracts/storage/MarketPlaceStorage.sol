@@ -15,7 +15,6 @@ import "@openzeppelin/contracts/utils/Counters.sol";
  */
 abstract contract MarketPlaceStorage {
 
-
     Counters.Counter internal _nextAuctionId;
 
     mapping(address => uint256) public sigNonces;

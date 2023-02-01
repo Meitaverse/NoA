@@ -255,7 +255,7 @@ export function handleDerivativeNFTCollected(event: DerivativeNFTCollected): voi
       
         if (from && to && derivativeNFT && project) {
             
-            let _idString = event.params.derivativeNFT.toHex() + "-" + event.params.projectId.toString() + "-" + event.params.tokenId.toString()
+            let _idString = event.address.toHex() + "-" + event.params.projectId.toString() + "-" + event.params.tokenId.toString()
             const history = DnftCollectedHistory.load(_idString) || new DnftCollectedHistory(_idString)
             if (history) {
 
@@ -267,9 +267,11 @@ export function handleDerivativeNFTCollected(event: DerivativeNFTCollected): voi
                 history.tokenId = event.params.tokenId
                 history.units = event.params.value
                 history.newTokenId = event.params.newTokenId
-                history.timestamp = event.params.timestamp
+                history.timestamp = event.block.timestamp
                 history.save()
             }
+
+            //TODO royaltyAmounts
         } 
     }
 }

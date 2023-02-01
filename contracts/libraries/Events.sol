@@ -308,9 +308,14 @@ library Events {
      * @notice Emitted when a module inheriting from the `ModuleBase` is constructed.
      *
      * @param manager The Manager contract address used.
+     * @param market The MarketPlace contract address used.
      * @param timestamp The current block timestamp.
      */
-    event ModuleBaseConstructed(address indexed manager, uint256 timestamp);
+    event ModuleBaseConstructed(
+        address indexed manager, 
+        address indexed market, 
+        uint256 timestamp
+        );
 
     /**
      * @notice Emitted when the ModuleGlobals governance address is set.
@@ -444,7 +449,7 @@ library Events {
      * @param tokenId The token id of the derivativeNFT
      * @param value The collect value 
      * @param newTokenId The new tokenId  of collect
-     * @param timestamp The current block timestamp.
+     * @param royaltyAmounts The royalty amounts data
      */
     event DerivativeNFTCollected(
         uint256 projectId,
@@ -454,7 +459,7 @@ library Events {
         uint256 indexed tokenId,
         uint256 value,
         uint256 newTokenId,
-        uint256 timestamp
+        DataTypes.RoyaltyAmounts royaltyAmounts
     );
 
     /**
@@ -545,15 +550,19 @@ library Events {
      * only governor called
      *
      * @param derivativeNFT The derivativeNFT address
+     * @param projectId The project id
      * @param feePayType The fee who pay 
      * @param feeShareType The share type, default is level two
      * @param royaltyBasisPoints The royalty Basis Points 
+     * @param collectModule The collectModule contract
      */
     event AddMarket(
         address derivativeNFT,
+        uint256 projectId,
         DataTypes.FeePayType feePayType,
         DataTypes.FeeShareType feeShareType,
-        uint16 royaltyBasisPoints
+        uint16 royaltyBasisPoints,
+        address collectModule
     );
 
     /**
@@ -574,8 +583,7 @@ library Events {
      * @param newTokenIdBuyer The new token id of buyer .
      * @param seller The address of the seller which originally set the buy price.
      * @param buyer The address of the collector that purchased the DNFT using `buy`.
-     * @param collectFeeUsers The SBT Id who receive fee.
-     * @param royaltyAmounts The fees that was sent to Foundation & referrals for this sale.
+     * @param royaltyAmounts The Royalty Amounts data
      */
     event BuyPriceAccepted(
         address indexed derivativeNFT,
@@ -583,7 +591,6 @@ library Events {
         uint256 indexed newTokenIdBuyer,
         address seller,
         address buyer,
-        DataTypes.CollectFeeUsers collectFeeUsers,
         DataTypes.RoyaltyAmounts royaltyAmounts
     );
     
@@ -623,7 +630,7 @@ library Events {
      * @param tokenId The id of the DNFT.
      * @param buyer The address of the collector that made the offer which was accepted.
      * @param seller The address of the seller which accepted the offer.
-     * @param royaltyAmounts The fees that was sent to Foundation & referrals for this sale.
+     * @param royaltyAmounts The royalty amounts.
      */
     event OfferAccepted(
         address indexed derivativeNFT,
@@ -666,6 +673,7 @@ library Events {
      * @notice Emitted when a bid is placed.
      * @param auctionId The id of the auction this bid was for.
      * @param originalSoulBoundTokenIdBidder The SBT id of the original bidder.
+     * @param originalAmount Refund originalAmount to original bidder.
      * @param soulBoundTokenIdBidder The SBT id of the bidder.
      * @param bidder The bidder address.
      * @param amount The amount of the bid.
@@ -674,7 +682,8 @@ library Events {
     event ReserveAuctionBidPlaced(
         uint256 indexed auctionId, 
         uint256 indexed originalSoulBoundTokenIdBidder, 
-        uint256 indexed soulBoundTokenIdBidder, 
+        uint256 indexed originalAmount,
+        uint256 soulBoundTokenIdBidder, 
         address bidder,
         uint256 amount,
         uint256 endTime
@@ -691,6 +700,7 @@ library Events {
      * @notice Emitted when an DNFT is listed for auction.
      * @param seller The address of the seller.
      * @param derivativeNFT The address of the DNFT contract.
+     * @param projectId The project id of the DNFT.
      * @param tokenId The id of the DNFT.
      * @param units The units of the DNFT.
      * @param tokenIdInEscrow The escrow token id of the DNFT.
@@ -702,7 +712,8 @@ library Events {
     event ReserveAuctionCreated(
         address indexed seller,
         address indexed derivativeNFT,
-        uint256 indexed tokenId,
+        uint256 indexed projectId,
+        uint256 tokenId,
         uint256 units,
         uint256 tokenIdInEscrow,
         uint256 duration,
@@ -719,7 +730,7 @@ library Events {
      * @param auctionId The id of the auction that was finalized.
      * @param seller The address of the seller.
      * @param bidder The address of the highest bidder that won the DNFT.
-     * @param royaltyAmounts The fees  for this sale.
+     * @param royaltyAmounts The royalty amounts data
      */
     event ReserveAuctionFinalized(
         uint256 indexed auctionId,
@@ -1033,14 +1044,14 @@ library Events {
      *
      * @param publishId  The publishId 
      * @param tokenId  The tokenId collected
-     * @param collectUnits  The units collected
+     * @param payValue  The SBT value will pay
      * @param collectFeeUsers The collectFeeUsers data
      * @param royaltyAmounts  The royaltyAmounts data
      */
     event FeesForCollect (
         uint256 publishId, 
         uint256 tokenId, 
-        uint256 collectUnits, 
+        uint96 payValue, 
         DataTypes.CollectFeeUsers collectFeeUsers,
         DataTypes.RoyaltyAmounts royaltyAmounts
     );

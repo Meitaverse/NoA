@@ -210,7 +210,9 @@ library DataTypes {
         bool isOpen;
         FeeShareType feeShareType;
         FeePayType feePayType;
-        uint16 royaltyBasisPoints;
+        uint16 royaltySharesPoints;
+        uint256 projectId;
+        address collectModule;
     }
 
    

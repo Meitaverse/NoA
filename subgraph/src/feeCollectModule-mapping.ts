@@ -31,6 +31,7 @@ export function handleFeesForCollect(event: FeesForCollect): void {
     let collector : Address = Address.zero();
     let genesisCreator : Address = Address.zero();
     let previousCreator : Address = Address.zero();
+    let referrer : Address = Address.zero();
 
     if (!event.params.collectFeeUsers.ownershipSoulBoundTokenId.isZero()) {
         const sbtOwner = loadOrCreateSoulBoundToken(event.params.collectFeeUsers.ownershipSoulBoundTokenId)
@@ -60,24 +61,35 @@ export function handleFeesForCollect(event: FeesForCollect): void {
         }
     }
 
+    if (!event.params.collectFeeUsers.referrerSoulBoundTokenId.isZero()) {
+        const sbtReferrer = loadOrCreateSoulBoundToken(event.params.collectFeeUsers.referrerSoulBoundTokenId)
+        if (sbtReferrer.wallet.toHex() != ZERO_ADDRESS ) {
+            referrer = Address.fromBytes(sbtReferrer.wallet)
+        }
+    }
+
     let _idString = event.params.collectFeeUsers.collectorSoulBoundTokenId.toString() + "-" +  event.block.timestamp.toString()
     const history = FeesForCollectHistory.load(_idString) || new FeesForCollectHistory(_idString)
 
     if (history) {
         history.owner = loadOrCreateAccount(owner).id
+        history.publish = loadOrCreatePublish(event.params.publishId).id
+        history.tokenId = event.params.tokenId
+        history.payValue = event.params.payValue
         history.collector = loadOrCreateAccount(collector).id
         history.genesisCreator = loadOrCreateAccount(genesisCreator).id
         history.previousCreator = loadOrCreateAccount(previousCreator).id
-        history.publish = loadOrCreatePublish(event.params.publishId).id
-        history.tokenId = event.params.tokenId
-        history.collectUnits = event.params.collectUnits
+        history.referrer = loadOrCreateAccount(referrer).id
         history.treasuryAmount = event.params.royaltyAmounts.treasuryAmount
         history.genesisAmount = event.params.royaltyAmounts.genesisAmount
         history.previousAmount = event.params.royaltyAmounts.previousAmount
+        history.referrerAmount = event.params.royaltyAmounts.referrerAmount
         history.adjustedAmount = event.params.royaltyAmounts.adjustedAmount
         history.timestamp = event.block.timestamp
         history.save()
     }
+
+    //TODO save fee to every account: treasury, genesis creator, previous creator, current owner, referrer
 
   
 }

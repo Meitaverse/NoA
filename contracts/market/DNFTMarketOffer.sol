@@ -6,9 +6,9 @@ import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import {DataTypes} from "../libraries/DataTypes.sol";
 import {Events} from "../libraries/Events.sol";
 import {Errors} from "../libraries/Errors.sol";
-
+import {ICollectModule} from "../interfaces/ICollectModule.sol";
 import "./DNFTMarketCore.sol";
-import {MarketFees} from "./MarketFees.sol";
+// import {MarketFees} from "./MarketFees.sol";
 
 /**
  * @title Allows collectors to make an offer for an DNFT, valid for 24-25 hours.
@@ -17,8 +17,8 @@ import {MarketFees} from "./MarketFees.sol";
  */
 abstract contract DNFTMarketOffer is
   Initializable,
-  DNFTMarketCore,
-  MarketFees
+  DNFTMarketCore
+  // MarketFees
 {
   // using AddressUpgradeable for address;
   // using SafeMathUpgradeable for uint256;
@@ -207,25 +207,19 @@ abstract contract DNFTMarketOffer is
         units
     );
 
-    uint256 projectId = manager.getProjectIdByContract(derivativeNFT);
-    if (projectId == 0) 
-        revert Errors.InvalidParameter();
-
     // Distribute revenue for this sale leveraging the SBT Value received from the SBT contract in the line above.
-    DataTypes.CollectFeeUsers memory collectFeeUsers =  DataTypes.CollectFeeUsers({
-            ownershipSoulBoundTokenId: soulBoundTokenIdOwner,
-            collectorSoulBoundTokenId: offer.soulBoundTokenIdBuyer,
-            genesisSoulBoundTokenId: 0,
-            previousSoulBoundTokenId: 0,
-            referrerSoulBoundTokenId: offer.soulBoundTokenIdReferrer
-    });
+    uint256 projectId = _getMarketInfo(derivativeNFT).projectId;
+    if (projectId == 0) 
+      revert Errors.InvalidParameter();
 
-    DataTypes.RoyaltyAmounts memory royaltyAmounts = _distributeFunds(
-      collectFeeUsers,
-      projectId,
-      derivativeNFT,
-      newTokenIdBuyer,
-      uint96(units * offer.amount)
+    address collectModule = _getMarketInfo(derivativeNFT).collectModule;
+    bytes memory collectModuleInitData = abi.encode(offer.soulBoundTokenIdReferrer, BUY_REFERRER_FEE_DENOMINATOR);
+    DataTypes.RoyaltyAmounts memory royaltyAmounts = ICollectModule(collectModule).processCollect(
+        soulBoundTokenIdOwner,
+        offer.soulBoundTokenIdBuyer,
+        projectId,
+        uint96(units * offer.amount),
+        collectModuleInitData
     );
 
     emit Events.OfferAccepted(
@@ -235,7 +229,7 @@ abstract contract DNFTMarketOffer is
       msg.sender,  //seller
       royaltyAmounts
     );
-    
+
     return newTokenIdBuyer;
   }
 

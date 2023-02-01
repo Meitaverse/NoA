@@ -644,8 +644,6 @@ contract BankTreasury is
         }
 
         unchecked {
-            //TODO
-            
             if (payValue != royaltyAmounts.treasuryAmount + 
                             royaltyAmounts.genesisAmount +
                             royaltyAmounts.previousAmount + 
@@ -655,7 +653,6 @@ contract BankTreasury is
             {
                 revert Errors.InvalidRoyalties();
             }
-            
 
             _deductBalanceFrom(_freeFromEscrow(fromSoulBoundTokenId), payValue);
             _addBalanceTo(_freeFromEscrow(soulBoundTokenIdBankTreasury), royaltyAmounts.treasuryAmount);
@@ -664,20 +661,14 @@ contract BankTreasury is
             _addBalanceTo(_freeFromEscrow(collectFeeUsers.referrerSoulBoundTokenId), royaltyAmounts.referrerAmount);
             //owner or seller
             _addBalanceTo(_freeFromEscrow(collectFeeUsers.ownershipSoulBoundTokenId), royaltyAmounts.adjustedAmount);
-
         }
-
-        //emit event
     }
  
     function useEarnestMoneyForPay(
         uint256 soulBoundTokenId,
         uint256 amount
     ) external whenNotPaused nonReentrant onlyFoundationMarket  {
-        
         _deductBalanceFrom(_freeFromEscrow(soulBoundTokenId), amount);
-
-        //emit event 
     }
     
     function refundEarnestMoney(

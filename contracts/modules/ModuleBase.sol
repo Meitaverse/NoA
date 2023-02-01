@@ -14,15 +14,23 @@ import {Events} from '../libraries/Events.sol';
  */
 abstract contract ModuleBase {
     address public immutable MANAGER;
+    address public immutable MARKET;
 
     modifier onlyManager() {
         if (msg.sender != MANAGER) revert Errors.NotManager();
         _;
     }
 
-    constructor(address manager_) {
+    modifier onlyManagerOrMarket() {
+        if (!(msg.sender == MANAGER || msg.sender == MARKET)) revert Errors.NotManager();
+        _;
+    }
+
+    constructor(address manager_, address market_) {
         if (manager_ == address(0)) revert Errors.InitParamsInvalid();
         MANAGER = manager_;
-        emit Events.ModuleBaseConstructed(manager_, block.timestamp);
+        if (market_ == address(0)) revert Errors.InitParamsInvalid();
+        MARKET = market_;
+        emit Events.ModuleBaseConstructed(manager_, market_, block.timestamp);
     }
 }

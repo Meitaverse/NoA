@@ -119,12 +119,15 @@ task("add-market", "add-market function")
     );
 
     //addMarket
+    let feeCollectModuleAddress = "0x322813Fd9A801c5507c9de605d63CEA4f2CE6c44";
     await waitForTx(
       marketPlace.connect(governance).addMarket(
-          derivativeNFT.address,
-          0,
-          0,
-          50
+        derivativeNFT.address,
+        FIRST_PROJECT_ID,
+        feeCollectModuleAddress,
+        0,
+        0,
+        50,
         )
     );
     
@@ -132,7 +135,7 @@ task("add-market", "add-market function")
     console.log('\n\t--- marketInfo.isOpen : ', marketInfo.isOpen);
     console.log('\n\t--- marketInfo.feePayType : ', marketInfo.feePayType);
     console.log('\n\t--- marketInfo.feeShareType : ', marketInfo.feeShareType);
-    console.log('\n\t--- marketInfo.royaltyBasisPoints : ', marketInfo.royaltyBasisPoints);
+    console.log('\n\t--- marketInfo.royaltyBasisPoints : ', marketInfo.royaltySharesPoints);
 
     const FIRST_DNFT_TOKEN_ID = 1;
     console.log('\n\t--- ownerOf FIRST_DNFT_TOKEN_ID : ', await derivativeNFT.ownerOf(FIRST_DNFT_TOKEN_ID));

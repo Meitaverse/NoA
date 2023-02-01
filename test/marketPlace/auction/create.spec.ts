@@ -160,9 +160,11 @@ makeSuiteCleanRoom('Market Place', function () {
     await expect(
         marketPlaceContract.connect(governance).addMarket(
           derivativeNFT.address,
-            0,
-            0,
-            50,
+          FIRST_PROJECT_ID,
+          feeCollectModule.address,
+          0,
+          0,
+          50,
         )
     ).to.not.be.reverted;
 
@@ -261,6 +263,7 @@ makeSuiteCleanRoom('Market Place', function () {
         [
             userAddress, // seller
             derivativeNFT.address, // DNFT contract
+            FIRST_PROJECT_ID,
             FIRST_DNFT_TOKEN_ID,   //tokenId
             11,                    //units
             SECOND_DNFT_TOKEN_ID,  //token id in escrow

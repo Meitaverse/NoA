@@ -199,9 +199,11 @@ makeSuiteCleanRoom('Market Place', function () {
         await expect(
           marketPlaceContract.connect(user).addMarket(
             derivativeNFT.address,
-             0,
-             0,
-             50,
+            FIRST_PROJECT_ID,
+            feeCollectModule.address,
+            0,
+            0,
+            50,
           )
         ).to.be.revertedWith("Operator: caller does not have the Operator role");
 

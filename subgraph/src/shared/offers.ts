@@ -1,13 +1,13 @@
 import { ethereum } from "@graphprotocol/graph-ts";
 
-import { Account, DNFT, NftMarketOffer } from "../../generated/schema";
+import { Account, DNFT, DnftMarketOffer } from "../../generated/schema";
 import { recordDnftEvent } from "./events";
 
-export function loadLatestOffer(nft: DNFT): NftMarketOffer | null {
+export function loadLatestOffer(nft: DNFT): DnftMarketOffer | null {
   if (!nft.mostRecentOffer) {
     return null;
   }
-  let offer = NftMarketOffer.load(nft.mostRecentOffer as string);
+  let offer = DnftMarketOffer.load(nft.mostRecentOffer as string);
   if (!offer || offer.status != "Open") {
     return null;
   }
@@ -18,7 +18,7 @@ export function outbidOrExpirePreviousOffer(
   event: ethereum.Event,
   nft: DNFT,
   newBuyer: Account,
-  newOffer: NftMarketOffer,
+  newOffer: DnftMarketOffer,
 ): boolean {
   let offer = loadLatestOffer(nft);
   if (!offer) {

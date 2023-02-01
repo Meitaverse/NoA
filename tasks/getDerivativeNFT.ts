@@ -70,4 +70,18 @@ task("getDerivativeNFT", "get DerivativeNFT function")
   console.log('\n\t---projectid: ', projectid);
   console.log('\t---derivativeNFT address: ',  derivativeNFT.address);
 
+
+  let calculate_dNFT = await manager.connect(user).getDeverivateNFTAddress(projectid);
+  console.log('\n\t---calculate_dNFT: ',  calculate_dNFT);
+
+  let projectContractName:string;
+  if (projectid == 1)
+    projectContractName = "DerivativeNFT";
+  else 
+    projectContractName = `DerivativeNFT-${projectid}`;
+
+  console.log('\n\t---projectContractName: ',  projectContractName);
+
+
+
   });

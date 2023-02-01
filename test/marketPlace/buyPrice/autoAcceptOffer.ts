@@ -158,9 +158,11 @@ makeSuiteCleanRoom('Market Place', function () {
     await expect(
         marketPlaceContract.connect(governance).addMarket(
           derivativeNFT.address,
-            0,
-            0,
-            50,
+          FIRST_PROJECT_ID,
+          feeCollectModule.address,
+          0,
+          0,
+          50,
         )
     ).to.not.be.reverted;
 
@@ -258,14 +260,7 @@ makeSuiteCleanRoom('Market Place', function () {
             derivativeNFT.address, 
             SECOND_DNFT_TOKEN_ID,
             userTwoAddress,
-            userAddress,
-            [
-                0,
-                0,
-                0,
-                0,
-                OFFER_PRICE
-            ]
+            userAddress
         ],
       );
     });

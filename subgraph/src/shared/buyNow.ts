@@ -1,10 +1,10 @@
-import { DNFT, NftMarketBuyNow } from "../../generated/schema";
+import { DNFT, DnftMarketBuyNow } from "../../generated/schema";
 
-export function loadLatestBuyNow(dnft: DNFT): NftMarketBuyNow | null {
+export function loadLatestBuyNow(dnft: DNFT): DnftMarketBuyNow | null {
   if (!dnft.mostRecentBuyNow) {
     return null;
   }
-  let buyNow = NftMarketBuyNow.load(dnft.mostRecentBuyNow as string);
+  let buyNow = DnftMarketBuyNow.load(dnft.mostRecentBuyNow as string);
   if (!buyNow || buyNow.status != "Open") {
     return null;
   }

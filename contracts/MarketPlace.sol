@@ -19,13 +19,12 @@ import {MarketPlaceStorage} from  "./storage/MarketPlaceStorage.sol";
 import {IModuleGlobals} from "./interfaces/IModuleGlobals.sol";
 import {MarketSharedCore} from "./market/MarketSharedCore.sol";
 import {DNFTMarketCore} from "./market/DNFTMarketCore.sol";
-import {MarketFees} from "./market/MarketFees.sol";
+// import {MarketFees} from "./market/MarketFees.sol";
 import {DNFTMarketOffer} from "./market/DNFTMarketOffer.sol";
 import {DNFTMarketBuyPrice} from "./market/DNFTMarketBuyPrice.sol";
 import {DNFTMarketReserveAuction} from "./market/DNFTMarketReserveAuction.sol";
 import {AdminRoleEnumerable} from "./market/AdminRoleEnumerable.sol";
 import {OperatorRoleEnumerable} from "./market/OperatorRoleEnumerable.sol";
-
 
 
 contract MarketPlace is
@@ -34,7 +33,7 @@ contract MarketPlace is
     MarketPlaceStorage,
     MarketSharedCore,
     DNFTMarketCore,
-    MarketFees,
+    // MarketFees,
     DNFTMarketReserveAuction,    
     DNFTMarketBuyPrice,
     DNFTMarketOffer,
@@ -49,13 +48,12 @@ contract MarketPlace is
 
     /// @custom:oz-upgrades-unsafe-allow constructor
     constructor(
-        address manager,
         address treasury,
-        address sbt,
         uint256 duration  //24h
     ) 
     DNFTMarketReserveAuction(duration) 
-    MarketFees(manager, treasury, sbt)
+    DNFTMarketCore(treasury)
+    // MarketFees(manager, treasury, sbt)
     initializer {}
 
     function initialize(address admin) external initializer {
@@ -195,9 +193,9 @@ contract MarketPlace is
         // console.log('Market Place, onERC3525Received, toTokenId:', toTokenId);
         // console.log('Market Place, onERC3525Received, value:', value);
         //TODO
-        // if (value == 0) {
-        //     revert Errors.Must_Escrow_Non_Zero_Amount();
-        // }
+        if (value == 0) {
+            revert Errors.Must_Escrow_Non_Zero_Amount();
+        }
 
         emit Events.MarketPlaceERC3525Received(msg.sender, operator, fromTokenId, toTokenId, value, data, gasleft());
         return 0x009ce20b;
@@ -219,19 +217,26 @@ contract MarketPlace is
 
     function addMarket(
         address derivativeNFT_,
+        uint256 projectId_,
+        address collectModule_,
         DataTypes.FeePayType feePayType_,
         DataTypes.FeeShareType feeShareType_,
-        uint16 royaltyBasisPoints_
+        uint16 royaltySharesPoints_
     ) 
-        external 
+        external
         whenNotPaused   
         onlyOperator 
     {
+        if (projectId_ == 0) revert Errors.InvalidParameter();
+        if (_getMarketInfo(derivativeNFT_).projectId == projectId_) revert Errors.DerivativeNFTIsInMarket();
+        
         MarketLogic.addMarket(
             derivativeNFT_,
+            projectId_,
+            collectModule_,
             feePayType_,
             feeShareType_,
-            royaltyBasisPoints_,
+            royaltySharesPoints_,
             markets
         );
     }

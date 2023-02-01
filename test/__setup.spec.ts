@@ -86,7 +86,7 @@ use(solidity);
 export const NUM_CONFIRMATIONS_REQUIRED = 3;
 // export const CURRENCY_MINT_AMOUNT = parseEther('100');
 export const BPS_MAX = 10000;
-export const TREASURY_FEE_BPS = 50;
+export const TREASURY_FEE_BPS = 500;
 export const PublishRoyaltySBT = 100;
 export const GENESIS_FEE_BPS = 100; //genesis Fee
 export const MAX_PROFILE_IMAGE_URI_LENGTH = 6000;
@@ -351,9 +351,7 @@ before(async function () {
     'contracts/libraries/MarketLogic.sol:MarketLogic': marketLogic.address,
   };
   marketPlaceImpl = await new MarketPlace__factory(marketLibs, deployer).deploy(
-    manager.address,
     bankTreasuryContract.address,
-    sbtContract.address,
     MARKET_MAX_DURATION
   );
   let marketPlaceData = marketPlaceImpl.interface.encodeFunctionData("initialize", [
@@ -383,16 +381,19 @@ before(async function () {
   // Modules
   feeCollectModule = await new FeeCollectModule__factory(deployer).deploy(
     manager.address, 
+    marketPlaceContract.address,
     moduleGlobals.address
   );
 
   publishModule = await new PublishModule__factory(deployer).deploy(
     manager.address, 
+    marketPlaceContract.address,
     moduleGlobals.address
   );
 
   multirecipientFeeCollectModule = await new MultirecipientFeeCollectModule__factory(deployer).deploy(
     manager.address, 
+    marketPlaceContract.address,
     moduleGlobals.address
   );
 

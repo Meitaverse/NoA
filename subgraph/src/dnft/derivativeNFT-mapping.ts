@@ -49,7 +49,6 @@ export function handleDNFTTransfer(event: Transfer): void {
     } else {
         log.info("try_getPublishIdByTokenId, result.value: {}", [result.value.toString()])
         
-        // TODO
         let publish = loadOrCreatePublish(result.value)
 
         let dnftContract = loadOrCreateDNFTContract(event.address);
@@ -150,8 +149,6 @@ export function handleDNFTTransferValue(event: TransferValue): void {
         if (event.params._fromTokenId.isZero()){
             //mint value
 
-            //TODO
-
         } else {
             log.info("dnftFrom ---loadOrCreateDNFT, _fromTokenId:{}", [
                 event.params._fromTokenId.toString(),
@@ -199,7 +196,6 @@ export function handleDNFTTransferValue(event: TransferValue): void {
 
             if (event.params._toTokenId.isZero()){
                 //burn
-                //TODO
     
             } else {
                 

@@ -35,10 +35,11 @@ import { deployContract, waitForTx , ProtocolState, Error, findEvent} from './he
 export let runtimeHRE: HardhatRuntimeEnvironment;
 
 
-// yarn hardhat create-project --network local
+// yarn hardhat create-project --name bitsoul2 --network local
 
 task("create-project", "create-project function")
-.setAction(async ({}: {}, hre) =>  {
+.addParam("name", "unique project name")
+.setAction(async ({name}: {name: string}, hre) =>  {
   runtimeHRE = hre;
   const ethers = hre.ethers;
   const accounts = await ethers.getSigners();
@@ -77,7 +78,7 @@ task("create-project", "create-project function")
         manager.connect(user).createProject({
           soulBoundTokenId: SECOND_PROFILE_ID,
           hubId: FIRST_HUB_ID,
-          name: "bitsoul",
+          name: name, 
           description: "Hub for bitsoul",
           image: "image",
           metadataURI: "metadataURI",
@@ -98,7 +99,9 @@ task("create-project", "create-project function")
     );
 
     let projectId = event.args.projectId.toNumber();
-
+    console.log('\n\t---projectid: ', projectId);
+   
+  
     let projectInfo = await manager.connect(user).getProjectInfo(projectId);
     console.log(
       "\n\t--- projectInfo info - hubId: ", projectInfo.hubId.toNumber()
@@ -135,7 +138,15 @@ task("create-project", "create-project function")
       user
     );
 
-    await exportSubgraphNetworksJson(hre, derivativeNFT, "DerivativeNFT" /*projectInfo.name*/);
+    console.log('\t---derivativeNFT address: ',  derivativeNFT.address);
+
+    let projectContractName:string;
+    if (projectId == 1)
+      projectContractName = "DerivativeNFT";
+    else 
+      projectContractName = `DerivativeNFT-${projectId}`;
+
+    await exportSubgraphNetworksJson(hre, derivativeNFT, projectContractName);
 
   //   //addMarket
   //   await waitForTx(

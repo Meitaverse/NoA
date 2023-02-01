@@ -57,7 +57,7 @@ contract FeeCollectModule is FeeModuleBase, ModuleBase, ICollectModule {
     // publishId => ProfilePublicationData
     mapping(uint256 =>  ProfilePublicationData) internal _dataByPublicationByProfile;
 
-    constructor(address manager, address moduleGlobals) FeeModuleBase(moduleGlobals) ModuleBase(manager) {}
+    constructor(address manager, address market, address moduleGlobals) FeeModuleBase(moduleGlobals) ModuleBase(manager, market) {}
 
     function initializePublicationCollectModule(
         uint256 publishId,
@@ -65,7 +65,7 @@ contract FeeCollectModule is FeeModuleBase, ModuleBase, ICollectModule {
         uint256 tokenId,
         uint256 amount,
         bytes calldata data 
-    ) external override onlyManager{
+    ) external override onlyManager {
         (uint256 genesisSoulBoundTokenId, uint16 genesisFee, uint256 salePrice, uint256 royaltyBasisPoints) = abi.decode(
             data,
             (uint256, uint16,  uint256, uint256)
@@ -101,20 +101,20 @@ contract FeeCollectModule is FeeModuleBase, ModuleBase, ICollectModule {
      * @dev Processes a collect by:
      *  1.  will pay royalty to ownershipSoulBoundTokenId
      *  2. Charging a fee
-     *  3. Pay to genesis publisher
      */
     function processCollect(
         uint256 ownershipSoulBoundTokenId,
         uint256 collectorSoulBoundTokenId,
         uint256 publishId,
-        uint256 collectUnits,
+        uint96 payValue,
         bytes calldata data
-    ) external virtual override onlyManager {
-        _processCollect(
+    ) external virtual override onlyManagerOrMarket returns (DataTypes.RoyaltyAmounts memory){
+        //TODO only manager or market 
+       return _processCollect(
             ownershipSoulBoundTokenId, 
             collectorSoulBoundTokenId, 
             publishId, 
-            collectUnits,
+            payValue,
             data
         );
     }
@@ -135,38 +135,31 @@ contract FeeCollectModule is FeeModuleBase, ModuleBase, ICollectModule {
 
     function getFees(
         uint256 publishId, 
-        uint32 collectUnits
+        uint96 payValue
     ) external view returns (
-        uint16 treasuryFee, 
-        uint256 genesisSoulBoundTokenId, 
-        DataTypes.RoyaltyAmounts memory royaltyAmounts
+        uint96 totalFees, 
+        uint96 creatorRev, 
+        uint96 previousCreatorRev, 
+        uint96 sellerRev 
     ) {
-        (,  treasuryFee) = _treasuryData();
-        genesisSoulBoundTokenId = _dataByPublicationByProfile[publishId].genesisSoulBoundTokenId;
+        (,  uint16 treasuryFee) = _treasuryData();
         
         unchecked{
-            uint96 payValue = uint96(collectUnits * _dataByPublicationByProfile[publishId].salePrice);
-            royaltyAmounts.treasuryAmount = uint96(payValue * treasuryFee / BASIS_POINTS);
-            royaltyAmounts.genesisAmount = uint96(payValue * _dataByPublicationByProfile[publishId].genesisFee / BASIS_POINTS);
-            royaltyAmounts.previousAmount = uint96(payValue * _dataByPublicationByProfile[publishId].previousFee / BASIS_POINTS);
-            royaltyAmounts.adjustedAmount = payValue - royaltyAmounts.treasuryAmount - royaltyAmounts.genesisAmount - royaltyAmounts.previousAmount;
-
+            totalFees = uint96(payValue * treasuryFee / BASIS_POINTS);
+            creatorRev = uint96(payValue * _dataByPublicationByProfile[publishId].genesisFee / BASIS_POINTS);
+            previousCreatorRev = uint96(payValue * _dataByPublicationByProfile[publishId].previousFee / BASIS_POINTS);
+            sellerRev = uint96(payValue) - totalFees - creatorRev - previousCreatorRev;
         }
 
-        return (
-           treasuryFee,
-           genesisSoulBoundTokenId,
-           royaltyAmounts
-        );
     }
 
     function _processCollect(
         uint256 ownershipSoulBoundTokenId,
         uint256 collectorSoulBoundTokenId,
         uint256 publishId, 
-        uint256 collectUnits,
+        uint96 payValue,
         bytes calldata data
-    ) internal {
+    ) internal returns (DataTypes.RoyaltyAmounts memory royaltyAmounts){
         uint256 referrerSoulBoundTokenId;
          uint16 referrerFee;
         if (data.length != 0) {
@@ -183,8 +176,6 @@ contract FeeCollectModule is FeeModuleBase, ModuleBase, ICollectModule {
 
         unchecked {
 
-            DataTypes.RoyaltyAmounts memory royaltyAmounts;
-            uint96 payValue = uint96(collectUnits.mul(_dataByPublicationByProfile[publishId].salePrice));
             if (payValue >0) {
                 //Transfer Value of total pay to treasury 
                 INFTDerivativeProtocolTokenV1(_sbt()).transferValue(collectorSoulBoundTokenId, BANK_TREASURY_SOUL_BOUND_TOKENID, payValue);
@@ -224,12 +215,145 @@ contract FeeCollectModule is FeeModuleBase, ModuleBase, ICollectModule {
                 emit Events.FeesForCollect(
                     publishId,
                     _dataByPublicationByProfile[publishId].tokenId,
-                    collectUnits,
+                    payValue,
                     collectFeeUsers,
                     royaltyAmounts
                 );
             }
         }
     }
+/*
+    // solhint-disable-next-line code-complexity
+    function getFees(
+        address dnftContract,
+        uint256 tokenId,
+        uint256 price
+    )
+        external
+        view
+        returns (
+            FeeWithRecipient memory protocol,
+            Fee memory creator,
+            FeeWithRecipient memory owner,
+            RevSplit[] memory creatorRevSplit
+        )
+    {
+        // Note that the protocol fee returned does not account for the referrals (which are not known until sale).
+        protocol.recipient = market.getFoundationTreasury();
+        address payable[] memory creatorRecipients;
+        uint256[] memory creatorShares;
+        uint256 creatorRev;
+        {
+            address payable ownerAddress;
+            uint256 totalFees;
+            uint256 sellerRev;
+            (totalFees, creatorRev, creatorRecipients, creatorShares, sellerRev, ownerAddress) = market.getFeesAndRecipients(
+                dnftContract,
+                tokenId,
+                price
+            );
+            protocol.amountInWei = totalFees;
+            creator.amountInWei = creatorRev;
+            owner.amountInWei = sellerRev;
+            owner.recipient = ownerAddress;
+            if (creatorShares.length == 0) {
+                creatorShares = new uint256[](creatorRecipients.length);
+                if (creatorShares.length == 1) {
+                    creatorShares[0] = BASIS_POINTS;
+                }
+            }
+        }
+        uint256 creatorRevBP;
+        {
+            uint256 totalFeesBP;
+            uint256 sellerRevBP;
+            (totalFeesBP, creatorRevBP, , , sellerRevBP, ) = market.getFeesAndRecipients(dnftContract, tokenId, BASIS_POINTS);
+            protocol.percentInBasisPoints = totalFeesBP;
+            creator.percentInBasisPoints = creatorRevBP;
+            owner.percentInBasisPoints = sellerRevBP;
+        }
 
+        // Normalize shares to 10%
+        {
+        uint256 totalShares = 0;
+        for (uint256 i = 0; i < creatorShares.length; ++i) {
+            // TODO handle ignore if > 100% (like the market would)
+            totalShares += creatorShares[i];
+        }
+
+        if (totalShares != 0) {
+            for (uint256 i = 0; i < creatorShares.length; ++i) {
+            creatorShares[i] = (BASIS_POINTS * creatorShares[i]) / totalShares;
+            }
+        }
+        }
+        // Count creators and split recipients
+        {
+        uint256 creatorCount = creatorRecipients.length;
+        for (uint256 i = 0; i < creatorRecipients.length; ++i) {
+            // Check if the address is a percent split
+            if (address(creatorRecipients[i]).isContract()) {
+                try this.getSplitShareLength(creatorRecipients[i]) returns (uint256 recipientCount) {
+                    creatorCount += recipientCount - 1;
+                } catch // solhint-disable-next-line no-empty-blocks
+                {
+                    // Not a Foundation percent split
+                }
+            }
+        }
+        creatorRevSplit = new RevSplit[](creatorCount);
+        }
+
+        // Populate rev splits, including any percent splits
+        uint256 revSplitIndex = 0;
+        for (uint256 i = 0; i < creatorRecipients.length; ++i) {
+        if (address(creatorRecipients[i]).isContract()) {
+            try this.getSplitShareLength(creatorRecipients[i]) returns (uint256 recipientCount) {
+                uint256 totalSplitShares;
+                for (uint256 splitIndex = 0; splitIndex < recipientCount; ++splitIndex) {
+                    uint256 share = PercentSplitETH(creatorRecipients[i]).getPercentInBasisPointsByIndex(splitIndex);
+                    totalSplitShares += share;
+                }
+                for (uint256 splitIndex = 0; splitIndex < recipientCount; ++splitIndex) {
+                    uint256 splitShare = (PercentSplitETH(creatorRecipients[i]).getPercentInBasisPointsByIndex(splitIndex) *
+                    BASIS_POINTS) / totalSplitShares;
+                    splitShare = (splitShare * creatorShares[i]) / BASIS_POINTS;
+                    creatorRevSplit[revSplitIndex++] = _calcRevSplit(
+                    price,
+                    splitShare,
+                    creatorRevBP,
+                    PercentSplitETH(creatorRecipients[i]).getShareRecipientByIndex(splitIndex)
+                    );
+                }
+                continue;
+            } catch // solhint-disable-next-line no-empty-blocks
+            {
+            // Not a Foundation percent split
+            }
+        }
+        {
+            creatorRevSplit[revSplitIndex++] = _calcRevSplit(price, creatorShares[i], creatorRevBP, creatorRecipients[i]);
+        }
+        }
+
+        // Bubble the creator to the first position in `creatorRevSplit`
+        {
+        address creatorAddress;
+        try this.getTokenCreator(dnftContract, tokenId) returns (address _creatorAddress) {
+            creatorAddress = _creatorAddress;
+        } catch // solhint-disable-next-line no-empty-blocks
+        {
+
+        }
+        if (creatorAddress != address(0)) {
+            for (uint256 i = 1; i < creatorRevSplit.length; ++i) {
+            if (creatorRevSplit[i].recipient == creatorAddress) {
+                (creatorRevSplit[i], creatorRevSplit[0]) = (creatorRevSplit[0], creatorRevSplit[i]);
+                break;
+            }
+            }
+        }
+        }
+    }
+*/
 }

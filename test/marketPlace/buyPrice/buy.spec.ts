@@ -159,9 +159,11 @@ makeSuiteCleanRoom('Market Place', function () {
     await expect(
         marketPlaceContract.connect(governance).addMarket(
           derivativeNFT.address,
-            0,
-            0,
-            50,
+          FIRST_PROJECT_ID,
+          feeCollectModule.address,
+          0,
+          0,
+          50,
         )
     ).to.not.be.reverted;
 
@@ -226,7 +228,7 @@ makeSuiteCleanRoom('Market Place', function () {
 
   context('UserTwo buy', function () {
     beforeEach(async () => {
-     
+     /*
         // @notice MUST deposit SBT value into bank treasury before buy
         receipt = await waitForTx(
             marketPlaceContract.connect(userTwo).buy(
@@ -238,6 +240,16 @@ makeSuiteCleanRoom('Market Place', function () {
                 0
             )
         );
+        */
+
+        await marketPlaceContract.connect(userTwo).buy(
+          THIRD_PROFILE_ID,
+          derivativeNFT.address, 
+          FIRST_DNFT_TOKEN_ID, 
+          1,
+          OFFER_PRICE,
+          0
+      );
     });
 
     /*

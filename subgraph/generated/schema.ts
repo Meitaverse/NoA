@@ -2491,6 +2491,33 @@ export class FeesForCollectHistory extends Entity {
     this.set("id", Value.fromString(value));
   }
 
+  get publish(): string {
+    let value = this.get("publish");
+    return value!.toString();
+  }
+
+  set publish(value: string) {
+    this.set("publish", Value.fromString(value));
+  }
+
+  get tokenId(): BigInt {
+    let value = this.get("tokenId");
+    return value!.toBigInt();
+  }
+
+  set tokenId(value: BigInt) {
+    this.set("tokenId", Value.fromBigInt(value));
+  }
+
+  get payValue(): BigInt {
+    let value = this.get("payValue");
+    return value!.toBigInt();
+  }
+
+  set payValue(value: BigInt) {
+    this.set("payValue", Value.fromBigInt(value));
+  }
+
   get owner(): string {
     let value = this.get("owner");
     return value!.toString();
@@ -2527,31 +2554,21 @@ export class FeesForCollectHistory extends Entity {
     this.set("previousCreator", Value.fromString(value));
   }
 
-  get publish(): string {
-    let value = this.get("publish");
-    return value!.toString();
+  get referrer(): string | null {
+    let value = this.get("referrer");
+    if (!value || value.kind == ValueKind.NULL) {
+      return null;
+    } else {
+      return value.toString();
+    }
   }
 
-  set publish(value: string) {
-    this.set("publish", Value.fromString(value));
-  }
-
-  get tokenId(): BigInt {
-    let value = this.get("tokenId");
-    return value!.toBigInt();
-  }
-
-  set tokenId(value: BigInt) {
-    this.set("tokenId", Value.fromBigInt(value));
-  }
-
-  get collectUnits(): BigInt {
-    let value = this.get("collectUnits");
-    return value!.toBigInt();
-  }
-
-  set collectUnits(value: BigInt) {
-    this.set("collectUnits", Value.fromBigInt(value));
+  set referrer(value: string | null) {
+    if (!value) {
+      this.unset("referrer");
+    } else {
+      this.set("referrer", Value.fromString(<string>value));
+    }
   }
 
   get treasuryAmount(): BigInt {
@@ -2579,6 +2596,23 @@ export class FeesForCollectHistory extends Entity {
 
   set previousAmount(value: BigInt) {
     this.set("previousAmount", Value.fromBigInt(value));
+  }
+
+  get referrerAmount(): BigInt | null {
+    let value = this.get("referrerAmount");
+    if (!value || value.kind == ValueKind.NULL) {
+      return null;
+    } else {
+      return value.toBigInt();
+    }
+  }
+
+  set referrerAmount(value: BigInt | null) {
+    if (!value) {
+      this.unset("referrerAmount");
+    } else {
+      this.set("referrerAmount", Value.fromBigInt(<BigInt>value));
+    }
   }
 
   get adjustedAmount(): BigInt {
@@ -4097,6 +4131,15 @@ export class Market extends Entity {
     this.set("derivativeNFT", Value.fromString(value));
   }
 
+  get project(): string {
+    let value = this.get("project");
+    return value!.toString();
+  }
+
+  set project(value: string) {
+    this.set("project", Value.fromString(value));
+  }
+
   get feePayType(): i32 {
     let value = this.get("feePayType");
     return value!.toI32();
@@ -4122,6 +4165,15 @@ export class Market extends Entity {
 
   set royaltyBasisPoints(value: i32) {
     this.set("royaltyBasisPoints", Value.fromI32(value));
+  }
+
+  get collectModule(): Bytes {
+    let value = this.get("collectModule");
+    return value!.toBytes();
+  }
+
+  set collectModule(value: Bytes) {
+    this.set("collectModule", Value.fromBytes(value));
   }
 
   get timestamp(): BigInt {
@@ -4460,7 +4512,7 @@ export class DerivativeNFTContract extends Entity {
   }
 }
 
-export class NftMarketContract extends Entity {
+export class DnftMarketContract extends Entity {
   constructor(id: string) {
     super();
     this.set("id", Value.fromString(id));
@@ -4468,19 +4520,19 @@ export class NftMarketContract extends Entity {
 
   save(): void {
     let id = this.get("id");
-    assert(id != null, "Cannot save NftMarketContract entity without an ID");
+    assert(id != null, "Cannot save DnftMarketContract entity without an ID");
     if (id) {
       assert(
         id.kind == ValueKind.STRING,
-        `Entities of type NftMarketContract must have an ID of type String but the id '${id.displayData()}' is of type ${id.displayKind()}`
+        `Entities of type DnftMarketContract must have an ID of type String but the id '${id.displayData()}' is of type ${id.displayKind()}`
       );
-      store.set("NftMarketContract", id.toString(), this);
+      store.set("DnftMarketContract", id.toString(), this);
     }
   }
 
-  static load(id: string): NftMarketContract | null {
-    return changetype<NftMarketContract | null>(
-      store.get("NftMarketContract", id)
+  static load(id: string): DnftMarketContract | null {
+    return changetype<DnftMarketContract | null>(
+      store.get("DnftMarketContract", id)
     );
   }
 
@@ -4503,7 +4555,7 @@ export class NftMarketContract extends Entity {
   }
 }
 
-export class NftMarketAuction extends Entity {
+export class DnftMarketAuction extends Entity {
   constructor(id: string) {
     super();
     this.set("id", Value.fromString(id));
@@ -4511,19 +4563,19 @@ export class NftMarketAuction extends Entity {
 
   save(): void {
     let id = this.get("id");
-    assert(id != null, "Cannot save NftMarketAuction entity without an ID");
+    assert(id != null, "Cannot save DnftMarketAuction entity without an ID");
     if (id) {
       assert(
         id.kind == ValueKind.STRING,
-        `Entities of type NftMarketAuction must have an ID of type String but the id '${id.displayData()}' is of type ${id.displayKind()}`
+        `Entities of type DnftMarketAuction must have an ID of type String but the id '${id.displayData()}' is of type ${id.displayKind()}`
       );
-      store.set("NftMarketAuction", id.toString(), this);
+      store.set("DnftMarketAuction", id.toString(), this);
     }
   }
 
-  static load(id: string): NftMarketAuction | null {
-    return changetype<NftMarketAuction | null>(
-      store.get("NftMarketAuction", id)
+  static load(id: string): DnftMarketAuction | null {
+    return changetype<DnftMarketAuction | null>(
+      store.get("DnftMarketAuction", id)
     );
   }
 
@@ -4536,13 +4588,13 @@ export class NftMarketAuction extends Entity {
     this.set("id", Value.fromString(value));
   }
 
-  get nftMarketContract(): string {
-    let value = this.get("nftMarketContract");
+  get dnftMarketContract(): string {
+    let value = this.get("dnftMarketContract");
     return value!.toString();
   }
 
-  set nftMarketContract(value: string) {
-    this.set("nftMarketContract", Value.fromString(value));
+  set dnftMarketContract(value: string) {
+    this.set("dnftMarketContract", Value.fromString(value));
   }
 
   get auctionId(): BigInt {
@@ -4570,6 +4622,15 @@ export class NftMarketAuction extends Entity {
 
   set derivativeNFT(value: string) {
     this.set("derivativeNFT", Value.fromString(value));
+  }
+
+  get project(): string {
+    let value = this.get("project");
+    return value!.toString();
+  }
+
+  set project(value: string) {
+    this.set("project", Value.fromString(value));
   }
 
   get status(): string {
@@ -4993,7 +5054,7 @@ export class NftMarketAuction extends Entity {
   }
 }
 
-export class NftMarketBid extends Entity {
+export class DnftMarketBid extends Entity {
   constructor(id: string) {
     super();
     this.set("id", Value.fromString(id));
@@ -5001,18 +5062,18 @@ export class NftMarketBid extends Entity {
 
   save(): void {
     let id = this.get("id");
-    assert(id != null, "Cannot save NftMarketBid entity without an ID");
+    assert(id != null, "Cannot save DnftMarketBid entity without an ID");
     if (id) {
       assert(
         id.kind == ValueKind.STRING,
-        `Entities of type NftMarketBid must have an ID of type String but the id '${id.displayData()}' is of type ${id.displayKind()}`
+        `Entities of type DnftMarketBid must have an ID of type String but the id '${id.displayData()}' is of type ${id.displayKind()}`
       );
-      store.set("NftMarketBid", id.toString(), this);
+      store.set("DnftMarketBid", id.toString(), this);
     }
   }
 
-  static load(id: string): NftMarketBid | null {
-    return changetype<NftMarketBid | null>(store.get("NftMarketBid", id));
+  static load(id: string): DnftMarketBid | null {
+    return changetype<DnftMarketBid | null>(store.get("DnftMarketBid", id));
   }
 
   get id(): string {
@@ -5024,13 +5085,13 @@ export class NftMarketBid extends Entity {
     this.set("id", Value.fromString(value));
   }
 
-  get nftMarketAuction(): string {
-    let value = this.get("nftMarketAuction");
+  get dnftMarketAuction(): string {
+    let value = this.get("dnftMarketAuction");
     return value!.toString();
   }
 
-  set nftMarketAuction(value: string) {
-    this.set("nftMarketAuction", Value.fromString(value));
+  set dnftMarketAuction(value: string) {
+    this.set("dnftMarketAuction", Value.fromString(value));
   }
 
   get dnft(): string {
@@ -5716,7 +5777,7 @@ export class FsbtEscrow extends Entity {
   }
 }
 
-export class NftMarketOffer extends Entity {
+export class DnftMarketOffer extends Entity {
   constructor(id: string) {
     super();
     this.set("id", Value.fromString(id));
@@ -5724,18 +5785,18 @@ export class NftMarketOffer extends Entity {
 
   save(): void {
     let id = this.get("id");
-    assert(id != null, "Cannot save NftMarketOffer entity without an ID");
+    assert(id != null, "Cannot save DnftMarketOffer entity without an ID");
     if (id) {
       assert(
         id.kind == ValueKind.STRING,
-        `Entities of type NftMarketOffer must have an ID of type String but the id '${id.displayData()}' is of type ${id.displayKind()}`
+        `Entities of type DnftMarketOffer must have an ID of type String but the id '${id.displayData()}' is of type ${id.displayKind()}`
       );
-      store.set("NftMarketOffer", id.toString(), this);
+      store.set("DnftMarketOffer", id.toString(), this);
     }
   }
 
-  static load(id: string): NftMarketOffer | null {
-    return changetype<NftMarketOffer | null>(store.get("NftMarketOffer", id));
+  static load(id: string): DnftMarketOffer | null {
+    return changetype<DnftMarketOffer | null>(store.get("DnftMarketOffer", id));
   }
 
   get id(): string {
@@ -5747,13 +5808,13 @@ export class NftMarketOffer extends Entity {
     this.set("id", Value.fromString(value));
   }
 
-  get nftMarketContract(): string {
-    let value = this.get("nftMarketContract");
+  get dnftMarketContract(): string {
+    let value = this.get("dnftMarketContract");
     return value!.toString();
   }
 
-  set nftMarketContract(value: string) {
-    this.set("nftMarketContract", Value.fromString(value));
+  set dnftMarketContract(value: string) {
+    this.set("dnftMarketContract", Value.fromString(value));
   }
 
   get dnft(): string {
@@ -6193,7 +6254,7 @@ export class NftMarketOffer extends Entity {
   }
 }
 
-export class NftMarketBuyNow extends Entity {
+export class DnftMarketBuyNow extends Entity {
   constructor(id: string) {
     super();
     this.set("id", Value.fromString(id));
@@ -6201,18 +6262,20 @@ export class NftMarketBuyNow extends Entity {
 
   save(): void {
     let id = this.get("id");
-    assert(id != null, "Cannot save NftMarketBuyNow entity without an ID");
+    assert(id != null, "Cannot save DnftMarketBuyNow entity without an ID");
     if (id) {
       assert(
         id.kind == ValueKind.STRING,
-        `Entities of type NftMarketBuyNow must have an ID of type String but the id '${id.displayData()}' is of type ${id.displayKind()}`
+        `Entities of type DnftMarketBuyNow must have an ID of type String but the id '${id.displayData()}' is of type ${id.displayKind()}`
       );
-      store.set("NftMarketBuyNow", id.toString(), this);
+      store.set("DnftMarketBuyNow", id.toString(), this);
     }
   }
 
-  static load(id: string): NftMarketBuyNow | null {
-    return changetype<NftMarketBuyNow | null>(store.get("NftMarketBuyNow", id));
+  static load(id: string): DnftMarketBuyNow | null {
+    return changetype<DnftMarketBuyNow | null>(
+      store.get("DnftMarketBuyNow", id)
+    );
   }
 
   get id(): string {
@@ -6224,13 +6287,13 @@ export class NftMarketBuyNow extends Entity {
     this.set("id", Value.fromString(value));
   }
 
-  get nftMarketContract(): string {
-    let value = this.get("nftMarketContract");
+  get dnftMarketContract(): string {
+    let value = this.get("dnftMarketContract");
     return value!.toString();
   }
 
-  set nftMarketContract(value: string) {
-    this.set("nftMarketContract", Value.fromString(value));
+  set dnftMarketContract(value: string) {
+    this.set("dnftMarketContract", Value.fromString(value));
   }
 
   get dnft(): string {

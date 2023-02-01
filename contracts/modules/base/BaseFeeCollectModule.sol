@@ -48,7 +48,7 @@ abstract contract BaseFeeCollectModule is
         internal _dataByPublicationByProfile;
   
 
-    constructor(address manager, address moduleGlobals) ModuleBase(manager) FeeModuleBase(moduleGlobals) {}
+    constructor(address manager, address market, address moduleGlobals) ModuleBase(manager, market) FeeModuleBase(moduleGlobals) {}
  
     /**
      * @dev Processes a collect by:
@@ -60,13 +60,13 @@ abstract contract BaseFeeCollectModule is
         uint256 ownershipSoulBoundTokenId,
         uint256 collectorSoulBoundTokenId,
         uint256 publishId,
-        uint256 collectUnits,     
+        uint96 payValue,     
         bytes calldata data
-    ) external virtual onlyManager {
+    ) external virtual onlyManager returns (DataTypes.RoyaltyAmounts memory){
 
-        _validateAndStoreCollect(collectorSoulBoundTokenId, ownershipSoulBoundTokenId, publishId, collectUnits, data);
+        _validateAndStoreCollect(collectorSoulBoundTokenId, ownershipSoulBoundTokenId, publishId, payValue, data);
 
-        _processCollect(collectorSoulBoundTokenId, publishId, collectUnits, data);
+       return _processCollect(collectorSoulBoundTokenId, publishId, payValue, data);
     }
 
     /**
@@ -125,7 +125,7 @@ abstract contract BaseFeeCollectModule is
         uint256 collectorSoulBoundTokenId,
         uint256 ownershipSoulBoundTokenId,
         uint256 publishId,
-        uint256 collectUnits,
+        uint96 payValue,
         bytes calldata data
     ) internal virtual {
 
@@ -136,7 +136,7 @@ abstract contract BaseFeeCollectModule is
 
          if (collectorSoulBoundTokenId == 0 || 
             ownershipSoulBoundTokenId == 0 || 
-            collectUnits == 0 || 
+            payValue == 0 || 
             collectData.recipients.length > 5 || 
             publishId == 0 ) revert Errors.InitParamsInvalid();
 
@@ -150,15 +150,15 @@ abstract contract BaseFeeCollectModule is
      *
      * @param collectorSoulBoundTokenId The token ID  that will collect the post.
      * @param projectId The  publication ID associated with the publication being collected.
-     * @param collectUnits The value being collected.
+     * @param payFees The SBT value will be pay
      * @param data Arbitrary data __passed from the collector!__ to be decoded.
      */
     function _processCollect(
         uint256 collectorSoulBoundTokenId,
         uint256 projectId,
-        uint256 collectUnits,
+        uint96 payFees,
         bytes calldata data
-    ) internal virtual {
+    ) internal virtual returns (DataTypes.RoyaltyAmounts memory){
         
          MultirecipientProcessCollectData memory collectData = abi.decode(
             data,
@@ -168,7 +168,7 @@ abstract contract BaseFeeCollectModule is
         address derivativeNFT = IManager(MANAGER).getDerivativeNFT(projectId);
         uint96 fraction = IDerivativeNFT(derivativeNFT).getDefaultRoyalty();
          
-        uint256 payFees = collectUnits * fraction;
+        // uint256 payFees = collectUnits * fraction;
 
         (, uint16 treasuryFee) = _treasuryData();
         uint256 treasuryAmount = (payFees * treasuryFee) / BASIS_POINTS;

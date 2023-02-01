@@ -27,16 +27,24 @@ export class AddMarket__Params {
     return this._event.parameters[0].value.toAddress();
   }
 
-  get feePayType(): i32 {
-    return this._event.parameters[1].value.toI32();
+  get projectId(): BigInt {
+    return this._event.parameters[1].value.toBigInt();
   }
 
-  get feeShareType(): i32 {
+  get feePayType(): i32 {
     return this._event.parameters[2].value.toI32();
   }
 
-  get royaltyBasisPoints(): i32 {
+  get feeShareType(): i32 {
     return this._event.parameters[3].value.toI32();
+  }
+
+  get royaltyBasisPoints(): i32 {
+    return this._event.parameters[4].value.toI32();
+  }
+
+  get collectModule(): Address {
+    return this._event.parameters[5].value.toAddress();
   }
 }
 
@@ -167,38 +175,10 @@ export class BuyPriceAccepted__Params {
     return this._event.parameters[4].value.toAddress();
   }
 
-  get collectFeeUsers(): BuyPriceAcceptedCollectFeeUsersStruct {
-    return changetype<BuyPriceAcceptedCollectFeeUsersStruct>(
-      this._event.parameters[5].value.toTuple()
-    );
-  }
-
   get royaltyAmounts(): BuyPriceAcceptedRoyaltyAmountsStruct {
     return changetype<BuyPriceAcceptedRoyaltyAmountsStruct>(
-      this._event.parameters[6].value.toTuple()
+      this._event.parameters[5].value.toTuple()
     );
-  }
-}
-
-export class BuyPriceAcceptedCollectFeeUsersStruct extends ethereum.Tuple {
-  get ownershipSoulBoundTokenId(): BigInt {
-    return this[0].toBigInt();
-  }
-
-  get collectorSoulBoundTokenId(): BigInt {
-    return this[1].toBigInt();
-  }
-
-  get genesisSoulBoundTokenId(): BigInt {
-    return this[2].toBigInt();
-  }
-
-  get previousSoulBoundTokenId(): BigInt {
-    return this[3].toBigInt();
-  }
-
-  get referrerSoulBoundTokenId(): BigInt {
-    return this[4].toBigInt();
   }
 }
 
@@ -619,8 +599,32 @@ export class DerivativeNFTCollected__Params {
     return this._event.parameters[6].value.toBigInt();
   }
 
-  get timestamp(): BigInt {
-    return this._event.parameters[7].value.toBigInt();
+  get royaltyAmounts(): DerivativeNFTCollectedRoyaltyAmountsStruct {
+    return changetype<DerivativeNFTCollectedRoyaltyAmountsStruct>(
+      this._event.parameters[7].value.toTuple()
+    );
+  }
+}
+
+export class DerivativeNFTCollectedRoyaltyAmountsStruct extends ethereum.Tuple {
+  get treasuryAmount(): BigInt {
+    return this[0].toBigInt();
+  }
+
+  get genesisAmount(): BigInt {
+    return this[1].toBigInt();
+  }
+
+  get previousAmount(): BigInt {
+    return this[2].toBigInt();
+  }
+
+  get referrerAmount(): BigInt {
+    return this[3].toBigInt();
+  }
+
+  get adjustedAmount(): BigInt {
+    return this[4].toBigInt();
   }
 }
 
@@ -999,7 +1003,7 @@ export class FeesForCollect__Params {
     return this._event.parameters[1].value.toBigInt();
   }
 
-  get collectUnits(): BigInt {
+  get payValue(): BigInt {
     return this._event.parameters[2].value.toBigInt();
   }
 
@@ -1429,8 +1433,12 @@ export class ModuleBaseConstructed__Params {
     return this._event.parameters[0].value.toAddress();
   }
 
+  get market(): Address {
+    return this._event.parameters[1].value.toAddress();
+  }
+
   get timestamp(): BigInt {
-    return this._event.parameters[1].value.toBigInt();
+    return this._event.parameters[2].value.toBigInt();
   }
 }
 
@@ -2163,20 +2171,24 @@ export class ReserveAuctionBidPlaced__Params {
     return this._event.parameters[1].value.toBigInt();
   }
 
-  get soulBoundTokenIdBidder(): BigInt {
+  get originalAmount(): BigInt {
     return this._event.parameters[2].value.toBigInt();
   }
 
+  get soulBoundTokenIdBidder(): BigInt {
+    return this._event.parameters[3].value.toBigInt();
+  }
+
   get bidder(): Address {
-    return this._event.parameters[3].value.toAddress();
+    return this._event.parameters[4].value.toAddress();
   }
 
   get amount(): BigInt {
-    return this._event.parameters[4].value.toBigInt();
+    return this._event.parameters[5].value.toBigInt();
   }
 
   get endTime(): BigInt {
-    return this._event.parameters[5].value.toBigInt();
+    return this._event.parameters[6].value.toBigInt();
   }
 }
 
@@ -2219,32 +2231,36 @@ export class ReserveAuctionCreated__Params {
     return this._event.parameters[1].value.toAddress();
   }
 
-  get tokenId(): BigInt {
+  get projectId(): BigInt {
     return this._event.parameters[2].value.toBigInt();
   }
 
-  get units(): BigInt {
+  get tokenId(): BigInt {
     return this._event.parameters[3].value.toBigInt();
   }
 
-  get tokenIdInEscrow(): BigInt {
+  get units(): BigInt {
     return this._event.parameters[4].value.toBigInt();
   }
 
-  get duration(): BigInt {
+  get tokenIdInEscrow(): BigInt {
     return this._event.parameters[5].value.toBigInt();
   }
 
-  get extensionDuration(): BigInt {
+  get duration(): BigInt {
     return this._event.parameters[6].value.toBigInt();
   }
 
-  get reservePrice(): BigInt {
+  get extensionDuration(): BigInt {
     return this._event.parameters[7].value.toBigInt();
   }
 
-  get auctionId(): BigInt {
+  get reservePrice(): BigInt {
     return this._event.parameters[8].value.toBigInt();
+  }
+
+  get auctionId(): BigInt {
+    return this._event.parameters[9].value.toBigInt();
   }
 }
 

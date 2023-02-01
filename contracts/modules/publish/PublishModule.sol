@@ -43,7 +43,7 @@ contract PublishModule is FeeModuleBase, IPublishModule, ModuleBase {
     //publishId => PublishData
     mapping(uint256 => PublishData) internal _dataPublishdNFTByProject;
 
-    constructor(address manager, address moduleGlobals) FeeModuleBase(moduleGlobals) ModuleBase(manager) {}
+    constructor(address manager, address market, address moduleGlobals) FeeModuleBase(moduleGlobals) ModuleBase(manager, market) {}
 
     /**
      * @notice Initializes data for a given publication being published. This can only be called by the manager.

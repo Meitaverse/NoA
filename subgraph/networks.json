@@ -41,7 +41,11 @@
       "startBlock": 1
     },
     "DerivativeNFT": {
-      "address": "0x9bd03768a7DCc129555dE410FF8E85528A4F88b5",
+      "address": "0x6566AEEFD57Fd2BBB28c4ebE030777138095D9E8",
+      "startBlock": 1
+    },
+    "DerivativeNFT-2": {
+      "address": "0x6E5FCF58BE308a71298cAa43A1714C946E5Cc758",
       "startBlock": 1
     }
   }

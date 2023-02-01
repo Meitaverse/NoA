@@ -122,7 +122,8 @@ dataSources:
             uint256,address,uint256)
           handler: handleDerivativeNFTDeployed
         - event: DerivativeNFTCollected(uint256,address,indexed uint256,indexed
-            uint256,indexed uint256,uint256,uint256,uint256)
+            uint256,indexed
+            uint256,uint256,uint256,(uint96,uint96,uint96,uint96,uint96))
           handler: handleDerivativeNFTCollected
         - event: DerivativeNFTAirdroped(uint256,uint256,address,uint256,uint256,uint256[],uint256[],uint256[],uint256)
           handler: handleDerivativeNFTAirdroped
@@ -334,7 +335,7 @@ dataSources:
         - name: Events
           file: ../artifacts/contracts/libraries/Events.sol/Events.json
       eventHandlers:
-        - event: FeesForCollect(uint256,uint256,uint256,(uint256,uint256,uint256,uint256,uint256),(uint96,uint96,uint96,uint96,uint96))
+        - event: FeesForCollect(uint256,uint256,uint96,(uint256,uint256,uint256,uint256,uint256),(uint96,uint96,uint96,uint96,uint96))
           handler: handleFeesForCollect
       file: ./src/feeCollectModule-mapping.ts
   - kind: ethereum/contract
@@ -391,23 +392,25 @@ dataSources:
           file: ../artifacts/contracts/DerivativeNFT.sol/DerivativeNFT.json
         - name: MarketPlace
           file: ../artifacts/contracts/MarketPlace.sol/MarketPlace.json
+        - name: FeeCollectModule
+          file: ../artifacts/contracts/modules/collect/FeeCollectModule.sol/FeeCollectModule.json
         - name: Events
           file: ../artifacts/contracts/libraries/Events.sol/Events.json
       eventHandlers:
         - event: MarketPlaceERC3525Received(indexed address,indexed address,indexed
             uint256,uint256,uint256,bytes,uint256)
           handler: handleMarketPlaceERC3525Received
-        - event: AddMarket(address,uint8,uint8,uint16)
+        - event: AddMarket(address,uint256,uint8,uint8,uint16,address)
           handler: handleAddMarket
         - event: RemoveMarket(address)
           handler: handleRemoveMarket
         - event: ReserveAuctionBidPlaced(indexed uint256,indexed uint256,indexed
-            uint256,address,uint256,uint256)
+            uint256,uint256,address,uint256,uint256)
           handler: handleReserveAuctionBidPlaced
         - event: ReserveAuctionCanceled(indexed uint256)
           handler: handleReserveAuctionCanceled
         - event: ReserveAuctionCreated(indexed address,indexed address,indexed
-            uint256,uint256,uint256,uint256,uint256,uint256,uint256)
+            uint256,uint256,uint256,uint256,uint256,uint256,uint256,uint256)
           handler: handleReserveAuctionCreated
         - event: ReserveAuctionFinalized(indexed uint256,indexed address,indexed
             address,(uint96,uint96,uint96,uint96,uint96))
@@ -431,7 +434,7 @@ dataSources:
         - event: BuyPriceInvalidated(indexed address,indexed uint256)
           handler: handleBuyPriceInvalidated
         - event: BuyPriceAccepted(indexed address,indexed uint256,indexed
-            uint256,address,address,(uint256,uint256,uint256,uint256,uint256),(uint96,uint96,uint96,uint96,uint96))
+            uint256,address,address,(uint96,uint96,uint96,uint96,uint96))
           handler: handleBuyPriceAccepted
       file: ./src/marketplace-mapping.ts
   - kind: ethereum/contract
@@ -439,7 +442,48 @@ dataSources:
     network: mainnet
     source:
       abi: DerivativeNFT
-      address: "0x9bd03768a7DCc129555dE410FF8E85528A4F88b5"
+      address: "0x6566AEEFD57Fd2BBB28c4ebE030777138095D9E8"
+      startBlock: 1
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.6
+      language: wasm/assemblyscript
+      entities:
+        - Approval
+        - ApprovalForAll
+        - ApprovalValue
+        - Transfer
+        - TransferValue
+        - SlotChanged
+        - BurnToken
+        - DerivativeNFTImageURISet
+      abis:
+        - name: DerivativeNFT
+          file: ../artifacts/contracts/DerivativeNFT.sol/DerivativeNFT.json
+      eventHandlers:
+        - event: Approval(indexed address,indexed address,indexed uint256)
+          handler: handleDNFTApproval
+        - event: ApprovalForAll(indexed address,indexed address,bool)
+          handler: handleDNFTApprovalForAll
+        - event: ApprovalValue(indexed uint256,indexed address,uint256)
+          handler: handleDNFTApprovalValue
+        - event: Transfer(indexed address,indexed address,indexed uint256)
+          handler: handleDNFTTransfer
+        - event: TransferValue(indexed uint256,indexed uint256,uint256)
+          handler: handleDNFTTransferValue
+        - event: SlotChanged(indexed uint256,indexed uint256,indexed uint256)
+          handler: handleDNFTSlotChanged
+        - event: BurnToken(uint256,uint256,address,uint256)
+          handler: handleDNFTBurnToken
+        - event: DerivativeNFTImageURISet(indexed uint256,string,uint256)
+          handler: handleDNFTImageURISet
+      file: ./src/dnft/derivativeNFT-mapping.ts
+  - kind: ethereum/contract
+    name: DerivativeNFT-2
+    network: mainnet
+    source:
+      abi: DerivativeNFT
+      address: "0x6E5FCF58BE308a71298cAa43A1714C946E5Cc758"
       startBlock: 1
     mapping:
       kind: ethereum/events

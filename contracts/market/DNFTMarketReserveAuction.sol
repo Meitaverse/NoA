@@ -7,7 +7,8 @@ import {Events} from "../libraries/Events.sol";
 import {Errors} from "../libraries/Errors.sol";
 import "./MarketSharedCore.sol";
 import "./DNFTMarketCore.sol";
-import {MarketFees} from "./MarketFees.sol";
+import {ICollectModule} from "../interfaces/ICollectModule.sol";
+// import {MarketFees} from "./MarketFees.sol";
 
 // import "hardhat/console.sol";
 
@@ -21,8 +22,8 @@ import {MarketFees} from "./MarketFees.sol";
 abstract contract DNFTMarketReserveAuction is
   Initializable,
   MarketSharedCore,
-  DNFTMarketCore,
-  MarketFees
+  DNFTMarketCore
+  // MarketFees
 {
 
   /// @notice The auction configuration for a specific auction id.
@@ -133,7 +134,7 @@ abstract contract DNFTMarketReserveAuction is
       revert Errors.DNFTMarketReserveAuction_Already_Listed(nftContractToTokenIdToAuctionId[derivativeNFT][tokenId]);
     }
 
-    uint256 projectId = manager.getProjectIdByContract(derivativeNFT);
+    uint256 projectId = _getMarketInfo(derivativeNFT).projectId;
     if (projectId == 0) 
         revert Errors.InvalidParameter();
 
@@ -154,6 +155,7 @@ abstract contract DNFTMarketReserveAuction is
     emit Events.ReserveAuctionCreated(
       msg.sender, 
       derivativeNFT, 
+      projectId,
       tokenId, 
       units,
       tokenIdInEscrow,
@@ -204,8 +206,10 @@ abstract contract DNFTMarketReserveAuction is
       // No auction found
       revert Errors.DNFTMarketReserveAuction_Cannot_Bid_On_Nonexistent_Auction();
     }
+
     uint256 endTime = auction.endTime;
     uint256 originalSoulBoundTokenIdBidder;
+    uint256 originalAmount;
 
     // Store the bid referral
     if (soulBoundTokenIdReferrer != 0 || endTime != 0) {
@@ -219,7 +223,6 @@ abstract contract DNFTMarketReserveAuction is
         // The bid must be >= the reserve price.
         revert Errors.DNFTMarketReserveAuction_Cannot_Bid_Lower_Than_Reserve_Price(auction.amount);
       }
-     
 
       // Notify other market tools that an auction for this DNFT has been kicked off.
       // The only state change before this call is potentially withdrawing funds from SBT.
@@ -252,7 +255,7 @@ abstract contract DNFTMarketReserveAuction is
       }
 
       // Cache and update bidder state
-      uint256 originalAmount = auction.amount;
+      originalAmount = auction.amount;
       originalSoulBoundTokenIdBidder = auction.soulBoundTokenIdBidder;
       auction.amount = uint96(amount); //price
       auction.bidder = payable(msg.sender);
@@ -274,14 +277,19 @@ abstract contract DNFTMarketReserveAuction is
             originalSoulBoundTokenIdBidder,
             originalAmount
       );
+
     }
 
     //Try to use bidder in teasury SBT balance to pay first, and transfer SBT value to treasury if revenueAmounts is not enough for
-    _tryUseEarnestMoneyForPay(auction.soulBoundTokenIdBidder, amount);
+    treasury.useEarnestMoneyForPay(
+        auction.soulBoundTokenIdBidder,
+        amount
+    );
 
     emit Events.ReserveAuctionBidPlaced(
       auctionId, 
       originalSoulBoundTokenIdBidder,
+      originalAmount,
       soulBoundTokenIdBidder,
       msg.sender,
       amount, 
@@ -338,29 +346,23 @@ abstract contract DNFTMarketReserveAuction is
     }
 
     // Distribute revenue for this sale.
-    DataTypes.CollectFeeUsers memory collectFeeUsers =  DataTypes.CollectFeeUsers({
-            ownershipSoulBoundTokenId: auction.soulBoundTokenId,
-            collectorSoulBoundTokenId: auction.soulBoundTokenIdBidder,
-            genesisSoulBoundTokenId: 0,
-            previousSoulBoundTokenId: 0,
-            referrerSoulBoundTokenId: auction.soulBoundTokenIdReferrer
-    });
+    address collectModule = _getMarketInfo(auction.derivativeNFT).collectModule;
+    bytes memory collectModuleInitData = abi.encode(auction.soulBoundTokenIdReferrer, BUY_REFERRER_FEE_DENOMINATOR);
+    DataTypes.RoyaltyAmounts memory royaltyAmounts = ICollectModule(collectModule).processCollect(
+        auction.soulBoundTokenId,
+        auction.soulBoundTokenIdBidder,
+        auction.projectId,
+        uint96(auction.units * auction.amount),
+        collectModuleInitData
+    );
 
-    DataTypes.RoyaltyAmounts memory royaltyAmounts = _distributeFunds(
-      collectFeeUsers,
-      auction.projectId,
-      auction.derivativeNFT,
-      auction.tokenId,
-      uint96(auction.units * auction.amount)
-    );    
-    
     emit Events.ReserveAuctionFinalized(
       auctionId, 
       auction.seller, 
-      auction.bidder, 
+      auction.bidder,
       royaltyAmounts
-    );
-    
+    );    
+
   }
 
   function _getTokenIdInEscrow(address derivativeNFT, uint256 tokenId) internal virtual override returns (uint256) {

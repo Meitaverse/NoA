@@ -4,9 +4,9 @@ import {
   Account,
   DNFT,
   DnftHistory,
-  NftMarketAuction,
-  NftMarketBuyNow,
-  NftMarketOffer,
+  DnftMarketAuction,
+  DnftMarketBuyNow,
+  DnftMarketOffer,
 } from "../../generated/schema";
 import { loadOrCreateAccount } from "./accounts";
 import { ONE_BIG_INT, ZERO_BIG_INT } from "./constants";
@@ -17,15 +17,15 @@ export function recordDnftEvent(
   dnft: DNFT,
   eventType: string,
   actorAccount: Account,
-  auction: NftMarketAuction | null = null,
+  auction: DnftMarketAuction | null = null,
   marketplace: string | null = null,
   amountInSBTValue: BigDecimal | null = null,
   nftRecipient: Account | null = null,
   dateOverride: BigInt | null = null,
   amountInTokens: BigInt | null = null,
   tokenAddress: Bytes | null = null,
-  offer: NftMarketOffer | null = null,
-  buyNow: NftMarketBuyNow | null = null,
+  offer: DnftMarketOffer | null = null,
+  buyNow: DnftMarketBuyNow | null = null,
 ): void {
   let historicalEvent = new DnftHistory(getEventId(event, eventType));
   historicalEvent.dnft = dnft.id;

@@ -8,7 +8,8 @@ import {Events} from "../libraries/Events.sol";
 import {Errors} from "../libraries/Errors.sol";
 import "./MarketSharedCore.sol";
 import "./DNFTMarketCore.sol";
-import {MarketFees} from "./MarketFees.sol";
+import {ICollectModule} from "../interfaces/ICollectModule.sol";
+// import {MarketFees} from "./MarketFees.sol";
 
 // import "hardhat/console.sol";
 
@@ -20,9 +21,10 @@ import {MarketFees} from "./MarketFees.sol";
 abstract contract DNFTMarketBuyPrice is
   Initializable,
   MarketSharedCore,
-  DNFTMarketCore,
-  MarketFees
+  DNFTMarketCore
+  // MarketFees
 {
+
   /// @notice Stores the current buy price for each DNFT.
   mapping(address => mapping(uint256 => DataTypes.BuyPrice)) internal dnftContractToTokenIdToBuyPrice;
 
@@ -67,8 +69,11 @@ abstract contract DNFTMarketBuyPrice is
     }
 
     //Try to use bidder earnest money in teasury to pay first, revert if insufficient funds.
-    _tryUseEarnestMoneyForPay(soulBoundTokenIdBuyer, units * maxPrice);
-
+    treasury.useEarnestMoneyForPay(
+        soulBoundTokenIdBuyer,
+        units * maxPrice
+    );
+    
     _buy(soulBoundTokenIdBuyer, derivativeNFT, tokenId, units, soulBoundTokenIdReferrer);
   }
 
@@ -126,8 +131,8 @@ abstract contract DNFTMarketBuyPrice is
     // validate martket is open for this contract?
     if (!_getMarketInfo(saleParam.derivativeNFT).isOpen)
         revert Errors.Market_DNFT_Is_Not_Open(saleParam.derivativeNFT);
-        
-    uint256 projectId = manager.getProjectIdByContract(saleParam.derivativeNFT);
+    
+    uint256 projectId = _getMarketInfo(saleParam.derivativeNFT).projectId;
     if (projectId == 0) 
         revert Errors.UnsupportedDerivativeNFT();
 
@@ -253,32 +258,26 @@ abstract contract DNFTMarketBuyPrice is
             units
     );
 
-    // Distribute revenue for this sale.
-    DataTypes.CollectFeeUsers memory collectFeeUsers =  DataTypes.CollectFeeUsers({
-            ownershipSoulBoundTokenId: buyPrice.soulBoundTokenIdSeller,
-            collectorSoulBoundTokenId: soulBoundTokenIdBuyer,
-            genesisSoulBoundTokenId: 0,
-            previousSoulBoundTokenId: 0,
-            referrerSoulBoundTokenId: soulBoundTokenIdReferrer
-    });
 
-    DataTypes.RoyaltyAmounts memory royaltyAmounts = _distributeFunds(
-      collectFeeUsers,
-      buyPrice.projectId,
-      derivativeNFT,
-      buyPrice.tokenId,
-      uint96(units * buyPrice.salePrice)
-    );
+      // Distribute revenue for this sale.
+      address collectModule = _getMarketInfo(derivativeNFT).collectModule;
+      bytes memory collectModuleInitData = abi.encode(soulBoundTokenIdReferrer, BUY_REFERRER_FEE_DENOMINATOR);
+      DataTypes.RoyaltyAmounts memory royaltyAmounts = ICollectModule(collectModule).processCollect(
+          buyPrice.soulBoundTokenIdSeller,
+          soulBoundTokenIdBuyer,
+          buyPrice.projectId,
+          uint96(units * buyPrice.salePrice), 
+          collectModuleInitData
+      );
 
-    emit Events.BuyPriceAccepted( 
-      derivativeNFT,
-      buyPrice.tokenId, 
-      newTokenIdBuyer,
-      buyPrice.seller, 
-      msg.sender,  //buyer
-      collectFeeUsers,
-      royaltyAmounts
-    );
+      emit Events.BuyPriceAccepted( 
+        derivativeNFT,
+        buyPrice.tokenId, 
+        newTokenIdBuyer,
+        buyPrice.seller, 
+        msg.sender,  //buyer
+        royaltyAmounts
+      );
   }
 
   /**

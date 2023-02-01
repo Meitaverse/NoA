@@ -55,13 +55,13 @@ type Account @entity {
   nftsOwnedOrListed: [DNFT!]! @derivedFrom(field: "ownedOrListedBy")
 
   "All auctions created by this account"
-  nftMarketAuctions: [NftMarketAuction!]! @derivedFrom(field: "seller")
+  nftMarketAuctions: [DnftMarketAuction!]! @derivedFrom(field: "seller")
 
   "All bids placed by this account"
-  nftBidsPlaced: [NftMarketBid!]! @derivedFrom(field: "bidder")
+  nftBidsPlaced: [DnftMarketBid!]! @derivedFrom(field: "bidder")
 
   "All bids accepted by this account"
-  nftBidsAccepted: [NftMarketBid!]! @derivedFrom(field: "seller")
+  nftBidsAccepted: [DnftMarketBid!]! @derivedFrom(field: "seller")
 
   "dNFT transfers from this account to another"
   nftTransfersOut: [DnftTransfer!]! @derivedFrom(field: "from")
@@ -88,7 +88,7 @@ type Account @entity {
   fsbt: [Fsbt!]! @derivedFrom(field: "user")
 
   "All offers made by this account"
-  nftOffersMade: [NftMarketOffer!]! @derivedFrom(field: "buyer")
+  nftOffersMade: [DnftMarketOffer!]! @derivedFrom(field: "buyer")
 
 }
 
@@ -513,20 +513,21 @@ type ProfileCreatorWhitelistedRecord @entity {
 # FeeCollectModule
 type FeesForCollectHistory @entity {
   id: ID!
+  publish: Publish!
+  tokenId: BigInt!
+  payValue: BigInt!
   owner: Account!
   collector: Account!
   genesisCreator: Account!
   previousCreator: Account!
-  publish: Publish!
-  tokenId: BigInt!
-  collectUnits: BigInt!
+  referrer: Account
   treasuryAmount: BigInt!
   genesisAmount: BigInt!
   previousAmount: BigInt!
+  referrerAmount: BigInt
   adjustedAmount: BigInt!
   timestamp: BigInt!
 }
-
 
 # Receiver history
 type ReceiverReceivedHistory @entity {
@@ -711,11 +712,14 @@ type ExchangeEthBySBTHistory @entity {
 
 # Market Place
 type Market @entity {
+  "DerivativeNFTAddress"
   id: ID!
   derivativeNFT: DerivativeNFTContract!
+  project: Project! 
   feePayType: Int!
   feeShareType: Int!
   royaltyBasisPoints: Int!
+  collectModule: Bytes!
   timestamp: BigInt!
 }
 
@@ -777,7 +781,7 @@ type DerivativeNFTContract @entity {
   nfts: [DNFT!]! @derivedFrom(field: "derivativeNFT")
 }
 
-type NftMarketContract @entity {
+type DnftMarketContract @entity {
   "The contract's address"
   id: ID!
 
@@ -785,7 +789,7 @@ type NftMarketContract @entity {
   numberOfBidsPlaced: BigInt!
 }
 
-enum NftMarketAuctionStatus {
+enum DnftMarketAuctionStatus {
   "This auction has not been canceled or finalized yet, it may be active or pending finalization"
   Open
 
@@ -799,12 +803,12 @@ enum NftMarketAuctionStatus {
   Invalidated
 }
 
-type NftMarketAuction @entity {
+type DnftMarketAuction @entity {
   "marketContractAddress-auctionId"
   id: ID!
 
   "The contract managing this auction"
-  nftMarketContract: NftMarketContract!
+  dnftMarketContract: DnftMarketContract!
 
   "The id for this auction"
   auctionId: BigInt!
@@ -815,8 +819,11 @@ type NftMarketAuction @entity {
   "The dNFT contract for this dNFT"
   derivativeNFT: DerivativeNFTContract!
 
+  "The project for this dNFT"
+  project: Project!
+
   "The current status of this auction"
-  status: NftMarketAuctionStatus!
+  status: DnftMarketAuctionStatus!
 
   "The dNFT owner currently offering the dNFT for sale"
   seller: Account!
@@ -849,13 +856,13 @@ type NftMarketAuction @entity {
   reservePriceInSBTValue: BigDecimal!
 
   "The first bid which met the reserve price"
-  initialBid: NftMarketBid
+  initialBid: DnftMarketBid
 
   "The current highest bid, if one has been placed"
-  highestBid: NftMarketBid
+  highestBid: DnftMarketBid
 
   "All bids placed in this auction"
-  bids: [NftMarketBid!]! @derivedFrom(field: "nftMarketAuction")
+  bids: [DnftMarketBid!]! @derivedFrom(field: "dnftMarketAuction")
 
   "How much the creator earned from this auction, set once there a bid is placed"
   creatorRevenueInSBTValue: BigDecimal
@@ -903,7 +910,7 @@ type NftMarketAuction @entity {
   foundationProtocolFeeInSBTValue: BigDecimal
 }
 
-enum NftMarketBidStatus {
+enum DnftMarketBidStatus {
   "This bid is currently the highest, either on-track to win or has won and is pending finalization"
   Highest
 
@@ -914,12 +921,12 @@ enum NftMarketBidStatus {
   FinalizedWinner
 }
 
-type NftMarketBid @entity {
+type DnftMarketBid @entity {
   "marketContractAddress-auctionId-txHash-logId"
   id: ID!
 
   "The auction this bid was for"
-  nftMarketAuction: NftMarketAuction!
+  dnftMarketAuction: DnftMarketAuction!
 
   "The dNFT being sold in this auction"
   dnft: DNFT!
@@ -937,7 +944,7 @@ type NftMarketBid @entity {
   amountInSBTValue: BigDecimal!
 
   "The current status of this bid"
-  status: NftMarketBidStatus!
+  status: DnftMarketBidStatus!
 
   "The date/item when this bid became no longer Active in seconds since Unix epoch, if applicable"
   dateLeftActiveStatus: BigInt
@@ -952,10 +959,10 @@ type NftMarketBid @entity {
   extendedAuction: Boolean!
 
   "The bid which outbid this one, if applicable"
-  outbidByBid: NftMarketBid
+  outbidByBid: DnftMarketBid
 
   "The bid this one outbid, if applicable"
-  bidThisOutbid: NftMarketBid
+  bidThisOutbid: DnftMarketBid
 }
 
 enum Marketplace {
@@ -1051,14 +1058,13 @@ type DnftHistory @entity {
   event: HistoricalEvent!
 
   "The related auction for this change, if applicable"
-  auction: NftMarketAuction
-
+  auction: DnftMarketAuction
 
   "The related offer for this change, if applicable"
-  offer: NftMarketOffer
+  offer: DnftMarketOffer
 
   "The related buy now for this change, if applicable"
-  buyNow: NftMarketBuyNow
+  buyNow: DnftMarketBuyNow
 
   "The contract which processed this event, may be a marketplace or the dNFT itself"
   contractAddress: Bytes!
@@ -1108,6 +1114,7 @@ type PercentSplitShare @entity {
   indexOfShare: BigInt!
 }
 
+# LEVEL_FIVE only
 type PercentSplit @entity {
   "The address of this split contract"
   id: ID!
@@ -1145,7 +1152,7 @@ type FsbtEscrow @entity {
   dateRemoved: BigInt
 }
 
-enum NftMarketOfferStatus {
+enum DnftMarketOfferStatus {
   "This offer is applicable unless it has expired"
   Open
 
@@ -1165,12 +1172,12 @@ enum NftMarketOfferStatus {
   Invalidated
 }
 
-type NftMarketOffer @entity {
+type DnftMarketOffer @entity {
   "tx-logId"
   id: ID!
 
   "The contract managing this offer"
-  nftMarketContract: NftMarketContract!
+  dnftMarketContract: DnftMarketContract!
 
   "The dNFT this offer is for"
   dnft: DNFT!
@@ -1179,7 +1186,7 @@ type NftMarketOffer @entity {
   derivativeNFT: DerivativeNFTContract!
 
   "The current status of this offer"
-  status: NftMarketOfferStatus!
+  status: DnftMarketOfferStatus!
 
   "The account making this offer"
   buyer: Account!
@@ -1242,10 +1249,10 @@ type NftMarketOffer @entity {
   isPrimarySale: Boolean
 
   "The offer that was outbid when this offer was placed, if applicable"
-  outbidOffer: NftMarketOffer
+  outbidOffer: DnftMarketOffer
 
   "The offer that outbid this offer, if applicable"
-  offerOutbidBy: NftMarketOffer
+  offerOutbidBy: DnftMarketOffer
 
   "Referrer address for the accepted offer, if applicable"
   buyReferrer: Account
@@ -1260,7 +1267,7 @@ type NftMarketOffer @entity {
   foundationProtocolFeeInSBTValue: BigDecimal
 }
 
-enum NftMarketBuyNowStatus {
+enum DnftMarketBuyNowStatus {
   "This buy now is applicable"
   Open
 
@@ -1274,12 +1281,12 @@ enum NftMarketBuyNowStatus {
   Invalidated
 }
 
-type NftMarketBuyNow @entity {
+type DnftMarketBuyNow @entity {
   "tx-logId"
   id: ID!
 
   "The contract managing this buy now"
-  nftMarketContract: NftMarketContract!
+  dnftMarketContract: DnftMarketContract!
 
   "The dNFT this buy now is for"
   dnft: DNFT!
@@ -1291,7 +1298,7 @@ type NftMarketBuyNow @entity {
   project: Project!
 
   "The current status of this buy now"
-  status: NftMarketBuyNowStatus!
+  status: DnftMarketBuyNowStatus!
 
   "The seller which owns the dNFT."
   seller: Account!
@@ -1365,7 +1372,6 @@ type NftMarketBuyNow @entity {
 
 ### DNFT ###
 
-
 type DNFT @entity {
   "tokenContractAddress-tokenId"
   id: ID!
@@ -1406,7 +1412,6 @@ type DNFT @entity {
   "An account authorized to transfer this dNFT, if one was approved"
   approvedSpender: Account
 
-
   "All dNFT collection that have collected for this dNFT"
   dnftCollections: [DnftCollection!] @derivedFrom(field: "dnft")
 
@@ -1417,7 +1422,7 @@ type DNFT @entity {
   transferValues: [DnftTransferValue!] @derivedFrom(field: "dnft")
 
   "All bids ever placed for this dNFT"
-  bids: [NftMarketBid!]! @derivedFrom(field: "dnft")
+  bids: [DnftMarketBid!]! @derivedFrom(field: "dnft")
 
   "All history ever collected for this dNFT"
   collectedHistories: [DnftCollectedHistory!]! @derivedFrom(field: "dnft")
@@ -1438,16 +1443,16 @@ type DNFT @entity {
   isFirstSale: Boolean!
 
   "All auctions which were created for this dNFT"
-  auctions: [NftMarketAuction!]! @derivedFrom(field: "dnft")
+  auctions: [DnftMarketAuction!]! @derivedFrom(field: "dnft")
 
   "The current or last previous auction for this dNFT"
-  mostRecentAuction: NftMarketAuction
+  mostRecentAuction: DnftMarketAuction
 
   "The current or last auction for this dNFT which has not been canceled, if any"
-  mostRecentActiveAuction: NftMarketAuction
+  mostRecentActiveAuction: DnftMarketAuction
 
   "The last auction for this dNFT which was finalized, if there was one"
-  latestFinalizedAuction: NftMarketAuction
+  latestFinalizedAuction: DnftMarketAuction
 
   "The event history for this dNFT"
   dnftHistory: [DnftHistory!]! @derivedFrom(field: "dnft")
@@ -1462,16 +1467,16 @@ type DNFT @entity {
   lastSalePriceInSBTValue: BigDecimal
 
   "All offers made for this dNFT"
-  nftOffers: [NftMarketOffer!]! @derivedFrom(field: "dnft")
+  nftOffers: [DnftMarketOffer!]! @derivedFrom(field: "dnft")
 
   "The most recent offer made for this dNFT, which may or may not still be valid"
-  mostRecentOffer: NftMarketOffer
+  mostRecentOffer: DnftMarketOffer
 
   "The most recent buy now for this dNFT, which may or may not still be valid"
-  mostRecentBuyNow: NftMarketBuyNow
+  mostRecentBuyNow: DnftMarketBuyNow
 
   "All buy nows made for this dNFT"
-  nftBuyNows: [NftMarketBuyNow!]! @derivedFrom(field: "dnft")
+  nftBuyNows: [DnftMarketBuyNow!]! @derivedFrom(field: "dnft")
 }
 
 type DnftTransfer @entity {
@@ -1499,6 +1504,7 @@ type DnftTransfer @entity {
 
 # DNFT Collected history
 type DnftCollectedHistory @entity {
+  "tokenContractAddress-projectId-tokenId"
   id: ID!
   project: Project!
   derivativeNFT: DerivativeNFTContract!
@@ -1535,6 +1541,7 @@ type DnftCollection @entity {
 
 #  DNFT transfer value history    
 type DnftTransferValue @entity {
+  "tokenAddress-fromTokenId-toTokenId"
   id: ID!
 
   "The DNFT which was transferred"
@@ -1551,6 +1558,7 @@ type DnftTransferValue @entity {
 
 #  DNFT Slot Changed history    
 type DnftSlotChanged @entity {
+  "tokenAddress-tokenId-oldSlot"
   id: ID!
 
   "The token's contract"
@@ -1567,6 +1575,7 @@ type DnftSlotChanged @entity {
 
 # DNFT burn history    
 type DnftBurn @entity {
+  "tokenAddress-tokenId"
   id: ID!
 
   "The token's contract"
@@ -1599,6 +1608,7 @@ type DnftAccountApproval @entity {
 
 # DNFT ApprovalValue 
 type DnftApprovalValue @entity {
+  "tokenAddress-owner-spender"
   id: ID!
 
   "The token's contract"
@@ -1618,6 +1628,7 @@ type DnftApprovalValue @entity {
 
 #  DNFT image uri  
 type DnftImageURI @entity {
+  "tokenAddress-tokenId"
   id: ID!
 
   "The token's contract"

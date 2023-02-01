@@ -351,9 +351,7 @@ import { MarketPlaceLibraryAddresses } from '../typechain/factories/contracts/Ma
         };
         const marketPlaceImpl = await deployContract(
             new MarketPlace__factory(marketLibs, deployer).deploy(
-                manager.address,
                 bankTreasuryContract.address,
-                sbtContract.address,
                 MARKET_MAX_DURATION,
                 { nonce: deployerNonce++ })
         );
@@ -405,6 +403,7 @@ import { MarketPlaceLibraryAddresses } from '../typechain/factories/contracts/Ma
         const feeCollectModule = await deployContract(
             new FeeCollectModule__factory(deployer).deploy(
                 manager.address, 
+                marketPlaceContract.address,
                 moduleGlobals.address,
                 { nonce: deployerNonce++ })
         );
@@ -416,6 +415,7 @@ import { MarketPlaceLibraryAddresses } from '../typechain/factories/contracts/Ma
         const publishModule = await deployContract(
             new PublishModule__factory(deployer).deploy(
                 manager.address, 
+                marketPlaceContract.address,
                 moduleGlobals.address,
                 { nonce: deployerNonce++ })
         );

@@ -590,6 +590,29 @@ export class Manager extends ethereum.SmartContract {
     return ethereum.CallResult.fromValue(value[0].toAddress());
   }
 
+  getDeverivateNFTAddress(projectId: BigInt): Address {
+    let result = super.call(
+      "getDeverivateNFTAddress",
+      "getDeverivateNFTAddress(uint256):(address)",
+      [ethereum.Value.fromUnsignedBigInt(projectId)]
+    );
+
+    return result[0].toAddress();
+  }
+
+  try_getDeverivateNFTAddress(projectId: BigInt): ethereum.CallResult<Address> {
+    let result = super.tryCall(
+      "getDeverivateNFTAddress",
+      "getDeverivateNFTAddress(uint256):(address)",
+      [ethereum.Value.fromUnsignedBigInt(projectId)]
+    );
+    if (result.reverted) {
+      return new ethereum.CallResult();
+    }
+    let value = result.value;
+    return ethereum.CallResult.fromValue(value[0].toAddress());
+  }
+
   getDispatcher(soulBoundToken: BigInt): Address {
     let result = super.call(
       "getDispatcher",
