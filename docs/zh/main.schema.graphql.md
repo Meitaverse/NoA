@@ -1,5 +1,59 @@
-# NFT Derivative Protocol Main Subgraph
-## Query accounts
+# NFT Derivative Protocol Main Subgraph Doc 
+
+## 白名单
+
+### 查询设置注册白名单记录
+    用户钱包地址在注册白名单里才能进行createProfile
+```
+ {
+  profileCreatorWhitelistedRecords(first: 100) {
+    id
+    profileCreator
+    whitelisted
+    caller
+    timestamp
+  }
+}
+```
+
+
+### 查询SBT Id 是否可以允许创建Hub的白名单记录
+id - SBT id
+```
+{
+  hubCreatorWhitelistedRecord(id: "2") {
+    whitelisted
+  }
+}
+```
+
+## Query User
+
+### 查询Profile记录
+```
+{
+  profiles(first:100){
+    id,
+    soulBoundTokenId,
+    creator,
+    wallet,
+    nickName,
+    imageURI,
+    timestamp
+  }
+}	
+```
+
+### 查询某用户钱包对应的 SBT Asset 记录
+```
+{
+  sbtasset(id: "0x3c44cdddb6a900fa2b585dd299e03d12fa4293bc") {
+    balance
+  }
+}
+```
+
+### 用户信息组合查询
 ```
 {
   accounts {
@@ -25,56 +79,7 @@
 }
 ```
 
-## 个人注册及创建Hub白名单
-
-### 查询设置注册白名单记录
-    用户钱包地址在注册白名单里才能进行createProfile
-```
- {
-  profileCreatorWhitelistedRecords(first: 100) {
-    id
-    profileCreator
-    whitelisted
-    caller
-    timestamp
-  }
-}
-```
-
-### 查询所有Profile
-```
-{
-  profiles(first:100){
-    id,
-    soulBoundTokenId,
-    creator,
-    wallet,
-    nickName,
-    imageURI,
-    timestamp
-  }
-}	
-```
-
-### 查询某用户钱包对应的 SBT Asset 记录
-```
-{
-  sbtasset(id: "0x3c44cdddb6a900fa2b585dd299e03d12fa4293bc") {
-    balance
-  }
-}
-```
-
-
-### 查询SBT Id 是否可以允许创建Hub的白名单记录
-id - SBT id
-```
-{
-  hubCreatorWhitelistedRecord(id: "2") {
-    whitelisted
-  }
-}
-```
+## 查询Hub,Project,预发布，已发布及dNFT相关
 
 ### 查询Hub详细信息
 id - hubId
@@ -90,7 +95,7 @@ id - hubId
 
 ```
 
-### 查询Projdct的详细信息 
+### 查询Projdct id的详细信息 
 id - projectId
 ```
 {
@@ -111,7 +116,7 @@ id - projectId
 }
 
 ```
-### 查询已发行的Publish记录
+### 查询已发行的Publish id对应的记录
 id = publishId
 ```
 {
@@ -136,7 +141,7 @@ id = publishId
 ```
 
 
-### 查询预发布的记录
+### 查询预发布id对应的记录
 id = publicationId
 ```
 {
@@ -180,7 +185,9 @@ id - 钱包地址
 }
 ```
 
-### 查询所有collect历史记录, 以及支付创世及上一个二创的版税
+## Collect及Airdrop查询
+
+### 查询collect历史记录, 以及支付创世及上一个二创的版税
 ```
 {
   feesForCollectHistories(first: 100) {
@@ -209,7 +216,7 @@ id - 钱包地址
 }
 ```
 
-### 查询所有airdrop历史记录
+### 查询airdrop历史记录
 ```
 {
   dnftAirdropedHistories(first: 100) {
