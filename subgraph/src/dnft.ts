@@ -47,7 +47,7 @@ function _createNFTContract(address: Address): DerivativeNFTContract {
 function getNFTId(address: Address, id: BigInt): string {
   return address.toHex() + "-" + id.toString();
 }
-
+/*
 export function loadOrCreateDNFT(address: Address, id: BigInt, event: ethereum.Event): DNFT {
   let nftId = getNFTId(address, id);
   let dnft = DNFT.load(nftId);
@@ -59,25 +59,28 @@ export function loadOrCreateDNFT(address: Address, id: BigInt, event: ethereum.E
 
     let contract = DerivativeNFT.bind(address);
 
-    const resultPublish = contract.try_getPublishIdByTokenId(id)
-    if (resultPublish.reverted) {
-        log.info("c --- in loadOrCreateDNFT, tokenId:{}", [
-          dnft.tokenId.toString(),
-        ])
-
-    } else {
-        log.info("!resultPublish.reverted --- in loadOrCreateDNFT, tokenId:{}, result.value: {}", [
-          dnft.tokenId.toString(),
-          resultPublish.value.toString()
-        ])
-        dnft.publish = loadOrCreatePublish(resultPublish.value).id
-        dnft.project = loadOrCreatePublish(resultPublish.value).project
-    }
-
     if (id.isZero()) {
       log.info("id.isZero() --- in loadOrCreateDNFT", [])
       dnft.owner = loadOrCreateAccount(Address.zero()).id;
     } else {
+      const resultPublish = contract.try_getPublishIdByTokenId(id)
+      if (resultPublish.reverted) {
+          log.info("resultPublish.reverted --- in loadOrCreateDNFT, try_getPublishIdByTokenId tokenId:{}", [
+            dnft.tokenId.toString(),
+          ])
+  
+      } else {
+          log.info("!resultPublish.reverted --- in loadOrCreateDNFT, tokenId:{}, try_getPublishIdByTokenId result.value: {}", [
+            dnft.tokenId.toString(),
+            resultPublish.value.toString()
+          ])
+          if(!resultPublish.value.isZero()) {
+
+            dnft.publish = loadOrCreatePublish(resultPublish.value).id
+            dnft.project = loadOrCreatePublish(resultPublish.value).project
+          }
+      }
+  
       let ownerResult = contract.try_ownerOf(id);
       if (!ownerResult.reverted) {
           log.info("!ownerResult.reverted --- in loadOrCreateDNFT, tokenId:{}", [
@@ -113,3 +116,14 @@ export function loadOrCreateDNFT(address: Address, id: BigInt, event: ethereum.E
   return dnft as DNFT;
 }
 
+*/
+
+export function loadOrCreateDNFT(address: Address, id: BigInt, event: ethereum.Event): DNFT | null {
+  let nftId = getNFTId(address, id);
+  let dnft = DNFT.load(nftId);
+  if (dnft) {
+    return dnft as DNFT;
+  } else {
+    return null;
+  }
+}

@@ -53,9 +53,12 @@ id - SBT id
 }
 ```
 
-### 用户信息组合查询
+### 所有用户信息组合查询
  包括： 
   -- 用户创建的hub
+  -- 用户创建的project
+  -- 用户的project的预发布信息
+  -- 用户的project的已发行dNFT tokenId及初次发行数量
   -- 用户profile(呢称及头像)
   -- 用户SBT资产余额
   -- 用户钱包名下的所有dNFT(tokenId)
@@ -65,6 +68,20 @@ id - SBT id
     id,
     hub {
       id
+      name
+      projects {
+        id
+        publications {
+          id
+          name
+          amount
+        }
+        publishes {
+          id
+          amount
+          newTokenId
+        }
+      }
     }
     profile {
       id,
@@ -78,6 +95,11 @@ id - SBT id
     dnfts{
       id
       tokenId
+      dnftCollections {
+        id
+        tokenId
+        value
+      }      
     }
   }
 }
@@ -115,6 +137,15 @@ id - projectId
     }
     hub {
       id
+    }
+    dnfts{
+      id
+      tokenId
+      dnftCollections {
+        id
+        tokenId
+        value
+      }      
     }
   }
 }
@@ -175,14 +206,48 @@ id = publicationId
 }
 ```
 
-### 查询用户的前100条dDNT数据
+### 查询用户的dDNT数据
+   当前拥有的dNFT(前100条)及数量
 ```
 id - 用户的钱包地址
+以0x90f79bf6eb2c4f870365e785982e1f101e93b906为例子
 {
   account(id: "0x90f79bf6eb2c4f870365e785982e1f101e93b906"){
-    dnfts (first: 100){
+		id,
+    hub {
+      id
+      name
+      projects {
+        id
+        publications {
+          id
+          name
+          amount
+        }
+        publishes {
+          id
+          amount
+          newTokenId
+        }
+      }
+    }
+    profile {
+      id,
+      nickName
+      imageURI
+    }
+    sbtAsset {
+      id
+      balance
+    }
+    dnfts(first: 100){
       id
       tokenId
+      dnftCollections {
+        id
+        tokenId
+        value
+      }      
     }
   }
 }

@@ -8,6 +8,7 @@ import {
     PublishPrepared,
     PublishUpdated,
     PublishCreated,
+    PublishMinted,
     DerivativeNFTCollected,
     DerivativeNFTDeployed,
     DerivativeNFTAirdroped,
@@ -213,8 +214,7 @@ export function handlePublishCreated(event: PublishCreated): void {
         const publication = Publication.load(event.params.publishId.toString());
         const hub = loadHub( event.params.hubId)
         const project = loadProject(event.params.projectId)
-        let dnft = loadOrCreateDNFT(Address.fromString(project.derivativeNFT), event.params.newTokenId, event);
-        
+
         if (publisher && publication && hub && project) {
 
             const publish = loadOrCreatePublish(event.params.publishId);
@@ -224,16 +224,35 @@ export function handlePublishCreated(event: PublishCreated): void {
                 publish.hub = hub.id
                 publish.project = project.id
                 publish.derivativeNFT = project.derivativeNFT 
-                publish.dnft = dnft.id
-                publish.newTokenId = event.params.newTokenId
+                // publish.dnft = dnft.id
+                // publish.newTokenId = event.params.newTokenId
                 publish.amount = event.params.amount
                 publish.collectModuleInitData = event.params.collectModuleInitData
                 publish.timestamp = event.block.timestamp
                 publish.save()
             }
-            
         }
     }
+}
+
+export function handlePublishMinted(event: PublishMinted): void {
+
+    const publish = loadOrCreatePublish(event.params.publishId);
+    if (publish) {
+        publish.newTokenId = event.params.newTokenId
+        let dnft = loadOrCreateDNFT(Address.fromString(publish.derivativeNFT), event.params.newTokenId, event);
+        if (dnft) {
+            publish.dnft = dnft.id
+
+            log.info("handlePublishMinted, derivativeNFT: {}, publishId:{}, newTokenId:{}", [
+                publish.derivativeNFT,
+                event.address.toHexString(),
+                event.params.publishId.toString(),
+                event.params.newTokenId.toString(),
+            ])
+        }    
+    }
+ 
 }
 
 export function handleDerivativeNFTCollected(event: DerivativeNFTCollected): void {

@@ -264,7 +264,7 @@ contract DerivativeNFT is
         _tokenIdByPublishId[newTokenId] = publishId;
 
         _mint(publisher, newTokenId, slot, publication.amount);
-        
+
         return newTokenId;
     }
 

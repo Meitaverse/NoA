@@ -102,6 +102,15 @@ library PublishLogic {
         
         if (derivativeNFT == address(0)) revert Errors.DerivativeNFTIsZero();
         if (publisher == address(0)) revert Errors.PublisherIsZero();
+        
+        emit Events.PublishCreated(
+            publishId,
+            publication.soulBoundTokenId,
+            publication.hubId,
+            publication.projectId,
+            publication.amount,
+            publication.collectModuleInitData
+        );
 
         uint256 newTokenId =  IDerivativeNFT(derivativeNFT).publish(
             publishId,
@@ -132,19 +141,10 @@ library PublishLogic {
                     publication.collectModuleInitData,
                     _pubByIdByProfile
             );
-
-            emit Events.PublishCreated(
-                publishId,
-                publication.soulBoundTokenId,
-                publication.hubId,
-                publication.projectId,
-                newTokenId,
-                publication.amount,
-                publication.collectModuleInitData,
-                block.timestamp
-            );
         }
-       
+        
+        emit Events.PublishMinted(publishId, newTokenId);
+        
         return newTokenId;
     }
 

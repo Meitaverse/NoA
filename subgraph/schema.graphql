@@ -995,11 +995,14 @@ enum HistoricalEvent {
   "The dNFT was transferred from one address to another"
   Transferred
 
-  "The dNFT value was transferred from one address to another"
+  "The dNFT value was transferred from one tokenId to another tokenId"
   ValueTransferred
 
   "The dNFT was burned and now no longer available on-chain"
   Burned
+
+  "The dNFT value was burned"
+  ValueBurned
 
   "The creator has been migrated to a new account"
   CreatorMigrated

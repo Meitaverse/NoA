@@ -22,6 +22,7 @@ export function loadOrCreatePublish(publishId: BigInt): Publish {
             publish.timestamp = ZERO_BIG_INT
             publish.save()
     }
+    
     return publish as Publish;
   
 }

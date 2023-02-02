@@ -1891,20 +1891,34 @@ export class PublishCreated__Params {
     return this._event.parameters[3].value.toBigInt();
   }
 
-  get newTokenId(): BigInt {
+  get amount(): BigInt {
     return this._event.parameters[4].value.toBigInt();
   }
 
-  get amount(): BigInt {
-    return this._event.parameters[5].value.toBigInt();
-  }
-
   get collectModuleInitData(): Bytes {
-    return this._event.parameters[6].value.toBytes();
+    return this._event.parameters[5].value.toBytes();
+  }
+}
+
+export class PublishMinted extends ethereum.Event {
+  get params(): PublishMinted__Params {
+    return new PublishMinted__Params(this);
+  }
+}
+
+export class PublishMinted__Params {
+  _event: PublishMinted;
+
+  constructor(event: PublishMinted) {
+    this._event = event;
   }
 
-  get timestamp(): BigInt {
-    return this._event.parameters[7].value.toBigInt();
+  get publishId(): BigInt {
+    return this._event.parameters[0].value.toBigInt();
+  }
+
+  get newTokenId(): BigInt {
+    return this._event.parameters[1].value.toBigInt();
   }
 }
 

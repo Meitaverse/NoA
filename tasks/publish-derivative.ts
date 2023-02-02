@@ -204,18 +204,20 @@ task("publish-derivative", "publish-derivative function")
     );
 
     const event2 = findEvent(receipt2, 'PublishCreated', eventsLib);
-    const newTokenId = event2.args.newTokenId.toNumber();
     const amount = event2.args.amount.toNumber();
     console.log(
       "\n\t--- publish success! Event PublishCreated emited ..."
     );
     console.log(
-      "\t\t---newTokenId: ", newTokenId
-    );
-    console.log(
       "\t\t---amount: ", amount
     );
 
+
+    const event3 = findEvent(receipt2, 'PublishMinted', eventsLib);
+    const newTokenId = event3.args.newTokenId.toNumber();
+    console.log(
+          "\t\t---newTokenId: ", newTokenId
+        );
 
     balance_bank =(await sbt["balanceOf(uint256)"](FIRST_PROFILE_ID)).toNumber();
     console.log('\n\t--- balance of bank : ', balance_bank);

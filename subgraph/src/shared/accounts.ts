@@ -4,7 +4,7 @@ import { Account, Profile } from "../../generated/schema";
 import { ZERO_BIG_DECIMAL } from "./constants";
 import { loadOrCreateProfile } from "./profile";
 
-export function loadOrCreateAccount(address: Address): Account {
+export function loadOrCreateAccount(address: Address): Account{
   let addressHex = address.toHex();
   let profile = loadOrCreateProfile(address);
   

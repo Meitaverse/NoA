@@ -82,20 +82,27 @@ library Events {
      * @param soulBoundTokenId The newly created profile's token ID.
      * @param hubId The hub ID.
      * @param projectId The project ID.
-     * @param newTokenId The new token id .
      * @param amount The amount of the token.
      * @param collectModuleInitData The data include some variables.
-     * @param timestamp The current block timestamp.
      */
     event PublishCreated(
         uint256 indexed publishId,
         uint256 indexed soulBoundTokenId,
         uint256 hubId,
         uint256 projectId,
-        uint256 indexed newTokenId,
         uint256 amount,
-        bytes collectModuleInitData,
-        uint256 timestamp
+        bytes collectModuleInitData
+    );
+
+    /**
+     * @dev Emitted when a publish is minted .
+     *
+     * @param publishId The newly created project's ID.
+    //  * @param newTokenId The new token id .
+     */
+    event PublishMinted(
+        uint256 indexed publishId,
+        uint256 indexed newTokenId
     );
 
     /**
