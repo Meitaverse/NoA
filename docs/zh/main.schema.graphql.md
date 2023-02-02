@@ -54,6 +54,11 @@ id - SBT id
 ```
 
 ### 用户信息组合查询
+ 包括： 
+  -- 用户创建的hub
+  -- 用户profile(呢称及头像)
+  -- 用户SBT资产余额
+  -- 用户钱包名下的所有dNFT(tokenId)
 ```
 {
   accounts {
@@ -64,16 +69,15 @@ id - SBT id
     profile {
       id,
       nickName
+      imageURI
     }
     sbtAsset {
       id
       balance
     }
-    dnftCollection
-    {
+    dnfts{
       id
       tokenId
-      value
     }
   }
 }
@@ -171,16 +175,15 @@ id = publicationId
 }
 ```
 
-### 查询用户的dDNT数据
+### 查询用户的前100条dDNT数据
 ```
-id - 钱包地址
+id - 用户的钱包地址
 {
-  account(id: "0x3c44cdddb6a900fa2b585dd299e03d12fa4293bc"){
-    dnftCollection {
+  account(id: "0x90f79bf6eb2c4f870365e785982e1f101e93b906"){
+    dnfts (first: 100){
+      id
       tokenId
-      value
     }
-    
   }
 }
 ```

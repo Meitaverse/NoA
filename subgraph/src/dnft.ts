@@ -61,7 +61,7 @@ export function loadOrCreateDNFT(address: Address, id: BigInt, event: ethereum.E
 
     const resultPublish = contract.try_getPublishIdByTokenId(id)
     if (resultPublish.reverted) {
-        log.info("resultPublish.reverted --- in loadOrCreateDNFT, tokenId:{}", [
+        log.info("c --- in loadOrCreateDNFT, tokenId:{}", [
           dnft.tokenId.toString(),
         ])
 
@@ -73,19 +73,26 @@ export function loadOrCreateDNFT(address: Address, id: BigInt, event: ethereum.E
         dnft.publish = loadOrCreatePublish(resultPublish.value).id
         dnft.project = loadOrCreatePublish(resultPublish.value).project
     }
-    
-    let ownerResult = contract.try_ownerOf(id);
-    if (!ownerResult.reverted) {
-      log.info("!ownerResult.reverted --- in loadOrCreateDNFT, tokenId:{}", [
-        dnft.tokenId.toString(),
-      ])
-      dnft.owner = loadOrCreateAccount(ownerResult.value).id;
-    } else {
-      log.info("ownerResult.reverted --- in loadOrCreateDNFT, tokenId:{}", [
-        dnft.tokenId.toString(),
-      ])
+
+    if (id.isZero()) {
+      log.info("id.isZero() --- in loadOrCreateDNFT", [])
       dnft.owner = loadOrCreateAccount(Address.zero()).id;
+    } else {
+      let ownerResult = contract.try_ownerOf(id);
+      if (!ownerResult.reverted) {
+          log.info("!ownerResult.reverted --- in loadOrCreateDNFT, tokenId:{}", [
+          dnft.tokenId.toString(),
+        ])
+        dnft.owner = loadOrCreateAccount(ownerResult.value).id;
+      } else {
+          log.info("ownerResult.reverted --- in loadOrCreateDNFT, tokenId:{}", [
+          dnft.tokenId.toString(),
+        ])
+        dnft.owner = loadOrCreateAccount(Address.zero()).id;
+      }
+
     }
+
     dnft.ownedOrListedBy = dnft.owner;
     dnft.netSalesInSBTValue = ZERO_BIG_DECIMAL;
     dnft.netSalesPendingInSBTValue = ZERO_BIG_DECIMAL;

@@ -37,7 +37,7 @@ type Account @entity {
   sbtTransferValueIn: [SBTTransferValueHistory!]! @derivedFrom(field: "to")
 
   "All dNFTs currently owned by this account"
-  nfts: [DNFT!]! @derivedFrom(field: "owner")
+  dnfts: [DNFT!]! @derivedFrom(field: "owner")
 
   "All collected history by this account"
   collectHistories: [FeesForCollectHistory!]! @derivedFrom(field: "collector")
@@ -743,7 +743,7 @@ type Creator @entity {
   account: Account!
 
   "All dNFTs minted by this creator"
-  nfts: [DNFT!]! @derivedFrom(field: "creator")
+  dnfts: [DNFT!]! @derivedFrom(field: "creator")
 
   "The total SBTValue for sales of dNFTs this creator minted"
   netSalesInSBTValue: BigDecimal!
@@ -778,7 +778,7 @@ type DerivativeNFTContract @entity {
   maxTokenID: BigInt
 
   "All dNFTs minted by this contract"
-  nfts: [DNFT!]! @derivedFrom(field: "derivativeNFT")
+  dnfts: [DNFT!]! @derivedFrom(field: "derivativeNFT")
 }
 
 type DnftMarketContract @entity {
@@ -1123,7 +1123,7 @@ type PercentSplit @entity {
   shares: [PercentSplitShare!]! @derivedFrom(field: "split")
 
   "All the dNFTs currently leveraging this split"
-  nfts: [DNFT!]! @derivedFrom(field: "percentSplit")
+  dnfts: [DNFT!]! @derivedFrom(field: "percentSplit")
 
   "How many different shares are in this split"
   shareCount: BigInt!

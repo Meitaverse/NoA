@@ -34,7 +34,7 @@ import { BigNumber } from "ethers";
 
 export let runtimeHRE: HardhatRuntimeEnvironment;
 
-// yarn hardhat publish-derivative --projectid 1 --sbtid 3 --fromtokenid 9 --network local
+// yarn hardhat publish-derivative --projectid 1 --sbtid 3 --fromtokenid 2 --network local
 
 task("publish-derivative", "publish-derivative function")
 .addParam("projectid", "project id to publish")
@@ -155,7 +155,7 @@ task("publish-derivative", "publish-derivative function")
       })
     );
   
-    //上面执行成功之后，事件PublishPrepared会出块，解析logs可以获取
+    //上面执行成功之后，事件 PublishPrepared 会出块，解析logs可以获取
 
     let eventsLib = await new Events__factory(deployer).deploy();
 

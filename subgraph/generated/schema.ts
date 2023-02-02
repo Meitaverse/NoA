@@ -173,13 +173,13 @@ export class Account extends Entity {
     this.set("sbtTransferValueIn", Value.fromStringArray(value));
   }
 
-  get nfts(): Array<string> {
-    let value = this.get("nfts");
+  get dnfts(): Array<string> {
+    let value = this.get("dnfts");
     return value!.toStringArray();
   }
 
-  set nfts(value: Array<string>) {
-    this.set("nfts", Value.fromStringArray(value));
+  set dnfts(value: Array<string>) {
+    this.set("dnfts", Value.fromStringArray(value));
   }
 
   get collectHistories(): Array<string> {
@@ -4343,13 +4343,13 @@ export class Creator extends Entity {
     this.set("account", Value.fromString(value));
   }
 
-  get nfts(): Array<string> {
-    let value = this.get("nfts");
+  get dnfts(): Array<string> {
+    let value = this.get("dnfts");
     return value!.toStringArray();
   }
 
-  set nfts(value: Array<string>) {
-    this.set("nfts", Value.fromStringArray(value));
+  set dnfts(value: Array<string>) {
+    this.set("dnfts", Value.fromStringArray(value));
   }
 
   get netSalesInSBTValue(): BigDecimal {
@@ -4502,13 +4502,13 @@ export class DerivativeNFTContract extends Entity {
     }
   }
 
-  get nfts(): Array<string> {
-    let value = this.get("nfts");
+  get dnfts(): Array<string> {
+    let value = this.get("dnfts");
     return value!.toStringArray();
   }
 
-  set nfts(value: Array<string>) {
-    this.set("nfts", Value.fromStringArray(value));
+  set dnfts(value: Array<string>) {
+    this.set("dnfts", Value.fromStringArray(value));
   }
 }
 
@@ -5579,13 +5579,13 @@ export class PercentSplit extends Entity {
     this.set("shares", Value.fromStringArray(value));
   }
 
-  get nfts(): Array<string> {
-    let value = this.get("nfts");
+  get dnfts(): Array<string> {
+    let value = this.get("dnfts");
     return value!.toStringArray();
   }
 
-  set nfts(value: Array<string>) {
-    this.set("nfts", Value.fromStringArray(value));
+  set dnfts(value: Array<string>) {
+    this.set("dnfts", Value.fromStringArray(value));
   }
 
   get shareCount(): BigInt {
