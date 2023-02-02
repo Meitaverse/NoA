@@ -93,12 +93,7 @@ export function handleDNFTTransfer(event: Transfer): void {
             dnft.isFirstSale = true;
             dnft.save();
 
-            //TODO check dnft 
-            if (loadOrCreateDNFT(event.address, event.params._tokenId, event)) {
-                log.info("DNFT created ok", [])
-            } else {
-                log.info("DNFT created faild", [])
-            }
+
 
             let creatorAccount = loadOrCreateAccount(event.params._to);
             recordDnftEvent(
@@ -134,18 +129,7 @@ export function handleDNFTTransfer(event: Transfer): void {
                     loadOrCreateAccount(event.params._to),
                 );
 
-                let transfer = new DnftTransfer(getLogId(event));
-                transfer.dnft = dnft.id;
-                transfer.from = loadOrCreateAccount(event.params._from).id;
-                transfer.to = loadOrCreateAccount(event.params._to).id;
-                transfer.tokenId = event.params._tokenId;
-                transfer.dateTransferred = event.block.timestamp;
-                transfer.transactionHash = event.transaction.hash;
-                transfer.save();
-            
-                if (event.params._from.toHex() == ZERO_ADDRESS_STRING) {
-                    dnft.mintedTransfer = transfer.id;
-                }
+              
                 dnft.save();
 
             } else {
@@ -168,6 +152,26 @@ export function handleDNFTTransfer(event: Transfer): void {
             }
         }
 
+        let dnftNew = loadOrCreateDNFT(event.address, event.params._tokenId, event)
+        if (dnftNew) {
+            log.info("DNFT check ok", [])
+
+            let transfer = new DnftTransfer(getLogId(event));
+            transfer.dnft = dnftNew.id;
+            transfer.from = loadOrCreateAccount(event.params._from).id;
+            transfer.to = loadOrCreateAccount(event.params._to).id;
+            transfer.tokenId = event.params._tokenId;
+            transfer.dateTransferred = event.block.timestamp;
+            transfer.transactionHash = event.transaction.hash;
+            transfer.save();
+        
+            if (event.params._from.toHex() == ZERO_ADDRESS_STRING) {
+                dnftNew.mintedTransfer = transfer.id;
+            }
+
+        } else {
+            log.info("DNFT check faild", [])
+        }
     }
 }
 
@@ -286,7 +290,7 @@ export function handleDNFTTransferValue(event: TransferValue): void {
         let dnft = loadOrCreateDNFT(event.address, event.params._fromTokenId, event);
         if (dnft) {
     
-            let _idString = event.address.toHex() + "-" + event.params._fromTokenId.toString() + "-" + event.params._toTokenId.toHexString()
+            let _idString = event.address.toHex() + "-" + event.params._fromTokenId.toString() + "-" + event.params._toTokenId.toString()
             const dnftTransferValue = DnftTransferValue.load(_idString) || new DnftTransferValue(_idString)
         
             if (dnftTransferValue) {

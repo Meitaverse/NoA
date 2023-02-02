@@ -529,6 +529,60 @@ export class SBTAsset extends Entity {
     }
   }
 
+  get transfers(): Array<string> | null {
+    let value = this.get("transfers");
+    if (!value || value.kind == ValueKind.NULL) {
+      return null;
+    } else {
+      return value.toStringArray();
+    }
+  }
+
+  set transfers(value: Array<string> | null) {
+    if (!value) {
+      this.unset("transfers");
+    } else {
+      this.set("transfers", Value.fromStringArray(<Array<string>>value));
+    }
+  }
+
+  get transferValues(): Array<string> | null {
+    let value = this.get("transferValues");
+    if (!value || value.kind == ValueKind.NULL) {
+      return null;
+    } else {
+      return value.toStringArray();
+    }
+  }
+
+  set transferValues(value: Array<string> | null) {
+    if (!value) {
+      this.unset("transferValues");
+    } else {
+      this.set("transferValues", Value.fromStringArray(<Array<string>>value));
+    }
+  }
+
+  get mintSBTValueHistories(): Array<string> | null {
+    let value = this.get("mintSBTValueHistories");
+    if (!value || value.kind == ValueKind.NULL) {
+      return null;
+    } else {
+      return value.toStringArray();
+    }
+  }
+
+  set mintSBTValueHistories(value: Array<string> | null) {
+    if (!value) {
+      this.unset("mintSBTValueHistories");
+    } else {
+      this.set(
+        "mintSBTValueHistories",
+        Value.fromStringArray(<Array<string>>value)
+      );
+    }
+  }
+
   get timestamp(): BigInt {
     let value = this.get("timestamp");
     return value!.toBigInt();
@@ -570,6 +624,15 @@ export class SBTTransferHistory extends Entity {
 
   set id(value: string) {
     this.set("id", Value.fromString(value));
+  }
+
+  get sbtAsset(): string {
+    let value = this.get("sbtAsset");
+    return value!.toString();
+  }
+
+  set sbtAsset(value: string) {
+    this.set("sbtAsset", Value.fromString(value));
   }
 
   get from(): string {
@@ -643,6 +706,15 @@ export class SBTTransferValueHistory extends Entity {
 
   set id(value: string) {
     this.set("id", Value.fromString(value));
+  }
+
+  get sbtAsset(): string {
+    let value = this.get("sbtAsset");
+    return value!.toString();
+  }
+
+  set sbtAsset(value: string) {
+    this.set("sbtAsset", Value.fromString(value));
   }
 
   get from(): string {
@@ -788,6 +860,15 @@ export class MintSBTValueHistory extends Entity {
     this.set("id", Value.fromString(value));
   }
 
+  get sbtAsset(): string {
+    let value = this.get("sbtAsset");
+    return value!.toString();
+  }
+
+  set sbtAsset(value: string) {
+    this.set("sbtAsset", Value.fromString(value));
+  }
+
   get caller(): Bytes {
     let value = this.get("caller");
     return value!.toBytes();
@@ -854,6 +935,15 @@ export class BurnSBTHistory extends Entity {
 
   set id(value: string) {
     this.set("id", Value.fromString(value));
+  }
+
+  get sbtAsset(): string {
+    let value = this.get("sbtAsset");
+    return value!.toString();
+  }
+
+  set sbtAsset(value: string) {
+    this.set("sbtAsset", Value.fromString(value));
   }
 
   get caller(): Bytes {

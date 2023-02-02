@@ -139,6 +139,15 @@ type SBTAsset @entity {
   "An account authorized to transfer this SBT, if one was approved"
   approvedSpender: Account
 
+  "All transfers that have occurred for this SBT"
+  transfers: [SBTTransferHistory!] @derivedFrom(field: "sbtAsset")
+
+  "All transferValues that have occurred for this SBT"
+  transferValues: [SBTTransferValueHistory!] @derivedFrom(field: "sbtAsset")  
+
+  "All mint histories that have occurred for this SBT"
+  mintSBTValueHistories: [MintSBTValueHistory!] @derivedFrom(field: "sbtAsset")  
+
   "The date/time when the event occurred in seconds since Unix epoch"
   timestamp: BigInt!
 }
@@ -148,6 +157,8 @@ type SBTAsset @entity {
 type SBTTransferHistory @entity {
   "TransactionHash-logsIndex"
   id: ID!
+
+  sbtAsset: SBTAsset!
 
   "The account of from"
   from: Account!
@@ -166,6 +177,8 @@ type SBTTransferHistory @entity {
 type SBTTransferValueHistory @entity {
   "TransactionHash-logsIndex"
   id: ID!
+
+  sbtAsset: SBTAsset!
 
   "The account of from"
   from: Account!
@@ -203,6 +216,8 @@ type MintSBTValueHistory @entity {
   "TransactionHash-logsIndex"
   id: ID!
 
+  sbtAsset: SBTAsset!
+
   "Caller address"
   caller: Bytes!
 
@@ -220,6 +235,8 @@ type MintSBTValueHistory @entity {
 type BurnSBTHistory @entity {
   "TransactionHash-logsIndex"
   id: ID!
+
+  sbtAsset: SBTAsset!
 
   "Caller address"
   caller: Bytes!
@@ -1404,7 +1421,7 @@ type DNFT @entity {
   dateMinted: BigInt!
 
   "The transfer details where this dNFT was minted"
-  mintedTransfer: DnftTransfer
+  mintedTransfer: DnftTransfer @derivedFrom(field: "dnft")
 
   "The current owner of this dNFT"
   owner: Account!

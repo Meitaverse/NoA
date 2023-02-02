@@ -68,6 +68,7 @@ export function handleMintSBTValue(event: MintSBTValue): void {
         const history = MintSBTValueHistory.load(_idString) || new MintSBTValueHistory(_idString)
     
         if (history) {
+            history.sbtAsset = loadOrCreateSBTAsset(wallet).id
             history.caller = event.params.caller
             history.account = account.id
             history.value = event.params.value
@@ -89,6 +90,7 @@ export function handleBurnSBT(event: BurnSBT): void {
             let _idString = getLogId(event)
             const history = BurnSBTHistory.load(_idString) || new BurnSBTHistory(_idString)
             if (history) {
+                history.sbtAsset = loadOrCreateSBTAsset(wallet).id
                 history.caller = event.params.caller
                 history.account = account.id
                 history.balance = event.params.balance
@@ -102,7 +104,11 @@ export function handleBurnSBT(event: BurnSBT): void {
 }
 
 export function handleSBTTransfer(event: Transfer): void {
-    log.info("handleSBTTransfer, event.address: {}, _from: {}", [event.address.toHexString(), event.params._from.toHexString()])
+    log.info("handleSBTTransfer, event.address: {}, _from: {}, _to: {}", [
+        event.address.toHexString(), 
+        event.params._from.toHexString(),
+        event.params._to.toHexString()
+    ])
 
     let _idString = getLogId(event)
     const history = SBTTransferHistory.load(_idString) || new SBTTransferHistory(_idString)
@@ -111,6 +117,7 @@ export function handleSBTTransfer(event: Transfer): void {
     let to = loadOrCreateProfile(event.params._to)
 
     if (history) {
+        history.sbtAsset = loadOrCreateSBTAsset(event.params._to).id
         history.from = from.id
         history.to = to.id
         history.tokenId = event.params._tokenId
@@ -179,17 +186,32 @@ export function handleSBTTransferValue(event: TransferValue): void {
         }
     }
 
-    let _idString = getLogId(event)
-    const history = SBTTransferValueHistory.load(_idString) || new SBTTransferValueHistory(_idString)
+    let _idStringFrom = getLogId(event) + "-" + from.toHex()
+    const historyFrom = SBTTransferValueHistory.load(_idStringFrom) || new SBTTransferValueHistory(_idStringFrom)
 
-    if (history) {
+    if (historyFrom) {
         let account_from = loadOrCreateAccount(from)
         let account_to = loadOrCreateAccount(to)
-        history.from = account_from.id
-        history.to = account_to.id
-        history.value = event.params._value
-        history.timestamp = event.block.timestamp
-        history.save()
+        historyFrom.sbtAsset = loadOrCreateSBTAsset(from).id
+        historyFrom.from = account_from.id
+        historyFrom.to = account_to.id
+        historyFrom.value = event.params._value
+        historyFrom.timestamp = event.block.timestamp
+        historyFrom.save()
+    } 
+
+    let _idStringTo = getLogId(event) + "-" + to.toHex()
+    const historyTo = SBTTransferValueHistory.load(_idStringTo) || new SBTTransferValueHistory(_idStringTo)
+
+    if (historyTo) {
+        let account_from = loadOrCreateAccount(from)
+        let account_to = loadOrCreateAccount(to)
+        historyTo.sbtAsset = loadOrCreateSBTAsset(to).id
+        historyTo.from = account_from.id
+        historyTo.to = account_to.id
+        historyTo.value = event.params._value
+        historyTo.timestamp = event.block.timestamp
+        historyTo.save()
     } 
 }
 
