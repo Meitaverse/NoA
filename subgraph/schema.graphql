@@ -39,6 +39,9 @@ type Account @entity {
   "All dNFTs currently owned by this account"
   dnfts: [DNFT!]! @derivedFrom(field: "owner")
 
+  "All prepare publish history by this account"
+  preparePublishFeesHistories: [PreparePublishFeesHistory!]! @derivedFrom(field: "publisher")
+
   "All collected history by this account"
   collectHistories: [FeesForCollectHistory!]! @derivedFrom(field: "collector")
 
@@ -336,9 +339,10 @@ type Publication @entity {
 
   canCollect: Boolean!
 
-  materialURIs: [String!]!
+  materialURIs: [String!]
 
-  fromTokenIds: [BigInt!]!
+  #fromTokenIds: [BigInt!]
+  fromTokenIds: [DNFT!]
 
   collectModule: Bytes!
 
@@ -348,9 +352,9 @@ type Publication @entity {
 
   publishModuleInitData: Bytes!
 
-  genesisPublishId: BigInt!
+  genesisPublish: Publish
 
-  previousPublishId: BigInt!
+  previousPublish: Publish
   
   publishTaxAmount: BigInt!
 
@@ -420,6 +424,22 @@ type Publish @entity {
   collectModuleInitData: Bytes!
 
   "The date/time the event emit in seconds since Unix epoch"
+  timestamp: BigInt!
+}
+
+# Treasury prepare publish fees history 
+type PreparePublishFeesHistory @entity {
+  "tx-logId-publishId"
+  id: ID!
+
+  publisher: Account!
+
+  treasury: Account!
+
+  publication: Publication!
+
+  feesAmountOfPublish: BigInt!
+
   timestamp: BigInt!
 }
 

@@ -15,33 +15,3 @@ export function loadPublication(
   return publication as Publication;
 }
 
-
-/**
-  publishId: BigInt!
-
-  #soulBoundTokenId: BigInt!
-  profile: Profile!
-
-  hub: Hub!
-
-  project: Project!
-
-  salePrice: BigInt!
-  royaltyBasisPoints: BigInt!
-  amount: BigInt!
-  name: String!
-  description: String!
-  canCollect: Boolean!
-  materialURIs: [String!]!
-  fromTokenIds: [BigInt!]!
-  collectModule: Bytes!
-  collectModuleInitData: Bytes!
-  publishModule: Bytes!
-  publishModuleInitData: Bytes!
-
-  genesisPublishId: BigInt!
-  previousPublishId: BigInt!
-  publishTaxAmount: BigInt!
-  timestamp: BigInt!
-
- */

@@ -32,6 +32,8 @@ import {
     Dispatcher,
     StateSetHistory,
     Account,
+    DNFT,
+    PreparePublishFeesHistory,
 } from "../generated/schema"
 
 import { loadProject } from "./shared/project";
@@ -40,6 +42,8 @@ import { loadOrCreatePublish } from "./shared/publish";
 import { loadOrCreateAccount } from "./shared/accounts";
 import { loadOrCreateDNFT, loadOrCreateDNFTContract } from "./dnft";
 import { loadOrCreateSoulBoundToken } from "./shared/soulBoundToken";
+import { getLogId } from "./shared/ids";
+import { TREASURY_SBT_ID } from "./shared/constants";
 
 export function handleEmergencyAdminSet(event: EmergencyAdminSet): void {
     log.info("handleEmergencyAdminSet, event.address: {}", [event.address.toHexString()])
@@ -133,23 +137,43 @@ export function handlePublishPrepared(event: PublishPrepared): void {
             publication.description = event.params.publication.description
             publication.canCollect = event.params.publication.canCollect
             publication.materialURIs = event.params.publication.materialURIs
-            publication.fromTokenIds = event.params.publication.fromTokenIds
             publication.collectModule = event.params.publication.collectModule
             publication.collectModuleInitData = event.params.publication.collectModuleInitData
             publication.publishModule = event.params.publication.publishModule
             publication.publishModuleInitData = event.params.publication.publishModuleInitData
-            publication.previousPublishId = event.params.previousPublishId
-
+            if (!event.params.previousPublishId.isZero()) {
+                publication.previousPublish = loadOrCreatePublish(event.params.previousPublishId).id
+            }
+            
+            // publication.fromTokenIds = event.params.publication.fromTokenIds
             if (event.params.publication.fromTokenIds.length > 0 ) {
                 
                    let publicationFrom = Publication.load(event.params.publication.projectId.toString())
                    if (publicationFrom) {
-                        publication.genesisPublishId = publicationFrom.genesisPublishId
+                        // publication.genesisPublishId = publicationFrom.genesisPublishId
+                        publication.genesisPublish = publicationFrom.genesisPublish
                    }
+                  
+                   let fromDNFTs: Array<string> = [];
 
-            } else {
-                log.info('fromTokenIds.length is zero', [])
-                publication.genesisPublishId = event.params.publishId
+                    for (let index = 0; index <  event.params.publication.fromTokenIds.length; index++) {
+                        let tokenId = event.params.publication.fromTokenIds[index]
+                        let dnft = loadOrCreateDNFT(Address.fromString(project.derivativeNFT), tokenId, event);
+                        if (dnft) {
+                            fromDNFTs.push(dnft.id)
+                        }
+                    }
+                    publication.fromTokenIds = fromDNFTs
+                
+            } 
+            let _id = getLogId(event) + "-" + event.params.publishId.toString()
+            let feesHistory = PreparePublishFeesHistory.load(_id) || new PreparePublishFeesHistory(_id)
+            if (feesHistory) {
+                feesHistory.publisher = publisher.id
+                feesHistory.publication = publication.id
+                let treasury = loadOrCreateSoulBoundToken(TREASURY_SBT_ID)
+                feesHistory.treasury = loadOrCreateAccount(Address.fromBytes(treasury.wallet)).id
+                feesHistory.feesAmountOfPublish = event.params.publishTaxAmount
             }
             publication.publishTaxAmount = event.params.publishTaxAmount
             publication.timestamp = event.block.timestamp
@@ -170,16 +194,37 @@ export function handlePublishUpdated(event: PublishUpdated): void {
         publication.name = event.params.name
         publication.description = event.params.description
         publication.materialURIs = event.params.materialURIs
-        publication.fromTokenIds = event.params.fromTokenIds
+        
         if (event.params.fromTokenIds.length > 0 ) {
             let publicationFrom = Publication.load(event.params.projectId.toString())
             if (publicationFrom) {
-                publication.genesisPublishId = publicationFrom.genesisPublishId
+                publication.genesisPublish = publicationFrom.genesisPublish
             }
         } else {
-            publication.genesisPublishId = event.params.publishId
-        }
+            //publication.fromTokenIds = event.params.fromTokenIds
+            //TODO get dnft 
+            const publish = loadOrCreatePublish(event.params.publishId);
+            if (publish) {
+                let fromDNFTs: Array<string> = [];
 
+                for (let index = 0; index <  event.params.fromTokenIds.length; index++) {
+                    let dnft = loadOrCreateDNFT(Address.fromString(publish.derivativeNFT), event.params.fromTokenIds[index], event);
+                    if (dnft) {
+                        fromDNFTs.push(dnft.id)
+                    }
+                }
+                publication.fromTokenIds = fromDNFTs
+            }
+        }
+        let _id = getLogId(event) + "-" + event.params.publishId.toString()
+        let feesHistory = PreparePublishFeesHistory.load(_id) || new PreparePublishFeesHistory(_id)
+        if (feesHistory) {
+            feesHistory.publisher = publication.publisher
+            feesHistory.publication = publication.id
+            let treasury = loadOrCreateSoulBoundToken(TREASURY_SBT_ID)
+            feesHistory.treasury = loadOrCreateAccount(Address.fromBytes(treasury.wallet)).id
+            feesHistory.feesAmountOfPublish = feesHistory.feesAmountOfPublish.plus(event.params.addedPublishTaxes)
+        }
         publication.publishTaxAmount = publication.publishTaxAmount.plus(event.params.addedPublishTaxes)
         publication.timestamp = event.params.timestamp
         publication.save()

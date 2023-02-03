@@ -11,3 +11,4 @@ export let ZERO_ADDRESS_STRING = "0x0000000000000000000000000000000000000000";
 export let ONE_MINUTE = BigInt.fromI32(60);
 export let TEN_MINUTES = ONE_MINUTE.times(BigInt.fromI32(10));
 export let DEFAULT_DNFT_IMAGEURI = "https://ipfs.io/ipfs/QmVnu7JQVoDRqSgHBzraYp7Hy78HwJtLFi6nUFCowTGdzp/30.png";
+export let TREASURY_SBT_ID = BigInt.fromI32(1);

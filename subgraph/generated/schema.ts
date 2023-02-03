@@ -182,6 +182,15 @@ export class Account extends Entity {
     this.set("dnfts", Value.fromStringArray(value));
   }
 
+  get preparePublishFeesHistories(): Array<string> {
+    let value = this.get("preparePublishFeesHistories");
+    return value!.toStringArray();
+  }
+
+  set preparePublishFeesHistories(value: Array<string>) {
+    this.set("preparePublishFeesHistories", Value.fromStringArray(value));
+  }
+
   get collectHistories(): Array<string> {
     let value = this.get("collectHistories");
     return value!.toStringArray();
@@ -1330,22 +1339,38 @@ export class Publication extends Entity {
     this.set("canCollect", Value.fromBoolean(value));
   }
 
-  get materialURIs(): Array<string> {
+  get materialURIs(): Array<string> | null {
     let value = this.get("materialURIs");
-    return value!.toStringArray();
+    if (!value || value.kind == ValueKind.NULL) {
+      return null;
+    } else {
+      return value.toStringArray();
+    }
   }
 
-  set materialURIs(value: Array<string>) {
-    this.set("materialURIs", Value.fromStringArray(value));
+  set materialURIs(value: Array<string> | null) {
+    if (!value) {
+      this.unset("materialURIs");
+    } else {
+      this.set("materialURIs", Value.fromStringArray(<Array<string>>value));
+    }
   }
 
-  get fromTokenIds(): Array<BigInt> {
+  get fromTokenIds(): Array<string> | null {
     let value = this.get("fromTokenIds");
-    return value!.toBigIntArray();
+    if (!value || value.kind == ValueKind.NULL) {
+      return null;
+    } else {
+      return value.toStringArray();
+    }
   }
 
-  set fromTokenIds(value: Array<BigInt>) {
-    this.set("fromTokenIds", Value.fromBigIntArray(value));
+  set fromTokenIds(value: Array<string> | null) {
+    if (!value) {
+      this.unset("fromTokenIds");
+    } else {
+      this.set("fromTokenIds", Value.fromStringArray(<Array<string>>value));
+    }
   }
 
   get collectModule(): Bytes {
@@ -1384,22 +1409,38 @@ export class Publication extends Entity {
     this.set("publishModuleInitData", Value.fromBytes(value));
   }
 
-  get genesisPublishId(): BigInt {
-    let value = this.get("genesisPublishId");
-    return value!.toBigInt();
+  get genesisPublish(): string | null {
+    let value = this.get("genesisPublish");
+    if (!value || value.kind == ValueKind.NULL) {
+      return null;
+    } else {
+      return value.toString();
+    }
   }
 
-  set genesisPublishId(value: BigInt) {
-    this.set("genesisPublishId", Value.fromBigInt(value));
+  set genesisPublish(value: string | null) {
+    if (!value) {
+      this.unset("genesisPublish");
+    } else {
+      this.set("genesisPublish", Value.fromString(<string>value));
+    }
   }
 
-  get previousPublishId(): BigInt {
-    let value = this.get("previousPublishId");
-    return value!.toBigInt();
+  get previousPublish(): string | null {
+    let value = this.get("previousPublish");
+    if (!value || value.kind == ValueKind.NULL) {
+      return null;
+    } else {
+      return value.toString();
+    }
   }
 
-  set previousPublishId(value: BigInt) {
-    this.set("previousPublishId", Value.fromBigInt(value));
+  set previousPublish(value: string | null) {
+    if (!value) {
+      this.unset("previousPublish");
+    } else {
+      this.set("previousPublish", Value.fromString(<string>value));
+    }
   }
 
   get publishTaxAmount(): BigInt {
@@ -1635,6 +1676,88 @@ export class Publish extends Entity {
 
   set collectModuleInitData(value: Bytes) {
     this.set("collectModuleInitData", Value.fromBytes(value));
+  }
+
+  get timestamp(): BigInt {
+    let value = this.get("timestamp");
+    return value!.toBigInt();
+  }
+
+  set timestamp(value: BigInt) {
+    this.set("timestamp", Value.fromBigInt(value));
+  }
+}
+
+export class PreparePublishFeesHistory extends Entity {
+  constructor(id: string) {
+    super();
+    this.set("id", Value.fromString(id));
+  }
+
+  save(): void {
+    let id = this.get("id");
+    assert(
+      id != null,
+      "Cannot save PreparePublishFeesHistory entity without an ID"
+    );
+    if (id) {
+      assert(
+        id.kind == ValueKind.STRING,
+        `Entities of type PreparePublishFeesHistory must have an ID of type String but the id '${id.displayData()}' is of type ${id.displayKind()}`
+      );
+      store.set("PreparePublishFeesHistory", id.toString(), this);
+    }
+  }
+
+  static load(id: string): PreparePublishFeesHistory | null {
+    return changetype<PreparePublishFeesHistory | null>(
+      store.get("PreparePublishFeesHistory", id)
+    );
+  }
+
+  get id(): string {
+    let value = this.get("id");
+    return value!.toString();
+  }
+
+  set id(value: string) {
+    this.set("id", Value.fromString(value));
+  }
+
+  get publisher(): string {
+    let value = this.get("publisher");
+    return value!.toString();
+  }
+
+  set publisher(value: string) {
+    this.set("publisher", Value.fromString(value));
+  }
+
+  get treasury(): string {
+    let value = this.get("treasury");
+    return value!.toString();
+  }
+
+  set treasury(value: string) {
+    this.set("treasury", Value.fromString(value));
+  }
+
+  get publication(): string {
+    let value = this.get("publication");
+    return value!.toString();
+  }
+
+  set publication(value: string) {
+    this.set("publication", Value.fromString(value));
+  }
+
+  get feesAmountOfPublish(): BigInt {
+    let value = this.get("feesAmountOfPublish");
+    return value!.toBigInt();
+  }
+
+  set feesAmountOfPublish(value: BigInt) {
+    this.set("feesAmountOfPublish", Value.fromBigInt(value));
   }
 
   get timestamp(): BigInt {
