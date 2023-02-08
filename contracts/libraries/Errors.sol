@@ -5,7 +5,7 @@ pragma solidity ^0.8.13;
 library Errors {
  /* ========== error definitions ========== */
   // revertedWithCustomError
-  error InsufficientFund();
+  error InsufficientEarnestFunds();
   error InsufficientBalance();
   error ZeroValue();
   error NotAllowed();
@@ -26,6 +26,7 @@ library Errors {
   error NotProfileOwnerOrDispatcher();
   error ZeroAddress();
   error EventNotExists();
+  error InvalidProjectId();
   error ProjectExisted();
   error TokenIsClaimed();
   error PublicationIsExisted();
@@ -53,7 +54,14 @@ library Errors {
   error NotGovernance();
   error NotManager();
   error NotManagerNorMarketPlace();
+  error CanNotSplitToAnother();
+  error CanNotTransferValueToAnother();
   error NotManagerNorHubOwner();
+  error InitParamsManagerInvalid();
+  error InitParamsSBTInvalid();
+  error InitParamsTreasuryInvalid();
+  error InitParamsMarketPlaceInvalid();
+  error CurrencyNotInWhitelisted(address currency);
   error NotBankTreasury();
   error NotSinger();
   error TxNotExists();

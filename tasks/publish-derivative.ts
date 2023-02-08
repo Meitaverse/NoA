@@ -140,6 +140,7 @@ task("publish-derivative", "publish-derivative function")
         soulBoundTokenId: sbtid, //对应的SBT Id
         hubId: FIRST_HUB_ID,
         projectId: projectid,               //projectid不变
+        currency: sbt.address,
         amount: 4,                          //二创数量
         salePrice: DEFAULT_COLLECT_PRICE,
         royaltyBasisPoints: Default_royaltyBasisPoints,

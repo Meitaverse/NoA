@@ -317,40 +317,30 @@ export class BankTreasury extends ethereum.SmartContract {
     return ethereum.CallResult.fromValue(value[0].toBytes());
   }
 
-  balanceOf(soulBoundTokenId: BigInt): BigInt {
-    let result = super.call("balanceOf", "balanceOf(uint256):(uint256)", [
-      ethereum.Value.fromUnsignedBigInt(soulBoundTokenId)
-    ]);
-
-    return result[0].toBigInt();
-  }
-
-  try_balanceOf(soulBoundTokenId: BigInt): ethereum.CallResult<BigInt> {
-    let result = super.tryCall("balanceOf", "balanceOf(uint256):(uint256)", [
-      ethereum.Value.fromUnsignedBigInt(soulBoundTokenId)
-    ]);
-    if (result.reverted) {
-      return new ethereum.CallResult();
-    }
-    let value = result.value;
-    return ethereum.CallResult.fromValue(value[0].toBigInt());
-  }
-
-  calculateAmountEther(ethAmount: BigInt): BigInt {
+  balanceOf(currency: Address, soulBoundTokenId: BigInt): BigInt {
     let result = super.call(
-      "calculateAmountEther",
-      "calculateAmountEther(uint256):(uint256)",
-      [ethereum.Value.fromUnsignedBigInt(ethAmount)]
+      "balanceOf",
+      "balanceOf(address,uint256):(uint256)",
+      [
+        ethereum.Value.fromAddress(currency),
+        ethereum.Value.fromUnsignedBigInt(soulBoundTokenId)
+      ]
     );
 
     return result[0].toBigInt();
   }
 
-  try_calculateAmountEther(ethAmount: BigInt): ethereum.CallResult<BigInt> {
+  try_balanceOf(
+    currency: Address,
+    soulBoundTokenId: BigInt
+  ): ethereum.CallResult<BigInt> {
     let result = super.tryCall(
-      "calculateAmountEther",
-      "calculateAmountEther(uint256):(uint256)",
-      [ethereum.Value.fromUnsignedBigInt(ethAmount)]
+      "balanceOf",
+      "balanceOf(address,uint256):(uint256)",
+      [
+        ethereum.Value.fromAddress(currency),
+        ethereum.Value.fromUnsignedBigInt(soulBoundTokenId)
+      ]
     );
     if (result.reverted) {
       return new ethereum.CallResult();
@@ -359,21 +349,94 @@ export class BankTreasury extends ethereum.SmartContract {
     return ethereum.CallResult.fromValue(value[0].toBigInt());
   }
 
-  calculateAmountSBT(sbtValue: BigInt): BigInt {
+  calculateAmountCurrency(currency: Address, ethAmount: BigInt): BigInt {
     let result = super.call(
-      "calculateAmountSBT",
-      "calculateAmountSBT(uint256):(uint256)",
-      [ethereum.Value.fromUnsignedBigInt(sbtValue)]
+      "calculateAmountCurrency",
+      "calculateAmountCurrency(address,uint256):(uint256)",
+      [
+        ethereum.Value.fromAddress(currency),
+        ethereum.Value.fromUnsignedBigInt(ethAmount)
+      ]
     );
 
     return result[0].toBigInt();
   }
 
-  try_calculateAmountSBT(sbtValue: BigInt): ethereum.CallResult<BigInt> {
+  try_calculateAmountCurrency(
+    currency: Address,
+    ethAmount: BigInt
+  ): ethereum.CallResult<BigInt> {
+    let result = super.tryCall(
+      "calculateAmountCurrency",
+      "calculateAmountCurrency(address,uint256):(uint256)",
+      [
+        ethereum.Value.fromAddress(currency),
+        ethereum.Value.fromUnsignedBigInt(ethAmount)
+      ]
+    );
+    if (result.reverted) {
+      return new ethereum.CallResult();
+    }
+    let value = result.value;
+    return ethereum.CallResult.fromValue(value[0].toBigInt());
+  }
+
+  calculateAmountSBT(currency: Address, amountOfSBT: BigInt): BigInt {
+    let result = super.call(
+      "calculateAmountSBT",
+      "calculateAmountSBT(address,uint256):(uint256)",
+      [
+        ethereum.Value.fromAddress(currency),
+        ethereum.Value.fromUnsignedBigInt(amountOfSBT)
+      ]
+    );
+
+    return result[0].toBigInt();
+  }
+
+  try_calculateAmountSBT(
+    currency: Address,
+    amountOfSBT: BigInt
+  ): ethereum.CallResult<BigInt> {
     let result = super.tryCall(
       "calculateAmountSBT",
-      "calculateAmountSBT(uint256):(uint256)",
-      [ethereum.Value.fromUnsignedBigInt(sbtValue)]
+      "calculateAmountSBT(address,uint256):(uint256)",
+      [
+        ethereum.Value.fromAddress(currency),
+        ethereum.Value.fromUnsignedBigInt(amountOfSBT)
+      ]
+    );
+    if (result.reverted) {
+      return new ethereum.CallResult();
+    }
+    let value = result.value;
+    return ethereum.CallResult.fromValue(value[0].toBigInt());
+  }
+
+  escrowBalanceOf(currency: Address, soulBoundTokenId: BigInt): BigInt {
+    let result = super.call(
+      "escrowBalanceOf",
+      "escrowBalanceOf(address,uint256):(uint256)",
+      [
+        ethereum.Value.fromAddress(currency),
+        ethereum.Value.fromUnsignedBigInt(soulBoundTokenId)
+      ]
+    );
+
+    return result[0].toBigInt();
+  }
+
+  try_escrowBalanceOf(
+    currency: Address,
+    soulBoundTokenId: BigInt
+  ): ethereum.CallResult<BigInt> {
+    let result = super.tryCall(
+      "escrowBalanceOf",
+      "escrowBalanceOf(address,uint256):(uint256)",
+      [
+        ethereum.Value.fromAddress(currency),
+        ethereum.Value.fromUnsignedBigInt(soulBoundTokenId)
+      ]
     );
     if (result.reverted) {
       return new ethereum.CallResult();
@@ -426,29 +489,6 @@ export class BankTreasury extends ethereum.SmartContract {
     }
     let value = result.value;
     return ethereum.CallResult.fromValue(value[0].toBigInt());
-  }
-
-  getDomainSeparator(): Bytes {
-    let result = super.call(
-      "getDomainSeparator",
-      "getDomainSeparator():(bytes32)",
-      []
-    );
-
-    return result[0].toBytes();
-  }
-
-  try_getDomainSeparator(): ethereum.CallResult<Bytes> {
-    let result = super.tryCall(
-      "getDomainSeparator",
-      "getDomainSeparator():(bytes32)",
-      []
-    );
-    if (result.reverted) {
-      return new ethereum.CallResult();
-    }
-    let value = result.value;
-    return ethereum.CallResult.fromValue(value[0].toBytes());
   }
 
   getFeeModuleMember(index: BigInt): Address {
@@ -562,11 +602,17 @@ export class BankTreasury extends ethereum.SmartContract {
     return ethereum.CallResult.fromValue(value[0].toBigInt());
   }
 
-  getLockups(soulBoundTokenId: BigInt): BankTreasury__getLockupsResult {
+  getLockups(
+    currency: Address,
+    soulBoundTokenId: BigInt
+  ): BankTreasury__getLockupsResult {
     let result = super.call(
       "getLockups",
-      "getLockups(uint256):(uint256[],uint256[])",
-      [ethereum.Value.fromUnsignedBigInt(soulBoundTokenId)]
+      "getLockups(address,uint256):(uint256[],uint256[])",
+      [
+        ethereum.Value.fromAddress(currency),
+        ethereum.Value.fromUnsignedBigInt(soulBoundTokenId)
+      ]
     );
 
     return new BankTreasury__getLockupsResult(
@@ -576,12 +622,16 @@ export class BankTreasury extends ethereum.SmartContract {
   }
 
   try_getLockups(
+    currency: Address,
     soulBoundTokenId: BigInt
   ): ethereum.CallResult<BankTreasury__getLockupsResult> {
     let result = super.tryCall(
       "getLockups",
-      "getLockups(uint256):(uint256[],uint256[])",
-      [ethereum.Value.fromUnsignedBigInt(soulBoundTokenId)]
+      "getLockups(address,uint256):(uint256[],uint256[])",
+      [
+        ethereum.Value.fromAddress(currency),
+        ethereum.Value.fromUnsignedBigInt(soulBoundTokenId)
+      ]
     );
     if (result.reverted) {
       return new ethereum.CallResult();
@@ -761,6 +811,7 @@ export class BankTreasury extends ethereum.SmartContract {
 
   marketChangeLockup(
     unlockFromSoulBoundTokenId: BigInt,
+    currency: Address,
     unlockExpiration: BigInt,
     unlockAmount: BigInt,
     lockupForSoulBoundTokenId: BigInt,
@@ -768,9 +819,10 @@ export class BankTreasury extends ethereum.SmartContract {
   ): BigInt {
     let result = super.call(
       "marketChangeLockup",
-      "marketChangeLockup(uint256,uint256,uint256,uint256,uint256):(uint256)",
+      "marketChangeLockup(uint256,address,uint256,uint256,uint256,uint256):(uint256)",
       [
         ethereum.Value.fromUnsignedBigInt(unlockFromSoulBoundTokenId),
+        ethereum.Value.fromAddress(currency),
         ethereum.Value.fromUnsignedBigInt(unlockExpiration),
         ethereum.Value.fromUnsignedBigInt(unlockAmount),
         ethereum.Value.fromUnsignedBigInt(lockupForSoulBoundTokenId),
@@ -783,6 +835,7 @@ export class BankTreasury extends ethereum.SmartContract {
 
   try_marketChangeLockup(
     unlockFromSoulBoundTokenId: BigInt,
+    currency: Address,
     unlockExpiration: BigInt,
     unlockAmount: BigInt,
     lockupForSoulBoundTokenId: BigInt,
@@ -790,9 +843,10 @@ export class BankTreasury extends ethereum.SmartContract {
   ): ethereum.CallResult<BigInt> {
     let result = super.tryCall(
       "marketChangeLockup",
-      "marketChangeLockup(uint256,uint256,uint256,uint256,uint256):(uint256)",
+      "marketChangeLockup(uint256,address,uint256,uint256,uint256,uint256):(uint256)",
       [
         ethereum.Value.fromUnsignedBigInt(unlockFromSoulBoundTokenId),
+        ethereum.Value.fromAddress(currency),
         ethereum.Value.fromUnsignedBigInt(unlockExpiration),
         ethereum.Value.fromUnsignedBigInt(unlockAmount),
         ethereum.Value.fromUnsignedBigInt(lockupForSoulBoundTokenId),
@@ -809,14 +863,16 @@ export class BankTreasury extends ethereum.SmartContract {
   marketLockupFor(
     account: Address,
     soulBoundTokenId: BigInt,
+    currency: Address,
     amount: BigInt
   ): BigInt {
     let result = super.call(
       "marketLockupFor",
-      "marketLockupFor(address,uint256,uint256):(uint256)",
+      "marketLockupFor(address,uint256,address,uint256):(uint256)",
       [
         ethereum.Value.fromAddress(account),
         ethereum.Value.fromUnsignedBigInt(soulBoundTokenId),
+        ethereum.Value.fromAddress(currency),
         ethereum.Value.fromUnsignedBigInt(amount)
       ]
     );
@@ -827,14 +883,16 @@ export class BankTreasury extends ethereum.SmartContract {
   try_marketLockupFor(
     account: Address,
     soulBoundTokenId: BigInt,
+    currency: Address,
     amount: BigInt
   ): ethereum.CallResult<BigInt> {
     let result = super.tryCall(
       "marketLockupFor",
-      "marketLockupFor(address,uint256,uint256):(uint256)",
+      "marketLockupFor(address,uint256,address,uint256):(uint256)",
       [
         ethereum.Value.fromAddress(account),
         ethereum.Value.fromUnsignedBigInt(soulBoundTokenId),
+        ethereum.Value.fromAddress(currency),
         ethereum.Value.fromUnsignedBigInt(amount)
       ]
     );
@@ -1006,21 +1064,30 @@ export class BankTreasury extends ethereum.SmartContract {
     return ethereum.CallResult.fromValue(value[0].toBoolean());
   }
 
-  totalBalanceOf(soulBoundTokenId: BigInt): BigInt {
+  totalBalanceOf(currency: Address, soulBoundTokenId: BigInt): BigInt {
     let result = super.call(
       "totalBalanceOf",
-      "totalBalanceOf(uint256):(uint256)",
-      [ethereum.Value.fromUnsignedBigInt(soulBoundTokenId)]
+      "totalBalanceOf(address,uint256):(uint256)",
+      [
+        ethereum.Value.fromAddress(currency),
+        ethereum.Value.fromUnsignedBigInt(soulBoundTokenId)
+      ]
     );
 
     return result[0].toBigInt();
   }
 
-  try_totalBalanceOf(soulBoundTokenId: BigInt): ethereum.CallResult<BigInt> {
+  try_totalBalanceOf(
+    currency: Address,
+    soulBoundTokenId: BigInt
+  ): ethereum.CallResult<BigInt> {
     let result = super.tryCall(
       "totalBalanceOf",
-      "totalBalanceOf(uint256):(uint256)",
-      [ethereum.Value.fromUnsignedBigInt(soulBoundTokenId)]
+      "totalBalanceOf(address,uint256):(uint256)",
+      [
+        ethereum.Value.fromAddress(currency),
+        ethereum.Value.fromUnsignedBigInt(soulBoundTokenId)
+      ]
     );
     if (result.reverted) {
       return new ethereum.CallResult();
@@ -1097,20 +1164,20 @@ export class DefaultCall__Outputs {
   }
 }
 
-export class WithdrawEarnestMoneyCall extends ethereum.Call {
-  get inputs(): WithdrawEarnestMoneyCall__Inputs {
-    return new WithdrawEarnestMoneyCall__Inputs(this);
+export class BuySBTByERC20Call extends ethereum.Call {
+  get inputs(): BuySBTByERC20Call__Inputs {
+    return new BuySBTByERC20Call__Inputs(this);
   }
 
-  get outputs(): WithdrawEarnestMoneyCall__Outputs {
-    return new WithdrawEarnestMoneyCall__Outputs(this);
+  get outputs(): BuySBTByERC20Call__Outputs {
+    return new BuySBTByERC20Call__Outputs(this);
   }
 }
 
-export class WithdrawEarnestMoneyCall__Inputs {
-  _call: WithdrawEarnestMoneyCall;
+export class BuySBTByERC20Call__Inputs {
+  _call: BuySBTByERC20Call;
 
-  constructor(call: WithdrawEarnestMoneyCall) {
+  constructor(call: BuySBTByERC20Call) {
     this._call = call;
   }
 
@@ -1118,45 +1185,227 @@ export class WithdrawEarnestMoneyCall__Inputs {
     return this._call.inputValues[0].value.toBigInt();
   }
 
+  get currency(): Address {
+    return this._call.inputValues[1].value.toAddress();
+  }
+
   get amount(): BigInt {
-    return this._call.inputValues[1].value.toBigInt();
+    return this._call.inputValues[2].value.toBigInt();
   }
 }
 
-export class WithdrawEarnestMoneyCall__Outputs {
-  _call: WithdrawEarnestMoneyCall;
+export class BuySBTByERC20Call__Outputs {
+  _call: BuySBTByERC20Call;
 
-  constructor(call: WithdrawEarnestMoneyCall) {
+  constructor(call: BuySBTByERC20Call) {
     this._call = call;
   }
 }
 
-export class ConfirmTransactionCall extends ethereum.Call {
-  get inputs(): ConfirmTransactionCall__Inputs {
-    return new ConfirmTransactionCall__Inputs(this);
+export class BuySBTByEthCall extends ethereum.Call {
+  get inputs(): BuySBTByEthCall__Inputs {
+    return new BuySBTByEthCall__Inputs(this);
   }
 
-  get outputs(): ConfirmTransactionCall__Outputs {
-    return new ConfirmTransactionCall__Outputs(this);
+  get outputs(): BuySBTByEthCall__Outputs {
+    return new BuySBTByEthCall__Outputs(this);
   }
 }
 
-export class ConfirmTransactionCall__Inputs {
-  _call: ConfirmTransactionCall;
+export class BuySBTByEthCall__Inputs {
+  _call: BuySBTByEthCall;
 
-  constructor(call: ConfirmTransactionCall) {
+  constructor(call: BuySBTByEthCall) {
     this._call = call;
   }
 
-  get _txIndex(): BigInt {
+  get soulBoundTokenId(): BigInt {
     return this._call.inputValues[0].value.toBigInt();
   }
+
+  get currency(): Address {
+    return this._call.inputValues[1].value.toAddress();
+  }
+
+  get amount(): BigInt {
+    return this._call.inputValues[2].value.toBigInt();
+  }
 }
 
-export class ConfirmTransactionCall__Outputs {
-  _call: ConfirmTransactionCall;
+export class BuySBTByEthCall__Outputs {
+  _call: BuySBTByEthCall;
 
-  constructor(call: ConfirmTransactionCall) {
+  constructor(call: BuySBTByEthCall) {
+    this._call = call;
+  }
+}
+
+export class DepositCall extends ethereum.Call {
+  get inputs(): DepositCall__Inputs {
+    return new DepositCall__Inputs(this);
+  }
+
+  get outputs(): DepositCall__Outputs {
+    return new DepositCall__Outputs(this);
+  }
+}
+
+export class DepositCall__Inputs {
+  _call: DepositCall;
+
+  constructor(call: DepositCall) {
+    this._call = call;
+  }
+
+  get soulBoundTokenId(): BigInt {
+    return this._call.inputValues[0].value.toBigInt();
+  }
+
+  get currency(): Address {
+    return this._call.inputValues[1].value.toAddress();
+  }
+
+  get amount(): BigInt {
+    return this._call.inputValues[2].value.toBigInt();
+  }
+}
+
+export class DepositCall__Outputs {
+  _call: DepositCall;
+
+  constructor(call: DepositCall) {
+    this._call = call;
+  }
+}
+
+export class DistributeFundsToUserRevenueCall extends ethereum.Call {
+  get inputs(): DistributeFundsToUserRevenueCall__Inputs {
+    return new DistributeFundsToUserRevenueCall__Inputs(this);
+  }
+
+  get outputs(): DistributeFundsToUserRevenueCall__Outputs {
+    return new DistributeFundsToUserRevenueCall__Outputs(this);
+  }
+}
+
+export class DistributeFundsToUserRevenueCall__Inputs {
+  _call: DistributeFundsToUserRevenueCall;
+
+  constructor(call: DistributeFundsToUserRevenueCall) {
+    this._call = call;
+  }
+
+  get fromSoulBoundTokenId(): BigInt {
+    return this._call.inputValues[0].value.toBigInt();
+  }
+
+  get currency(): Address {
+    return this._call.inputValues[1].value.toAddress();
+  }
+
+  get payValue(): BigInt {
+    return this._call.inputValues[2].value.toBigInt();
+  }
+
+  get collectFeeUsers(): DistributeFundsToUserRevenueCallCollectFeeUsersStruct {
+    return changetype<DistributeFundsToUserRevenueCallCollectFeeUsersStruct>(
+      this._call.inputValues[3].value.toTuple()
+    );
+  }
+
+  get royaltyAmounts(): DistributeFundsToUserRevenueCallRoyaltyAmountsStruct {
+    return changetype<DistributeFundsToUserRevenueCallRoyaltyAmountsStruct>(
+      this._call.inputValues[4].value.toTuple()
+    );
+  }
+}
+
+export class DistributeFundsToUserRevenueCall__Outputs {
+  _call: DistributeFundsToUserRevenueCall;
+
+  constructor(call: DistributeFundsToUserRevenueCall) {
+    this._call = call;
+  }
+}
+
+export class DistributeFundsToUserRevenueCallCollectFeeUsersStruct extends ethereum.Tuple {
+  get ownershipSoulBoundTokenId(): BigInt {
+    return this[0].toBigInt();
+  }
+
+  get collectorSoulBoundTokenId(): BigInt {
+    return this[1].toBigInt();
+  }
+
+  get genesisSoulBoundTokenId(): BigInt {
+    return this[2].toBigInt();
+  }
+
+  get previousSoulBoundTokenId(): BigInt {
+    return this[3].toBigInt();
+  }
+
+  get referrerSoulBoundTokenId(): BigInt {
+    return this[4].toBigInt();
+  }
+}
+
+export class DistributeFundsToUserRevenueCallRoyaltyAmountsStruct extends ethereum.Tuple {
+  get treasuryAmount(): BigInt {
+    return this[0].toBigInt();
+  }
+
+  get genesisAmount(): BigInt {
+    return this[1].toBigInt();
+  }
+
+  get previousAmount(): BigInt {
+    return this[2].toBigInt();
+  }
+
+  get referrerAmount(): BigInt {
+    return this[3].toBigInt();
+  }
+
+  get adjustedAmount(): BigInt {
+    return this[4].toBigInt();
+  }
+}
+
+export class ExchangeERC20BySBTCall extends ethereum.Call {
+  get inputs(): ExchangeERC20BySBTCall__Inputs {
+    return new ExchangeERC20BySBTCall__Inputs(this);
+  }
+
+  get outputs(): ExchangeERC20BySBTCall__Outputs {
+    return new ExchangeERC20BySBTCall__Outputs(this);
+  }
+}
+
+export class ExchangeERC20BySBTCall__Inputs {
+  _call: ExchangeERC20BySBTCall;
+
+  constructor(call: ExchangeERC20BySBTCall) {
+    this._call = call;
+  }
+
+  get soulBoundTokenId(): BigInt {
+    return this._call.inputValues[0].value.toBigInt();
+  }
+
+  get currency(): Address {
+    return this._call.inputValues[1].value.toAddress();
+  }
+
+  get amountOfSBT(): BigInt {
+    return this._call.inputValues[2].value.toBigInt();
+  }
+}
+
+export class ExchangeERC20BySBTCall__Outputs {
+  _call: ExchangeERC20BySBTCall;
+
+  constructor(call: ExchangeERC20BySBTCall) {
     this._call = call;
   }
 }
@@ -1182,14 +1431,8 @@ export class ExchangeEthBySBTCall__Inputs {
     return this._call.inputValues[0].value.toBigInt();
   }
 
-  get sbtValue(): BigInt {
+  get amountOfSBT(): BigInt {
     return this._call.inputValues[1].value.toBigInt();
-  }
-
-  get sig(): ExchangeEthBySBTCallSigStruct {
-    return changetype<ExchangeEthBySBTCallSigStruct>(
-      this._call.inputValues[2].value.toTuple()
-    );
   }
 }
 
@@ -1198,82 +1441,6 @@ export class ExchangeEthBySBTCall__Outputs {
 
   constructor(call: ExchangeEthBySBTCall) {
     this._call = call;
-  }
-}
-
-export class ExchangeEthBySBTCallSigStruct extends ethereum.Tuple {
-  get v(): i32 {
-    return this[0].toI32();
-  }
-
-  get r(): Bytes {
-    return this[1].toBytes();
-  }
-
-  get s(): Bytes {
-    return this[2].toBytes();
-  }
-
-  get deadline(): BigInt {
-    return this[3].toBigInt();
-  }
-}
-
-export class ExchangeSBTByEthCall extends ethereum.Call {
-  get inputs(): ExchangeSBTByEthCall__Inputs {
-    return new ExchangeSBTByEthCall__Inputs(this);
-  }
-
-  get outputs(): ExchangeSBTByEthCall__Outputs {
-    return new ExchangeSBTByEthCall__Outputs(this);
-  }
-}
-
-export class ExchangeSBTByEthCall__Inputs {
-  _call: ExchangeSBTByEthCall;
-
-  constructor(call: ExchangeSBTByEthCall) {
-    this._call = call;
-  }
-
-  get soulBoundTokenId(): BigInt {
-    return this._call.inputValues[0].value.toBigInt();
-  }
-
-  get amount(): BigInt {
-    return this._call.inputValues[1].value.toBigInt();
-  }
-
-  get sig(): ExchangeSBTByEthCallSigStruct {
-    return changetype<ExchangeSBTByEthCallSigStruct>(
-      this._call.inputValues[2].value.toTuple()
-    );
-  }
-}
-
-export class ExchangeSBTByEthCall__Outputs {
-  _call: ExchangeSBTByEthCall;
-
-  constructor(call: ExchangeSBTByEthCall) {
-    this._call = call;
-  }
-}
-
-export class ExchangeSBTByEthCallSigStruct extends ethereum.Tuple {
-  get v(): i32 {
-    return this[0].toI32();
-  }
-
-  get r(): Bytes {
-    return this[1].toBytes();
-  }
-
-  get s(): Bytes {
-    return this[2].toBytes();
-  }
-
-  get deadline(): BigInt {
-    return this[3].toBigInt();
   }
 }
 
@@ -1307,36 +1474,6 @@ export class ExchangeVoucherCall__Outputs {
   _call: ExchangeVoucherCall;
 
   constructor(call: ExchangeVoucherCall) {
-    this._call = call;
-  }
-}
-
-export class ExecuteTransactionCall extends ethereum.Call {
-  get inputs(): ExecuteTransactionCall__Inputs {
-    return new ExecuteTransactionCall__Inputs(this);
-  }
-
-  get outputs(): ExecuteTransactionCall__Outputs {
-    return new ExecuteTransactionCall__Outputs(this);
-  }
-}
-
-export class ExecuteTransactionCall__Inputs {
-  _call: ExecuteTransactionCall;
-
-  constructor(call: ExecuteTransactionCall) {
-    this._call = call;
-  }
-
-  get _txIndex(): BigInt {
-    return this._call.inputValues[0].value.toBigInt();
-  }
-}
-
-export class ExecuteTransactionCall__Outputs {
-  _call: ExecuteTransactionCall;
-
-  constructor(call: ExecuteTransactionCall) {
     this._call = call;
   }
 }
@@ -1472,20 +1609,24 @@ export class MarketChangeLockupCall__Inputs {
     return this._call.inputValues[0].value.toBigInt();
   }
 
-  get unlockExpiration(): BigInt {
-    return this._call.inputValues[1].value.toBigInt();
+  get currency(): Address {
+    return this._call.inputValues[1].value.toAddress();
   }
 
-  get unlockAmount(): BigInt {
+  get unlockExpiration(): BigInt {
     return this._call.inputValues[2].value.toBigInt();
   }
 
-  get lockupForSoulBoundTokenId(): BigInt {
+  get unlockAmount(): BigInt {
     return this._call.inputValues[3].value.toBigInt();
   }
 
-  get lockupAmount(): BigInt {
+  get lockupForSoulBoundTokenId(): BigInt {
     return this._call.inputValues[4].value.toBigInt();
+  }
+
+  get lockupAmount(): BigInt {
+    return this._call.inputValues[5].value.toBigInt();
   }
 }
 
@@ -1526,8 +1667,12 @@ export class MarketLockupForCall__Inputs {
     return this._call.inputValues[1].value.toBigInt();
   }
 
+  get currency(): Address {
+    return this._call.inputValues[2].value.toAddress();
+  }
+
   get amount(): BigInt {
-    return this._call.inputValues[2].value.toBigInt();
+    return this._call.inputValues[3].value.toBigInt();
   }
 }
 
@@ -1540,6 +1685,60 @@ export class MarketLockupForCall__Outputs {
 
   get expiration(): BigInt {
     return this._call.outputValues[0].value.toBigInt();
+  }
+}
+
+export class MarketTransferLockedCall extends ethereum.Call {
+  get inputs(): MarketTransferLockedCall__Inputs {
+    return new MarketTransferLockedCall__Inputs(this);
+  }
+
+  get outputs(): MarketTransferLockedCall__Outputs {
+    return new MarketTransferLockedCall__Outputs(this);
+  }
+}
+
+export class MarketTransferLockedCall__Inputs {
+  _call: MarketTransferLockedCall;
+
+  constructor(call: MarketTransferLockedCall) {
+    this._call = call;
+  }
+
+  get account(): Address {
+    return this._call.inputValues[0].value.toAddress();
+  }
+
+  get soulBoundTokenIdBuyer(): BigInt {
+    return this._call.inputValues[1].value.toBigInt();
+  }
+
+  get owner(): Address {
+    return this._call.inputValues[2].value.toAddress();
+  }
+
+  get soulBoundTokenIdOwner(): BigInt {
+    return this._call.inputValues[3].value.toBigInt();
+  }
+
+  get expiration(): BigInt {
+    return this._call.inputValues[4].value.toBigInt();
+  }
+
+  get currency(): Address {
+    return this._call.inputValues[5].value.toAddress();
+  }
+
+  get totalAmount(): BigInt {
+    return this._call.inputValues[6].value.toBigInt();
+  }
+}
+
+export class MarketTransferLockedCall__Outputs {
+  _call: MarketTransferLockedCall;
+
+  constructor(call: MarketTransferLockedCall) {
+    this._call = call;
   }
 }
 
@@ -1572,8 +1771,12 @@ export class MarketUnlockForCall__Inputs {
     return this._call.inputValues[2].value.toBigInt();
   }
 
+  get currency(): Address {
+    return this._call.inputValues[3].value.toAddress();
+  }
+
   get amount(): BigInt {
-    return this._call.inputValues[3].value.toBigInt();
+    return this._call.inputValues[4].value.toBigInt();
   }
 }
 
@@ -1581,56 +1784,6 @@ export class MarketUnlockForCall__Outputs {
   _call: MarketUnlockForCall;
 
   constructor(call: MarketUnlockForCall) {
-    this._call = call;
-  }
-}
-
-export class MarketWithdrawLockedCall extends ethereum.Call {
-  get inputs(): MarketWithdrawLockedCall__Inputs {
-    return new MarketWithdrawLockedCall__Inputs(this);
-  }
-
-  get outputs(): MarketWithdrawLockedCall__Outputs {
-    return new MarketWithdrawLockedCall__Outputs(this);
-  }
-}
-
-export class MarketWithdrawLockedCall__Inputs {
-  _call: MarketWithdrawLockedCall;
-
-  constructor(call: MarketWithdrawLockedCall) {
-    this._call = call;
-  }
-
-  get account(): Address {
-    return this._call.inputValues[0].value.toAddress();
-  }
-
-  get soulBoundTokenIdBuyer(): BigInt {
-    return this._call.inputValues[1].value.toBigInt();
-  }
-
-  get owner(): Address {
-    return this._call.inputValues[2].value.toAddress();
-  }
-
-  get soulBoundTokenIdOwner(): BigInt {
-    return this._call.inputValues[3].value.toBigInt();
-  }
-
-  get expiration(): BigInt {
-    return this._call.inputValues[4].value.toBigInt();
-  }
-
-  get amount(): BigInt {
-    return this._call.inputValues[5].value.toBigInt();
-  }
-}
-
-export class MarketWithdrawLockedCall__Outputs {
-  _call: MarketWithdrawLockedCall;
-
-  constructor(call: MarketWithdrawLockedCall) {
     this._call = call;
   }
 }
@@ -1749,20 +1902,20 @@ export class ProxyCallCall__Outputs {
   }
 }
 
-export class RefundEarnestMoneyCall extends ethereum.Call {
-  get inputs(): RefundEarnestMoneyCall__Inputs {
-    return new RefundEarnestMoneyCall__Inputs(this);
+export class RefundEarnestFundsCall extends ethereum.Call {
+  get inputs(): RefundEarnestFundsCall__Inputs {
+    return new RefundEarnestFundsCall__Inputs(this);
   }
 
-  get outputs(): RefundEarnestMoneyCall__Outputs {
-    return new RefundEarnestMoneyCall__Outputs(this);
+  get outputs(): RefundEarnestFundsCall__Outputs {
+    return new RefundEarnestFundsCall__Outputs(this);
   }
 }
 
-export class RefundEarnestMoneyCall__Inputs {
-  _call: RefundEarnestMoneyCall;
+export class RefundEarnestFundsCall__Inputs {
+  _call: RefundEarnestFundsCall;
 
-  constructor(call: RefundEarnestMoneyCall) {
+  constructor(call: RefundEarnestFundsCall) {
     this._call = call;
   }
 
@@ -1770,15 +1923,19 @@ export class RefundEarnestMoneyCall__Inputs {
     return this._call.inputValues[0].value.toBigInt();
   }
 
+  get currency(): Address {
+    return this._call.inputValues[1].value.toAddress();
+  }
+
   get amount(): BigInt {
-    return this._call.inputValues[1].value.toBigInt();
+    return this._call.inputValues[2].value.toBigInt();
   }
 }
 
-export class RefundEarnestMoneyCall__Outputs {
-  _call: RefundEarnestMoneyCall;
+export class RefundEarnestFundsCall__Outputs {
+  _call: RefundEarnestFundsCall;
 
-  constructor(call: RefundEarnestMoneyCall) {
+  constructor(call: RefundEarnestFundsCall) {
     this._call = call;
   }
 }
@@ -1813,36 +1970,6 @@ export class RevokeAdminCall__Outputs {
   }
 }
 
-export class RevokeConfirmationCall extends ethereum.Call {
-  get inputs(): RevokeConfirmationCall__Inputs {
-    return new RevokeConfirmationCall__Inputs(this);
-  }
-
-  get outputs(): RevokeConfirmationCall__Outputs {
-    return new RevokeConfirmationCall__Outputs(this);
-  }
-}
-
-export class RevokeConfirmationCall__Inputs {
-  _call: RevokeConfirmationCall;
-
-  constructor(call: RevokeConfirmationCall) {
-    this._call = call;
-  }
-
-  get _txIndex(): BigInt {
-    return this._call.inputValues[0].value.toBigInt();
-  }
-}
-
-export class RevokeConfirmationCall__Outputs {
-  _call: RevokeConfirmationCall;
-
-  constructor(call: RevokeConfirmationCall) {
-    this._call = call;
-  }
-}
-
 export class RevokeFeeModuleCall extends ethereum.Call {
   get inputs(): RevokeFeeModuleCall__Inputs {
     return new RevokeFeeModuleCall__Inputs(this);
@@ -1873,96 +2000,6 @@ export class RevokeFeeModuleCall__Outputs {
   }
 }
 
-export class SaveFundsToUserRevenueCall extends ethereum.Call {
-  get inputs(): SaveFundsToUserRevenueCall__Inputs {
-    return new SaveFundsToUserRevenueCall__Inputs(this);
-  }
-
-  get outputs(): SaveFundsToUserRevenueCall__Outputs {
-    return new SaveFundsToUserRevenueCall__Outputs(this);
-  }
-}
-
-export class SaveFundsToUserRevenueCall__Inputs {
-  _call: SaveFundsToUserRevenueCall;
-
-  constructor(call: SaveFundsToUserRevenueCall) {
-    this._call = call;
-  }
-
-  get fromSoulBoundTokenId(): BigInt {
-    return this._call.inputValues[0].value.toBigInt();
-  }
-
-  get payValue(): BigInt {
-    return this._call.inputValues[1].value.toBigInt();
-  }
-
-  get collectFeeUsers(): SaveFundsToUserRevenueCallCollectFeeUsersStruct {
-    return changetype<SaveFundsToUserRevenueCallCollectFeeUsersStruct>(
-      this._call.inputValues[2].value.toTuple()
-    );
-  }
-
-  get royaltyAmounts(): SaveFundsToUserRevenueCallRoyaltyAmountsStruct {
-    return changetype<SaveFundsToUserRevenueCallRoyaltyAmountsStruct>(
-      this._call.inputValues[3].value.toTuple()
-    );
-  }
-}
-
-export class SaveFundsToUserRevenueCall__Outputs {
-  _call: SaveFundsToUserRevenueCall;
-
-  constructor(call: SaveFundsToUserRevenueCall) {
-    this._call = call;
-  }
-}
-
-export class SaveFundsToUserRevenueCallCollectFeeUsersStruct extends ethereum.Tuple {
-  get ownershipSoulBoundTokenId(): BigInt {
-    return this[0].toBigInt();
-  }
-
-  get collectorSoulBoundTokenId(): BigInt {
-    return this[1].toBigInt();
-  }
-
-  get genesisSoulBoundTokenId(): BigInt {
-    return this[2].toBigInt();
-  }
-
-  get previousSoulBoundTokenId(): BigInt {
-    return this[3].toBigInt();
-  }
-
-  get referrerSoulBoundTokenId(): BigInt {
-    return this[4].toBigInt();
-  }
-}
-
-export class SaveFundsToUserRevenueCallRoyaltyAmountsStruct extends ethereum.Tuple {
-  get treasuryAmount(): BigInt {
-    return this[0].toBigInt();
-  }
-
-  get genesisAmount(): BigInt {
-    return this[1].toBigInt();
-  }
-
-  get previousAmount(): BigInt {
-    return this[2].toBigInt();
-  }
-
-  get referrerAmount(): BigInt {
-    return this[3].toBigInt();
-  }
-
-  get adjustedAmount(): BigInt {
-    return this[4].toBigInt();
-  }
-}
-
 export class SetExchangePriceCall extends ethereum.Call {
   get inputs(): SetExchangePriceCall__Inputs {
     return new SetExchangePriceCall__Inputs(this);
@@ -1980,8 +2017,12 @@ export class SetExchangePriceCall__Inputs {
     this._call = call;
   }
 
-  get exchangePrice_(): BigInt {
-    return this._call.inputValues[0].value.toBigInt();
+  get currency(): Address {
+    return this._call.inputValues[0].value.toAddress();
+  }
+
+  get exchangePrice(): BigInt {
+    return this._call.inputValues[1].value.toBigInt();
   }
 }
 
@@ -2023,20 +2064,20 @@ export class SetFoundationMarketCall__Outputs {
   }
 }
 
-export class SetGlobalModuleCall extends ethereum.Call {
-  get inputs(): SetGlobalModuleCall__Inputs {
-    return new SetGlobalModuleCall__Inputs(this);
+export class SetGlobalModulesCall extends ethereum.Call {
+  get inputs(): SetGlobalModulesCall__Inputs {
+    return new SetGlobalModulesCall__Inputs(this);
   }
 
-  get outputs(): SetGlobalModuleCall__Outputs {
-    return new SetGlobalModuleCall__Outputs(this);
+  get outputs(): SetGlobalModulesCall__Outputs {
+    return new SetGlobalModulesCall__Outputs(this);
   }
 }
 
-export class SetGlobalModuleCall__Inputs {
-  _call: SetGlobalModuleCall;
+export class SetGlobalModulesCall__Inputs {
+  _call: SetGlobalModulesCall;
 
-  constructor(call: SetGlobalModuleCall) {
+  constructor(call: SetGlobalModulesCall) {
     this._call = call;
   }
 
@@ -2045,64 +2086,10 @@ export class SetGlobalModuleCall__Inputs {
   }
 }
 
-export class SetGlobalModuleCall__Outputs {
-  _call: SetGlobalModuleCall;
+export class SetGlobalModulesCall__Outputs {
+  _call: SetGlobalModulesCall;
 
-  constructor(call: SetGlobalModuleCall) {
-    this._call = call;
-  }
-}
-
-export class SubmitTransactionCall extends ethereum.Call {
-  get inputs(): SubmitTransactionCall__Inputs {
-    return new SubmitTransactionCall__Inputs(this);
-  }
-
-  get outputs(): SubmitTransactionCall__Outputs {
-    return new SubmitTransactionCall__Outputs(this);
-  }
-}
-
-export class SubmitTransactionCall__Inputs {
-  _call: SubmitTransactionCall;
-
-  constructor(call: SubmitTransactionCall) {
-    this._call = call;
-  }
-
-  get _currency(): Address {
-    return this._call.inputValues[0].value.toAddress();
-  }
-
-  get _currencyType(): i32 {
-    return this._call.inputValues[1].value.toI32();
-  }
-
-  get _to(): Address {
-    return this._call.inputValues[2].value.toAddress();
-  }
-
-  get _fromTokenId(): BigInt {
-    return this._call.inputValues[3].value.toBigInt();
-  }
-
-  get _toTokenId(): BigInt {
-    return this._call.inputValues[4].value.toBigInt();
-  }
-
-  get _value(): BigInt {
-    return this._call.inputValues[5].value.toBigInt();
-  }
-
-  get _data(): Bytes {
-    return this._call.inputValues[6].value.toBytes();
-  }
-}
-
-export class SubmitTransactionCall__Outputs {
-  _call: SubmitTransactionCall;
-
-  constructor(call: SubmitTransactionCall) {
+  constructor(call: SetGlobalModulesCall) {
     this._call = call;
   }
 }
@@ -2197,20 +2184,20 @@ export class UpgradeToAndCallCall__Outputs {
   }
 }
 
-export class UseEarnestMoneyForPayCall extends ethereum.Call {
-  get inputs(): UseEarnestMoneyForPayCall__Inputs {
-    return new UseEarnestMoneyForPayCall__Inputs(this);
+export class UseEarnestFundsForPayCall extends ethereum.Call {
+  get inputs(): UseEarnestFundsForPayCall__Inputs {
+    return new UseEarnestFundsForPayCall__Inputs(this);
   }
 
-  get outputs(): UseEarnestMoneyForPayCall__Outputs {
-    return new UseEarnestMoneyForPayCall__Outputs(this);
+  get outputs(): UseEarnestFundsForPayCall__Outputs {
+    return new UseEarnestFundsForPayCall__Outputs(this);
   }
 }
 
-export class UseEarnestMoneyForPayCall__Inputs {
-  _call: UseEarnestMoneyForPayCall;
+export class UseEarnestFundsForPayCall__Inputs {
+  _call: UseEarnestFundsForPayCall;
 
-  constructor(call: UseEarnestMoneyForPayCall) {
+  constructor(call: UseEarnestFundsForPayCall) {
     this._call = call;
   }
 
@@ -2218,15 +2205,57 @@ export class UseEarnestMoneyForPayCall__Inputs {
     return this._call.inputValues[0].value.toBigInt();
   }
 
+  get currency(): Address {
+    return this._call.inputValues[1].value.toAddress();
+  }
+
   get amount(): BigInt {
-    return this._call.inputValues[1].value.toBigInt();
+    return this._call.inputValues[2].value.toBigInt();
   }
 }
 
-export class UseEarnestMoneyForPayCall__Outputs {
-  _call: UseEarnestMoneyForPayCall;
+export class UseEarnestFundsForPayCall__Outputs {
+  _call: UseEarnestFundsForPayCall;
 
-  constructor(call: UseEarnestMoneyForPayCall) {
+  constructor(call: UseEarnestFundsForPayCall) {
+    this._call = call;
+  }
+}
+
+export class WithdrawEarnestFundsCall extends ethereum.Call {
+  get inputs(): WithdrawEarnestFundsCall__Inputs {
+    return new WithdrawEarnestFundsCall__Inputs(this);
+  }
+
+  get outputs(): WithdrawEarnestFundsCall__Outputs {
+    return new WithdrawEarnestFundsCall__Outputs(this);
+  }
+}
+
+export class WithdrawEarnestFundsCall__Inputs {
+  _call: WithdrawEarnestFundsCall;
+
+  constructor(call: WithdrawEarnestFundsCall) {
+    this._call = call;
+  }
+
+  get soulBoundTokenId(): BigInt {
+    return this._call.inputValues[0].value.toBigInt();
+  }
+
+  get currency(): Address {
+    return this._call.inputValues[1].value.toAddress();
+  }
+
+  get amount(): BigInt {
+    return this._call.inputValues[2].value.toBigInt();
+  }
+}
+
+export class WithdrawEarnestFundsCall__Outputs {
+  _call: WithdrawEarnestFundsCall;
+
+  constructor(call: WithdrawEarnestFundsCall) {
     this._call = call;
   }
 }

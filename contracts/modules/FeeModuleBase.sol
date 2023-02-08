@@ -39,6 +39,10 @@ abstract contract FeeModuleBase {
         return IModuleGlobals(MODULE_GLOBALS).getSBT();
     }
     
+    function _currencyWhitelisted(address currency) internal view returns (bool) {
+        return IModuleGlobals(MODULE_GLOBALS).isCurrencyWhitelisted(currency);
+    }
+    
     function  _publishCurrencyTax() internal returns (uint256) {
         return IModuleGlobals(MODULE_GLOBALS).getPublishCurrencyTax();
     }

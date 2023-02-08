@@ -33,4 +33,6 @@ abstract contract ModuleBase {
         MARKET = market_;
         emit Events.ModuleBaseConstructed(manager_, market_, block.timestamp);
     }
+
+    
 }

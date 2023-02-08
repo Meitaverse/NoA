@@ -11,6 +11,7 @@ import {DataTypes} from '../libraries/DataTypes.sol';
  * @notice This is the interface for the BankTreasuryBase contract, from which the BankTreasury inherit.
  */
 interface IBankTreasuryV2 {
+   
     /**
      * @notice Implementation of an EIP-712 permit-style function for token burning. Allows anyone to burn
      * a token on behalf of the owner with a signature.
@@ -20,8 +21,9 @@ interface IBankTreasuryV2 {
      */
     //  * @param nonce nonce of sig.
     //  * @param sig The EIP712 signature struct.
-    function WithdrawEarnestMoney(
+    function WithdrawEarnestFunds(
         uint256 toSoulBoundTokenId,
+        address currency,
         uint256 amount
     ) external;
 
@@ -31,8 +33,9 @@ interface IBankTreasuryV2 {
     ) external;
     
 
-    function exchangeSBTByEth(
+    function buySBTByEth(
         uint256 soulBoundTokenId, 
+        address currency,
         uint256 amount,
         DataTypes.EIP712Signature calldata sign
     ) external payable ;
@@ -57,11 +60,11 @@ interface IBankTreasuryV2 {
 
     function getVoucher() external view returns(address);
 
-    function balanceOf(uint256 soulBoundTokenId) external view returns (uint256 balance);
+    function balanceOf(address currency, uint256 soulBoundTokenId) external view returns (uint256 balance);
 
-    function calculateAmountEther(uint256 ethAmount) external view returns(uint256);
+    function calculateAmountCurrency(address currency, uint256 ethAmount) external view returns(uint256);
 
-    function calculateAmountSBT(uint256 sbtValue) external view returns(uint256);
+    function calculateAmountSBT(address currency, uint256 sbtValue) external view returns(uint256);
 
 
     /**
@@ -75,31 +78,36 @@ interface IBankTreasuryV2 {
      * @notice Save funds to mapping revenues, user can withdraw it if reach a limit amount
      *
      */
-    function saveFundsToUserRevenue(
+    function distributeFundsToUserRevenue(
         uint256 fromSoulBoundTokenId,
+        address currency,
         uint256 payValue,
         DataTypes.CollectFeeUsers memory collectFeeUsers,
         DataTypes.RoyaltyAmounts memory royaltyAmounts
     ) external;
 
-    function useEarnestMoneyForPay(
+    function useEarnestFundsForPay(
         uint256 soulBoundTokenId,
+        address currency,
         uint256 amount
     ) external;
 
-    function refundEarnestMoney(
+    function refundEarnestFunds(
         uint256 soulBoundTokenId,
+        address currency,
         uint256 amount
     ) external;
 
     function marketLockupFor(
         address account,
         uint256 soulBoundTokenId, 
+        address currency,
         uint256 amount
     ) external returns (uint256 expiration);
 
     function marketChangeLockup(
         uint256 unlockFromSoulBoundTokenId,
+         address currency,
         uint256 unlockExpiration,
         uint256 unlockAmount,
         uint256 lockupForSoulBoundTokenId,
@@ -110,17 +118,19 @@ interface IBankTreasuryV2 {
         address account,
         uint256 soulBoundTokenId,
         uint256 expiration,
+         address currency,
         uint256 amount
     ) external;
 
-    function marketWithdrawLocked(
+    function marketTransferLocked(
         address account,
         uint256 soulBoundTokenIdBuyer,
         address owner,
         uint256 soulBoundTokenIdOwner,
         uint256 expiration,
+         address currency,
         uint256 amount
     ) external;
 
-    
+
 }

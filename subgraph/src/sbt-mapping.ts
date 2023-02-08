@@ -27,7 +27,7 @@ import {
     SBTApprovalValue,
 } from "../generated/schema"
 
-import { BASIS_POINTS, ONE_BIG_INT, ZERO_ADDRESS_STRING, ZERO_BIG_DECIMAL, ZERO_BIG_INT } from "./shared/constants"; 
+import { BASIS_POINTS, ONE_BIG_INT, ZERO_ADDRESS_STRING, ZERO_BIG_INT } from "./shared/constants"; 
 import { loadOrCreateProfile } from "./shared/profile";
 import { loadOrCreateSBTAsset } from "./shared/sbtAsset";
 import { loadOrCreateAccount } from "./shared/accounts";

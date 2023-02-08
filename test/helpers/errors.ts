@@ -30,6 +30,7 @@ export const ERRORS = {
   NOT_COLLECT_NFT: 'CallerNotCollectNFT()',
   BLOCK_NUMBER_INVALID: 'BlockNumberInvalid()',
   INIT_PARAMS_INVALID: 'InitParamsInvalid()',
+  PROJECT_ID_INVALID: 'InvalidProjectId()',
   COLLECT_EXPIRED: 'CollectExpired()',
   COLLECT_NOT_ALLOWED: 'CollectNotAllowed()',
   MINT_LIMIT_EXCEEDED: 'MintLimitExceeded()',

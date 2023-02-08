@@ -3,6 +3,7 @@ import { log, Address, BigInt, Bytes, store, TypedMap } from "@graphprotocol/gra
 import {
     EmergencyAdminSet,
     ManagerGovernanceSet,
+    GlobalModulesSet,
     HubCreated,
     HubUpdated,
     PublishPrepared,
@@ -17,10 +18,11 @@ import {
 } from "../generated/Manager/Events"
 
 import {
-    Manager
-} from "../generated/Manager/Manager"
+    ModuleGlobals
+} from "../generated/Manager/ModuleGlobals"
 
 import {
+    ProtocolContract,
     EmergencyAdminSetHistory,
     ManagerGovernanceSetHistory,
     Hub,
@@ -48,7 +50,7 @@ import { TREASURY_SBT_ID } from "./shared/constants";
 export function handleEmergencyAdminSet(event: EmergencyAdminSet): void {
     log.info("handleEmergencyAdminSet, event.address: {}", [event.address.toHexString()])
 
-    let _idString = event.params.caller.toHexString() + "-" +  event.params.timestamp.toString()
+    let _idString = getLogId(event)
     const history = EmergencyAdminSetHistory.load(_idString) || new EmergencyAdminSetHistory(_idString)
     if (history) {
         history.caller = event.params.caller
@@ -59,10 +61,11 @@ export function handleEmergencyAdminSet(event: EmergencyAdminSet): void {
     } 
 }
 
+
 export function handleManagerGovernanceSet(event: ManagerGovernanceSet): void {
     log.info("handleManagerGovernanceSet, event.address: {}", [event.address.toHexString()])
 
-    let _idString = event.params.caller.toHexString() + "-" +  event.params.timestamp.toString()
+    let _idString = getLogId(event)
     const history = ManagerGovernanceSetHistory.load(_idString) || new ManagerGovernanceSetHistory(_idString)
     if (history) {
         history.caller = event.params.caller
@@ -70,7 +73,27 @@ export function handleManagerGovernanceSet(event: ManagerGovernanceSet): void {
         history.newGovernance = event.params.newGovernance
         history.timestamp = event.block.timestamp
         history.save()
+
+        let _id = "Governance"
+        const protocolContract = ProtocolContract.load(_id) || new ProtocolContract(_id)
+        if (protocolContract) {
+            protocolContract.contract = event.params.newGovernance
+            protocolContract.save()        
+        }
     } 
+}
+
+export function handleGlobalModulesSet(event: GlobalModulesSet): void {
+    log.info("handleGlobalModulesSet, event.address: {}", [event.address.toHexString()])
+
+ 
+    let _id = "GlobalModules"
+    const protocolContract = ProtocolContract.load(_id) || new ProtocolContract(_id)
+    if (protocolContract) {
+        protocolContract.contract = event.params.globalModule
+        protocolContract.save()        
+    }
+    
 }
 
 export function handleHubCreated(event: HubCreated): void {
@@ -80,32 +103,54 @@ export function handleHubCreated(event: HubCreated): void {
             event.params.hubOwner.toHexString()
         ]
     )
-
-    const hubOwner = loadOrCreateAccount(event.params.hubOwner)
-    if (hubOwner) {
-        const hub = new Hub(event.params.hubId.toString());
-
-        hubOwner.hub = hub.id
-        hub.hubOwner = hubOwner.id
-        hub.hubId = event.params.hubId
-        hub.name = event.params.name
-        hub.description = event.params.description
-        hub.imageURI = event.params.imageURI
-        hub.timestamp = event.block.timestamp
-        hub.save()
+    let _id = "GlobalModules"
+    const protocolContract = ProtocolContract.load(_id) || new ProtocolContract(_id)
+    if (protocolContract) {
+             
+        const moduleGlobals = ModuleGlobals.bind(Address.fromBytes(protocolContract.contract))
+        const result = moduleGlobals.try_getHubInfo(event.params.hubId)
+        if (result.reverted) {
+            log.info("try_getHubInfo, result.reverted, hubId:{}", [event.params.hubId.toString()])
+            return 
+        }
+    
+        const hubOwner = loadOrCreateAccount(result.value.hubOwner)
+        if (hubOwner) {
+            const hub = new Hub(event.params.hubId.toString());
+    
+            hubOwner.hub = hub.id
+            hub.hubOwner = hubOwner.id
+            hub.hubId = event.params.hubId
+            hub.name = result.value.name
+            hub.description = result.value.description
+            hub.imageURI = result.value.imageURI
+            hub.timestamp = event.block.timestamp
+            hub.save()
+        }
     }
+
 }
 
 export function handleHubUpdated(event: HubUpdated): void {
     log.info("handleHubUpdated, event.address: {}", [event.address.toHexString()])
+    let _id = "GlobalModules"
+    const protocolContract = ProtocolContract.load(_id) || new ProtocolContract(_id)
+    if (protocolContract) {
+        const moduleGlobals = ModuleGlobals.bind(Address.fromBytes(protocolContract.contract))
+        const result = moduleGlobals.try_getHubInfo(event.params.hubId)
+        if (result.reverted) {
+            log.info("try_getHubInfo, result.reverted", [])
+            return 
+        }
 
-    const hub = loadHub(event.params.hubId) 
-    if (hub) {
-        hub.name = event.params.name
-        hub.description = event.params.description
-        hub.imageURI = event.params.imageURI
-        hub.timestamp = event.block.timestamp
-        hub.save()
+        const hub = loadHub(event.params.hubId) 
+        if (hub) {
+            hub.name = result.value.name
+            hub.description =  result.value.description
+            hub.imageURI = result.value.imageURI
+            hub.timestamp = event.block.timestamp
+            hub.save()
+        }
     }
 }
 
@@ -114,122 +159,146 @@ export function handlePublishPrepared(event: PublishPrepared): void {
         event.params.publishId.toString(),
         event.params.previousPublishId.toString(),
     ])
+    let _id = "GlobalModules"
+    const protocolContract = ProtocolContract.load(_id) || new ProtocolContract(_id)
+    if (protocolContract) {
+        const moduleGlobals = ModuleGlobals.bind(Address.fromBytes(protocolContract.contract))
 
-    const sbt = loadOrCreateSoulBoundToken(event.params.publication.soulBoundTokenId)
-    if (sbt) {
+        const result = moduleGlobals.try_getPublication(event.params.publishId)
+        if (result.reverted) {
+            log.info("try_getPublication, result.reverted", [])
+            return 
+        }
 
-        const publisher = loadOrCreateAccount(Address.fromBytes(sbt.wallet) )
-        const hub = loadHub(event.params.publication.hubId)
-        const project = loadProject(event.params.publication.projectId)
-    
-        if (publisher && hub && project) {
-    
-            let publication  = new Publication(event.params.publishId.toString());
-           
-            publication.publishId = event.params.publishId
-            publication.publisher = publisher.id
-            publication.hub = hub.id
-            publication.project = project.id
-            publication.salePrice = event.params.publication.salePrice
-            publication.royaltyBasisPoints = event.params.publication.royaltyBasisPoints
-            publication.amount = event.params.publication.amount
-            publication.name = event.params.publication.name
-            publication.description = event.params.publication.description
-            publication.canCollect = event.params.publication.canCollect
-            publication.materialURIs = event.params.publication.materialURIs
-            publication.collectModule = event.params.publication.collectModule
-            publication.collectModuleInitData = event.params.publication.collectModuleInitData
-            publication.publishModule = event.params.publication.publishModule
-            publication.publishModuleInitData = event.params.publication.publishModuleInitData
-            if (!event.params.previousPublishId.isZero()) {
-                publication.previousPublish = loadOrCreatePublish(event.params.previousPublishId).id
-            }
+        const sbt = loadOrCreateSoulBoundToken(result.value.soulBoundTokenId)
+        if (sbt) {
+
+            const publisher = loadOrCreateAccount(Address.fromBytes(sbt.wallet) )
+            const hub = loadHub(result.value.hubId)
+            const project = loadProject(result.value.projectId)
+        
+            if (publisher && hub && project) {
+        
+                let publication  = new Publication(event.params.publishId.toString());
             
-            // publication.fromTokenIds = event.params.publication.fromTokenIds
-            if (event.params.publication.fromTokenIds.length > 0 ) {
+                publication.publishId = event.params.publishId
+                publication.publisher = publisher.id
+                publication.hub = hub.id
+                publication.project = project.id
+                publication.salePrice = result.value.salePrice
+                publication.royaltyBasisPoints = result.value.royaltyBasisPoints
+                publication.currency = result.value.currency
+                publication.amount = result.value.amount
+                publication.name = result.value.name
+                publication.description = result.value.description
+                publication.canCollect = result.value.canCollect
+                publication.materialURIs = result.value.materialURIs
+                publication.collectModule = result.value.collectModule
+                publication.collectModuleInitData = result.value.collectModuleInitData
+                publication.publishModule = result.value.publishModule
+                publication.publishModuleInitData = result.value.publishModuleInitData
+                if (!event.params.previousPublishId.isZero()) {
+                    publication.previousPublish = loadOrCreatePublish(event.params.previousPublishId).id
+                }
                 
-                   let publicationFrom = Publication.load(event.params.publication.projectId.toString())
-                   if (publicationFrom) {
-                        // publication.genesisPublishId = publicationFrom.genesisPublishId
-                        publication.genesisPublish = publicationFrom.genesisPublish
-                   }
-                  
-                   let fromDNFTs: Array<string> = [];
+                // publication.fromTokenIds = fromTokenIds
+                if (result.value.fromTokenIds.length > 0 ) {
+                    
+                    let publicationFrom = Publication.load(result.value.projectId.toString())
+                    if (publicationFrom) {
+                            // publication.genesisPublishId = publicationFrom.genesisPublishId
+                            publication.genesisPublish = publicationFrom.genesisPublish
+                    }
+                    
+                    let fromDNFTs: Array<string> = [];
 
-                    for (let index = 0; index <  event.params.publication.fromTokenIds.length; index++) {
-                        let tokenId = event.params.publication.fromTokenIds[index]
-                        let dnft = loadOrCreateDNFT(Address.fromString(project.derivativeNFT), tokenId, event);
+                        for (let index = 0; index <  result.value.fromTokenIds.length; index++) {
+                            let tokenId = result.value.fromTokenIds[index]
+                            let dnft = loadOrCreateDNFT(Address.fromString(project.derivativeNFT), tokenId, event);
+                            if (dnft) {
+                                fromDNFTs.push(dnft.id)
+                            }
+                        }
+                        publication.fromTokenIds = fromDNFTs
+                    
+                } 
+                let _id = getLogId(event) + "-" + event.params.publishId.toString()
+                let feesHistory = PreparePublishFeesHistory.load(_id) || new PreparePublishFeesHistory(_id)
+                if (feesHistory) {
+                    feesHistory.publisher = publisher.id
+                    feesHistory.publication = publication.id
+                    let treasury = loadOrCreateSoulBoundToken(TREASURY_SBT_ID)
+                    feesHistory.treasury = loadOrCreateAccount(Address.fromBytes(treasury.wallet)).id
+                    feesHistory.feesAmountOfPublish = event.params.publishTaxAmount
+                }
+                publication.publishTaxAmount = event.params.publishTaxAmount
+                publication.timestamp = event.block.timestamp
+                publication.save()
+            
+            }
+        }
+    }
+}
+
+
+export function handlePublishUpdated(event: PublishUpdated): void {
+    log.info("handlePublishUpdated, event.address: {}", [event.address.toHexString()])
+
+    let _id = "GlobalModules"
+    const protocolContract = ProtocolContract.load(_id) || new ProtocolContract(_id)
+    if (protocolContract) {
+        const moduleGlobals = ModuleGlobals.bind(Address.fromBytes(protocolContract.contract))
+
+        const result = moduleGlobals.try_getPublication(event.params.publishId)
+        if (result.reverted) {
+            log.info("try_getPublication, result.reverted", [])
+            return 
+        }
+       
+
+        let publication = Publication.load(event.params.publishId.toString());
+        if (publication) {
+            publication.salePrice = result.value.salePrice
+            publication.royaltyBasisPoints = result.value.royaltyBasisPoints
+            publication.amount = result.value.amount
+            publication.name = result.value.name
+            publication.description = result.value.description
+            publication.materialURIs = result.value.materialURIs
+
+            if (result.value.fromTokenIds.length > 0 ) {
+                let publicationFrom = Publication.load(result.value.projectId.toString())
+                if (publicationFrom) {
+                    publication.genesisPublish = publicationFrom.genesisPublish
+                }
+            } else {
+                //TODO get dnft 
+                const publish = loadOrCreatePublish(event.params.publishId);
+                if (publish) {
+                    let fromDNFTs: Array<string> = [];
+
+                    for (let index = 0; index <  result.value.fromTokenIds.length; index++) {
+                        let dnft = loadOrCreateDNFT(Address.fromString(publish.derivativeNFT), result.value.fromTokenIds[index], event);
                         if (dnft) {
                             fromDNFTs.push(dnft.id)
                         }
                     }
                     publication.fromTokenIds = fromDNFTs
-                
-            } 
+                }
+            }
             let _id = getLogId(event) + "-" + event.params.publishId.toString()
             let feesHistory = PreparePublishFeesHistory.load(_id) || new PreparePublishFeesHistory(_id)
             if (feesHistory) {
-                feesHistory.publisher = publisher.id
+                feesHistory.publisher = publication.publisher
                 feesHistory.publication = publication.id
                 let treasury = loadOrCreateSoulBoundToken(TREASURY_SBT_ID)
                 feesHistory.treasury = loadOrCreateAccount(Address.fromBytes(treasury.wallet)).id
-                feesHistory.feesAmountOfPublish = event.params.publishTaxAmount
+                feesHistory.feesAmountOfPublish = feesHistory.feesAmountOfPublish.plus(event.params.addedPublishTaxes)
             }
-            publication.publishTaxAmount = event.params.publishTaxAmount
+            publication.publishTaxAmount = publication.publishTaxAmount.plus(event.params.addedPublishTaxes)
             publication.timestamp = event.block.timestamp
             publication.save()
-        
         }
     }
-}
-
-export function handlePublishUpdated(event: PublishUpdated): void {
-    log.info("handlePublishUpdated, event.address: {}", [event.address.toHexString()])
-
-    let publication = Publication.load(event.params.publishId.toString());
-    if (publication) {
-        publication.salePrice = event.params.salePrice
-        publication.royaltyBasisPoints = event.params.royaltyBasisPoints
-        publication.amount = event.params.amount
-        publication.name = event.params.name
-        publication.description = event.params.description
-        publication.materialURIs = event.params.materialURIs
-        
-        if (event.params.fromTokenIds.length > 0 ) {
-            let publicationFrom = Publication.load(event.params.projectId.toString())
-            if (publicationFrom) {
-                publication.genesisPublish = publicationFrom.genesisPublish
-            }
-        } else {
-            //publication.fromTokenIds = event.params.fromTokenIds
-            //TODO get dnft 
-            const publish = loadOrCreatePublish(event.params.publishId);
-            if (publish) {
-                let fromDNFTs: Array<string> = [];
-
-                for (let index = 0; index <  event.params.fromTokenIds.length; index++) {
-                    let dnft = loadOrCreateDNFT(Address.fromString(publish.derivativeNFT), event.params.fromTokenIds[index], event);
-                    if (dnft) {
-                        fromDNFTs.push(dnft.id)
-                    }
-                }
-                publication.fromTokenIds = fromDNFTs
-            }
-        }
-        let _id = getLogId(event) + "-" + event.params.publishId.toString()
-        let feesHistory = PreparePublishFeesHistory.load(_id) || new PreparePublishFeesHistory(_id)
-        if (feesHistory) {
-            feesHistory.publisher = publication.publisher
-            feesHistory.publication = publication.id
-            let treasury = loadOrCreateSoulBoundToken(TREASURY_SBT_ID)
-            feesHistory.treasury = loadOrCreateAccount(Address.fromBytes(treasury.wallet)).id
-            feesHistory.feesAmountOfPublish = feesHistory.feesAmountOfPublish.plus(event.params.addedPublishTaxes)
-        }
-        publication.publishTaxAmount = publication.publishTaxAmount.plus(event.params.addedPublishTaxes)
-        publication.timestamp = event.params.timestamp
-        publication.save()
-    }
-
 }
 
 export function handleDerivativeNFTDeployed(event: DerivativeNFTDeployed): void {
@@ -348,7 +417,7 @@ export function handleDerivativeNFTAirdroped(event: DerivativeNFTAirdroped): voi
     if (sbtFrom) {
         fromWallet = Address.fromBytes(sbtFrom.wallet) 
 
-        let _idString = event.params.projectId.toString() + "-" + event.params.tokenId.toString() + "-" + event.params.timestamp.toString()
+        let _idString = getLogId(event)
         const history = DnftAirdropedHistory.load(_idString) || new DnftAirdropedHistory(_idString)
         if (history) {
             history.project = loadProject(event.params.projectId).id
@@ -390,7 +459,7 @@ export function handleDispatcherSet(event: DispatcherSet): void {
 export function handleStateSet(event: StateSet): void {
     log.info("handleStateSet, event.address: {}", [event.address.toHexString()])
 
-    let _idString = event.params.caller.toHexString() + "-" + event.params.timestamp.toString()
+    let _idString = getLogId(event)
     const history = StateSetHistory.load(_idString) || new StateSetHistory(_idString)
     if (history) {
         history.caller = event.params.caller

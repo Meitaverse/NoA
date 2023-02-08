@@ -71,6 +71,7 @@ task("create-hub", "create-hub function")
     "\n\t--- moduleGlobals whitelistHubCreator set true for user: ", userAddress
   );
     
+  
   const receipt = await waitForTx(
       manager.connect(user).createHub({
         soulBoundTokenId: SECOND_PROFILE_ID,
@@ -97,6 +98,8 @@ task("create-hub", "create-hub function")
   console.log(
     "\t\t--- HubCreated, hubOwner: ", hubOwner
   );
+
+  // let hubId =1;
 
   let hubInfo = await manager.connect(user).getHubInfo(hubId);
 

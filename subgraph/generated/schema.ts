@@ -11,6 +11,110 @@ import {
   BigDecimal
 } from "@graphprotocol/graph-ts";
 
+export class ProtocolContract extends Entity {
+  constructor(id: string) {
+    super();
+    this.set("id", Value.fromString(id));
+  }
+
+  save(): void {
+    let id = this.get("id");
+    assert(id != null, "Cannot save ProtocolContract entity without an ID");
+    if (id) {
+      assert(
+        id.kind == ValueKind.STRING,
+        `Entities of type ProtocolContract must have an ID of type String but the id '${id.displayData()}' is of type ${id.displayKind()}`
+      );
+      store.set("ProtocolContract", id.toString(), this);
+    }
+  }
+
+  static load(id: string): ProtocolContract | null {
+    return changetype<ProtocolContract | null>(
+      store.get("ProtocolContract", id)
+    );
+  }
+
+  get id(): string {
+    let value = this.get("id");
+    return value!.toString();
+  }
+
+  set id(value: string) {
+    this.set("id", Value.fromString(value));
+  }
+
+  get contract(): Bytes {
+    let value = this.get("contract");
+    return value!.toBytes();
+  }
+
+  set contract(value: Bytes) {
+    this.set("contract", Value.fromBytes(value));
+  }
+}
+
+export class CurrencyWhitelist extends Entity {
+  constructor(id: string) {
+    super();
+    this.set("id", Value.fromString(id));
+  }
+
+  save(): void {
+    let id = this.get("id");
+    assert(id != null, "Cannot save CurrencyWhitelist entity without an ID");
+    if (id) {
+      assert(
+        id.kind == ValueKind.STRING,
+        `Entities of type CurrencyWhitelist must have an ID of type String but the id '${id.displayData()}' is of type ${id.displayKind()}`
+      );
+      store.set("CurrencyWhitelist", id.toString(), this);
+    }
+  }
+
+  static load(id: string): CurrencyWhitelist | null {
+    return changetype<CurrencyWhitelist | null>(
+      store.get("CurrencyWhitelist", id)
+    );
+  }
+
+  get id(): string {
+    let value = this.get("id");
+    return value!.toString();
+  }
+
+  set id(value: string) {
+    this.set("id", Value.fromString(value));
+  }
+
+  get currency(): Bytes {
+    let value = this.get("currency");
+    return value!.toBytes();
+  }
+
+  set currency(value: Bytes) {
+    this.set("currency", Value.fromBytes(value));
+  }
+
+  get whitelisted(): boolean {
+    let value = this.get("whitelisted");
+    return value!.toBoolean();
+  }
+
+  set whitelisted(value: boolean) {
+    this.set("whitelisted", Value.fromBoolean(value));
+  }
+
+  get timestamp(): BigInt {
+    let value = this.get("timestamp");
+    return value!.toBigInt();
+  }
+
+  set timestamp(value: BigInt) {
+    this.set("timestamp", Value.fromBigInt(value));
+  }
+}
+
 export class Account extends Entity {
   constructor(id: string) {
     super();
@@ -119,13 +223,13 @@ export class Account extends Entity {
     }
   }
 
-  get deposits(): Array<string> {
-    let value = this.get("deposits");
+  get sbtValueReceivedHistories(): Array<string> {
+    let value = this.get("sbtValueReceivedHistories");
     return value!.toStringArray();
   }
 
-  set deposits(value: Array<string>) {
-    this.set("deposits", Value.fromStringArray(value));
+  set sbtValueReceivedHistories(value: Array<string>) {
+    this.set("sbtValueReceivedHistories", Value.fromStringArray(value));
   }
 
   get voucherMintHistories(): Array<string> {
@@ -191,13 +295,13 @@ export class Account extends Entity {
     this.set("preparePublishFeesHistories", Value.fromStringArray(value));
   }
 
-  get collectHistories(): Array<string> {
-    let value = this.get("collectHistories");
+  get distributeHistories(): Array<string> {
+    let value = this.get("distributeHistories");
     return value!.toStringArray();
   }
 
-  set collectHistories(value: Array<string>) {
-    this.set("collectHistories", Value.fromStringArray(value));
+  set distributeHistories(value: Array<string>) {
+    this.set("distributeHistories", Value.fromStringArray(value));
   }
 
   get genesisCreatorFeeHistories(): Array<string> {
@@ -281,22 +385,22 @@ export class Account extends Entity {
     this.set("nftTransfersIn", Value.fromStringArray(value));
   }
 
-  get netRevenueInSBTValue(): BigDecimal {
-    let value = this.get("netRevenueInSBTValue");
-    return value!.toBigDecimal();
+  get netRevenue(): BigInt {
+    let value = this.get("netRevenue");
+    return value!.toBigInt();
   }
 
-  set netRevenueInSBTValue(value: BigDecimal) {
-    this.set("netRevenueInSBTValue", Value.fromBigDecimal(value));
+  set netRevenue(value: BigInt) {
+    this.set("netRevenue", Value.fromBigInt(value));
   }
 
-  get netRevenuePendingInSBTValue(): BigDecimal {
-    let value = this.get("netRevenuePendingInSBTValue");
-    return value!.toBigDecimal();
+  get netRevenuePending(): BigInt {
+    let value = this.get("netRevenuePending");
+    return value!.toBigInt();
   }
 
-  set netRevenuePendingInSBTValue(value: BigDecimal) {
-    this.set("netRevenuePendingInSBTValue", Value.fromBigDecimal(value));
+  set netRevenuePending(value: BigInt) {
+    this.set("netRevenuePending", Value.fromBigInt(value));
   }
 
   get dnftAccountApprovals(): Array<string> {
@@ -326,13 +430,13 @@ export class Account extends Entity {
     this.set("dnftHistory", Value.fromStringArray(value));
   }
 
-  get fsbt(): Array<string> {
-    let value = this.get("fsbt");
+  get currencyEarnestFunds(): Array<string> {
+    let value = this.get("currencyEarnestFunds");
     return value!.toStringArray();
   }
 
-  set fsbt(value: Array<string>) {
-    this.set("fsbt", Value.fromStringArray(value));
+  set currencyEarnestFunds(value: Array<string>) {
+    this.set("currencyEarnestFunds", Value.fromStringArray(value));
   }
 
   get nftOffersMade(): Array<string> {
@@ -1303,6 +1407,15 @@ export class Publication extends Entity {
     this.set("royaltyBasisPoints", Value.fromBigInt(value));
   }
 
+  get currency(): Bytes {
+    let value = this.get("currency");
+    return value!.toBytes();
+  }
+
+  set currency(value: Bytes) {
+    this.set("currency", Value.fromBytes(value));
+  }
+
   get amount(): BigInt {
     let value = this.get("amount");
     return value!.toBigInt();
@@ -1885,7 +1998,7 @@ export class DnftAirdropedHistory extends Entity {
   }
 }
 
-export class DepositHistory extends Entity {
+export class DepositEtherHistory extends Entity {
   constructor(id: string) {
     super();
     this.set("id", Value.fromString(id));
@@ -1893,18 +2006,20 @@ export class DepositHistory extends Entity {
 
   save(): void {
     let id = this.get("id");
-    assert(id != null, "Cannot save DepositHistory entity without an ID");
+    assert(id != null, "Cannot save DepositEtherHistory entity without an ID");
     if (id) {
       assert(
         id.kind == ValueKind.STRING,
-        `Entities of type DepositHistory must have an ID of type String but the id '${id.displayData()}' is of type ${id.displayKind()}`
+        `Entities of type DepositEtherHistory must have an ID of type String but the id '${id.displayData()}' is of type ${id.displayKind()}`
       );
-      store.set("DepositHistory", id.toString(), this);
+      store.set("DepositEtherHistory", id.toString(), this);
     }
   }
 
-  static load(id: string): DepositHistory | null {
-    return changetype<DepositHistory | null>(store.get("DepositHistory", id));
+  static load(id: string): DepositEtherHistory | null {
+    return changetype<DepositEtherHistory | null>(
+      store.get("DepositEtherHistory", id)
+    );
   }
 
   get id(): string {
@@ -2668,7 +2783,7 @@ export class ProfileCreatorWhitelistedRecord extends Entity {
   }
 }
 
-export class FeesForCollectHistory extends Entity {
+export class DistributeHistory extends Entity {
   constructor(id: string) {
     super();
     this.set("id", Value.fromString(id));
@@ -2676,22 +2791,19 @@ export class FeesForCollectHistory extends Entity {
 
   save(): void {
     let id = this.get("id");
-    assert(
-      id != null,
-      "Cannot save FeesForCollectHistory entity without an ID"
-    );
+    assert(id != null, "Cannot save DistributeHistory entity without an ID");
     if (id) {
       assert(
         id.kind == ValueKind.STRING,
-        `Entities of type FeesForCollectHistory must have an ID of type String but the id '${id.displayData()}' is of type ${id.displayKind()}`
+        `Entities of type DistributeHistory must have an ID of type String but the id '${id.displayData()}' is of type ${id.displayKind()}`
       );
-      store.set("FeesForCollectHistory", id.toString(), this);
+      store.set("DistributeHistory", id.toString(), this);
     }
   }
 
-  static load(id: string): FeesForCollectHistory | null {
-    return changetype<FeesForCollectHistory | null>(
-      store.get("FeesForCollectHistory", id)
+  static load(id: string): DistributeHistory | null {
+    return changetype<DistributeHistory | null>(
+      store.get("DistributeHistory", id)
     );
   }
 
@@ -3082,7 +3194,7 @@ export class StateSetHistory extends Entity {
   }
 }
 
-export class ERC3525ReceivedHistory extends Entity {
+export class SBTValueReceivedHistory extends Entity {
   constructor(id: string) {
     super();
     this.set("id", Value.fromString(id));
@@ -3092,20 +3204,20 @@ export class ERC3525ReceivedHistory extends Entity {
     let id = this.get("id");
     assert(
       id != null,
-      "Cannot save ERC3525ReceivedHistory entity without an ID"
+      "Cannot save SBTValueReceivedHistory entity without an ID"
     );
     if (id) {
       assert(
         id.kind == ValueKind.STRING,
-        `Entities of type ERC3525ReceivedHistory must have an ID of type String but the id '${id.displayData()}' is of type ${id.displayKind()}`
+        `Entities of type SBTValueReceivedHistory must have an ID of type String but the id '${id.displayData()}' is of type ${id.displayKind()}`
       );
-      store.set("ERC3525ReceivedHistory", id.toString(), this);
+      store.set("SBTValueReceivedHistory", id.toString(), this);
     }
   }
 
-  static load(id: string): ERC3525ReceivedHistory | null {
-    return changetype<ERC3525ReceivedHistory | null>(
-      store.get("ERC3525ReceivedHistory", id)
+  static load(id: string): SBTValueReceivedHistory | null {
+    return changetype<SBTValueReceivedHistory | null>(
+      store.get("SBTValueReceivedHistory", id)
     );
   }
 
@@ -3179,6 +3291,74 @@ export class ERC3525ReceivedHistory extends Entity {
 
   set gas(value: BigInt) {
     this.set("gas", Value.fromBigInt(value));
+  }
+
+  get timestamp(): BigInt {
+    let value = this.get("timestamp");
+    return value!.toBigInt();
+  }
+
+  set timestamp(value: BigInt) {
+    this.set("timestamp", Value.fromBigInt(value));
+  }
+}
+
+export class DepositHistory extends Entity {
+  constructor(id: string) {
+    super();
+    this.set("id", Value.fromString(id));
+  }
+
+  save(): void {
+    let id = this.get("id");
+    assert(id != null, "Cannot save DepositHistory entity without an ID");
+    if (id) {
+      assert(
+        id.kind == ValueKind.STRING,
+        `Entities of type DepositHistory must have an ID of type String but the id '${id.displayData()}' is of type ${id.displayKind()}`
+      );
+      store.set("DepositHistory", id.toString(), this);
+    }
+  }
+
+  static load(id: string): DepositHistory | null {
+    return changetype<DepositHistory | null>(store.get("DepositHistory", id));
+  }
+
+  get id(): string {
+    let value = this.get("id");
+    return value!.toString();
+  }
+
+  set id(value: string) {
+    this.set("id", Value.fromString(value));
+  }
+
+  get account(): string {
+    let value = this.get("account");
+    return value!.toString();
+  }
+
+  set account(value: string) {
+    this.set("account", Value.fromString(value));
+  }
+
+  get currency(): Bytes {
+    let value = this.get("currency");
+    return value!.toBytes();
+  }
+
+  set currency(value: Bytes) {
+    this.set("currency", Value.fromBytes(value));
+  }
+
+  get amount(): BigInt {
+    let value = this.get("amount");
+    return value!.toBigInt();
+  }
+
+  set amount(value: BigInt) {
+    this.set("amount", Value.fromBigInt(value));
   }
 
   get timestamp(): BigInt {
@@ -4140,7 +4320,7 @@ export class TemplateWhitelistedRecord extends Entity {
   }
 }
 
-export class ExchangeSBTByEthHistory extends Entity {
+export class BuySBTByEthHistory extends Entity {
   constructor(id: string) {
     super();
     this.set("id", Value.fromString(id));
@@ -4148,22 +4328,19 @@ export class ExchangeSBTByEthHistory extends Entity {
 
   save(): void {
     let id = this.get("id");
-    assert(
-      id != null,
-      "Cannot save ExchangeSBTByEthHistory entity without an ID"
-    );
+    assert(id != null, "Cannot save BuySBTByEthHistory entity without an ID");
     if (id) {
       assert(
         id.kind == ValueKind.STRING,
-        `Entities of type ExchangeSBTByEthHistory must have an ID of type String but the id '${id.displayData()}' is of type ${id.displayKind()}`
+        `Entities of type BuySBTByEthHistory must have an ID of type String but the id '${id.displayData()}' is of type ${id.displayKind()}`
       );
-      store.set("ExchangeSBTByEthHistory", id.toString(), this);
+      store.set("BuySBTByEthHistory", id.toString(), this);
     }
   }
 
-  static load(id: string): ExchangeSBTByEthHistory | null {
-    return changetype<ExchangeSBTByEthHistory | null>(
-      store.get("ExchangeSBTByEthHistory", id)
+  static load(id: string): BuySBTByEthHistory | null {
+    return changetype<BuySBTByEthHistory | null>(
+      store.get("BuySBTByEthHistory", id)
     );
   }
 
@@ -4565,40 +4742,40 @@ export class Creator extends Entity {
     this.set("dnfts", Value.fromStringArray(value));
   }
 
-  get netSalesInSBTValue(): BigDecimal {
-    let value = this.get("netSalesInSBTValue");
-    return value!.toBigDecimal();
+  get netSales(): BigInt {
+    let value = this.get("netSales");
+    return value!.toBigInt();
   }
 
-  set netSalesInSBTValue(value: BigDecimal) {
-    this.set("netSalesInSBTValue", Value.fromBigDecimal(value));
+  set netSales(value: BigInt) {
+    this.set("netSales", Value.fromBigInt(value));
   }
 
-  get netSalesPendingInSBTValue(): BigDecimal {
-    let value = this.get("netSalesPendingInSBTValue");
-    return value!.toBigDecimal();
+  get netSalesPending(): BigInt {
+    let value = this.get("netSalesPending");
+    return value!.toBigInt();
   }
 
-  set netSalesPendingInSBTValue(value: BigDecimal) {
-    this.set("netSalesPendingInSBTValue", Value.fromBigDecimal(value));
+  set netSalesPending(value: BigInt) {
+    this.set("netSalesPending", Value.fromBigInt(value));
   }
 
-  get netRevenueInSBTValue(): BigDecimal {
-    let value = this.get("netRevenueInSBTValue");
-    return value!.toBigDecimal();
+  get netRevenue(): BigInt {
+    let value = this.get("netRevenue");
+    return value!.toBigInt();
   }
 
-  set netRevenueInSBTValue(value: BigDecimal) {
-    this.set("netRevenueInSBTValue", Value.fromBigDecimal(value));
+  set netRevenue(value: BigInt) {
+    this.set("netRevenue", Value.fromBigInt(value));
   }
 
-  get netRevenuePendingInSBTValue(): BigDecimal {
-    let value = this.get("netRevenuePendingInSBTValue");
-    return value!.toBigDecimal();
+  get netRevenuePending(): BigInt {
+    let value = this.get("netRevenuePending");
+    return value!.toBigInt();
   }
 
-  set netRevenuePendingInSBTValue(value: BigDecimal) {
-    this.set("netRevenuePendingInSBTValue", Value.fromBigDecimal(value));
+  set netRevenuePending(value: BigInt) {
+    this.set("netRevenuePending", Value.fromBigInt(value));
   }
 }
 
@@ -4984,13 +5161,22 @@ export class DnftMarketAuction extends Entity {
     }
   }
 
-  get reservePriceInSBTValue(): BigDecimal {
-    let value = this.get("reservePriceInSBTValue");
-    return value!.toBigDecimal();
+  get currency(): Bytes {
+    let value = this.get("currency");
+    return value!.toBytes();
   }
 
-  set reservePriceInSBTValue(value: BigDecimal) {
-    this.set("reservePriceInSBTValue", Value.fromBigDecimal(value));
+  set currency(value: Bytes) {
+    this.set("currency", Value.fromBytes(value));
+  }
+
+  get reservePrice(): BigInt {
+    let value = this.get("reservePrice");
+    return value!.toBigInt();
+  }
+
+  set reservePrice(value: BigInt) {
+    this.set("reservePrice", Value.fromBigInt(value));
   }
 
   get initialBid(): string | null {
@@ -5036,83 +5222,71 @@ export class DnftMarketAuction extends Entity {
     this.set("bids", Value.fromStringArray(value));
   }
 
-  get creatorRevenueInSBTValue(): BigDecimal | null {
-    let value = this.get("creatorRevenueInSBTValue");
+  get creatorRevenue(): BigInt | null {
+    let value = this.get("creatorRevenue");
     if (!value || value.kind == ValueKind.NULL) {
       return null;
     } else {
-      return value.toBigDecimal();
+      return value.toBigInt();
     }
   }
 
-  set creatorRevenueInSBTValue(value: BigDecimal | null) {
+  set creatorRevenue(value: BigInt | null) {
     if (!value) {
-      this.unset("creatorRevenueInSBTValue");
+      this.unset("creatorRevenue");
     } else {
-      this.set(
-        "creatorRevenueInSBTValue",
-        Value.fromBigDecimal(<BigDecimal>value)
-      );
+      this.set("creatorRevenue", Value.fromBigInt(<BigInt>value));
     }
   }
 
-  get previousCreatorRevenueInSBTValue(): BigDecimal | null {
-    let value = this.get("previousCreatorRevenueInSBTValue");
+  get previousCreatorRevenue(): BigInt | null {
+    let value = this.get("previousCreatorRevenue");
     if (!value || value.kind == ValueKind.NULL) {
       return null;
     } else {
-      return value.toBigDecimal();
+      return value.toBigInt();
     }
   }
 
-  set previousCreatorRevenueInSBTValue(value: BigDecimal | null) {
+  set previousCreatorRevenue(value: BigInt | null) {
     if (!value) {
-      this.unset("previousCreatorRevenueInSBTValue");
+      this.unset("previousCreatorRevenue");
     } else {
-      this.set(
-        "previousCreatorRevenueInSBTValue",
-        Value.fromBigDecimal(<BigDecimal>value)
-      );
+      this.set("previousCreatorRevenue", Value.fromBigInt(<BigInt>value));
     }
   }
 
-  get foundationRevenueInSBTValue(): BigDecimal | null {
-    let value = this.get("foundationRevenueInSBTValue");
+  get foundationRevenue(): BigInt | null {
+    let value = this.get("foundationRevenue");
     if (!value || value.kind == ValueKind.NULL) {
       return null;
     } else {
-      return value.toBigDecimal();
+      return value.toBigInt();
     }
   }
 
-  set foundationRevenueInSBTValue(value: BigDecimal | null) {
+  set foundationRevenue(value: BigInt | null) {
     if (!value) {
-      this.unset("foundationRevenueInSBTValue");
+      this.unset("foundationRevenue");
     } else {
-      this.set(
-        "foundationRevenueInSBTValue",
-        Value.fromBigDecimal(<BigDecimal>value)
-      );
+      this.set("foundationRevenue", Value.fromBigInt(<BigInt>value));
     }
   }
 
-  get ownerRevenueInSBTValue(): BigDecimal | null {
-    let value = this.get("ownerRevenueInSBTValue");
+  get ownerRevenue(): BigInt | null {
+    let value = this.get("ownerRevenue");
     if (!value || value.kind == ValueKind.NULL) {
       return null;
     } else {
-      return value.toBigDecimal();
+      return value.toBigInt();
     }
   }
 
-  set ownerRevenueInSBTValue(value: BigDecimal | null) {
+  set ownerRevenue(value: BigInt | null) {
     if (!value) {
-      this.unset("ownerRevenueInSBTValue");
+      this.unset("ownerRevenue");
     } else {
-      this.set(
-        "ownerRevenueInSBTValue",
-        Value.fromBigDecimal(<BigDecimal>value)
-      );
+      this.set("ownerRevenue", Value.fromBigInt(<BigInt>value));
     }
   }
 
@@ -5152,13 +5326,13 @@ export class DnftMarketAuction extends Entity {
     this.set("numberOfBids", Value.fromBigInt(value));
   }
 
-  get bidVolumeInSBTValue(): BigDecimal {
-    let value = this.get("bidVolumeInSBTValue");
-    return value!.toBigDecimal();
+  get bidVolume(): BigInt {
+    let value = this.get("bidVolume");
+    return value!.toBigInt();
   }
 
-  set bidVolumeInSBTValue(value: BigDecimal) {
-    this.set("bidVolumeInSBTValue", Value.fromBigDecimal(value));
+  set bidVolume(value: BigInt) {
+    this.set("bidVolume", Value.fromBigInt(value));
   }
 
   get dateInvalidated(): BigInt | null {
@@ -5212,57 +5386,54 @@ export class DnftMarketAuction extends Entity {
     }
   }
 
-  get buyReferrerFee(): BigDecimal | null {
+  get buyReferrerFee(): BigInt | null {
     let value = this.get("buyReferrerFee");
     if (!value || value.kind == ValueKind.NULL) {
       return null;
     } else {
-      return value.toBigDecimal();
+      return value.toBigInt();
     }
   }
 
-  set buyReferrerFee(value: BigDecimal | null) {
+  set buyReferrerFee(value: BigInt | null) {
     if (!value) {
       this.unset("buyReferrerFee");
     } else {
-      this.set("buyReferrerFee", Value.fromBigDecimal(<BigDecimal>value));
+      this.set("buyReferrerFee", Value.fromBigInt(<BigInt>value));
     }
   }
 
-  get buyReferrerSellerFee(): BigDecimal | null {
+  get buyReferrerSellerFee(): BigInt | null {
     let value = this.get("buyReferrerSellerFee");
     if (!value || value.kind == ValueKind.NULL) {
       return null;
     } else {
-      return value.toBigDecimal();
+      return value.toBigInt();
     }
   }
 
-  set buyReferrerSellerFee(value: BigDecimal | null) {
+  set buyReferrerSellerFee(value: BigInt | null) {
     if (!value) {
       this.unset("buyReferrerSellerFee");
     } else {
-      this.set("buyReferrerSellerFee", Value.fromBigDecimal(<BigDecimal>value));
+      this.set("buyReferrerSellerFee", Value.fromBigInt(<BigInt>value));
     }
   }
 
-  get foundationProtocolFeeInSBTValue(): BigDecimal | null {
-    let value = this.get("foundationProtocolFeeInSBTValue");
+  get foundationProtocolFee(): BigInt | null {
+    let value = this.get("foundationProtocolFee");
     if (!value || value.kind == ValueKind.NULL) {
       return null;
     } else {
-      return value.toBigDecimal();
+      return value.toBigInt();
     }
   }
 
-  set foundationProtocolFeeInSBTValue(value: BigDecimal | null) {
+  set foundationProtocolFee(value: BigInt | null) {
     if (!value) {
-      this.unset("foundationProtocolFeeInSBTValue");
+      this.unset("foundationProtocolFee");
     } else {
-      this.set(
-        "foundationProtocolFeeInSBTValue",
-        Value.fromBigDecimal(<BigDecimal>value)
-      );
+      this.set("foundationProtocolFee", Value.fromBigInt(<BigInt>value));
     }
   }
 }
@@ -5343,13 +5514,13 @@ export class DnftMarketBid extends Entity {
     this.set("transactionHashPlaced", Value.fromBytes(value));
   }
 
-  get amountInSBTValue(): BigDecimal {
-    let value = this.get("amountInSBTValue");
-    return value!.toBigDecimal();
+  get amount(): BigInt {
+    let value = this.get("amount");
+    return value!.toBigInt();
   }
 
-  set amountInSBTValue(value: BigDecimal) {
-    this.set("amountInSBTValue", Value.fromBigDecimal(value));
+  set amount(value: BigInt) {
+    this.set("amount", Value.fromBigInt(value));
   }
 
   get status(): string {
@@ -5630,20 +5801,20 @@ export class DnftHistory extends Entity {
     }
   }
 
-  get amountInSBTValue(): BigDecimal | null {
-    let value = this.get("amountInSBTValue");
+  get amount(): BigInt | null {
+    let value = this.get("amount");
     if (!value || value.kind == ValueKind.NULL) {
       return null;
     } else {
-      return value.toBigDecimal();
+      return value.toBigInt();
     }
   }
 
-  set amountInSBTValue(value: BigDecimal | null) {
+  set amount(value: BigInt | null) {
     if (!value) {
-      this.unset("amountInSBTValue");
+      this.unset("amount");
     } else {
-      this.set("amountInSBTValue", Value.fromBigDecimal(<BigDecimal>value));
+      this.set("amount", Value.fromBigInt(<BigInt>value));
     }
   }
 
@@ -5820,7 +5991,7 @@ export class PercentSplit extends Entity {
   }
 }
 
-export class Fsbt extends Entity {
+export class CurrencyEarnestFunds extends Entity {
   constructor(id: string) {
     super();
     this.set("id", Value.fromString(id));
@@ -5828,18 +5999,20 @@ export class Fsbt extends Entity {
 
   save(): void {
     let id = this.get("id");
-    assert(id != null, "Cannot save Fsbt entity without an ID");
+    assert(id != null, "Cannot save CurrencyEarnestFunds entity without an ID");
     if (id) {
       assert(
         id.kind == ValueKind.STRING,
-        `Entities of type Fsbt must have an ID of type String but the id '${id.displayData()}' is of type ${id.displayKind()}`
+        `Entities of type CurrencyEarnestFunds must have an ID of type String but the id '${id.displayData()}' is of type ${id.displayKind()}`
       );
-      store.set("Fsbt", id.toString(), this);
+      store.set("CurrencyEarnestFunds", id.toString(), this);
     }
   }
 
-  static load(id: string): Fsbt | null {
-    return changetype<Fsbt | null>(store.get("Fsbt", id));
+  static load(id: string): CurrencyEarnestFunds | null {
+    return changetype<CurrencyEarnestFunds | null>(
+      store.get("CurrencyEarnestFunds", id)
+    );
   }
 
   get id(): string {
@@ -5851,6 +6024,15 @@ export class Fsbt extends Entity {
     this.set("id", Value.fromString(value));
   }
 
+  get currency(): Bytes {
+    let value = this.get("currency");
+    return value!.toBytes();
+  }
+
+  set currency(value: Bytes) {
+    this.set("currency", Value.fromBytes(value));
+  }
+
   get user(): string {
     let value = this.get("user");
     return value!.toString();
@@ -5860,13 +6042,13 @@ export class Fsbt extends Entity {
     this.set("user", Value.fromString(value));
   }
 
-  get balanceInSBTValue(): BigDecimal {
-    let value = this.get("balanceInSBTValue");
-    return value!.toBigDecimal();
+  get balance(): BigInt {
+    let value = this.get("balance");
+    return value!.toBigInt();
   }
 
-  set balanceInSBTValue(value: BigDecimal) {
-    this.set("balanceInSBTValue", Value.fromBigDecimal(value));
+  set balance(value: BigInt) {
+    this.set("balance", Value.fromBigInt(value));
   }
 
   get escrow(): Array<string> {
@@ -5888,7 +6070,7 @@ export class Fsbt extends Entity {
   }
 }
 
-export class FsbtEscrow extends Entity {
+export class CurrencyEarnestFundsEscrow extends Entity {
   constructor(id: string) {
     super();
     this.set("id", Value.fromString(id));
@@ -5896,18 +6078,23 @@ export class FsbtEscrow extends Entity {
 
   save(): void {
     let id = this.get("id");
-    assert(id != null, "Cannot save FsbtEscrow entity without an ID");
+    assert(
+      id != null,
+      "Cannot save CurrencyEarnestFundsEscrow entity without an ID"
+    );
     if (id) {
       assert(
         id.kind == ValueKind.STRING,
-        `Entities of type FsbtEscrow must have an ID of type String but the id '${id.displayData()}' is of type ${id.displayKind()}`
+        `Entities of type CurrencyEarnestFundsEscrow must have an ID of type String but the id '${id.displayData()}' is of type ${id.displayKind()}`
       );
-      store.set("FsbtEscrow", id.toString(), this);
+      store.set("CurrencyEarnestFundsEscrow", id.toString(), this);
     }
   }
 
-  static load(id: string): FsbtEscrow | null {
-    return changetype<FsbtEscrow | null>(store.get("FsbtEscrow", id));
+  static load(id: string): CurrencyEarnestFundsEscrow | null {
+    return changetype<CurrencyEarnestFundsEscrow | null>(
+      store.get("CurrencyEarnestFundsEscrow", id)
+    );
   }
 
   get id(): string {
@@ -5919,22 +6106,22 @@ export class FsbtEscrow extends Entity {
     this.set("id", Value.fromString(value));
   }
 
-  get fsbt(): string {
-    let value = this.get("fsbt");
+  get currencyEarnestFunds(): string {
+    let value = this.get("currencyEarnestFunds");
     return value!.toString();
   }
 
-  set fsbt(value: string) {
-    this.set("fsbt", Value.fromString(value));
+  set currencyEarnestFunds(value: string) {
+    this.set("currencyEarnestFunds", Value.fromString(value));
   }
 
-  get amountInSBTValue(): BigDecimal {
-    let value = this.get("amountInSBTValue");
-    return value!.toBigDecimal();
+  get amount(): BigInt {
+    let value = this.get("amount");
+    return value!.toBigInt();
   }
 
-  set amountInSBTValue(value: BigDecimal) {
-    this.set("amountInSBTValue", Value.fromBigDecimal(value));
+  set amount(value: BigInt) {
+    this.set("amount", Value.fromBigInt(value));
   }
 
   get dateExpiry(): BigInt {
@@ -6083,13 +6270,22 @@ export class DnftMarketOffer extends Entity {
     }
   }
 
-  get amountInSBTValue(): BigDecimal {
-    let value = this.get("amountInSBTValue");
-    return value!.toBigDecimal();
+  get currency(): Bytes {
+    let value = this.get("currency");
+    return value!.toBytes();
   }
 
-  set amountInSBTValue(value: BigDecimal) {
-    this.set("amountInSBTValue", Value.fromBigDecimal(value));
+  set currency(value: Bytes) {
+    this.set("currency", Value.fromBytes(value));
+  }
+
+  get amount(): BigInt {
+    let value = this.get("amount");
+    return value!.toBigInt();
+  }
+
+  set amount(value: BigInt) {
+    this.set("amount", Value.fromBigInt(value));
   }
 
   get dateCreated(): BigInt {
@@ -6272,83 +6468,71 @@ export class DnftMarketOffer extends Entity {
     }
   }
 
-  get creatorRevenueInSBTValue(): BigDecimal | null {
-    let value = this.get("creatorRevenueInSBTValue");
+  get creatorRevenue(): BigInt | null {
+    let value = this.get("creatorRevenue");
     if (!value || value.kind == ValueKind.NULL) {
       return null;
     } else {
-      return value.toBigDecimal();
+      return value.toBigInt();
     }
   }
 
-  set creatorRevenueInSBTValue(value: BigDecimal | null) {
+  set creatorRevenue(value: BigInt | null) {
     if (!value) {
-      this.unset("creatorRevenueInSBTValue");
+      this.unset("creatorRevenue");
     } else {
-      this.set(
-        "creatorRevenueInSBTValue",
-        Value.fromBigDecimal(<BigDecimal>value)
-      );
+      this.set("creatorRevenue", Value.fromBigInt(<BigInt>value));
     }
   }
 
-  get previousCreatorRevenueInSBTValue(): BigDecimal | null {
-    let value = this.get("previousCreatorRevenueInSBTValue");
+  get previousCreatorRevenue(): BigInt | null {
+    let value = this.get("previousCreatorRevenue");
     if (!value || value.kind == ValueKind.NULL) {
       return null;
     } else {
-      return value.toBigDecimal();
+      return value.toBigInt();
     }
   }
 
-  set previousCreatorRevenueInSBTValue(value: BigDecimal | null) {
+  set previousCreatorRevenue(value: BigInt | null) {
     if (!value) {
-      this.unset("previousCreatorRevenueInSBTValue");
+      this.unset("previousCreatorRevenue");
     } else {
-      this.set(
-        "previousCreatorRevenueInSBTValue",
-        Value.fromBigDecimal(<BigDecimal>value)
-      );
+      this.set("previousCreatorRevenue", Value.fromBigInt(<BigInt>value));
     }
   }
 
-  get foundationRevenueInSBTValue(): BigDecimal | null {
-    let value = this.get("foundationRevenueInSBTValue");
+  get foundationRevenue(): BigInt | null {
+    let value = this.get("foundationRevenue");
     if (!value || value.kind == ValueKind.NULL) {
       return null;
     } else {
-      return value.toBigDecimal();
+      return value.toBigInt();
     }
   }
 
-  set foundationRevenueInSBTValue(value: BigDecimal | null) {
+  set foundationRevenue(value: BigInt | null) {
     if (!value) {
-      this.unset("foundationRevenueInSBTValue");
+      this.unset("foundationRevenue");
     } else {
-      this.set(
-        "foundationRevenueInSBTValue",
-        Value.fromBigDecimal(<BigDecimal>value)
-      );
+      this.set("foundationRevenue", Value.fromBigInt(<BigInt>value));
     }
   }
 
-  get ownerRevenueInSBTValue(): BigDecimal | null {
-    let value = this.get("ownerRevenueInSBTValue");
+  get ownerRevenue(): BigInt | null {
+    let value = this.get("ownerRevenue");
     if (!value || value.kind == ValueKind.NULL) {
       return null;
     } else {
-      return value.toBigDecimal();
+      return value.toBigInt();
     }
   }
 
-  set ownerRevenueInSBTValue(value: BigDecimal | null) {
+  set ownerRevenue(value: BigInt | null) {
     if (!value) {
-      this.unset("ownerRevenueInSBTValue");
+      this.unset("ownerRevenue");
     } else {
-      this.set(
-        "ownerRevenueInSBTValue",
-        Value.fromBigDecimal(<BigDecimal>value)
-      );
+      this.set("ownerRevenue", Value.fromBigInt(<BigInt>value));
     }
   }
 
@@ -6412,57 +6596,54 @@ export class DnftMarketOffer extends Entity {
     }
   }
 
-  get buyReferrerFee(): BigDecimal | null {
+  get buyReferrerFee(): BigInt | null {
     let value = this.get("buyReferrerFee");
     if (!value || value.kind == ValueKind.NULL) {
       return null;
     } else {
-      return value.toBigDecimal();
+      return value.toBigInt();
     }
   }
 
-  set buyReferrerFee(value: BigDecimal | null) {
+  set buyReferrerFee(value: BigInt | null) {
     if (!value) {
       this.unset("buyReferrerFee");
     } else {
-      this.set("buyReferrerFee", Value.fromBigDecimal(<BigDecimal>value));
+      this.set("buyReferrerFee", Value.fromBigInt(<BigInt>value));
     }
   }
 
-  get buyReferrerSellerFee(): BigDecimal | null {
+  get buyReferrerSellerFee(): BigInt | null {
     let value = this.get("buyReferrerSellerFee");
     if (!value || value.kind == ValueKind.NULL) {
       return null;
     } else {
-      return value.toBigDecimal();
+      return value.toBigInt();
     }
   }
 
-  set buyReferrerSellerFee(value: BigDecimal | null) {
+  set buyReferrerSellerFee(value: BigInt | null) {
     if (!value) {
       this.unset("buyReferrerSellerFee");
     } else {
-      this.set("buyReferrerSellerFee", Value.fromBigDecimal(<BigDecimal>value));
+      this.set("buyReferrerSellerFee", Value.fromBigInt(<BigInt>value));
     }
   }
 
-  get foundationProtocolFeeInSBTValue(): BigDecimal | null {
-    let value = this.get("foundationProtocolFeeInSBTValue");
+  get foundationProtocolFee(): BigInt | null {
+    let value = this.get("foundationProtocolFee");
     if (!value || value.kind == ValueKind.NULL) {
       return null;
     } else {
-      return value.toBigDecimal();
+      return value.toBigInt();
     }
   }
 
-  set foundationProtocolFeeInSBTValue(value: BigDecimal | null) {
+  set foundationProtocolFee(value: BigInt | null) {
     if (!value) {
-      this.unset("foundationProtocolFeeInSBTValue");
+      this.unset("foundationProtocolFee");
     } else {
-      this.set(
-        "foundationProtocolFeeInSBTValue",
-        Value.fromBigDecimal(<BigDecimal>value)
-      );
+      this.set("foundationProtocolFee", Value.fromBigInt(<BigInt>value));
     }
   }
 }
@@ -6554,40 +6735,40 @@ export class DnftMarketBuyNow extends Entity {
     this.set("seller", Value.fromString(value));
   }
 
-  get amountInSBTValue(): BigDecimal {
-    let value = this.get("amountInSBTValue");
-    return value!.toBigDecimal();
+  get currency(): Bytes {
+    let value = this.get("currency");
+    return value!.toBytes();
   }
 
-  set amountInSBTValue(value: BigDecimal) {
-    this.set("amountInSBTValue", Value.fromBigDecimal(value));
+  set currency(value: Bytes) {
+    this.set("currency", Value.fromBytes(value));
   }
 
-  get tokenIdEscrow(): BigInt {
-    let value = this.get("tokenIdEscrow");
+  get salePrice(): BigInt {
+    let value = this.get("salePrice");
     return value!.toBigInt();
   }
 
-  set tokenIdEscrow(value: BigInt) {
-    this.set("tokenIdEscrow", Value.fromBigInt(value));
+  set salePrice(value: BigInt) {
+    this.set("salePrice", Value.fromBigInt(value));
   }
 
-  get onSellUnits(): BigInt {
-    let value = this.get("onSellUnits");
+  get tokenId(): BigInt {
+    let value = this.get("tokenId");
     return value!.toBigInt();
   }
 
-  set onSellUnits(value: BigInt) {
-    this.set("onSellUnits", Value.fromBigInt(value));
+  set tokenId(value: BigInt) {
+    this.set("tokenId", Value.fromBigInt(value));
   }
 
-  get seledUnits(): BigInt {
-    let value = this.get("seledUnits");
+  get units(): BigInt {
+    let value = this.get("units");
     return value!.toBigInt();
   }
 
-  set seledUnits(value: BigInt) {
-    this.set("seledUnits", Value.fromBigInt(value));
+  set units(value: BigInt) {
+    this.set("units", Value.fromBigInt(value));
   }
 
   get dateCreated(): BigInt {
@@ -6727,83 +6908,71 @@ export class DnftMarketBuyNow extends Entity {
     }
   }
 
-  get creatorRevenueInSBTValue(): BigDecimal | null {
-    let value = this.get("creatorRevenueInSBTValue");
+  get creatorRevenue(): BigInt | null {
+    let value = this.get("creatorRevenue");
     if (!value || value.kind == ValueKind.NULL) {
       return null;
     } else {
-      return value.toBigDecimal();
+      return value.toBigInt();
     }
   }
 
-  set creatorRevenueInSBTValue(value: BigDecimal | null) {
+  set creatorRevenue(value: BigInt | null) {
     if (!value) {
-      this.unset("creatorRevenueInSBTValue");
+      this.unset("creatorRevenue");
     } else {
-      this.set(
-        "creatorRevenueInSBTValue",
-        Value.fromBigDecimal(<BigDecimal>value)
-      );
+      this.set("creatorRevenue", Value.fromBigInt(<BigInt>value));
     }
   }
 
-  get previousCreatorRevenueInSBTValue(): BigDecimal | null {
-    let value = this.get("previousCreatorRevenueInSBTValue");
+  get previousCreatorRevenue(): BigInt | null {
+    let value = this.get("previousCreatorRevenue");
     if (!value || value.kind == ValueKind.NULL) {
       return null;
     } else {
-      return value.toBigDecimal();
+      return value.toBigInt();
     }
   }
 
-  set previousCreatorRevenueInSBTValue(value: BigDecimal | null) {
+  set previousCreatorRevenue(value: BigInt | null) {
     if (!value) {
-      this.unset("previousCreatorRevenueInSBTValue");
+      this.unset("previousCreatorRevenue");
     } else {
-      this.set(
-        "previousCreatorRevenueInSBTValue",
-        Value.fromBigDecimal(<BigDecimal>value)
-      );
+      this.set("previousCreatorRevenue", Value.fromBigInt(<BigInt>value));
     }
   }
 
-  get foundationRevenueInSBTValue(): BigDecimal | null {
-    let value = this.get("foundationRevenueInSBTValue");
+  get foundationRevenue(): BigInt | null {
+    let value = this.get("foundationRevenue");
     if (!value || value.kind == ValueKind.NULL) {
       return null;
     } else {
-      return value.toBigDecimal();
+      return value.toBigInt();
     }
   }
 
-  set foundationRevenueInSBTValue(value: BigDecimal | null) {
+  set foundationRevenue(value: BigInt | null) {
     if (!value) {
-      this.unset("foundationRevenueInSBTValue");
+      this.unset("foundationRevenue");
     } else {
-      this.set(
-        "foundationRevenueInSBTValue",
-        Value.fromBigDecimal(<BigDecimal>value)
-      );
+      this.set("foundationRevenue", Value.fromBigInt(<BigInt>value));
     }
   }
 
-  get ownerRevenueInSBTValue(): BigDecimal | null {
-    let value = this.get("ownerRevenueInSBTValue");
+  get ownerRevenue(): BigInt | null {
+    let value = this.get("ownerRevenue");
     if (!value || value.kind == ValueKind.NULL) {
       return null;
     } else {
-      return value.toBigDecimal();
+      return value.toBigInt();
     }
   }
 
-  set ownerRevenueInSBTValue(value: BigDecimal | null) {
+  set ownerRevenue(value: BigInt | null) {
     if (!value) {
-      this.unset("ownerRevenueInSBTValue");
+      this.unset("ownerRevenue");
     } else {
-      this.set(
-        "ownerRevenueInSBTValue",
-        Value.fromBigDecimal(<BigDecimal>value)
-      );
+      this.set("ownerRevenue", Value.fromBigInt(<BigInt>value));
     }
   }
 
@@ -6833,57 +7002,54 @@ export class DnftMarketBuyNow extends Entity {
     }
   }
 
-  get buyReferrerFee(): BigDecimal | null {
+  get buyReferrerFee(): BigInt | null {
     let value = this.get("buyReferrerFee");
     if (!value || value.kind == ValueKind.NULL) {
       return null;
     } else {
-      return value.toBigDecimal();
+      return value.toBigInt();
     }
   }
 
-  set buyReferrerFee(value: BigDecimal | null) {
+  set buyReferrerFee(value: BigInt | null) {
     if (!value) {
       this.unset("buyReferrerFee");
     } else {
-      this.set("buyReferrerFee", Value.fromBigDecimal(<BigDecimal>value));
+      this.set("buyReferrerFee", Value.fromBigInt(<BigInt>value));
     }
   }
 
-  get buyReferrerSellerFee(): BigDecimal | null {
+  get buyReferrerSellerFee(): BigInt | null {
     let value = this.get("buyReferrerSellerFee");
     if (!value || value.kind == ValueKind.NULL) {
       return null;
     } else {
-      return value.toBigDecimal();
+      return value.toBigInt();
     }
   }
 
-  set buyReferrerSellerFee(value: BigDecimal | null) {
+  set buyReferrerSellerFee(value: BigInt | null) {
     if (!value) {
       this.unset("buyReferrerSellerFee");
     } else {
-      this.set("buyReferrerSellerFee", Value.fromBigDecimal(<BigDecimal>value));
+      this.set("buyReferrerSellerFee", Value.fromBigInt(<BigInt>value));
     }
   }
 
-  get foundationProtocolFeeInSBTValue(): BigDecimal | null {
-    let value = this.get("foundationProtocolFeeInSBTValue");
+  get foundationProtocolFee(): BigInt | null {
+    let value = this.get("foundationProtocolFee");
     if (!value || value.kind == ValueKind.NULL) {
       return null;
     } else {
-      return value.toBigDecimal();
+      return value.toBigInt();
     }
   }
 
-  set foundationProtocolFeeInSBTValue(value: BigDecimal | null) {
+  set foundationProtocolFee(value: BigInt | null) {
     if (!value) {
-      this.unset("foundationProtocolFeeInSBTValue");
+      this.unset("foundationProtocolFee");
     } else {
-      this.set(
-        "foundationProtocolFeeInSBTValue",
-        Value.fromBigDecimal(<BigDecimal>value)
-      );
+      this.set("foundationProtocolFee", Value.fromBigInt(<BigInt>value));
     }
   }
 }
@@ -7136,40 +7302,40 @@ export class DNFT extends Entity {
     this.set("collectedHistories", Value.fromStringArray(value));
   }
 
-  get netSalesInSBTValue(): BigDecimal {
-    let value = this.get("netSalesInSBTValue");
-    return value!.toBigDecimal();
+  get netSales(): BigInt {
+    let value = this.get("netSales");
+    return value!.toBigInt();
   }
 
-  set netSalesInSBTValue(value: BigDecimal) {
-    this.set("netSalesInSBTValue", Value.fromBigDecimal(value));
+  set netSales(value: BigInt) {
+    this.set("netSales", Value.fromBigInt(value));
   }
 
-  get netSalesPendingInSBTValue(): BigDecimal {
-    let value = this.get("netSalesPendingInSBTValue");
-    return value!.toBigDecimal();
+  get netSalesPending(): BigInt {
+    let value = this.get("netSalesPending");
+    return value!.toBigInt();
   }
 
-  set netSalesPendingInSBTValue(value: BigDecimal) {
-    this.set("netSalesPendingInSBTValue", Value.fromBigDecimal(value));
+  set netSalesPending(value: BigInt) {
+    this.set("netSalesPending", Value.fromBigInt(value));
   }
 
-  get netRevenueInSBTValue(): BigDecimal {
-    let value = this.get("netRevenueInSBTValue");
-    return value!.toBigDecimal();
+  get netRevenue(): BigInt {
+    let value = this.get("netRevenue");
+    return value!.toBigInt();
   }
 
-  set netRevenueInSBTValue(value: BigDecimal) {
-    this.set("netRevenueInSBTValue", Value.fromBigDecimal(value));
+  set netRevenue(value: BigInt) {
+    this.set("netRevenue", Value.fromBigInt(value));
   }
 
-  get netRevenuePendingInSBTValue(): BigDecimal {
-    let value = this.get("netRevenuePendingInSBTValue");
-    return value!.toBigDecimal();
+  get netRevenuePending(): BigInt {
+    let value = this.get("netRevenuePending");
+    return value!.toBigInt();
   }
 
-  set netRevenuePendingInSBTValue(value: BigDecimal) {
-    this.set("netRevenuePendingInSBTValue", Value.fromBigDecimal(value));
+  set netRevenuePending(value: BigInt) {
+    this.set("netRevenuePending", Value.fromBigInt(value));
   }
 
   get isFirstSale(): boolean {
@@ -7284,23 +7450,20 @@ export class DNFT extends Entity {
     }
   }
 
-  get lastSalePriceInSBTValue(): BigDecimal | null {
-    let value = this.get("lastSalePriceInSBTValue");
+  get lastSalePrice(): BigInt | null {
+    let value = this.get("lastSalePrice");
     if (!value || value.kind == ValueKind.NULL) {
       return null;
     } else {
-      return value.toBigDecimal();
+      return value.toBigInt();
     }
   }
 
-  set lastSalePriceInSBTValue(value: BigDecimal | null) {
+  set lastSalePrice(value: BigInt | null) {
     if (!value) {
-      this.unset("lastSalePriceInSBTValue");
+      this.unset("lastSalePrice");
     } else {
-      this.set(
-        "lastSalePriceInSBTValue",
-        Value.fromBigDecimal(<BigDecimal>value)
-      );
+      this.set("lastSalePrice", Value.fromBigInt(<BigInt>value));
     }
   }
 

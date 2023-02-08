@@ -22,10 +22,8 @@ interface IManager {
     
     function getGlobalModule() external returns(address);
 
-    // function setGovernance(address newGovernance) external;
-
-    // function setTimeLock(address timeLock) external;
-
+    function getHubInfo(uint256 hubId) external view returns(DataTypes.HubInfoData memory);
+    
     function getGovernance() external returns(address);
     
     function getTimeLock() external returns(address);
@@ -142,6 +140,8 @@ interface IManager {
 
     function getDerivativeNFT(uint256 projectId) external view returns (address);
 
+    function getPublication(uint256 publishId_) external view returns (DataTypes.Publication memory);
+
     function getPublicationByTokenId(uint256 projectId_, uint256 tokenId_) external view returns (uint256, DataTypes.Publication memory);
     
     function getWalletBySoulBoundTokenId(uint256 soulBoundTokenId) external view returns(address);
@@ -214,7 +214,7 @@ interface IManager {
     function updatePublish(
         uint256 publishId,
         uint256 salePrice,
-        uint256 royaltyBasisPoints,        
+        uint256 royaltyBasisPoints,   
         uint256 amount,
         string calldata name,
         string calldata description,

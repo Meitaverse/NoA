@@ -4,7 +4,7 @@ pragma solidity ^0.8.13;
 
 /**
  * @title Library that handles locked balances efficiently using bit packing.
- * @author batu-inal & HardlyDifficult
+ * @author bitsoul
  */
 library LockedBalance {
   /// @dev Tracks an account's total lockup per expiration time.

@@ -19,6 +19,7 @@ import {
     VoucherAsset,
 } from "../generated/schema"
 import { loadOrCreateAccount } from "./shared/accounts";
+import { getLogId } from "./shared/ids";
 
 export function handleMintNFTVoucher(event: MintNFTVoucher): void {
     log.info("handleMintNFTVoucher, event.address: {}", [event.address.toHexString()])
@@ -40,7 +41,7 @@ export function handleMintNFTVoucher(event: MintNFTVoucher): void {
 export function handleUserAmountLimitSet(event: UserAmountLimitSet): void {
     log.info("handleUserAmountLimitSet, event.address: {}", [event.address.toHexString()])
 
-    let _idString = event.params.timestamp.toString()
+    let _idString = getLogId(event)
     const history = UserAmountLimitSetHistory.load(_idString) || new UserAmountLimitSetHistory(_idString)
 
     if (history) {

@@ -60,6 +60,8 @@ import {
   SBTLogic__factory,
   SBTMetadataDescriptor,
   SBTMetadataDescriptor__factory,
+  Currency,
+  Currency__factory,
 } from '../typechain';
 
 import { ManagerLibraryAddresses } from '../typechain/factories/contracts/Manager__factory';
@@ -122,6 +124,7 @@ export const VOUCHER_AMOUNT_LIMIT = 100;  //用户用SBT兑换Voucher的最低�
 export const DEFAULT_COLLECT_PRICE = 10;
 export const DEFAULT_TEMPLATE_NUMBER = 1;
 export const NickName = 'BitsoulUser';
+export const NickName2 = 'BitsoulUser2';
 export const NickName3 = 'BitsoulUser3';
 
 export let accounts: Signer[];
@@ -139,7 +142,7 @@ export let governorContract: GovernorContract;
 export let testWallet: Wallet;
 export let managerImpl: Manager;
 export let manager: Manager;
-// export let currency: Currency;
+export let currency: Currency;
 export let box: Box;
 export let timeLock: TimeLock;
 export let abiCoder: AbiCoder;
@@ -202,7 +205,15 @@ before(async function () {
   userTwoAddress = await userTwo.getAddress();
   userThreeAddress = await userThree.getAddress();
   governanceAddress = await governance.getAddress();
+  console.log("deployer address: ", deployerAddress);
+  console.log("user address: ", userAddress);
+  console.log("userTwo address: ", userTwoAddress);
+  console.log("userThree address: ", userThreeAddress);
+  console.log("governance address: ", governanceAddress);
+
   mockModuleData = abiCoder.encode(['uint256'], [1]);
+
+
 
   // Deployment
   helper = await new Helper__factory(deployer).deploy();
@@ -223,7 +234,8 @@ before(async function () {
   );
 
   // Currency
-  // currency = await new Currency__factory(deployer).deploy();
+  currency = await new Currency__factory(deployer).deploy();
+  
   box = await new Box__factory(deployer).deploy();
   console.log("box address: ", box.address);
 
@@ -429,21 +441,35 @@ before(async function () {
     moduleGlobals.connect(governance).whitelistTemplate(template.address, true)
   ).to.not.be.reverted;    
 
+  // Whitelist the currency
+  console.log('\n\t-- Whitelisting SBT and Currency ERC20 contract in Module Globals --');
+  await expect(
+      moduleGlobals
+      .connect(governance)
+      .whitelistCurrency(sbtContract.address, true)
+  ).to.not.be.reverted;    
+
+  await expect(
+      moduleGlobals
+      .connect(governance)
+      .whitelistCurrency(currency.address, true)
+  ).to.not.be.reverted;    
+
   expect((await moduleGlobals.getSBT()).toUpperCase()).to.eq(sbtContract.address.toUpperCase());
 
 
   //manager set moduleGlobals
-  await manager.connect(governance).setGlobalModule(moduleGlobals.address);
-  console.log('manager setGlobalModule ok ');
+  await manager.connect(governance).setGlobalModules(moduleGlobals.address);
+  console.log('manager setGlobalModules ok ');
 
-  await bankTreasuryContract.connect(governance).setGlobalModule(moduleGlobals.address);
-  console.log('bankTreasuryContract setGlobalModule ok ');
+  await bankTreasuryContract.connect(governance).setGlobalModules(moduleGlobals.address);
+  console.log('bankTreasuryContract setGlobalModules ok ');
 
   await bankTreasuryContract.connect(governance).setFoundationMarket(marketPlaceContract.address);
   console.log('bankTreasuryContract setFoundationMarket ok ');
   
-  await marketPlaceContract.connect(governance).setGlobalModule(moduleGlobals.address);
-  console.log('marketPlaceContract setGlobalModule ok ');
+  await marketPlaceContract.connect(governance).setGlobalModules(moduleGlobals.address);
+  console.log('marketPlaceContract setGlobalModules ok ');
   
   await expect(sbtContract.connect(deployer).setBankTreasury(
     bankTreasuryContract.address, 
@@ -476,6 +502,7 @@ before(async function () {
   await expect(
     bankTreasuryContract.connect(deployer).grantFeeModule(feeCollectModule.address)
   ).to.not.be.reverted;
+  
   await expect(
     bankTreasuryContract.connect(deployer).grantFeeModule(marketPlaceContract.address)
   ).to.not.be.reverted;
@@ -486,8 +513,8 @@ before(async function () {
   ).to.not.be.reverted;
 
 
-  await expect(voucherContract.connect(deployer).setGlobalModule(moduleGlobals.address)).to.not.be.reverted;
-  console.log('voucherContract setGlobalModule ok ');
+  await expect(voucherContract.connect(deployer).setGlobalModules(moduleGlobals.address)).to.not.be.reverted;
+  console.log('voucherContract setGlobalModules ok ');
   
   await expect(voucherContract.connect(deployer).setUserAmountLimit(VOUCHER_AMOUNT_LIMIT)).to.not.be.reverted;
 

@@ -47,13 +47,12 @@ library InteractionLogic {
         });
 
         emit Events.HubCreated(
-            hub.soulBoundTokenId, 
+            // hub.soulBoundTokenId, 
             hubOwner, 
-            hubId,
-            hub.name,
-            hub.description,
-            hub.imageURI,
-            uint32(block.timestamp)
+            hubId
+            // hub.name,
+            // hub.description,
+            // hub.imageURI,
         );
 
     }
@@ -73,12 +72,12 @@ library InteractionLogic {
         hubInfoData.imageURI = imageURI;
  
         emit Events.HubUpdated(
-            hubId,
-            hubInfoData.hubOwner, 
-            name,
-            description,
-            imageURI,
-            uint32(block.timestamp)
+            hubId
+            // hubInfoData.hubOwner
+            // name,
+            // description,
+            // imageURI,
+            // uint32(block.timestamp)
         );
     }
 

@@ -36,5 +36,7 @@ abstract contract GlobalStorage {
     mapping(address => bool) internal _publishModuleWhitelisted;
 
     mapping(address => bool) internal _templateWhitelisted;
+
+    mapping(address => bool) internal _currencyWhitelisted;
   
 }

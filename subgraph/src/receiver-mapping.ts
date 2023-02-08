@@ -7,11 +7,12 @@ import {
 import {
     ReceiverReceivedHistory,
 } from "../generated/schema"
+import { getLogId } from "./shared/ids";
 
 export function handleReceiverReceived(event: ReceiverReceived): void {
     log.info("handleReceiverReceived, event.address: {}", [event.address.toHexString()])
 
-    let _idString = event.params.fromTokenId.toString() + "-" +  event.params.toTokenId.toString()+ "-" +  event.block.timestamp.toString()
+    let _idString =  getLogId(event)
     const history = ReceiverReceivedHistory.load(_idString) || new ReceiverReceivedHistory(_idString)
 
     if (history) {

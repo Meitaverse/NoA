@@ -17,9 +17,7 @@ import {Errors} from "./libraries/Errors.sol";
 import {MarketLogic} from './libraries/MarketLogic.sol';
 import {MarketPlaceStorage} from  "./storage/MarketPlaceStorage.sol";
 import {IModuleGlobals} from "./interfaces/IModuleGlobals.sol";
-import {MarketSharedCore} from "./market/MarketSharedCore.sol";
 import {DNFTMarketCore} from "./market/DNFTMarketCore.sol";
-// import {MarketFees} from "./market/MarketFees.sol";
 import {DNFTMarketOffer} from "./market/DNFTMarketOffer.sol";
 import {DNFTMarketBuyPrice} from "./market/DNFTMarketBuyPrice.sol";
 import {DNFTMarketReserveAuction} from "./market/DNFTMarketReserveAuction.sol";
@@ -31,9 +29,7 @@ contract MarketPlace is
     Initializable,
     IMarketPlace,
     MarketPlaceStorage,
-    MarketSharedCore,
     DNFTMarketCore,
-    // MarketFees,
     DNFTMarketReserveAuction,    
     DNFTMarketBuyPrice,
     DNFTMarketOffer,
@@ -53,7 +49,6 @@ contract MarketPlace is
     ) 
     DNFTMarketReserveAuction(duration) 
     DNFTMarketCore(treasury)
-    // MarketFees(manager, treasury, sbt)
     initializer {}
 
     function initialize(address admin) external initializer {
@@ -78,6 +73,11 @@ contract MarketPlace is
         return IERC3525(_sbt).ownerOf(soulBoundTokenId);
     }
 
+    function _isCurrencyWhitelisted(address currency) internal virtual view override returns(bool) {
+        if (MODULE_GLOBALS == address(0)) revert Errors.ModuleGlobasNotSet();
+        return IModuleGlobals(MODULE_GLOBALS).isCurrencyWhitelisted(currency);
+    }
+
     function _getTreasuryData() internal virtual view override returns (address, uint16) {
         return IModuleGlobals(MODULE_GLOBALS).getTreasuryData();
     }
@@ -98,41 +98,29 @@ contract MarketPlace is
         address derivativeNFT,
         uint256 tokenId,
         address recipient,
-        uint128 units,
         address authorizeSeller
     ) internal override(DNFTMarketCore, DNFTMarketReserveAuction){
         // This is a no-op function required to avoid compile errors.
-        super._transferFromEscrow(derivativeNFT, tokenId, recipient, units, authorizeSeller);
+        super._transferFromEscrow(derivativeNFT, tokenId, recipient, authorizeSeller);
     }
  
     function _transferFromEscrowIfAvailable(
         address derivativeNFT,
         uint256 tokenId,
-        address recipient,
-        uint128 units
+        address recipient
     ) internal override(DNFTMarketCore, DNFTMarketReserveAuction, DNFTMarketBuyPrice) {
         // This is a no-op function required to avoid compile errors.
-        super._transferFromEscrowIfAvailable(derivativeNFT, tokenId, recipient, units);
+        super._transferFromEscrowIfAvailable(derivativeNFT, tokenId, recipient);
     }
 
-    function _transferToEscrow(address derivativeNFT, uint256 tokenId, uint128 onSellUnits)
+    function _transferToEscrow(address derivativeNFT, uint256 tokenId)
         internal
         override(DNFTMarketCore, DNFTMarketReserveAuction, DNFTMarketBuyPrice)
-        returns(uint256)
     {
         // This is a no-op function required to avoid compile errors.
-        return super._transferToEscrow(derivativeNFT, tokenId, onSellUnits);
+        super._transferToEscrow(derivativeNFT, tokenId);
     }
-        
-    // function _getSellerOf(address derivativeNFT, uint256 tokenId)
-    //     internal
-    //     view
-    //     override(MarketSharedCore, DNFTMarketCore, DNFTMarketReserveAuction, DNFTMarketBuyPrice)
-    //     returns (address payable seller)
-    // {
-    //     // This is a no-op function required to avoid compile errors.
-    //     seller = super._getSellerOf(derivativeNFT, tokenId);
-    // }
+
 
     function pause() public onlyAdmin {
         _pause();
@@ -202,7 +190,7 @@ contract MarketPlace is
     }
     
     //must set after moduleGlobals deployed
-    function setGlobalModule(address moduleGlobals) 
+    function setGlobalModules(address moduleGlobals) 
         external
         whenNotPaused  
         onlyAdmin 

@@ -200,28 +200,45 @@ export class Upgraded__Params {
   }
 }
 
-export class MarketPlace__getBuyPriceResult {
-  value0: Address;
-  value1: BigInt;
-
-  constructor(value0: Address, value1: BigInt) {
-    this.value0 = value0;
-    this.value1 = value1;
+export class MarketPlace__getBuyPriceResultValue0Struct extends ethereum.Tuple {
+  get soulBoundTokenIdSeller(): BigInt {
+    return this[0].toBigInt();
   }
 
-  toMap(): TypedMap<string, ethereum.Value> {
-    let map = new TypedMap<string, ethereum.Value>();
-    map.set("value0", ethereum.Value.fromAddress(this.value0));
-    map.set("value1", ethereum.Value.fromUnsignedBigInt(this.value1));
-    return map;
+  get seller(): Address {
+    return this[1].toAddress();
   }
 
-  getSeller(): Address {
-    return this.value0;
+  get derivativeNFT(): Address {
+    return this[2].toAddress();
   }
 
-  getPrice(): BigInt {
-    return this.value1;
+  get projectId(): BigInt {
+    return this[3].toBigInt();
+  }
+
+  get publishId(): BigInt {
+    return this[4].toBigInt();
+  }
+
+  get tokenId(): BigInt {
+    return this[5].toBigInt();
+  }
+
+  get currency(): Address {
+    return this[6].toAddress();
+  }
+
+  get salePrice(): BigInt {
+    return this[7].toBigInt();
+  }
+
+  get units(): BigInt {
+    return this[8].toBigInt();
+  }
+
+  get amount(): BigInt {
+    return this[9].toBigInt();
   }
 }
 
@@ -311,41 +328,45 @@ export class MarketPlace__getReserveAuctionResultAuctionStruct extends ethereum.
     return this[4].toBigInt();
   }
 
-  get tokenIdInEscrow(): BigInt {
-    return this[5].toBigInt();
-  }
-
   get seller(): Address {
-    return this[6].toAddress();
+    return this[5].toAddress();
   }
 
   get duration(): BigInt {
-    return this[7].toBigInt();
+    return this[6].toBigInt();
   }
 
   get extensionDuration(): BigInt {
-    return this[8].toBigInt();
+    return this[7].toBigInt();
   }
 
   get endTime(): BigInt {
-    return this[9].toBigInt();
+    return this[8].toBigInt();
   }
 
   get bidder(): Address {
-    return this[10].toAddress();
+    return this[9].toAddress();
   }
 
   get soulBoundTokenIdBidder(): BigInt {
-    return this[11].toBigInt();
+    return this[10].toBigInt();
+  }
+
+  get currency(): Address {
+    return this[11].toAddress();
+  }
+
+  get reservePrice(): BigInt {
+    return this[12].toBigInt();
   }
 
   get amount(): BigInt {
-    return this[12].toBigInt();
+    return this[13].toBigInt();
   }
 }
 
-export class MarketPlace__setBuyPriceInputSaleParamStruct extends ethereum.Tuple {
-  get soulBoundTokenId(): BigInt {
+export class MarketPlace__makeOfferInputOfferParamStruct extends ethereum.Tuple {
+  get soulBoundTokenIdBuyer(): BigInt {
     return this[0].toBigInt();
   }
 
@@ -357,69 +378,22 @@ export class MarketPlace__setBuyPriceInputSaleParamStruct extends ethereum.Tuple
     return this[2].toBigInt();
   }
 
-  get putOnListUnits(): BigInt {
-    return this[3].toBigInt();
+  get currency(): Address {
+    return this[3].toAddress();
   }
 
-  get salePrice(): BigInt {
+  get amount(): BigInt {
     return this[4].toBigInt();
+  }
+
+  get soulBoundTokenIdReferrer(): BigInt {
+    return this[5].toBigInt();
   }
 }
 
 export class MarketPlace extends ethereum.SmartContract {
   static bind(address: Address): MarketPlace {
     return new MarketPlace("MarketPlace", address);
-  }
-
-  acceptOffer(
-    soulBoundTokenId: BigInt,
-    derivativeNFT: Address,
-    tokenId: BigInt,
-    units: BigInt,
-    offerFrom: Address,
-    minAmount: BigInt
-  ): BigInt {
-    let result = super.call(
-      "acceptOffer",
-      "acceptOffer(uint256,address,uint256,uint128,address,uint256):(uint256)",
-      [
-        ethereum.Value.fromUnsignedBigInt(soulBoundTokenId),
-        ethereum.Value.fromAddress(derivativeNFT),
-        ethereum.Value.fromUnsignedBigInt(tokenId),
-        ethereum.Value.fromUnsignedBigInt(units),
-        ethereum.Value.fromAddress(offerFrom),
-        ethereum.Value.fromUnsignedBigInt(minAmount)
-      ]
-    );
-
-    return result[0].toBigInt();
-  }
-
-  try_acceptOffer(
-    soulBoundTokenId: BigInt,
-    derivativeNFT: Address,
-    tokenId: BigInt,
-    units: BigInt,
-    offerFrom: Address,
-    minAmount: BigInt
-  ): ethereum.CallResult<BigInt> {
-    let result = super.tryCall(
-      "acceptOffer",
-      "acceptOffer(uint256,address,uint256,uint128,address,uint256):(uint256)",
-      [
-        ethereum.Value.fromUnsignedBigInt(soulBoundTokenId),
-        ethereum.Value.fromAddress(derivativeNFT),
-        ethereum.Value.fromUnsignedBigInt(tokenId),
-        ethereum.Value.fromUnsignedBigInt(units),
-        ethereum.Value.fromAddress(offerFrom),
-        ethereum.Value.fromUnsignedBigInt(minAmount)
-      ]
-    );
-    if (result.reverted) {
-      return new ethereum.CallResult();
-    }
-    let value = result.value;
-    return ethereum.CallResult.fromValue(value[0].toBigInt());
   }
 
   getAdminMember(index: BigInt): Address {
@@ -471,29 +445,28 @@ export class MarketPlace extends ethereum.SmartContract {
   getBuyPrice(
     derivativeNFT: Address,
     tokenId: BigInt
-  ): MarketPlace__getBuyPriceResult {
+  ): MarketPlace__getBuyPriceResultValue0Struct {
     let result = super.call(
       "getBuyPrice",
-      "getBuyPrice(address,uint256):(address,uint256)",
+      "getBuyPrice(address,uint256):((uint256,address,address,uint256,uint256,uint256,address,uint128,uint128,uint96))",
       [
         ethereum.Value.fromAddress(derivativeNFT),
         ethereum.Value.fromUnsignedBigInt(tokenId)
       ]
     );
 
-    return new MarketPlace__getBuyPriceResult(
-      result[0].toAddress(),
-      result[1].toBigInt()
+    return changetype<MarketPlace__getBuyPriceResultValue0Struct>(
+      result[0].toTuple()
     );
   }
 
   try_getBuyPrice(
     derivativeNFT: Address,
     tokenId: BigInt
-  ): ethereum.CallResult<MarketPlace__getBuyPriceResult> {
+  ): ethereum.CallResult<MarketPlace__getBuyPriceResultValue0Struct> {
     let result = super.tryCall(
       "getBuyPrice",
-      "getBuyPrice(address,uint256):(address,uint256)",
+      "getBuyPrice(address,uint256):((uint256,address,address,uint256,uint256,uint256,address,uint128,uint128,uint96))",
       [
         ethereum.Value.fromAddress(derivativeNFT),
         ethereum.Value.fromUnsignedBigInt(tokenId)
@@ -504,10 +477,7 @@ export class MarketPlace extends ethereum.SmartContract {
     }
     let value = result.value;
     return ethereum.CallResult.fromValue(
-      new MarketPlace__getBuyPriceResult(
-        value[0].toAddress(),
-        value[1].toBigInt()
-      )
+      changetype<MarketPlace__getBuyPriceResultValue0Struct>(value[0].toTuple())
     );
   }
 
@@ -628,7 +598,7 @@ export class MarketPlace extends ethereum.SmartContract {
   ): MarketPlace__getOfferResult {
     let result = super.call(
       "getOffer",
-      "getOffer(address,uint256):(address,uint256,uint256,uint256)",
+      "getOffer(address,uint256):(address,uint256,uint96,uint256)",
       [
         ethereum.Value.fromAddress(derivativeNFT),
         ethereum.Value.fromUnsignedBigInt(tokenId)
@@ -649,7 +619,7 @@ export class MarketPlace extends ethereum.SmartContract {
   ): ethereum.CallResult<MarketPlace__getOfferResult> {
     let result = super.tryCall(
       "getOffer",
-      "getOffer(address,uint256):(address,uint256,uint256,uint256)",
+      "getOffer(address,uint256):(address,uint256,uint96,uint256)",
       [
         ethereum.Value.fromAddress(derivativeNFT),
         ethereum.Value.fromUnsignedBigInt(tokenId)
@@ -720,7 +690,7 @@ export class MarketPlace extends ethereum.SmartContract {
   ): MarketPlace__getReserveAuctionResultAuctionStruct {
     let result = super.call(
       "getReserveAuction",
-      "getReserveAuction(uint256):((uint256,address,uint256,uint256,uint128,uint256,address,uint256,uint256,uint256,address,uint256,uint256))",
+      "getReserveAuction(uint256):((uint256,address,uint256,uint256,uint128,address,uint256,uint256,uint256,address,uint256,address,uint256,uint96))",
       [ethereum.Value.fromUnsignedBigInt(auctionId)]
     );
 
@@ -734,7 +704,7 @@ export class MarketPlace extends ethereum.SmartContract {
   ): ethereum.CallResult<MarketPlace__getReserveAuctionResultAuctionStruct> {
     let result = super.tryCall(
       "getReserveAuction",
-      "getReserveAuction(uint256):((uint256,address,uint256,uint256,uint128,uint256,address,uint256,uint256,uint256,address,uint256,uint256))",
+      "getReserveAuction(uint256):((uint256,address,uint256,uint256,uint128,address,uint256,uint256,uint256,address,uint256,address,uint256,uint96))",
       [ethereum.Value.fromUnsignedBigInt(auctionId)]
     );
     if (result.reverted) {
@@ -843,6 +813,31 @@ export class MarketPlace extends ethereum.SmartContract {
     return ethereum.CallResult.fromValue(value[0].toBoolean());
   }
 
+  makeOffer(offerParam: MarketPlace__makeOfferInputOfferParamStruct): BigInt {
+    let result = super.call(
+      "makeOffer",
+      "makeOffer((uint256,address,uint256,address,uint96,uint256)):(uint256)",
+      [ethereum.Value.fromTuple(offerParam)]
+    );
+
+    return result[0].toBigInt();
+  }
+
+  try_makeOffer(
+    offerParam: MarketPlace__makeOfferInputOfferParamStruct
+  ): ethereum.CallResult<BigInt> {
+    let result = super.tryCall(
+      "makeOffer",
+      "makeOffer((uint256,address,uint256,address,uint96,uint256)):(uint256)",
+      [ethereum.Value.fromTuple(offerParam)]
+    );
+    if (result.reverted) {
+      return new ethereum.CallResult();
+    }
+    let value = result.value;
+    return ethereum.CallResult.fromValue(value[0].toBigInt());
+  }
+
   onERC3525Received(
     operator: Address,
     fromTokenId: BigInt,
@@ -922,31 +917,6 @@ export class MarketPlace extends ethereum.SmartContract {
     }
     let value = result.value;
     return ethereum.CallResult.fromValue(value[0].toBytes());
-  }
-
-  setBuyPrice(saleParam: MarketPlace__setBuyPriceInputSaleParamStruct): BigInt {
-    let result = super.call(
-      "setBuyPrice",
-      "setBuyPrice((uint256,address,uint256,uint128,uint128)):(uint256)",
-      [ethereum.Value.fromTuple(saleParam)]
-    );
-
-    return result[0].toBigInt();
-  }
-
-  try_setBuyPrice(
-    saleParam: MarketPlace__setBuyPriceInputSaleParamStruct
-  ): ethereum.CallResult<BigInt> {
-    let result = super.tryCall(
-      "setBuyPrice",
-      "setBuyPrice((uint256,address,uint256,uint128,uint128)):(uint256)",
-      [ethereum.Value.fromTuple(saleParam)]
-    );
-    if (result.reverted) {
-      return new ethereum.CallResult();
-    }
-    let value = result.value;
-    return ethereum.CallResult.fromValue(value[0].toBigInt());
   }
 
   sigNonces(param0: Address): BigInt {
@@ -1081,16 +1051,12 @@ export class AcceptOfferCall__Inputs {
     return this._call.inputValues[2].value.toBigInt();
   }
 
-  get units(): BigInt {
-    return this._call.inputValues[3].value.toBigInt();
-  }
-
   get offerFrom(): Address {
-    return this._call.inputValues[4].value.toAddress();
+    return this._call.inputValues[3].value.toAddress();
   }
 
   get minAmount(): BigInt {
-    return this._call.inputValues[5].value.toBigInt();
+    return this._call.inputValues[4].value.toBigInt();
   }
 }
 
@@ -1099,10 +1065,6 @@ export class AcceptOfferCall__Outputs {
 
   constructor(call: AcceptOfferCall) {
     this._call = call;
-  }
-
-  get value0(): BigInt {
-    return this._call.outputValues[0].value.toBigInt();
   }
 }
 
@@ -1185,16 +1147,12 @@ export class BuyCall__Inputs {
     return this._call.inputValues[2].value.toBigInt();
   }
 
-  get units(): BigInt {
+  get maxPrice(): BigInt {
     return this._call.inputValues[3].value.toBigInt();
   }
 
-  get maxPrice(): BigInt {
-    return this._call.inputValues[4].value.toBigInt();
-  }
-
   get soulBoundTokenIdReferrer(): BigInt {
-    return this._call.inputValues[5].value.toBigInt();
+    return this._call.inputValues[4].value.toBigInt();
   }
 }
 
@@ -1229,10 +1187,6 @@ export class CancelBuyPriceCall__Inputs {
 
   get tokenId(): BigInt {
     return this._call.inputValues[1].value.toBigInt();
-  }
-
-  get units(): BigInt {
-    return this._call.inputValues[2].value.toBigInt();
   }
 }
 
@@ -1303,8 +1257,8 @@ export class CreateReserveAuctionCall__Inputs {
     return this._call.inputValues[2].value.toBigInt();
   }
 
-  get units(): BigInt {
-    return this._call.inputValues[3].value.toBigInt();
+  get currency(): Address {
+    return this._call.inputValues[3].value.toAddress();
   }
 
   get reservePrice(): BigInt {
@@ -1457,28 +1411,10 @@ export class MakeOfferCall__Inputs {
     this._call = call;
   }
 
-  get soulBoundTokenIdBuyer(): BigInt {
-    return this._call.inputValues[0].value.toBigInt();
-  }
-
-  get derivativeNFT(): Address {
-    return this._call.inputValues[1].value.toAddress();
-  }
-
-  get tokenId(): BigInt {
-    return this._call.inputValues[2].value.toBigInt();
-  }
-
-  get units(): BigInt {
-    return this._call.inputValues[3].value.toBigInt();
-  }
-
-  get amount(): BigInt {
-    return this._call.inputValues[4].value.toBigInt();
-  }
-
-  get soulBoundTokenIdReferrer(): BigInt {
-    return this._call.inputValues[5].value.toBigInt();
+  get offerParam(): MakeOfferCallOfferParamStruct {
+    return changetype<MakeOfferCallOfferParamStruct>(
+      this._call.inputValues[0].value.toTuple()
+    );
   }
 }
 
@@ -1491,6 +1427,32 @@ export class MakeOfferCall__Outputs {
 
   get expiration(): BigInt {
     return this._call.outputValues[0].value.toBigInt();
+  }
+}
+
+export class MakeOfferCallOfferParamStruct extends ethereum.Tuple {
+  get soulBoundTokenIdBuyer(): BigInt {
+    return this[0].toBigInt();
+  }
+
+  get derivativeNFT(): Address {
+    return this[1].toAddress();
+  }
+
+  get tokenId(): BigInt {
+    return this[2].toBigInt();
+  }
+
+  get currency(): Address {
+    return this[3].toAddress();
+  }
+
+  get amount(): BigInt {
+    return this[4].toBigInt();
+  }
+
+  get soulBoundTokenIdReferrer(): BigInt {
+    return this[5].toBigInt();
   }
 }
 
@@ -1719,8 +1681,8 @@ export class SetBuyPriceCall__Inputs {
     this._call = call;
   }
 
-  get saleParam(): SetBuyPriceCallSaleParamStruct {
-    return changetype<SetBuyPriceCallSaleParamStruct>(
+  get buyPriceParam(): SetBuyPriceCallBuyPriceParamStruct {
+    return changetype<SetBuyPriceCallBuyPriceParamStruct>(
       this._call.inputValues[0].value.toTuple()
     );
   }
@@ -1732,13 +1694,9 @@ export class SetBuyPriceCall__Outputs {
   constructor(call: SetBuyPriceCall) {
     this._call = call;
   }
-
-  get newTokenId(): BigInt {
-    return this._call.outputValues[0].value.toBigInt();
-  }
 }
 
-export class SetBuyPriceCallSaleParamStruct extends ethereum.Tuple {
+export class SetBuyPriceCallBuyPriceParamStruct extends ethereum.Tuple {
   get soulBoundTokenId(): BigInt {
     return this[0].toBigInt();
   }
@@ -1751,8 +1709,8 @@ export class SetBuyPriceCallSaleParamStruct extends ethereum.Tuple {
     return this[2].toBigInt();
   }
 
-  get putOnListUnits(): BigInt {
-    return this[3].toBigInt();
+  get currency(): Address {
+    return this[3].toAddress();
   }
 
   get salePrice(): BigInt {
@@ -1760,20 +1718,20 @@ export class SetBuyPriceCallSaleParamStruct extends ethereum.Tuple {
   }
 }
 
-export class SetGlobalModuleCall extends ethereum.Call {
-  get inputs(): SetGlobalModuleCall__Inputs {
-    return new SetGlobalModuleCall__Inputs(this);
+export class SetGlobalModulesCall extends ethereum.Call {
+  get inputs(): SetGlobalModulesCall__Inputs {
+    return new SetGlobalModulesCall__Inputs(this);
   }
 
-  get outputs(): SetGlobalModuleCall__Outputs {
-    return new SetGlobalModuleCall__Outputs(this);
+  get outputs(): SetGlobalModulesCall__Outputs {
+    return new SetGlobalModulesCall__Outputs(this);
   }
 }
 
-export class SetGlobalModuleCall__Inputs {
-  _call: SetGlobalModuleCall;
+export class SetGlobalModulesCall__Inputs {
+  _call: SetGlobalModulesCall;
 
-  constructor(call: SetGlobalModuleCall) {
+  constructor(call: SetGlobalModulesCall) {
     this._call = call;
   }
 
@@ -1782,10 +1740,10 @@ export class SetGlobalModuleCall__Inputs {
   }
 }
 
-export class SetGlobalModuleCall__Outputs {
-  _call: SetGlobalModuleCall;
+export class SetGlobalModulesCall__Outputs {
+  _call: SetGlobalModulesCall;
 
-  constructor(call: SetGlobalModuleCall) {
+  constructor(call: SetGlobalModulesCall) {
     this._call = call;
   }
 }

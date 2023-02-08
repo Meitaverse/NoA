@@ -11,7 +11,7 @@ import {
 
 
 import { loadOrCreateAccount } from "./shared/accounts";
-import { ZERO_ADDRESS_STRING, ZERO_BIG_DECIMAL } from "./shared/constants";
+import { ZERO_ADDRESS_STRING } from "./shared/constants";
 import { loadOrCreateCreator } from "./shared/creators";
 import { getLogId } from "./shared/ids";
 import { loadOrCreatePublish } from "./shared/publish";
@@ -97,10 +97,10 @@ export function loadOrCreateDNFT(address: Address, id: BigInt, event: ethereum.E
     }
 
     dnft.ownedOrListedBy = dnft.owner;
-    dnft.netSalesInSBTValue = ZERO_BIG_DECIMAL;
-    dnft.netSalesPendingInSBTValue = ZERO_BIG_DECIMAL;
-    dnft.netRevenueInSBTValue = ZERO_BIG_DECIMAL;
-    dnft.netRevenuePendingInSBTValue = ZERO_BIG_DECIMAL;
+    dnft.netSales = ZERO_BIG_INT;
+    dnft.netSalesPending = ZERO_BIG_INT;
+    dnft.netRevenue = ZERO_BIG_INT;
+    dnft.netRevenuePending = ZERO_BIG_INT;
     dnft.isFirstSale = true;
     let pathResult = contract.try_tokenURI(id);
     if (!pathResult.reverted) {

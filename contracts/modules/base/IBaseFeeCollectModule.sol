@@ -11,11 +11,12 @@ import {ICollectModule} from '../../interfaces/ICollectModule.sol';
  */
 struct BaseProfilePublicationData {
     uint256 ownershipSoulBoundTokenId;     //owner soulBoundTokenId 
-    uint256 projectId;                     //项目id
-    uint256 publishId;                     //发行id    
-    uint256 tokenId;                       //发行对应的tokenId
-    uint256 amount;                        //发行总量
-    uint256 salePrice;                     //发行单价    
+    uint256 projectId;                      
+    uint256 publishId;                       
+    uint256 tokenId;                       
+    uint256 amount;                       
+    address currency;                      
+    uint256 salePrice;                     
     uint16[] royaltyPoints;
 }
 
@@ -32,7 +33,8 @@ struct BaseProfilePublicationData {
 struct BaseFeeCollectModuleInitData {
     uint256 ownershipSoulBoundTokenId; 
     uint256 projectId;                    
-    uint256 publishId;                    
+    uint256 publishId;      
+    address currency;          
     uint256 amount;                       
     uint256 salePrice;                    
     uint16[] royaltyPoints;                

@@ -12,7 +12,6 @@ import "@solvprotocol/erc-3525/contracts/IERC3525.sol";
 import "@openzeppelin/contracts-upgradeable/security/ReentrancyGuardUpgradeable.sol";
 import "@openzeppelin/contracts/utils/Address.sol";
 import "@openzeppelin/contracts/utils/math/Math.sol";
-
 import {IERC20Upgradeable} from "@openzeppelin/contracts-upgradeable/token/ERC20/IERC20Upgradeable.sol";
 import {SafeERC20Upgradeable} from "@openzeppelin/contracts-upgradeable/token/ERC20/utils/SafeERC20Upgradeable.sol";
 import {SafeMathUpgradeable} from "@openzeppelin/contracts-upgradeable/utils/math/SafeMathUpgradeable.sol";
@@ -35,7 +34,7 @@ import "hardhat/console.sol";
  *  @title Bank Treasury
  *  @author bitsoul Protocol
  * 
- *  Holds the SBT account's earnest moneys, deposit and withdraw.
+ *  Holds the SBT account's earnest funds, deposit and withdraw.
  */
 contract BankTreasury is
     Initializable,
@@ -54,7 +53,7 @@ contract BankTreasury is
     using SafeMathUpgradeable for uint256;
     using LockedBalance for LockedBalance.Lockups;
     using Math for uint256;
-
+/*
     bytes32 internal constant EIP712_DOMAIN_TYPEHASH =
         keccak256("EIP712Domain(string name,string version,uint256 chainId,address verifyingContract)");
 
@@ -62,18 +61,15 @@ contract BankTreasury is
 
     bytes32 internal constant EXCHANGE_SBT_BY_ETHER_TYPEHASH =
         keccak256(
-            "ExchangeSBTByEth(address exchangeWallet,uint256 soulBoundTokenId,uint256 amount,uint256 nonce,uint256 deadline)"
+            "BuySBTByEth(address exchangeWallet,uint256 soulBoundTokenId,uint256 amount,uint256 nonce,uint256 deadline)"
         );
 
     bytes32 internal constant EXCHANGE_ETHER_BY_SBT_TYPEHASH =
         keccak256(
             "ExchangeyEthBySBT(address to,uint256 soulBoundTokenId,uint256 sbtamount,uint256 nonce,uint256 deadline)"
         );
-
+*/
     string public name;
-
-    /// @notice Stores per-account details.
-    mapping(uint256 => DataTypes.AccountInfo) private accountToInfo;
 
     /**
      * @dev This modifier reverts if the caller is not the configured governance address.
@@ -165,7 +161,7 @@ contract BankTreasury is
         target.functionCallWithValue(callData, value);
     }
 
-    function setGlobalModule(address moduleGlobals) external onlyGov {
+    function setGlobalModules(address moduleGlobals) external onlyGov {
         if (moduleGlobals == address(0)) revert Errors.InitParamsInvalid();
         MODULE_GLOBALS = moduleGlobals;
     }
@@ -211,7 +207,7 @@ contract BankTreasury is
 
     //receive matic from opensea or other nft market place when msg.data is empty
     receive() external payable {
-        emit Events.Deposit(msg.sender, msg.value, address(this), address(this).balance);
+        emit Events.DepositEther(msg.sender, msg.value, address(this), address(this).balance);
     }
 
     //receive matic from opensea or other nft market place when msg.data is NOT empty
@@ -221,7 +217,7 @@ contract BankTreasury is
 
     function supportsInterface(
         bytes4 interfaceId
-    ) public view virtual override( IERC165) returns (bool) {
+    ) public view virtual override(IERC165) returns (bool) {
         return
             interfaceId == type(IERC165).interfaceId ||
             interfaceId == type(IERC3525Receiver).interfaceId;
@@ -242,17 +238,64 @@ contract BankTreasury is
             revert Errors.Must_Deposit_Non_Zero_Amount();
         }
 
-        if (toTokenId == soulBoundTokenIdBankTreasury && value > 0) {
-            //deposit SBT value to account's fee balance
-            DataTypes.AccountInfo storage accountInfo = accountToInfo[fromTokenId];
-            _addBalanceTo(accountInfo, value);
-        }
-        
-        emit Events.ERC3525Received(msg.sender, operator, fromTokenId, toTokenId, value, data, gasleft());
+        emit Events.SBTValueReceived(
+            msg.sender, 
+            operator, 
+            fromTokenId, 
+            toTokenId, 
+            value, 
+            data, 
+            gasleft()
+        );
 
         return 0x009ce20b;
     }
 
+    function deposit(
+        uint256 soulBoundTokenId, 
+        address currency, 
+        uint256 amount
+    )
+        external 
+        whenNotPaused
+    {
+        if (soulBoundTokenId == 0 || 
+            soulBoundTokenId == soulBoundTokenIdBankTreasury || 
+            currency == address(0) || 
+            amount == 0) 
+            revert Errors.InvalidParameter();
+        
+        if (!IModuleGlobals(MODULE_GLOBALS).isCurrencyWhitelisted(currency))
+            revert Errors.CurrencyNotInWhitelisted(currency);
+
+        _validateCallerIsSoulBoundTokenOwner(soulBoundTokenId);
+
+        //deposit currency value to account's fee balance
+        DataTypes.AccountInfo storage accountInfo = accountToInfo[soulBoundTokenId][currency];
+        _addBalanceTo(accountInfo, amount);
+        
+        address _sbt = IModuleGlobals(MODULE_GLOBALS).getSBT();
+        if ( currency == address(_sbt) ) {
+            //deposit SBT Value
+            INFTDerivativeProtocolTokenV1(_sbt).transferValue(
+                soulBoundTokenId,
+                soulBoundTokenIdBankTreasury,
+                amount
+            );
+        } else {
+            // Before this you should have approved the amount 
+            // This will transfer the amount of currency from caller to contract
+            IERC20Upgradeable(currency).safeTransferFrom(msg.sender, address(this), amount);
+
+        }
+        emit Events.Deposit(
+            msg.sender,
+            soulBoundTokenId, 
+            currency, 
+            amount
+        );
+    }
+/*
     function submitTransaction(
         address _currency,
         DataTypes.CurrencyType _currencyType,
@@ -278,7 +321,14 @@ contract BankTreasury is
             })
         );
 
-        emit Events.SubmitTransaction(msg.sender, txIndex, _to, _value, _data);
+        emit Events.SubmitTransaction(
+            msg.sender, 
+            txIndex, 
+            _to, 
+            _currency,
+            _value, 
+            _data
+        );
     }
 
     function confirmTransaction(
@@ -301,14 +351,24 @@ contract BankTreasury is
 
         transaction.executed = true;
 
-        //withdraw ether
         if (transaction.currencyType == DataTypes.CurrencyType.ETHER) {
+            //withdraw ether
             (bool success, ) = transaction.to.call{value: transaction.value}(transaction.data);
             if (!success) revert Errors.TxFailed();
         } else if (transaction.currencyType == DataTypes.CurrencyType.ERC20) {
+            //withdraw ERC20
             IERC20Upgradeable(transaction.currency).safeTransfer(transaction.to, transaction.value);
-            emit Events.ExecuteTransaction(msg.sender, _txIndex, transaction.to, transaction.value);
+            
+            emit Events.ExecuteTransaction(
+                msg.sender, 
+                _txIndex, 
+                transaction.to, 
+                transaction.currency, 
+                transaction.value
+            );
+
         } else if (transaction.currencyType == DataTypes.CurrencyType.ERC3525) {
+            //withdraw SBT Value
             INFTDerivativeProtocolTokenV1(_sbt).transferValue(
                 transaction.fromTokenId,
                 transaction.toTokenId,
@@ -336,7 +396,7 @@ contract BankTreasury is
 
         emit Events.RevokeConfirmation(msg.sender, _txIndex);
     }
-
+*/
     function getSigners() external view returns (address[] memory) {
         return _signers;
     }
@@ -379,20 +439,20 @@ contract BankTreasury is
      * @param soulBoundTokenId The soulBoundTokenId to query the available balance of.
      * @return balance The available balance of the account.
      */
-    function balanceOf(uint256 soulBoundTokenId) external view returns (uint256 balance) {
-        DataTypes.AccountInfo storage accountInfo = accountToInfo[soulBoundTokenId];
+    function balanceOf(address currency, uint256 soulBoundTokenId) external view returns (uint256 balance) {
+        DataTypes.AccountInfo storage accountInfo = accountToInfo[soulBoundTokenId][currency];
         balance = accountInfo.freedBalance;
 
         // Total ETH cannot realistically overflow 96 bits and escrowIndex will always be < 256 bits.
         unchecked {
-        // Add expired lockups
-        for (uint256 escrowIndex = accountInfo.lockupStartIndex; ; ++escrowIndex) {
-            LockedBalance.Lockup memory escrow = accountInfo.lockups.get(escrowIndex);
-            if (escrow.expiration == 0 || escrow.expiration >= block.timestamp) {
-            break;
+            // Add expired lockups
+            for (uint256 escrowIndex = accountInfo.lockupStartIndex; ; ++escrowIndex) {
+                LockedBalance.Lockup memory escrow = accountInfo.lockups.get(escrowIndex);
+                if (escrow.expiration == 0 || escrow.expiration >= block.timestamp) {
+                break;
+                }
+                balance += escrow.totalAmount;
             }
-            balance += escrow.totalAmount;
-        }
         }
     }
 
@@ -403,25 +463,29 @@ contract BankTreasury is
      * The results returned are sorted by expiry, with the earliest expiry date first.
      * @param soulBoundTokenId The soulBoundTokenId to query the locked balance of.
      * @return expiries The time at which each outstanding lockup bucket expires.
-     * @return amounts The number of earnest money which will expire for each outstanding lockup bucket.
+     * @return amounts The number of earnest funds which will expire for each outstanding lockup bucket.
      */
-    function getLockups(uint256 soulBoundTokenId) external view returns (uint256[] memory expiries, uint256[] memory amounts) {
-        DataTypes.AccountInfo storage accountInfo = accountToInfo[soulBoundTokenId];
+    function getLockups(address currency, uint256 soulBoundTokenId) 
+        external 
+        view 
+        returns (uint256[] memory expiries, uint256[] memory amounts) 
+    {
+        DataTypes.AccountInfo storage accountInfo = accountToInfo[soulBoundTokenId][currency];
 
         // Count lockups
         uint256 lockedCount;
         // The number of buckets is always < 256 bits.
         unchecked {
-        for (uint256 escrowIndex = accountInfo.lockupStartIndex; ; ++escrowIndex) {
-            LockedBalance.Lockup memory escrow = accountInfo.lockups.get(escrowIndex);
-            if (escrow.expiration == 0) {
-            break;
+            for (uint256 escrowIndex = accountInfo.lockupStartIndex; ; ++escrowIndex) {
+                LockedBalance.Lockup memory escrow = accountInfo.lockups.get(escrowIndex);
+                if (escrow.expiration == 0) {
+                    break;
+                }
+                if (escrow.expiration >= block.timestamp && escrow.totalAmount != 0) {
+                    // Lockup count will never overflow 256 bits.
+                    ++lockedCount;
+                }
             }
-            if (escrow.expiration >= block.timestamp && escrow.totalAmount != 0) {
-            // Lockup count will never overflow 256 bits.
-            ++lockedCount;
-            }
-        }
         }
 
         // Allocate arrays
@@ -435,25 +499,25 @@ contract BankTreasury is
             for (uint256 escrowIndex = accountInfo.lockupStartIndex; ; ++escrowIndex) {
                 LockedBalance.Lockup memory escrow = accountInfo.lockups.get(escrowIndex);
                 if (escrow.expiration == 0) {
-                break;
+                    break;
                 }
                 if (escrow.expiration >= block.timestamp && escrow.totalAmount != 0) {
-                expiries[i] = escrow.expiration;
-                amounts[i] = escrow.totalAmount;
-                ++i;
+                    expiries[i] = escrow.expiration;
+                    amounts[i] = escrow.totalAmount;
+                    ++i;
                 }
             }
         }
     }
 
     /**
-     * @notice Returns the total balance of an account, including locked earnest money tokens.
-     * @dev Use `balanceOf` to get the number of tokens available for transfer or withdrawal.
+     * @notice Returns specific currency the total balance of an account, including locked earnest funds.
+     * @dev Use `totalBalanceOf` to get the number of tokens available for transfer or withdrawal.
      * @param soulBoundTokenId The soulBoundTokenId to query the total balance of.
-     * @return balance The total earnest money balance tracked for this account.
+     * @return balance The total earnest funds balance tracked for this account.
      */
-    function totalBalanceOf(uint256 soulBoundTokenId) external view returns (uint256 balance) {
-        DataTypes.AccountInfo storage accountInfo = accountToInfo[soulBoundTokenId];
+    function totalBalanceOf(address currency, uint256 soulBoundTokenId) external view returns (uint256 balance) {
+        DataTypes.AccountInfo storage accountInfo = accountToInfo[soulBoundTokenId][currency];
         balance = accountInfo.freedBalance;
 
         // Total ETH cannot realistically overflow 96 bits and escrowIndex will always be < 256 bits.
@@ -462,10 +526,26 @@ contract BankTreasury is
         for (uint256 escrowIndex = accountInfo.lockupStartIndex; ; ++escrowIndex) {
             LockedBalance.Lockup memory escrow = accountInfo.lockups.get(escrowIndex);
             if (escrow.expiration == 0) {
-            break;
+                break;
             }
             balance += escrow.totalAmount;
         }
+        }
+    }
+
+    function escrowBalanceOf(address currency, uint256 soulBoundTokenId) external view returns (uint256 balance) {
+        DataTypes.AccountInfo storage accountInfo = accountToInfo[soulBoundTokenId][currency];
+
+        // Total ETH cannot realistically overflow 96 bits and escrowIndex will always be < 256 bits.
+        unchecked {
+            // Add all lockups
+            for (uint256 escrowIndex = accountInfo.lockupStartIndex; ; ++escrowIndex) {
+                LockedBalance.Lockup memory escrow = accountInfo.lockups.get(escrowIndex);
+                if (escrow.expiration == 0) {
+                    break;
+                }
+                balance += escrow.totalAmount;
+            }
         }
     }
 
@@ -479,59 +559,79 @@ contract BankTreasury is
         return address(this).balance;
     }
     
-    /**
-     * @notice Withdraw avaliable balance to msg.sender wallet
-     * @param soulBoundTokenId The soulBoundTokenId of caller.
-     * @param amount The total amount of balance, not include locked.
-     */
-    function WithdrawEarnestMoney(uint256 soulBoundTokenId, uint256 amount) 
+    function withdrawEarnestFunds(
+        uint256 soulBoundTokenId, 
+        address currency, 
+        uint256 amount
+    ) 
         external 
         whenNotPaused 
         nonReentrant 
     {
         _validateCallerIsSoulBoundTokenOwner(soulBoundTokenId);
 
-        DataTypes.AccountInfo storage accountInfo = _freeFromEscrow(soulBoundTokenId);
-        uint256 balanceAmount = accountInfo.freedBalance;
+        if (amount == 0) revert Errors.AmountIsZero();
         
-        if (balanceAmount == 0) {
+        if (!IModuleGlobals(MODULE_GLOBALS).isCurrencyWhitelisted(currency))
+            revert Errors.CurrencyNotInWhitelisted(currency);
+
+        DataTypes.AccountInfo storage accountInfo = _freeFromEscrow(currency, soulBoundTokenId);
+        uint256 freedBalance = accountInfo.freedBalance;
+        
+        if (freedBalance == 0) {
             revert Errors.SBT_No_Funds_To_Withdraw(); 
+        }
+        if (freedBalance < amount) {
+            revert Errors.InsufficientBalance(); 
         }
 
         _deductBalanceFrom(accountInfo, amount);
 
+
         address _sbt = IModuleGlobals(MODULE_GLOBALS).getSBT();
-        INFTDerivativeProtocolTokenV1(_sbt).transferValue(soulBoundTokenIdBankTreasury, soulBoundTokenId, amount);
-        
-        emit Events.WithdrawnEarnestMoney(
+        if (_sbt == currency) {
+            INFTDerivativeProtocolTokenV1(_sbt).transferValue(
+                soulBoundTokenIdBankTreasury, 
+                soulBoundTokenId, 
+                amount
+            );
+        } else {
+            IERC20Upgradeable(currency).safeTransfer(msg.sender, amount);
+        }
+
+        emit Events.WithdrawnEarnestFunds(
             soulBoundTokenId, 
             msg.sender,
-            amount,
-            balanceAmount - amount
+            currency,
+            amount
         );
+    
     }
 
-    function calculateAmountEther(uint256 ethAmount) external view returns (uint256) {
-        if (_exchangePrice == 0) revert Errors.ExchangePriceIsZero();
-        return ethAmount.div(_exchangePrice);
+    function calculateAmountCurrency(address currency, uint256 ethAmount) external view returns (uint256) {
+        if (_exchangePrice[currency] == 0) revert Errors.ExchangePriceIsZero();
+        return ethAmount.div(_exchangePrice[currency]);
+    } 
+
+    function calculateAmountSBT(address currency, uint256 amountOfSBT) external view returns (uint256) {
+        if (_exchangePrice[currency] == 0) revert Errors.ExchangePriceIsZero();
+        return amountOfSBT.mul(_exchangePrice[currency]);
     }
 
-    function calculateAmountSBT(uint256 sbtValue) external view returns (uint256) {
-        if (_exchangePrice == 0) revert Errors.ExchangePriceIsZero();
-        return sbtValue.mul(_exchangePrice);
-    }
-
-    function exchangeSBTByEth(
+    function buySBTByEth(
         uint256 soulBoundTokenId,
-        uint256 amount,
-        DataTypes.EIP712Signature calldata sig
+        address currency,
+        uint256 amount
+        // DataTypes.EIP712Signature calldata sig
     ) external payable whenNotPaused nonReentrant {
         // only called by owner of soulBoundTokenId
         _validateCallerIsSoulBoundTokenOwner(soulBoundTokenId);
 
-        if (_exchangePrice == 0) revert Errors.ExchangePriceIsZero();
+        if (_exchangePrice[currency] == 0) revert Errors.ExchangePriceIsZero();
         if (amount == 0) revert Errors.AmountIsZero();
         address exchangeWallet = msg.sender;
+        /*
+        
         unchecked {
             _validateRecoveredAddress(
                 _calculateDigest(
@@ -550,27 +650,76 @@ contract BankTreasury is
                 sig
             );
         }
-
-        if (msg.value < _exchangePrice.mul(amount)) revert Errors.PaymentError();
+*/
+        if (msg.value < _exchangePrice[currency].mul(amount)) revert Errors.PaymentError();
         address _sbt = IModuleGlobals(MODULE_GLOBALS).getSBT();
-        INFTDerivativeProtocolTokenV1(_sbt).transferValue(soulBoundTokenIdBankTreasury, soulBoundTokenId, amount);
+        INFTDerivativeProtocolTokenV1(_sbt).transferValue(
+            soulBoundTokenIdBankTreasury, 
+            soulBoundTokenId, 
+            amount
+        );
 
-        emit Events.ExchangeSBTByEth(soulBoundTokenId, exchangeWallet, amount, block.timestamp);
+        emit Events.BuySBTByEth(soulBoundTokenId, exchangeWallet, amount, block.timestamp);
+    }
+
+    function buySBTByERC20(
+        uint256 soulBoundTokenId,
+        address currency,
+        uint256 amount
+        // DataTypes.EIP712Signature calldata sig
+    ) external whenNotPaused nonReentrant {
+        // only called by owner of soulBoundTokenId
+        _validateCallerIsSoulBoundTokenOwner(soulBoundTokenId);
+
+        if (_exchangePrice[currency] == 0) revert Errors.ExchangePriceIsZero();
+        if (amount == 0) revert Errors.AmountIsZero();
+        address exchangeWallet = msg.sender;
+        /*
+        unchecked {
+            _validateRecoveredAddress(
+                _calculateDigest(
+                    keccak256(
+                        abi.encode(
+                            EXCHANGE_SBT_BY_ETHER_TYPEHASH,
+                            exchangeWallet,
+                            soulBoundTokenId,
+                            amount,
+                            sigNonces[exchangeWallet]++,
+                            sig.deadline
+                        )
+                    )
+                ),
+                exchangeWallet,
+                sig
+            );
+        }
+        */
+
+        IERC20Upgradeable(currency).safeTransferFrom(exchangeWallet, address(this), _exchangePrice[currency].mul(amount));
+
+        emit Events.BuySBTByERC20(
+            soulBoundTokenId, 
+            exchangeWallet, 
+            amount, 
+            currency,
+            block.timestamp
+        );
     }
 
     function exchangeEthBySBT(
         uint256 soulBoundTokenId,
-        uint256 sbtValue,
-        DataTypes.EIP712Signature calldata sig
+        uint256 amountOfSBT
+        // DataTypes.EIP712Signature calldata sig
     ) external payable whenNotPaused nonReentrant {
         // only called by owner of soulBoundTokenId
         _validateCallerIsSoulBoundTokenOwner(soulBoundTokenId);
-
-        if (_exchangePrice == 0) revert Errors.ExchangePriceIsZero();
-        if (sbtValue == 0) revert Errors.AmountIsZero();
+        address _sbt = IModuleGlobals(MODULE_GLOBALS).getSBT();
+        if (_exchangePrice[_sbt] == 0) revert Errors.ExchangePriceIsZero();
+        if (amountOfSBT == 0) revert Errors.AmountIsZero();
         if (soulBoundTokenId == 0) revert Errors.SoulBoundTokenIdNotExists();
 
         address payable _to = payable(msg.sender);
+/*
         unchecked {
             _validateRecoveredAddress(
                 _calculateDigest(
@@ -579,7 +728,7 @@ contract BankTreasury is
                             EXCHANGE_ETHER_BY_SBT_TYPEHASH,
                             _to,
                             soulBoundTokenId,
-                            sbtValue,
+                            amountOfSBT,
                             sigNonces[_to]++,
                             sig.deadline
                         )
@@ -589,17 +738,83 @@ contract BankTreasury is
                 sig
             );
         }
-
-        address _sbt = IModuleGlobals(MODULE_GLOBALS).getSBT();
-        INFTDerivativeProtocolTokenV1(_sbt).transferValue(soulBoundTokenId, soulBoundTokenIdBankTreasury, sbtValue);
+*/
+        INFTDerivativeProtocolTokenV1(_sbt).transferValue(
+            soulBoundTokenId, 
+            soulBoundTokenIdBankTreasury, 
+            amountOfSBT
+        );
 
         //transfer eth to msg.sender
-        uint256 ethAmount = sbtValue.mul(_exchangePrice);
+        uint256 ethAmount = amountOfSBT.mul(_exchangePrice[_sbt]);
 
         (bool success, ) = _to.call{value: ethAmount}("");
         if (!success) revert Errors.TxFailed();
 
-        emit Events.ExchangeEthBySBT(soulBoundTokenId, _to, sbtValue, _exchangePrice, ethAmount, block.timestamp);
+        emit Events.ExchangeEthBySBT(
+            soulBoundTokenId, 
+            _to, 
+            amountOfSBT, 
+            _exchangePrice[_sbt], 
+            ethAmount, 
+            block.timestamp
+        );
+    }
+
+    function exchangeERC20BySBT(
+        uint256 soulBoundTokenId,
+        address currency,
+        uint256 amountOfSBT
+        // DataTypes.EIP712Signature calldata sig
+    ) external payable whenNotPaused nonReentrant {
+        // only called by owner of soulBoundTokenId
+        _validateCallerIsSoulBoundTokenOwner(soulBoundTokenId);
+        if (_exchangePrice[currency] == 0) revert Errors.ExchangePriceIsZero();
+        if (amountOfSBT == 0) revert Errors.AmountIsZero();
+        if (soulBoundTokenId == 0) revert Errors.SoulBoundTokenIdNotExists();
+
+        address payable _to = payable(msg.sender);
+        /*
+        unchecked {
+            _validateRecoveredAddress(
+                _calculateDigest(
+                    keccak256(
+                        abi.encode(
+                            EXCHANGE_ETHER_BY_SBT_TYPEHASH,
+                            _to,
+                            soulBoundTokenId,
+                            amountOfSBT,
+                            sigNonces[_to]++,
+                            sig.deadline
+                        )
+                    )
+                ),
+                _to,
+                sig
+            );
+        }
+*/
+        INFTDerivativeProtocolTokenV1(currency).transferValue(
+            soulBoundTokenId, 
+            soulBoundTokenIdBankTreasury, 
+            amountOfSBT
+        );
+
+        //transfer ERC20 to msg.sender
+        uint256 erc20Amount = amountOfSBT.div(_exchangePrice[currency]);
+
+        if (erc20Amount >0 ) {
+            IERC20Upgradeable(currency).safeTransfer(_to, erc20Amount);
+        }
+
+        emit Events.ExchangeEthBySBT(
+            soulBoundTokenId, 
+            _to, 
+            amountOfSBT, 
+            _exchangePrice[currency], 
+            erc20Amount, 
+            block.timestamp
+        );
     }
 
     function exchangeVoucher(
@@ -619,23 +834,30 @@ contract BankTreasury is
         if (voucherData.tokenId == 0) revert Errors.VoucherNotExists();
         if (voucherData.isUsed) revert Errors.VoucherIsUsed();
 
-        INFTDerivativeProtocolTokenV1(_sbt).transferValue(soulBoundTokenIdBankTreasury, soulBoundTokenId, voucherData.sbtValue);
+        INFTDerivativeProtocolTokenV1(_sbt).transferValue(
+            soulBoundTokenIdBankTreasury, 
+            soulBoundTokenId, 
+            voucherData.sbtValue
+        );
         IVoucher(_voucher).useVoucher(msg.sender, tokenId, soulBoundTokenId);
 
         emit Events.ExchangeVoucher(soulBoundTokenId, msg.sender, tokenId, voucherData.sbtValue, block.timestamp);
     }
 
-    function setExchangePrice(uint256 exchangePrice_) external nonReentrant onlyGov {
-        _exchangePrice = exchangePrice_;
+    function setExchangePrice(address currency, uint256 exchangePrice) external nonReentrant onlyGov {
+        _exchangePrice[currency] = exchangePrice;
     }
 
-    function saveFundsToUserRevenue(
+    function distributeFundsToUserRevenue(
         uint256 fromSoulBoundTokenId,
+        address currency,
         uint256 payValue,
         DataTypes.CollectFeeUsers memory collectFeeUsers,
         DataTypes.RoyaltyAmounts memory royaltyAmounts
     ) 
-        external whenNotPaused nonReentrant 
+        external 
+        whenNotPaused 
+        nonReentrant 
     {
         // valid caller is only have fee module grant role or is foundationMarket
 
@@ -654,25 +876,18 @@ contract BankTreasury is
                 revert Errors.InvalidRoyalties();
             }
 
-            _deductBalanceFrom(_freeFromEscrow(fromSoulBoundTokenId), payValue);
-            _addBalanceTo(_freeFromEscrow(soulBoundTokenIdBankTreasury), royaltyAmounts.treasuryAmount);
-            _addBalanceTo(_freeFromEscrow(collectFeeUsers.genesisSoulBoundTokenId), royaltyAmounts.genesisAmount);
-            _addBalanceTo(_freeFromEscrow(collectFeeUsers.previousSoulBoundTokenId), royaltyAmounts.previousAmount);
-            _addBalanceTo(_freeFromEscrow(collectFeeUsers.referrerSoulBoundTokenId), royaltyAmounts.referrerAmount);
+            _addBalanceTo(_freeFromEscrow(currency, soulBoundTokenIdBankTreasury), royaltyAmounts.treasuryAmount);
+            _addBalanceTo(_freeFromEscrow(currency, collectFeeUsers.genesisSoulBoundTokenId), royaltyAmounts.genesisAmount);
+            _addBalanceTo(_freeFromEscrow(currency, collectFeeUsers.previousSoulBoundTokenId), royaltyAmounts.previousAmount);
+            _addBalanceTo(_freeFromEscrow(currency, collectFeeUsers.referrerSoulBoundTokenId), royaltyAmounts.referrerAmount);
             //owner or seller
-            _addBalanceTo(_freeFromEscrow(collectFeeUsers.ownershipSoulBoundTokenId), royaltyAmounts.adjustedAmount);
+            _addBalanceTo(_freeFromEscrow(currency, collectFeeUsers.ownershipSoulBoundTokenId), royaltyAmounts.adjustedAmount);
         }
     }
- 
-    function useEarnestMoneyForPay(
+
+    function refundEarnestFunds(
         uint256 soulBoundTokenId,
-        uint256 amount
-    ) external whenNotPaused nonReentrant onlyFoundationMarket  {
-        _deductBalanceFrom(_freeFromEscrow(soulBoundTokenId), amount);
-    }
-    
-    function refundEarnestMoney(
-        uint256 soulBoundTokenId,
+        address currency,
         uint256 amount
     ) 
         external 
@@ -680,31 +895,50 @@ contract BankTreasury is
         nonReentrant 
         onlyFoundationMarket 
     {
-        _addBalanceTo(_freeFromEscrow(soulBoundTokenId), amount);
-
-        //emit event   
+        _addBalanceTo(_freeFromEscrow(currency, soulBoundTokenId), amount);
     }
+ 
+    function useEarnestFundsForPay(
+        uint256 soulBoundTokenId,
+        address currency,
+        uint256 amount
+    ) 
+        external 
+        whenNotPaused 
+        nonReentrant  
+    { 
+        // valid caller is only have fee module grant role or is foundationMarket
 
+        if (!( isFeeModule(msg.sender) || msg.sender == _foundationMarket )) {
+            revert Errors.Only_BITSOUL_Market_Allowed();
+        }
+                
+        DataTypes.AccountInfo storage accountInfo = accountToInfo[soulBoundTokenId][currency];
+        _deductBalanceFrom(accountInfo, amount);
+    }
+    
     /**
      * @notice Used by the market contract only:
-     * Lockup an account's earnest money for 24-25 hours.
+     * Lockup an account's earnest funds for 24-25 hours.
      * @dev Used by the market when a new offer for an DNFT is made.
      * @param account The address
      * @param soulBoundTokenId The soulBoundTokenId of account
-     * @param amount The number of earnest money to be locked up for the `lockupFor`'s account.
-     * @return expiration The expiration timestamp for the earnest money  that were locked.
+     * @param amount The number of earnest funds to be locked up for the `lockupFor`'s account.
+     * @return expiration The expiration timestamp for the earnest funds  that were locked.
      */
     function marketLockupFor(
         address account,
         uint256 soulBoundTokenId,
+        address currency,
         uint256 amount
     ) external whenNotPaused nonReentrant onlyFoundationMarket returns (uint256 expiration) {
 
-        return _marketLockupFor(account, soulBoundTokenId, amount);
+        return _marketLockupFor(account, soulBoundTokenId, currency, amount);
     }
  
     function marketChangeLockup(
         uint256 unlockFromSoulBoundTokenId,
+        address currency,
         uint256 unlockExpiration,
         uint256 unlockAmount,
         uint256 lockupForSoulBoundTokenId,
@@ -714,37 +948,54 @@ contract BankTreasury is
         address _sbt = IModuleGlobals(MODULE_GLOBALS).getSBT();
         address unlockFrom = IERC3525(_sbt).ownerOf(unlockFromSoulBoundTokenId);
         address lockupFor = IERC3525(_sbt).ownerOf(lockupForSoulBoundTokenId);
-        _marketUnlockFor(unlockFrom, unlockFromSoulBoundTokenId, unlockExpiration, unlockAmount);
+        _marketUnlockFor(unlockFrom, unlockFromSoulBoundTokenId, unlockExpiration, currency, unlockAmount);
 
-        return _marketLockupFor(lockupFor, lockupForSoulBoundTokenId, lockupAmount);
+        return _marketLockupFor(lockupFor, lockupForSoulBoundTokenId, currency, lockupAmount);
     }
 
-    function marketWithdrawLocked(
+    /**
+     * @notice Used by the market contract only:
+     * Removes a lockup from the user's account and then add balance to the owner.
+     * @dev Used by the market to extract unexpired funds to distribute for
+     * a sale when the user's offer is accepted.
+     * @param account The account whose lockup is to be removed.
+     * @param soulBoundTokenIdBuyer The SBT Id whose lockup is to be removed.
+     * @param owner The owner of offer
+     * @param soulBoundTokenIdOwner The SBT Id of owner
+     * @param expiration The original lockup expiration for the tokens to be unlocked.
+     * This will revert if the lockup has already expired.
+     * @param currency The ERC20 currency
+     * @param totalAmount The number of tokens to be unlocked and add to owner free balance .
+     */
+    function marketTransferLocked(
         address account,
         uint256 soulBoundTokenIdBuyer,
         address owner,
         uint256 soulBoundTokenIdOwner,
         uint256 expiration,
-        uint256 amount
+        address currency,
+        uint256 totalAmount
     ) external whenNotPaused nonReentrant onlyFoundationMarket {
-        _removeFromLockedBalance(account, soulBoundTokenIdBuyer, expiration, amount);
-
-        DataTypes.AccountInfo storage accountInfoBuyer = accountToInfo[soulBoundTokenIdBuyer];
-        _deductBalanceFrom(accountInfoBuyer, amount);
-
-        DataTypes.AccountInfo storage accountInfoOwner = accountToInfo[soulBoundTokenIdOwner];
-        _addBalanceTo(accountInfoOwner, amount);
-
-        emit Events.OfferWithdrawn(account, soulBoundTokenIdBuyer, owner, soulBoundTokenIdOwner, amount);
+        _removeFromLockedBalance(account, soulBoundTokenIdBuyer, expiration, currency, totalAmount);
+        
+        emit Events.OfferTransfered(
+            account, 
+            soulBoundTokenIdBuyer, 
+            owner, 
+            soulBoundTokenIdOwner, 
+            currency,
+            totalAmount
+        );
     }
 
     function marketUnlockFor(
         address account,
         uint256 soulBoundTokenId,
         uint256 expiration,
+        address currency,
         uint256 amount
     ) external whenNotPaused nonReentrant onlyFoundationMarket {
-        _marketUnlockFor(account, soulBoundTokenId, expiration, amount);
+        _marketUnlockFor(account, soulBoundTokenId, expiration, currency, amount);
     }
 
     //--- internal  ---//
@@ -781,13 +1032,15 @@ contract BankTreasury is
         if (!hasRole(DEFAULT_ADMIN_ROLE, _msgSender())) revert Errors.Unauthorized();
     }
 
+/*
     function getDomainSeparator() external view override returns (bytes32) {
         return _calculateDomainSeparator();
     }
-
+*/
     /**
      * @dev Wrapper for ecrecover to reduce code size, used in meta-tx specific functions.
      */
+    /*
     function _validateRecoveredAddress(
         bytes32 digest,
         address expectedAddress,
@@ -797,10 +1050,11 @@ contract BankTreasury is
         address recoveredAddress = ecrecover(digest, sig.v, sig.r, sig.s);
         if (recoveredAddress == address(0) || recoveredAddress != expectedAddress) revert Errors.SignatureInvalid();
     }
-
+*/
     /**
      * @dev Calculates EIP712 DOMAIN_SEPARATOR based on the current contract and chain ID.
      */
+    /*
     function _calculateDomainSeparator() internal view returns (bytes32) {
         return
             keccak256(
@@ -813,6 +1067,7 @@ contract BankTreasury is
                 )
             );
     }
+    */
 
     /**
      * @dev Calculates EIP712 digest based on the current DOMAIN_SEPARATOR.
@@ -821,6 +1076,7 @@ contract BankTreasury is
      *
      * @return bytes32 A 32-byte output representing the EIP712 digest.
      */
+    /*
     function _calculateDigest(bytes32 hashedMessage) internal view returns (bytes32) {
         bytes32 digest;
         unchecked {
@@ -828,12 +1084,13 @@ contract BankTreasury is
         }
         return digest;
     }
+    */
 
     /**
-     * @notice Lockup an account's earnest money for 24-25 hours.
+     * @notice Lockup an account's earnest funds for 24-25 hours.
      */
     /* solhint-disable-next-line code-complexity */
-    function _marketLockupFor(address account, uint256 soulBoundTokenId, uint256 amount) private returns (uint256 expiration) {
+    function _marketLockupFor(address account, uint256 soulBoundTokenId, address currency, uint256 amount) private returns (uint256 expiration) {
         if (soulBoundTokenId == 0) {
             revert Errors.Cannot_Deposit_For_Lockup_With_SoulBoundTokenId_Zero();
         }
@@ -849,7 +1106,7 @@ contract BankTreasury is
 
         // Update available escrow
         // Always free from escrow to ensure the max bucket count is <= 25
-        DataTypes.AccountInfo storage accountInfo = _freeFromEscrow(soulBoundTokenId);
+        DataTypes.AccountInfo storage accountInfo = _freeFromEscrow(currency, soulBoundTokenId);
 
         // Add to locked escrow
         unchecked {
@@ -861,26 +1118,34 @@ contract BankTreasury is
                         revert Errors.Expiration_Too_Far_In_Future();
                     }
 
-                    // Amount (SBT Value) will always be < 96 bits.
+                    // Amount of currency will always be < 96 bits.
                     accountInfo.lockups.set(escrowIndex, expiration, amount);
                     break;
                 }
                 if (escrow.expiration == expiration) {
-                    // Total SBT Value will always be < 96 bits.
+                    // Total currency value will always be < 96 bits.
                     accountInfo.lockups.setTotalAmount(escrowIndex, escrow.totalAmount + amount);
                     break;
                 }
             }
 
-            //deduct earnest money 
-            _deductBalanceFrom(_freeFromEscrow(soulBoundTokenId), amount);
+            //deduct earnest funds 
+            _deductBalanceFrom(_freeFromEscrow(currency, soulBoundTokenId), amount);
+
+
         }
 
-        emit Events.BalanceLocked(account, soulBoundTokenId, expiration, amount, msg.value);
+        emit Events.BalanceLocked(
+            account, 
+            soulBoundTokenId, 
+            expiration, 
+            currency,
+            amount
+        );
     }
 
     /**
-     * @dev Removes an amount from the account's available earnest money.
+     * @dev Removes an amount from the account's available earnest funds.
      */
     function _deductBalanceFrom(DataTypes.AccountInfo storage accountInfo, uint256 amount) private {
         uint96 freedBalance = accountInfo.freedBalance;
@@ -895,7 +1160,7 @@ contract BankTreasury is
     }
 
     /**
-     * @dev Add an amount to the account's available earnest money.
+     * @dev Add an amount to the account's available earnest funds.
      */
     function _addBalanceTo(DataTypes.AccountInfo storage accountInfo, uint256 amount) private {
         unchecked {
@@ -907,8 +1172,8 @@ contract BankTreasury is
      * @dev Moves expired escrow to the available balance.
      * Sets the next bucket that hasn't expired as the new start index.
      */
-    function _freeFromEscrow(uint256 soulBoundTokenId) private returns (DataTypes.AccountInfo storage) {
-        DataTypes.AccountInfo storage accountInfo = accountToInfo[soulBoundTokenId];
+    function _freeFromEscrow(address currency, uint256 soulBoundTokenId) private returns (DataTypes.AccountInfo storage) {
+        DataTypes.AccountInfo storage accountInfo = accountToInfo[soulBoundTokenId][currency];
         uint256 escrowIndex = accountInfo.lockupStartIndex;
         LockedBalance.Lockup memory escrow = accountInfo.lockups.get(escrowIndex);
 
@@ -918,7 +1183,7 @@ contract BankTreasury is
         }
 
         while (true) {
-            // Total SBT Value cannot realistically overflow 96 bits.
+            // Total value cannot realistically overflow 96 bits.
             unchecked {
                 accountInfo.freedBalance += escrow.totalAmount;
                 accountInfo.lockups.del(escrowIndex);
@@ -951,11 +1216,11 @@ contract BankTreasury is
     }
 
     /**
-     * @notice Remove an soulBoundTokenId's lockup, making the earnest money available for transfer or withdrawal.
+     * @notice Remove an soulBoundTokenId's lockup, making the earnest funds available for transfer or withdrawal.
      */
-    function _marketUnlockFor(address account, uint256 soulBoundTokenId, uint256 expiration, uint256 amount) private {
-        DataTypes.AccountInfo storage accountInfo = _removeFromLockedBalance(account, soulBoundTokenId, expiration, amount);
-        // Total SBT Value cannot realistically overflow 96 bits.
+    function _marketUnlockFor(address account, uint256 soulBoundTokenId, uint256 expiration, address currency, uint256 amount) private {
+        DataTypes.AccountInfo storage accountInfo = _removeFromLockedBalance(account, soulBoundTokenId, expiration, currency, amount);
+        // Total value cannot realistically overflow 96 bits.
         unchecked {
             accountInfo.freedBalance += uint96(amount);
         }
@@ -969,13 +1234,14 @@ contract BankTreasury is
         address account,
         uint256 soulBoundTokenId,
         uint256 expiration,
+        address currency,
         uint256 amount
     ) private returns (DataTypes.AccountInfo storage) {
         if (expiration < block.timestamp) {
             revert Errors.Escrow_Expired();
         }
 
-        DataTypes.AccountInfo storage accountInfo = accountToInfo[soulBoundTokenId];
+        DataTypes.AccountInfo storage accountInfo = accountToInfo[soulBoundTokenId][currency];
         uint256 escrowIndex = accountInfo.lockupStartIndex;
         LockedBalance.Lockup memory escrow = accountInfo.lockups.get(escrowIndex);
 
@@ -1025,7 +1291,14 @@ contract BankTreasury is
             }
         }
 
-        emit Events.BalanceUnlocked(account, soulBoundTokenId, expiration, amount);
+        emit Events.BalanceUnlocked(
+            account, 
+            soulBoundTokenId, 
+            expiration, 
+            currency,
+            amount
+        );
+
         return accountInfo;
     }
 
@@ -1042,3 +1315,4 @@ contract BankTreasury is
     }
 
 }
+  

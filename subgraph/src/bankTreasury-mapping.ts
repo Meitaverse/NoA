@@ -1,10 +1,11 @@
 import { log, Address, BigInt, Bytes, store, TypedMap } from "@graphprotocol/graph-ts";
 
 import {
-    Deposit,
+    DepositEther,
     DepositByFallback,
-    ERC3525Received,
-    ExchangeSBTByEth,
+    SBTValueReceived,
+    Deposit,
+    BuySBTByEth,
     ExchangeEthBySBT,
     ExchangeVoucher,
     SubmitTransaction,
@@ -14,8 +15,8 @@ import {
     RevokeConfirmation,
     BalanceLocked,
     BalanceUnlocked,
-    OfferWithdrawn,
-    WithdrawnEarnestMoney
+    OfferTransfered,
+    WithdrawnEarnestFunds
 } from "../generated/BankTreasury/Events"
 
 import {
@@ -27,23 +28,35 @@ import {
 } from "../generated/BankTreasury/BankTreasury"
 
 import {
+    DepositEtherHistory,
+    SBTValueReceivedHistory,
     DepositHistory,
-    ERC3525ReceivedHistory,
-    ExchangeSBTByEthHistory,
+    BuySBTByEthHistory,
     ExchangeEthBySBTHistory,
     Transaction,
     ExecuteTransactionHistory,
     ExecuteTransactionERC3525History,
     ExchangeVoucherHistory,
+    ProtocolContract,
+    
 } from "../generated/schema"
 
-export function handleDeposit(event: Deposit): void {
-    log.info("handleDeposit, event.address: {}", [event.address.toHexString()])
+import { loadOrCreateAccount } from "./shared/accounts";
+import { toETH } from "./shared/conversions";
+import { BASIS_POINTS, ONE_BIG_INT, ZERO_ADDRESS_STRING, ZERO_BIG_INT } from "./shared/constants"; 
+import { loadOrCreateCurrencyEarnestFunds, loadOrCreateFsbtEscrow } from "./shared/currencyEarnestFunds";
+import { loadOrCreateSoulBoundToken } from "./shared/soulBoundToken";
+import { ZERO_ADDRESS } from "../../test/helpers/constants";
+import { getLogId } from "./shared/ids";
 
-    let _idString = event.params.sender.toHexString()+ "-" + event.block.timestamp.toString()
-    const history = DepositHistory.load(_idString) || new DepositHistory(_idString)
+
+export function handleDepositEther(event: DepositEther): void {
+    log.info("handleDepositEther, event.address: {}", [event.address.toHexString()])
+
+    let _idString = getLogId(event)
+    const history = DepositEtherHistory.load(_idString) || new DepositEtherHistory(_idString)
     if (history) {
-        history.sender = event.params.sender
+        history.sender = event.params.account
         history.amount = event.params.amount
         history.receiver = event.params.receiver
         history.balance = event.params.balance
@@ -51,19 +64,12 @@ export function handleDeposit(event: Deposit): void {
         history.save()
     } 
 }
-import { loadOrCreateAccount } from "./shared/accounts";
-import { toETH } from "./shared/conversions";
-import { BASIS_POINTS, ONE_BIG_INT, ZERO_ADDRESS_STRING, ZERO_BIG_DECIMAL, ZERO_BIG_INT } from "./shared/constants"; 
-import { loadOrCreateFsbt, loadOrCreateFsbtEscrow } from "./shared/fsbt";
-import { loadOrCreateSBTAsset } from "./shared/sbtAsset";
-import { loadOrCreateSoulBoundToken } from "./shared/soulBoundToken";
-import { ZERO_ADDRESS } from "../../test/helpers/constants";
 
 export function handleDepositByFallback(event: DepositByFallback): void {
     log.info("handleDepositByFallback, event.address: {}", [event.address.toHexString()])
 
-    let _idString = event.params.sender.toHexString()+ "-" + event.block.timestamp.toString()
-    const history = DepositHistory.load(_idString) || new DepositHistory(_idString)
+    let _idString =  getLogId(event)
+    const history = DepositEtherHistory.load(_idString) || new DepositEtherHistory(_idString)
     if (history) {
         history.sender = event.params.sender
         history.amount = event.params.amount
@@ -75,17 +81,17 @@ export function handleDepositByFallback(event: DepositByFallback): void {
     } 
 }
 
-export function handleERC3525Received(event: ERC3525Received): void {
-    log.info("handleERC3525Received, event.address: {}", [event.address.toHexString()])
+export function handleESBTValueReceived(event: SBTValueReceived): void {
+    log.info("handleSBTValueReceived, event.address: {}", [event.address.toHexString()])
 
     const sbtFrom = loadOrCreateSoulBoundToken(event.params.fromTokenId)
-    const sbtTo = loadOrCreateSoulBoundToken(event.params.fromTokenId)
+    const sbtTo = loadOrCreateSoulBoundToken(event.params.toTokenId)
 
     if (sbtFrom.wallet.toHex() != ZERO_ADDRESS &&  
-        sbtTo.wallet.toHex() != ZERO_ADDRESS
+            sbtTo.wallet.toHex() != ZERO_ADDRESS
         ) {
-        let _idString = event.params.operator.toHexString()+ "-" + event.params.fromTokenId.toString() + "-" + event.block.timestamp.toString()
-        const history = ERC3525ReceivedHistory.load(_idString) || new ERC3525ReceivedHistory(_idString)
+        let _idString =  getLogId(event)
+        const history = SBTValueReceivedHistory.load(_idString) || new SBTValueReceivedHistory(_idString)
         if (history) {
             history.sender = event.params.sender
             history.operator = event.params.operator
@@ -96,15 +102,53 @@ export function handleERC3525Received(event: ERC3525Received): void {
             history.gas = event.params.gas
             history.timestamp = event.block.timestamp
             history.save()
+
+            let _id = "SBT"
+            const protocolContract = ProtocolContract.load(_id)
+            if (protocolContract) {
+                let user = loadOrCreateAccount(Address.fromBytes(sbtFrom.wallet))
+                let earnestFunds = loadOrCreateCurrencyEarnestFunds(Address.fromBytes(protocolContract.contract), user, event.block)
+                if (earnestFunds) {
+                    earnestFunds.user = user.id
+                    earnestFunds.currency = Address.fromBytes(protocolContract.contract)
+                    earnestFunds.balance = earnestFunds.balance.plus(event.params.value)
+                    earnestFunds.dateLastUpdated = event.block.timestamp;
+                }
+            }
         } 
     }
 }
 
-export function handleExchangeSBTByEth(event: ExchangeSBTByEth): void {
-    log.info("handleExchangeSBTByEth, event.address: {}", [event.address.toHexString()])
+export function handleDeposit(event: Deposit): void {
+    log.info("handleDeposit, event.address: {}", [event.address.toHexString()])
 
-    let _idString = event.params.soulBoundTokenId.toString()+ "-" + event.params.exchangeWallet.toHexString() + "-" + event.params.timestamp.toString()
-    const history = ExchangeSBTByEthHistory.load(_idString) || new ExchangeSBTByEthHistory(_idString)
+
+    let _idString =  getLogId(event)
+    const history = DepositHistory.load(_idString) || new DepositHistory(_idString)
+    if (history) {
+        history.account = loadOrCreateAccount(event.params.account).id
+        history.currency = event.params.currency
+        history.amount = event.params.amount
+        history.timestamp = event.block.timestamp
+        history.save()
+        let account = loadOrCreateAccount(event.params.account)
+        let earnestFunds = loadOrCreateCurrencyEarnestFunds(event.params.currency, account, event.block)
+        if (earnestFunds) {
+            earnestFunds.user = account.id
+            earnestFunds.currency = event.params.currency
+            earnestFunds.balance = earnestFunds.balance.plus(event.params.amount)
+            earnestFunds.dateLastUpdated = event.block.timestamp;
+        }
+              
+    } 
+    
+}
+
+export function handleBuySBTByEth(event: BuySBTByEth): void {
+    log.info("handleBuySBTByEth, event.address: {}", [event.address.toHexString()])
+
+    let _idString = getLogId(event)
+    const history = BuySBTByEthHistory.load(_idString) || new BuySBTByEthHistory(_idString)
     if (history) {
         const sbtAccount = loadOrCreateSoulBoundToken(event.params.soulBoundTokenId)
     
@@ -121,7 +165,7 @@ export function handleExchangeSBTByEth(event: ExchangeSBTByEth): void {
 export function handleExchangeEthBySBT(event: ExchangeEthBySBT): void {
     log.info("handleExchangeEthBySBT, event.address: {}", [event.address.toHexString()])
 
-    let _idString = event.params.soulBoundTokenId.toString()+ "-" + event.params.toWallet.toHexString() + "-" + event.params.timestamp.toString()
+    let _idString = getLogId(event)
     const history = ExchangeEthBySBTHistory.load(_idString) || new ExchangeEthBySBTHistory(_idString)
     if (history) {
 
@@ -142,7 +186,7 @@ export function handleExchangeEthBySBT(event: ExchangeEthBySBT): void {
 export function handleExchangeVoucher(event: ExchangeVoucher): void {
     log.info("handleExchangeVoucher, event.address: {}", [event.address.toHexString()])
 
-    let _idString = event.params.soulBoundTokenId.toString()+ "-" + event.params.operator.toHexString() + "-" + event.params.timestamp.toString()
+    let _idString = getLogId(event)
     const history = ExchangeVoucherHistory.load(_idString) || new ExchangeVoucherHistory(_idString)
     if (history) {
         history.soulBoundTokenId = event.params.soulBoundTokenId
@@ -231,18 +275,21 @@ export function handleExecuteTransactionERC3525(event: ExecuteTransactionERC3525
 
 export function handleBalanceLocked(event: BalanceLocked): void {
     log.info("handleBalanceLocked, event.address: {}", [event.address.toHexString()])
+
     let to = loadOrCreateAccount(event.params.account);
-    let fsbtTo = loadOrCreateFsbt(to, event.block);
-    fsbtTo.balanceInSBTValue = fsbtTo.balanceInSBTValue.plus(toETH(event.params.valueDeposited));
-    fsbtTo.dateLastUpdated = event.block.timestamp;
-    fsbtTo.save();
-    let escrow = loadOrCreateFsbtEscrow(event, to);
+    let earnestFundsTo = loadOrCreateCurrencyEarnestFunds(event.params.currency, to, event.block);
+    
+    earnestFundsTo.balance = earnestFundsTo.balance.plus(event.params.amount);
+    earnestFundsTo.dateLastUpdated = event.block.timestamp;
+    earnestFundsTo.save();
+
+    let escrow = loadOrCreateFsbtEscrow(event, event.params.currency, to);
     if (escrow.dateRemoved) {
-      escrow.amountInSBTValue = toETH(event.params.amount);
+      escrow.amount = event.params.amount;
       escrow.dateRemoved = null;
       escrow.transactionHashRemoved = null;
     } else {
-      escrow.amountInSBTValue = escrow.amountInSBTValue.plus(toETH(event.params.amount));
+      escrow.amount = escrow.amount.plus(event.params.amount);
     }
   
     escrow.dateExpiry = event.params.expiration;
@@ -253,35 +300,39 @@ export function handleBalanceLocked(event: BalanceLocked): void {
   export function handleBalanceUnlocked(event: BalanceUnlocked): void {
     log.info("handleBalanceUnlocked, event.address: {}", [event.address.toHexString()])
     let from = loadOrCreateAccount(event.params.account);
-    let escrow = loadOrCreateFsbtEscrow(event, from);
-    escrow.amountInSBTValue = escrow.amountInSBTValue.minus(toETH(event.params.amount));
-    if (escrow.amountInSBTValue.equals(ZERO_BIG_DECIMAL)) {
+    let escrow = loadOrCreateFsbtEscrow(event, event.params.currency, from);
+    escrow.amount = escrow.amount.minus(event.params.amount);
+    if (escrow.amount.equals(ZERO_BIG_INT)) {
       escrow.transactionHashRemoved = event.transaction.hash;
       escrow.dateRemoved = event.block.timestamp;
     }
     escrow.save();
   }
 
-  export function handleOfferWithdrawn(event: OfferWithdrawn): void {
-    log.info("handleOfferWithdrawn, event.address: {}", [event.address.toHexString()])
+  export function handleOfferTransfered(event: OfferTransfered): void {
+    log.info("handleOfferTransfered, event.address: {}", [event.address.toHexString()])
    
     let from = loadOrCreateAccount(event.params.owner);
-    let fsbtFrom = loadOrCreateFsbt(from, event.block);
-    fsbtFrom.balanceInSBTValue = fsbtFrom.balanceInSBTValue.minus(toETH(event.params.amount));
-    fsbtFrom.dateLastUpdated = event.block.timestamp;
-    fsbtFrom.save();
+    let earnestFundsFrom = loadOrCreateCurrencyEarnestFunds(event.params.currency, from, event.block);
+    earnestFundsFrom.balance = earnestFundsFrom.balance.minus(event.params.amount);
+    earnestFundsFrom.dateLastUpdated = event.block.timestamp;
+    earnestFundsFrom.save();
 
     let buyer = loadOrCreateAccount(event.params.buyer);
-    let fsbtBuyer = loadOrCreateFsbt(buyer, event.block);
-    fsbtBuyer.balanceInSBTValue = fsbtBuyer.balanceInSBTValue.plus(toETH(event.params.amount));
+    let fsbtBuyer = loadOrCreateCurrencyEarnestFunds(event.params.currency, buyer, event.block);
+    fsbtBuyer.balance = fsbtBuyer.balance.plus(event.params.amount);
     fsbtBuyer.dateLastUpdated = event.block.timestamp;
     fsbtBuyer.save();
   }
   
-  export function handleWithdrawnEarnestMoney(event: WithdrawnEarnestMoney): void {
-    log.info("handleWithdrawnEarnestMoney, event.address: {}", [event.address.toHexString()])
-    
-    const sbtAsset_withdrawer = loadOrCreateSBTAsset(event.params.to);
-    sbtAsset_withdrawer.balance = sbtAsset_withdrawer.balance.plus(event.params.value);
-    sbtAsset_withdrawer.save();
+  export function handleWithdrawnEarnestFunds(event: WithdrawnEarnestFunds): void {
+    log.info("handleWithdrawnEarnestFunds, event.address: {}", [event.address.toHexString()])
+
+    let to = loadOrCreateAccount(event.params.to);
+    let earnestFundsFrom = loadOrCreateCurrencyEarnestFunds(event.params.currency, to, event.block);
+    earnestFundsFrom.balance = earnestFundsFrom.balance.minus(event.params.amount);
+    earnestFundsFrom.dateLastUpdated = event.block.timestamp;
+    earnestFundsFrom.save();
+
+
   }

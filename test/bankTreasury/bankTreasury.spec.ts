@@ -58,7 +58,8 @@ import {
   moduleGlobals,
   bankTreasuryContract,
   deployer,
-  voucherContract
+  voucherContract,
+  currency
   
 } from '../__setup.spec';
 
@@ -151,30 +152,41 @@ makeSuiteCleanRoom('Bank Treasury', function () {
 
     });
 
-    context('Withdraw all avaliable earnest money ', function () {
+    context('Withdraw all avaliable earnest funds ', function () {
       beforeEach(async () => {
         //mint some Values to user
         await manager.connect(governance).mintSBTValue(SECOND_PROFILE_ID, 10000);
 
         expect((await sbtContract['balanceOf(uint256)'](SECOND_PROFILE_ID)).toNumber()).to.eq(original_balance);
         
-        await sbtContract.connect(user)['transferFrom(uint256,uint256,uint256)'](SECOND_PROFILE_ID, FIRST_PROFILE_ID, balance);
+        await bankTreasuryContract.connect(user).deposit(
+          SECOND_PROFILE_ID,
+          sbtContract.address,
+          balance
+        );
+        expect(await bankTreasuryContract['balanceOf(address,uint256)'](sbtContract.address, SECOND_PROFILE_ID)).to.eq(balance);
+        
+
         
         receipt = await waitForTx(
-           bankTreasuryContract.connect(user).WithdrawEarnestMoney(SECOND_PROFILE_ID, balance) 
+           bankTreasuryContract.connect(user).withdrawEarnestFunds(
+            SECOND_PROFILE_ID, 
+            sbtContract.address, 
+            balance
+          ) 
         );
 
       });
 
-      it("Emits WithdrawnEarnestMoney", async () => {
+      it("Emits WithdrawnEarnestFunds", async () => {
          matchEvent(
           receipt,
-          'WithdrawnEarnestMoney',
+          'WithdrawnEarnestFunds',
           [
             SECOND_PROFILE_ID, 
             userAddress,
-            balance,
-            0
+            sbtContract.address,
+            balance
           ],
         );
 
@@ -185,41 +197,54 @@ makeSuiteCleanRoom('Bank Treasury', function () {
       });
 
       it("Has no SBT remaining", async () => {
-        const balanceOf = await bankTreasuryContract.balanceOf(SECOND_PROFILE_ID);
+        const balanceOf = await bankTreasuryContract.balanceOf(sbtContract.address, SECOND_PROFILE_ID);
         expect(balanceOf).to.eq(0);
       });
 
       it("Cannot withdraw again", async () => {
-        await expect(bankTreasuryContract.connect(user).WithdrawEarnestMoney(SECOND_PROFILE_ID, balance)).to.be.revertedWith("SBT_No_Funds_To_Withdraw");
+        await expect(bankTreasuryContract.connect(user).withdrawEarnestFunds(
+          SECOND_PROFILE_ID, 
+          sbtContract.address,
+          balance)
+        ).to.be.revertedWith("SBT_No_Funds_To_Withdraw");
       });
 
     });
     
-
-    context('Withdraw a part of earnest money', function () {
+    context('Withdraw a part of earnest funds', function () {
       beforeEach(async () => {
         //mint some Values to user
         await manager.connect(governance).mintSBTValue(SECOND_PROFILE_ID, original_balance);
 
         expect((await sbtContract['balanceOf(uint256)'](SECOND_PROFILE_ID)).toNumber()).to.eq(original_balance);
         
-        await sbtContract.connect(user)['transferFrom(uint256,uint256,uint256)'](SECOND_PROFILE_ID, FIRST_PROFILE_ID, original_balance);
+        await bankTreasuryContract.connect(user).deposit(
+          SECOND_PROFILE_ID,
+          sbtContract.address,
+          original_balance
+        );
+        expect(await bankTreasuryContract['balanceOf(address,uint256)'](sbtContract.address, SECOND_PROFILE_ID)).to.eq(original_balance);
+        
         
         receipt = await waitForTx(
-           bankTreasuryContract.connect(user).WithdrawEarnestMoney(SECOND_PROFILE_ID, balance) 
+           bankTreasuryContract.connect(user).withdrawEarnestFunds(
+            SECOND_PROFILE_ID, 
+            sbtContract.address, 
+            balance
+          ) 
         );
 
       });
 
-      it("Emits WithdrawnEarnestMoney", async () => {
+      it("Emits WithdrawnEarnestFunds", async () => {
          matchEvent(
           receipt,
-          'WithdrawnEarnestMoney',
+          'WithdrawnEarnestFunds',
           [
             SECOND_PROFILE_ID, 
             userAddress,
-            balance,
-            original_balance - balance
+            sbtContract.address,
+            balance
           ],
         );
       });
@@ -229,13 +254,17 @@ makeSuiteCleanRoom('Bank Treasury', function () {
       });
 
       it("Has SBT remaining", async () => {
-        const balanceOf = await bankTreasuryContract.balanceOf(SECOND_PROFILE_ID);
+        const balanceOf = await bankTreasuryContract.balanceOf(sbtContract.address, SECOND_PROFILE_ID);
         expect(balanceOf).to.eq(original_balance - balance);
       });
 
       it("Can withdraw again", async () => {
         await expect(
-          bankTreasuryContract.connect(user).WithdrawEarnestMoney(SECOND_PROFILE_ID, balance) 
+          bankTreasuryContract.connect(user).withdrawEarnestFunds(
+            SECOND_PROFILE_ID, 
+            sbtContract.address, 
+            balance
+          ) 
         ).to.not.be.reverted;
       });
 
@@ -251,9 +280,14 @@ makeSuiteCleanRoom('Bank Treasury', function () {
           expect((await sbtContract['balanceOf(uint256)'](FIRST_PROFILE_ID)).toNumber()).to.eq(INITIAL_SUPPLY);
           expect((await sbtContract['balanceOf(uint256)'](SECOND_PROFILE_ID)).toNumber()).to.eq(10000);
           
-          await sbtContract.connect(user)['transferFrom(uint256,uint256,uint256)'](SECOND_PROFILE_ID, FIRST_PROFILE_ID, 6000);
-
-          expect((await bankTreasuryContract.balanceOf(SECOND_PROFILE_ID)).toNumber()).to.eq(6000);
+          await bankTreasuryContract.connect(user).deposit(
+            SECOND_PROFILE_ID,
+            sbtContract.address,
+            6000
+          );
+          expect(await bankTreasuryContract['balanceOf(address,uint256)'](sbtContract.address, SECOND_PROFILE_ID)).to.eq(6000);
+          
+          expect((await bankTreasuryContract.balanceOf(sbtContract.address, SECOND_PROFILE_ID)).toNumber()).to.eq(6000);
 
           expect((await sbtContract['balanceOf(uint256)'](FIRST_PROFILE_ID)).toNumber()).to.eq(INITIAL_SUPPLY + 6000);
           expect((await sbtContract['balanceOf(uint256)'](SECOND_PROFILE_ID)).toNumber()).to.eq(4000);
@@ -383,7 +417,6 @@ makeSuiteCleanRoom('Bank Treasury', function () {
         expect((await sbtContract['balanceOf(uint256)'](FIRST_PROFILE_ID)).toNumber()).to.eq(INITIAL_SUPPLY);
         expect((await sbtContract['balanceOf(uint256)'](SECOND_PROFILE_ID)).toNumber()).to.eq(100);
        
-
       });
 
     });

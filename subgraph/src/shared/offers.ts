@@ -39,6 +39,7 @@ export function outbidOrExpirePreviousOffer(
       buyer,
       null,
       "Foundation",
+      offer.currency,
       null,
       null,
       event.block.timestamp,

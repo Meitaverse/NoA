@@ -45,7 +45,7 @@ interface IModuleGlobals {
      * @param currency The currency to add or remove from the whitelist.
      * @param toWhitelist Whether to add or remove the currency from the whitelist.
      */
-    // function whitelistCurrency(address currency, bool toWhitelist) external;
+    function whitelistCurrency(address currency, bool toWhitelist) external;
 
     /// ************************
     /// *****VIEW FUNCTIONS*****
@@ -143,6 +143,15 @@ interface IModuleGlobals {
 
 
     /**
+     * @notice Returns whether a currency is whitelisted.
+     *
+     * @param currency The currency to query the whitelist for.
+     *
+     * @return bool True if the queried currency is whitelisted, false otherwise.
+     */
+    function isCurrencyWhitelisted(address currency) external view returns (bool);
+
+    /**
      * @notice Adds or removes a publish module from the whitelist. This function can only be called by the current
      * governance address.
      *
@@ -152,5 +161,7 @@ interface IModuleGlobals {
     function whitelistPublishModule(address publishModule, bool whitelist) external;
 
     function isWhitelistPublishModule(address publishModule) external view returns (bool);
+
+
 
 }

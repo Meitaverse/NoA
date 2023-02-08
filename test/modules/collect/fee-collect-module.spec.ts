@@ -161,6 +161,7 @@ makeSuiteCleanRoom('Fee Collect Module', function () {
              soulBoundTokenId: SECOND_PROFILE_ID,
              hubId: FIRST_HUB_ID,
              projectId: FIRST_PROJECT_ID,
+             currency: sbtContract.address,
              amount: 1,
              salePrice: DEFAULT_COLLECT_PRICE,
              royaltyBasisPoints: Default_royaltyBasisPoints,             
@@ -178,7 +179,7 @@ makeSuiteCleanRoom('Fee Collect Module', function () {
         
         await expect(
           manager.connect(user).publish(0)  //0 is publishId
-        ).to.be.revertedWith(ERRORS.INIT_PARAMS_INVALID);
+        ).to.be.revertedWith(ERRORS.PROJECT_ID_INVALID);
       });      
 
       it('user should fail to publish with fee collect module using genesis fee greater than max BPS', async function () {
@@ -198,6 +199,7 @@ makeSuiteCleanRoom('Fee Collect Module', function () {
              soulBoundTokenId: SECOND_PROFILE_ID,
              hubId: FIRST_HUB_ID,
              projectId: FIRST_PROJECT_ID,
+             currency: sbtContract.address,
              amount: 1,
              salePrice: DEFAULT_COLLECT_PRICE,
              royaltyBasisPoints: Default_royaltyBasisPoints,             
@@ -235,6 +237,7 @@ makeSuiteCleanRoom('Fee Collect Module', function () {
              soulBoundTokenId: SECOND_PROFILE_ID,
              hubId: FIRST_HUB_ID,
              projectId: FIRST_PROJECT_ID,
+             currency: sbtContract.address,
              amount: 0,
              salePrice: DEFAULT_COLLECT_PRICE,
              royaltyBasisPoints: Default_royaltyBasisPoints,             
@@ -273,6 +276,7 @@ makeSuiteCleanRoom('Fee Collect Module', function () {
               soulBoundTokenId: SECOND_PROFILE_ID,
               hubId: FIRST_HUB_ID,
               projectId: FIRST_PROJECT_ID,
+              currency: sbtContract.address,
               amount: 1,
               salePrice: DEFAULT_COLLECT_PRICE,
               royaltyBasisPoints: Default_royaltyBasisPoints,              
@@ -321,12 +325,20 @@ makeSuiteCleanRoom('Fee Collect Module', function () {
         await expect(moduleGlobals.connect(governance).setTreasuryFee(0)).to.not.be.reverted;
 
           
-        let [treasuryFee, genesisSoulBoundTokenId, treasuryAmount, genesisAmount, adjustedAmount] = await feeCollectModule.getFees(FIRST_PUBLISH_ID, 1);
-        console.log("\t --- treasuryFee:", treasuryFee);
-        console.log("\t --- genesisSoulBoundTokenId:", genesisSoulBoundTokenId);
-        console.log("\t --- treasuryAmount:", treasuryAmount);
-        console.log("\t --- genesisAmount:", genesisAmount);
-        console.log("\t --- adjustedAmount:", adjustedAmount);
+        // let [treasuryFee, genesisSoulBoundTokenId, treasuryAmount, genesisAmount, adjustedAmount] = await feeCollectModule.getFees(FIRST_PUBLISH_ID, DEFAULT_COLLECT_PRICE);
+        let [totalFees, 
+            creatorRev, 
+            previousCreatorRev, 
+            sellerRev] = await feeCollectModule.getFees(
+                FIRST_PUBLISH_ID, 
+                DEFAULT_COLLECT_PRICE
+        );
+
+        console.log("\n\t --- getFees");
+        console.log("\t\t --- treasuryFee:", totalFees);
+        console.log("\t\t --- creatorAmount:", creatorRev);
+        console.log("\t\t --- previousCreatorAmount:", previousCreatorRev);
+        console.log("\t\t --- adjustedAmount:", sellerRev);
 
         const tx = manager.connect(userTwo).collect({
             publishId: FIRST_PUBLISH_ID,
@@ -343,13 +355,7 @@ makeSuiteCleanRoom('Fee Collect Module', function () {
           derivativeNFT,
           derivativeNFT.address
         );
-/*
-        matchEvent(
-          receipt,
-          'DerivativeNFTCollected',
-          [FIRST_PUBLISH_ID, derivativeNFT.address, SECOND_PROFILE_ID, THIRD_PROFILE_ID, FIRST_DNFT_TOKEN_ID, 1, SECOND_DNFT_TOKEN_ID, await getTimestamp()],
-        );
-  */
+
         expect(
           await derivativeNFT.ownerOf(SECOND_DNFT_TOKEN_ID)
         ).to.eq(userTwoAddress);
@@ -368,7 +374,7 @@ makeSuiteCleanRoom('Fee Collect Module', function () {
 
       it('User collecting a dNFT and pay to the treasury', async function () {
           
-        let [treasuryFee, genesisSoulBoundTokenId, treasuryAmount, genesisAmount, adjustedAmount] = await feeCollectModule.getFees(FIRST_PUBLISH_ID, 1);
+        let [treasuryFee, genesisSoulBoundTokenId, treasuryAmount, genesisAmount, adjustedAmount] = await feeCollectModule.getFees(FIRST_PUBLISH_ID, DEFAULT_COLLECT_PRICE);
         console.log("\t --- treasuryFee:", treasuryFee);
         console.log("\t --- genesisSoulBoundTokenId:", genesisSoulBoundTokenId);
         console.log("\t --- treasuryAmount:", treasuryAmount);
@@ -423,6 +429,7 @@ makeSuiteCleanRoom('Fee Collect Module', function () {
               soulBoundTokenId: SECOND_PROFILE_ID,
               hubId: FIRST_HUB_ID,
               projectId: FIRST_PROJECT_ID,
+              currency: sbtContract.address,
               amount: 11,
               salePrice: DEFAULT_COLLECT_PRICE,
               royaltyBasisPoints: Default_royaltyBasisPoints,              
@@ -526,6 +533,7 @@ makeSuiteCleanRoom('Fee Collect Module', function () {
               soulBoundTokenId: SECOND_PROFILE_ID,
               hubId: FIRST_HUB_ID,
               projectId: FIRST_PROJECT_ID,
+              currency: sbtContract.address,
               amount: 11,
               salePrice: DEFAULT_COLLECT_PRICE,
               royaltyBasisPoints: Default_royaltyBasisPoints,              

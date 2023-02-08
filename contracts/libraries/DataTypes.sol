@@ -99,12 +99,13 @@ library DataTypes {
     }
     
     /**
-     * @notice Properties of the publication datas, using for publish paramters
+     * @notice Properties of the publication datas, using for publish parameters
      * @param soulBoundTokenId id of SBT
      * @param hubId id of hub
      * @param projectId id of project
      * @param salePrice price for sale
      * @param royaltyBasisPoints fee point of publish, base 10000, when royalty      
+     * @param currency Which currency to pay
      * @param amount amount of publish
      * @param name name of publication, must unique
      * @param description description of publication
@@ -121,7 +122,8 @@ library DataTypes {
         uint256 hubId;
         uint256 projectId;
         uint256 salePrice;
-        uint256 royaltyBasisPoints;          
+        uint256 royaltyBasisPoints;       
+        address currency;
         uint256 amount;
         string name;
         string description;
@@ -311,7 +313,8 @@ library DataTypes {
        uint96 adjustedAmount;
     }
 
-    struct SaleParam {
+    struct BuyPriceParam {
+        /// @notice The SBT Id of seller
         uint256 soulBoundTokenId;
 
         /// @notice The DNFT contract address.
@@ -319,12 +322,31 @@ library DataTypes {
 
         /// @notice The DNFT token id.
         uint256 tokenId;
-        
-        /// @notice The uints want put on list
-        uint128 putOnListUnits;
 
-        /// @notice The sale price
+        /// @notice The ERC20 currency
+        address currency;
+
+        /// @notice The price of one unit
         uint128 salePrice;
+    }
+
+    struct OfferParam {
+        /// @notice The SBT Id of buyer
+        uint256 soulBoundTokenIdBuyer;
+
+        /// @notice The DNFT contract address.
+        address derivativeNFT;
+
+        /// @notice tokenId can be empty
+        uint256 tokenId; 
+
+        /// @notice The ERC20 currency
+        address currency;
+
+        /// @notice max amount to offer 
+        uint96 amount;
+
+        uint256 soulBoundTokenIdReferrer;
     }
 
     /// @notice Stores the buy price details for a specific DNFT.
@@ -349,17 +371,17 @@ library DataTypes {
         /// @notice The DNFT token id.
         uint256 tokenId;
 
-        /// @notice When DNFT is escrowed, a new tokenId is generated.
-        uint256 tokenIdEscrow;
+        /// @notice The ERC20 currency
+        address currency;
 
         /// @notice The current buy price set for this DNFT.
         uint128 salePrice;
 
         /// @notice The current units set for this DNFT.
-        uint128 onSellUnits;
+        uint128 units;
 
-        /// @notice The selled units.
-        uint128 seledUnits; 
+        /// @notice The total amount, units * salePrice
+        uint96 amount;
     }
 
     /// @notice Stores offer details for a specific DNFT.
@@ -367,14 +389,19 @@ library DataTypes {
         // @notice The soulBoundTokenId of buyer.
         uint256 soulBoundTokenIdBuyer;
         
+        /// @notice The address of the collector who made this offer.
+        address buyer;
+
+        address derivativeNFT;
+        
         /// @notice The expiration timestamp of when this offer expires.
         uint32 expiration;
 
-        /// @notice The amount, in wei, of the highest offer.
+        /// @notice The ERC20 currency will pay for
+        address currency;
+
+        /// @notice The total amount in wei, of the highest offer.
         uint96 amount;
-        
-        /// @notice The address of the collector who made this offer.
-        address buyer;
 
         /// @notice The units of this offer.
         uint128 units;
@@ -382,7 +409,6 @@ library DataTypes {
         /// @notice The soulBoundTokenId of referrer.
         uint256 soulBoundTokenIdReferrer;
     }
-
 
     /// @notice The auction configuration for a specific DNFT.
     struct ReserveAuction {
@@ -396,8 +422,6 @@ library DataTypes {
         uint256 tokenId;
         /// @notice The units of auction.
         uint128 units;
-        /// @notice The id of the DNFT in escrow.
-        uint256 tokenIdInEscrow;
         /// @notice The owner of the DNFT which listed it in auction.
         address payable seller;
         /// @notice The duration for this auction.
@@ -412,9 +436,15 @@ library DataTypes {
         address payable bidder;
         /// @notice The SBT id of the bidder.
         uint256 soulBoundTokenIdBidder;
-        /// @notice The latest price of the DNFT in this auction.
+
+        address currency;
+
+        /// @notice The initial reserve price for the auction.
+        uint256 reservePrice;
+        
+        /// @notice The latest total amount of the DNFT in this auction.
         /// @dev This is set to the reserve price, and then to the highest bid once the auction has started.
-        uint256 amount;
+        uint96 amount;
     }
 
     /// @notice Stores the auction configuration for a specific DNFT.
@@ -427,12 +457,8 @@ library DataTypes {
         uint256 projectId;    
         /// @notice The id of the DNFT.
         uint256 tokenId;
-        /// @notice The id to escrow
-        uint256 tokenIdInEscrow;
         /// @notice The units of this reserve auction.
         uint128 units;
-        /// @notice The id of escrow.
-        uint256 tokenIdEscrow;
         /// @notice The owner of the DNFT which listed it in auction.
         address payable seller;
         /// @notice The SBT id  of referrer in auction.
@@ -449,13 +475,16 @@ library DataTypes {
         address payable bidder;
         /// @notice The SBT id of the bidder.
         uint256 soulBoundTokenIdBidder;
-        /// @notice Second slot (of 8B) used for the bidReferrerAddress.
-        // uint64 bidReferrerAddressSlot1;
+        /// @notice The ERC20 currency.
+        address currency;
+
+        /// @notice The initial reserve price for the auction.
+        uint256 reservePrice;
+        
         /// @notice The latest price of the DNFT in this auction.
-        /// @dev This is set to the reserve price, and then to the highest bid once the auction has started.
+        /// @dev This is set to the reserve price * units, and then to the highest bid once the auction has started.
         uint96 amount;
     }    
-
 
     /// @notice Tracks an account's info.
     struct AccountInfo {

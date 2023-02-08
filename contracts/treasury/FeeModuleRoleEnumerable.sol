@@ -8,7 +8,7 @@ import "../market/OZAccessControlUpgradeable.sol";
 /**
  * @title Defines a role for FeeModule accounts.
  * @dev Wraps a role from OpenZeppelin's AccessControl for easy integration.
- * @author batu-inal & HardlyDifficult
+ * @author bitsoul
  */
 abstract contract FeeModuleRoleEnumerable is Initializable, OZAccessControlUpgradeable {
   bytes32 public constant FEEMODULE_ROLE = keccak256("FEEMODULE_ROLE");

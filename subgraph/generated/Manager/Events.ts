@@ -73,11 +73,11 @@ export class BalanceLocked__Params {
     return this._event.parameters[2].value.toBigInt();
   }
 
-  get amount(): BigInt {
-    return this._event.parameters[3].value.toBigInt();
+  get currency(): Address {
+    return this._event.parameters[3].value.toAddress();
   }
 
-  get valueDeposited(): BigInt {
+  get amount(): BigInt {
     return this._event.parameters[4].value.toBigInt();
   }
 }
@@ -107,8 +107,12 @@ export class BalanceUnlocked__Params {
     return this._event.parameters[2].value.toBigInt();
   }
 
+  get currency(): Address {
+    return this._event.parameters[3].value.toAddress();
+  }
+
   get amount(): BigInt {
-    return this._event.parameters[3].value.toBigInt();
+    return this._event.parameters[4].value.toBigInt();
   }
 }
 
@@ -163,15 +167,15 @@ export class BuyPriceAccepted__Params {
     return this._event.parameters[1].value.toBigInt();
   }
 
-  get newTokenIdBuyer(): BigInt {
-    return this._event.parameters[2].value.toBigInt();
-  }
-
   get seller(): Address {
-    return this._event.parameters[3].value.toAddress();
+    return this._event.parameters[2].value.toAddress();
   }
 
   get buyer(): Address {
+    return this._event.parameters[3].value.toAddress();
+  }
+
+  get currency(): Address {
     return this._event.parameters[4].value.toAddress();
   }
 
@@ -261,52 +265,76 @@ export class BuyPriceSet__Params {
     this._event = event;
   }
 
-  get buyPrice(): BuyPriceSetBuyPriceStruct {
-    return changetype<BuyPriceSetBuyPriceStruct>(
-      this._event.parameters[0].value.toTuple()
-    );
-  }
-}
-
-export class BuyPriceSetBuyPriceStruct extends ethereum.Tuple {
-  get soulBoundTokenIdSeller(): BigInt {
-    return this[0].toBigInt();
-  }
-
-  get seller(): Address {
-    return this[1].toAddress();
-  }
-
   get derivativeNFT(): Address {
-    return this[2].toAddress();
-  }
-
-  get projectId(): BigInt {
-    return this[3].toBigInt();
-  }
-
-  get publishId(): BigInt {
-    return this[4].toBigInt();
+    return this._event.parameters[0].value.toAddress();
   }
 
   get tokenId(): BigInt {
-    return this[5].toBigInt();
+    return this._event.parameters[1].value.toBigInt();
+  }
+}
+
+export class BuySBTByERC20 extends ethereum.Event {
+  get params(): BuySBTByERC20__Params {
+    return new BuySBTByERC20__Params(this);
+  }
+}
+
+export class BuySBTByERC20__Params {
+  _event: BuySBTByERC20;
+
+  constructor(event: BuySBTByERC20) {
+    this._event = event;
   }
 
-  get tokenIdEscrow(): BigInt {
-    return this[6].toBigInt();
+  get soulBoundTokenId(): BigInt {
+    return this._event.parameters[0].value.toBigInt();
   }
 
-  get salePrice(): BigInt {
-    return this[7].toBigInt();
+  get exchangeWallet(): Address {
+    return this._event.parameters[1].value.toAddress();
   }
 
-  get onSellUnits(): BigInt {
-    return this[8].toBigInt();
+  get sbtValue(): BigInt {
+    return this._event.parameters[2].value.toBigInt();
   }
 
-  get seledUnits(): BigInt {
-    return this[9].toBigInt();
+  get currency(): Address {
+    return this._event.parameters[3].value.toAddress();
+  }
+
+  get timestamp(): BigInt {
+    return this._event.parameters[4].value.toBigInt();
+  }
+}
+
+export class BuySBTByEth extends ethereum.Event {
+  get params(): BuySBTByEth__Params {
+    return new BuySBTByEth__Params(this);
+  }
+}
+
+export class BuySBTByEth__Params {
+  _event: BuySBTByEth;
+
+  constructor(event: BuySBTByEth) {
+    this._event = event;
+  }
+
+  get soulBoundTokenId(): BigInt {
+    return this._event.parameters[0].value.toBigInt();
+  }
+
+  get exchangeWallet(): Address {
+    return this._event.parameters[1].value.toAddress();
+  }
+
+  get sbtValue(): BigInt {
+    return this._event.parameters[2].value.toBigInt();
+  }
+
+  get timestamp(): BigInt {
+    return this._event.parameters[3].value.toBigInt();
   }
 }
 
@@ -457,19 +485,19 @@ export class Deposit__Params {
     this._event = event;
   }
 
-  get sender(): Address {
+  get account(): Address {
     return this._event.parameters[0].value.toAddress();
   }
 
-  get amount(): BigInt {
+  get soulBoundTokenId(): BigInt {
     return this._event.parameters[1].value.toBigInt();
   }
 
-  get receiver(): Address {
+  get currency(): Address {
     return this._event.parameters[2].value.toAddress();
   }
 
-  get balance(): BigInt {
+  get amount(): BigInt {
     return this._event.parameters[3].value.toBigInt();
   }
 }
@@ -505,6 +533,36 @@ export class DepositByFallback__Params {
 
   get balance(): BigInt {
     return this._event.parameters[4].value.toBigInt();
+  }
+}
+
+export class DepositEther extends ethereum.Event {
+  get params(): DepositEther__Params {
+    return new DepositEther__Params(this);
+  }
+}
+
+export class DepositEther__Params {
+  _event: DepositEther;
+
+  constructor(event: DepositEther) {
+    this._event = event;
+  }
+
+  get account(): Address {
+    return this._event.parameters[0].value.toAddress();
+  }
+
+  get amount(): BigInt {
+    return this._event.parameters[1].value.toBigInt();
+  }
+
+  get receiver(): Address {
+    return this._event.parameters[2].value.toAddress();
+  }
+
+  get balance(): BigInt {
+    return this._event.parameters[3].value.toBigInt();
   }
 }
 
@@ -597,34 +655,6 @@ export class DerivativeNFTCollected__Params {
 
   get newTokenId(): BigInt {
     return this._event.parameters[6].value.toBigInt();
-  }
-
-  get royaltyAmounts(): DerivativeNFTCollectedRoyaltyAmountsStruct {
-    return changetype<DerivativeNFTCollectedRoyaltyAmountsStruct>(
-      this._event.parameters[7].value.toTuple()
-    );
-  }
-}
-
-export class DerivativeNFTCollectedRoyaltyAmountsStruct extends ethereum.Tuple {
-  get treasuryAmount(): BigInt {
-    return this[0].toBigInt();
-  }
-
-  get genesisAmount(): BigInt {
-    return this[1].toBigInt();
-  }
-
-  get previousAmount(): BigInt {
-    return this[2].toBigInt();
-  }
-
-  get referrerAmount(): BigInt {
-    return this[3].toBigInt();
-  }
-
-  get adjustedAmount(): BigInt {
-    return this[4].toBigInt();
   }
 }
 
@@ -722,45 +752,89 @@ export class DispatcherSet__Params {
   }
 }
 
-export class ERC3525Received extends ethereum.Event {
-  get params(): ERC3525Received__Params {
-    return new ERC3525Received__Params(this);
+export class Distribute extends ethereum.Event {
+  get params(): Distribute__Params {
+    return new Distribute__Params(this);
   }
 }
 
-export class ERC3525Received__Params {
-  _event: ERC3525Received;
+export class Distribute__Params {
+  _event: Distribute;
 
-  constructor(event: ERC3525Received) {
+  constructor(event: Distribute) {
     this._event = event;
   }
 
-  get sender(): Address {
-    return this._event.parameters[0].value.toAddress();
+  get publishId(): BigInt {
+    return this._event.parameters[0].value.toBigInt();
   }
 
-  get operator(): Address {
-    return this._event.parameters[1].value.toAddress();
+  get tokenId(): BigInt {
+    return this._event.parameters[1].value.toBigInt();
   }
 
-  get fromTokenId(): BigInt {
-    return this._event.parameters[2].value.toBigInt();
+  get currenccy(): Address {
+    return this._event.parameters[2].value.toAddress();
   }
 
-  get toTokenId(): BigInt {
+  get payValue(): BigInt {
     return this._event.parameters[3].value.toBigInt();
   }
 
-  get value(): BigInt {
-    return this._event.parameters[4].value.toBigInt();
+  get collectFeeUsers(): DistributeCollectFeeUsersStruct {
+    return changetype<DistributeCollectFeeUsersStruct>(
+      this._event.parameters[4].value.toTuple()
+    );
   }
 
-  get data(): Bytes {
-    return this._event.parameters[5].value.toBytes();
+  get royaltyAmounts(): DistributeRoyaltyAmountsStruct {
+    return changetype<DistributeRoyaltyAmountsStruct>(
+      this._event.parameters[5].value.toTuple()
+    );
+  }
+}
+
+export class DistributeCollectFeeUsersStruct extends ethereum.Tuple {
+  get ownershipSoulBoundTokenId(): BigInt {
+    return this[0].toBigInt();
   }
 
-  get gas(): BigInt {
-    return this._event.parameters[6].value.toBigInt();
+  get collectorSoulBoundTokenId(): BigInt {
+    return this[1].toBigInt();
+  }
+
+  get genesisSoulBoundTokenId(): BigInt {
+    return this[2].toBigInt();
+  }
+
+  get previousSoulBoundTokenId(): BigInt {
+    return this[3].toBigInt();
+  }
+
+  get referrerSoulBoundTokenId(): BigInt {
+    return this[4].toBigInt();
+  }
+}
+
+export class DistributeRoyaltyAmountsStruct extends ethereum.Tuple {
+  get treasuryAmount(): BigInt {
+    return this[0].toBigInt();
+  }
+
+  get genesisAmount(): BigInt {
+    return this[1].toBigInt();
+  }
+
+  get previousAmount(): BigInt {
+    return this[2].toBigInt();
+  }
+
+  get referrerAmount(): BigInt {
+    return this[3].toBigInt();
+  }
+
+  get adjustedAmount(): BigInt {
+    return this[4].toBigInt();
   }
 }
 
@@ -832,36 +906,6 @@ export class ExchangeEthBySBT__Params {
   }
 }
 
-export class ExchangeSBTByEth extends ethereum.Event {
-  get params(): ExchangeSBTByEth__Params {
-    return new ExchangeSBTByEth__Params(this);
-  }
-}
-
-export class ExchangeSBTByEth__Params {
-  _event: ExchangeSBTByEth;
-
-  constructor(event: ExchangeSBTByEth) {
-    this._event = event;
-  }
-
-  get soulBoundTokenId(): BigInt {
-    return this._event.parameters[0].value.toBigInt();
-  }
-
-  get exchangeWallet(): Address {
-    return this._event.parameters[1].value.toAddress();
-  }
-
-  get sbtValue(): BigInt {
-    return this._event.parameters[2].value.toBigInt();
-  }
-
-  get timestamp(): BigInt {
-    return this._event.parameters[3].value.toBigInt();
-  }
-}
-
 export class ExchangeVoucher extends ethereum.Event {
   get params(): ExchangeVoucher__Params {
     return new ExchangeVoucher__Params(this);
@@ -921,8 +965,12 @@ export class ExecuteTransaction__Params {
     return this._event.parameters[2].value.toAddress();
   }
 
+  get currency(): Address {
+    return this._event.parameters[3].value.toAddress();
+  }
+
   get value(): BigInt {
-    return this._event.parameters[3].value.toBigInt();
+    return this._event.parameters[4].value.toBigInt();
   }
 }
 
@@ -982,88 +1030,6 @@ export class FeeModuleBaseConstructed__Params {
   }
 }
 
-export class FeesForCollect extends ethereum.Event {
-  get params(): FeesForCollect__Params {
-    return new FeesForCollect__Params(this);
-  }
-}
-
-export class FeesForCollect__Params {
-  _event: FeesForCollect;
-
-  constructor(event: FeesForCollect) {
-    this._event = event;
-  }
-
-  get publishId(): BigInt {
-    return this._event.parameters[0].value.toBigInt();
-  }
-
-  get tokenId(): BigInt {
-    return this._event.parameters[1].value.toBigInt();
-  }
-
-  get payValue(): BigInt {
-    return this._event.parameters[2].value.toBigInt();
-  }
-
-  get collectFeeUsers(): FeesForCollectCollectFeeUsersStruct {
-    return changetype<FeesForCollectCollectFeeUsersStruct>(
-      this._event.parameters[3].value.toTuple()
-    );
-  }
-
-  get royaltyAmounts(): FeesForCollectRoyaltyAmountsStruct {
-    return changetype<FeesForCollectRoyaltyAmountsStruct>(
-      this._event.parameters[4].value.toTuple()
-    );
-  }
-}
-
-export class FeesForCollectCollectFeeUsersStruct extends ethereum.Tuple {
-  get ownershipSoulBoundTokenId(): BigInt {
-    return this[0].toBigInt();
-  }
-
-  get collectorSoulBoundTokenId(): BigInt {
-    return this[1].toBigInt();
-  }
-
-  get genesisSoulBoundTokenId(): BigInt {
-    return this[2].toBigInt();
-  }
-
-  get previousSoulBoundTokenId(): BigInt {
-    return this[3].toBigInt();
-  }
-
-  get referrerSoulBoundTokenId(): BigInt {
-    return this[4].toBigInt();
-  }
-}
-
-export class FeesForCollectRoyaltyAmountsStruct extends ethereum.Tuple {
-  get treasuryAmount(): BigInt {
-    return this[0].toBigInt();
-  }
-
-  get genesisAmount(): BigInt {
-    return this[1].toBigInt();
-  }
-
-  get previousAmount(): BigInt {
-    return this[2].toBigInt();
-  }
-
-  get referrerAmount(): BigInt {
-    return this[3].toBigInt();
-  }
-
-  get adjustedAmount(): BigInt {
-    return this[4].toBigInt();
-  }
-}
-
 export class GenerateVoucher extends ethereum.Event {
   get params(): GenerateVoucher__Params {
     return new GenerateVoucher__Params(this);
@@ -1102,6 +1068,24 @@ export class GenerateVoucher__Params {
   }
 }
 
+export class GlobalModulesSet extends ethereum.Event {
+  get params(): GlobalModulesSet__Params {
+    return new GlobalModulesSet__Params(this);
+  }
+}
+
+export class GlobalModulesSet__Params {
+  _event: GlobalModulesSet;
+
+  constructor(event: GlobalModulesSet) {
+    this._event = event;
+  }
+
+  get globalModule(): Address {
+    return this._event.parameters[0].value.toAddress();
+  }
+}
+
 export class HubCreated extends ethereum.Event {
   get params(): HubCreated__Params {
     return new HubCreated__Params(this);
@@ -1115,32 +1099,12 @@ export class HubCreated__Params {
     this._event = event;
   }
 
-  get soulBoundTokenId(): BigInt {
-    return this._event.parameters[0].value.toBigInt();
-  }
-
   get hubOwner(): Address {
-    return this._event.parameters[1].value.toAddress();
+    return this._event.parameters[0].value.toAddress();
   }
 
   get hubId(): BigInt {
-    return this._event.parameters[2].value.toBigInt();
-  }
-
-  get name(): string {
-    return this._event.parameters[3].value.toString();
-  }
-
-  get description(): string {
-    return this._event.parameters[4].value.toString();
-  }
-
-  get imageURI(): string {
-    return this._event.parameters[5].value.toString();
-  }
-
-  get timestamp(): BigInt {
-    return this._event.parameters[6].value.toBigInt();
+    return this._event.parameters[1].value.toBigInt();
   }
 }
 
@@ -1189,26 +1153,6 @@ export class HubUpdated__Params {
 
   get hubId(): BigInt {
     return this._event.parameters[0].value.toBigInt();
-  }
-
-  get hubOwner(): Address {
-    return this._event.parameters[1].value.toAddress();
-  }
-
-  get name(): string {
-    return this._event.parameters[2].value.toString();
-  }
-
-  get description(): string {
-    return this._event.parameters[3].value.toString();
-  }
-
-  get imageURI(): string {
-    return this._event.parameters[4].value.toString();
-  }
-
-  get timestamp(): BigInt {
-    return this._event.parameters[5].value.toBigInt();
   }
 }
 
@@ -1442,6 +1386,36 @@ export class ModuleBaseConstructed__Params {
   }
 }
 
+export class ModuleGlobalsCurrencyWhitelisted extends ethereum.Event {
+  get params(): ModuleGlobalsCurrencyWhitelisted__Params {
+    return new ModuleGlobalsCurrencyWhitelisted__Params(this);
+  }
+}
+
+export class ModuleGlobalsCurrencyWhitelisted__Params {
+  _event: ModuleGlobalsCurrencyWhitelisted;
+
+  constructor(event: ModuleGlobalsCurrencyWhitelisted) {
+    this._event = event;
+  }
+
+  get currency(): Address {
+    return this._event.parameters[0].value.toAddress();
+  }
+
+  get prevWhitelisted(): boolean {
+    return this._event.parameters[1].value.toBoolean();
+  }
+
+  get newWhitelisted(): boolean {
+    return this._event.parameters[2].value.toBoolean();
+  }
+
+  get timestamp(): BigInt {
+    return this._event.parameters[3].value.toBigInt();
+  }
+}
+
 export class ModuleGlobalsGovernanceSet extends ethereum.Event {
   get params(): ModuleGlobalsGovernanceSet__Params {
     return new ModuleGlobalsGovernanceSet__Params(this);
@@ -1653,9 +1627,13 @@ export class OfferAccepted__Params {
     return this._event.parameters[3].value.toAddress();
   }
 
+  get currency(): Address {
+    return this._event.parameters[4].value.toAddress();
+  }
+
   get royaltyAmounts(): OfferAcceptedRoyaltyAmountsStruct {
     return changetype<OfferAcceptedRoyaltyAmountsStruct>(
-      this._event.parameters[4].value.toTuple()
+      this._event.parameters[5].value.toTuple()
     );
   }
 }
@@ -1725,29 +1703,37 @@ export class OfferMade__Params {
     return this._event.parameters[1].value.toBigInt();
   }
 
+  get units(): BigInt {
+    return this._event.parameters[2].value.toBigInt();
+  }
+
   get buyer(): Address {
-    return this._event.parameters[2].value.toAddress();
+    return this._event.parameters[3].value.toAddress();
+  }
+
+  get currency(): Address {
+    return this._event.parameters[4].value.toAddress();
   }
 
   get amount(): BigInt {
-    return this._event.parameters[3].value.toBigInt();
+    return this._event.parameters[5].value.toBigInt();
   }
 
   get expiration(): BigInt {
-    return this._event.parameters[4].value.toBigInt();
+    return this._event.parameters[6].value.toBigInt();
   }
 }
 
-export class OfferWithdrawn extends ethereum.Event {
-  get params(): OfferWithdrawn__Params {
-    return new OfferWithdrawn__Params(this);
+export class OfferTransfered extends ethereum.Event {
+  get params(): OfferTransfered__Params {
+    return new OfferTransfered__Params(this);
   }
 }
 
-export class OfferWithdrawn__Params {
-  _event: OfferWithdrawn;
+export class OfferTransfered__Params {
+  _event: OfferTransfered;
 
-  constructor(event: OfferWithdrawn) {
+  constructor(event: OfferTransfered) {
     this._event = event;
   }
 
@@ -1767,8 +1753,12 @@ export class OfferWithdrawn__Params {
     return this._event.parameters[3].value.toBigInt();
   }
 
+  get currency(): Address {
+    return this._event.parameters[4].value.toAddress();
+  }
+
   get amount(): BigInt {
-    return this._event.parameters[4].value.toBigInt();
+    return this._event.parameters[5].value.toBigInt();
   }
 }
 
@@ -1961,84 +1951,16 @@ export class PublishPrepared__Params {
     this._event = event;
   }
 
-  get publication(): PublishPreparedPublicationStruct {
-    return changetype<PublishPreparedPublicationStruct>(
-      this._event.parameters[0].value.toTuple()
-    );
-  }
-
   get publishId(): BigInt {
-    return this._event.parameters[1].value.toBigInt();
+    return this._event.parameters[0].value.toBigInt();
   }
 
   get previousPublishId(): BigInt {
-    return this._event.parameters[2].value.toBigInt();
+    return this._event.parameters[1].value.toBigInt();
   }
 
   get publishTaxAmount(): BigInt {
-    return this._event.parameters[3].value.toBigInt();
-  }
-}
-
-export class PublishPreparedPublicationStruct extends ethereum.Tuple {
-  get soulBoundTokenId(): BigInt {
-    return this[0].toBigInt();
-  }
-
-  get hubId(): BigInt {
-    return this[1].toBigInt();
-  }
-
-  get projectId(): BigInt {
-    return this[2].toBigInt();
-  }
-
-  get salePrice(): BigInt {
-    return this[3].toBigInt();
-  }
-
-  get royaltyBasisPoints(): BigInt {
-    return this[4].toBigInt();
-  }
-
-  get amount(): BigInt {
-    return this[5].toBigInt();
-  }
-
-  get name(): string {
-    return this[6].toString();
-  }
-
-  get description(): string {
-    return this[7].toString();
-  }
-
-  get canCollect(): boolean {
-    return this[8].toBoolean();
-  }
-
-  get materialURIs(): Array<string> {
-    return this[9].toStringArray();
-  }
-
-  get fromTokenIds(): Array<BigInt> {
-    return this[10].toBigIntArray();
-  }
-
-  get collectModule(): Address {
-    return this[11].toAddress();
-  }
-
-  get collectModuleInitData(): Bytes {
-    return this[12].toBytes();
-  }
-
-  get publishModule(): Address {
-    return this[13].toAddress();
-  }
-
-  get publishModuleInitData(): Bytes {
-    return this[14].toBytes();
+    return this._event.parameters[2].value.toBigInt();
   }
 }
 
@@ -2055,56 +1977,12 @@ export class PublishUpdated__Params {
     this._event = event;
   }
 
-  get hubId(): BigInt {
+  get publishId(): BigInt {
     return this._event.parameters[0].value.toBigInt();
   }
 
-  get projectId(): BigInt {
-    return this._event.parameters[1].value.toBigInt();
-  }
-
-  get publishId(): BigInt {
-    return this._event.parameters[2].value.toBigInt();
-  }
-
-  get soulBoundTokenId(): BigInt {
-    return this._event.parameters[3].value.toBigInt();
-  }
-
-  get salePrice(): BigInt {
-    return this._event.parameters[4].value.toBigInt();
-  }
-
-  get royaltyBasisPoints(): BigInt {
-    return this._event.parameters[5].value.toBigInt();
-  }
-
-  get amount(): BigInt {
-    return this._event.parameters[6].value.toBigInt();
-  }
-
-  get name(): string {
-    return this._event.parameters[7].value.toString();
-  }
-
-  get description(): string {
-    return this._event.parameters[8].value.toString();
-  }
-
-  get materialURIs(): Array<string> {
-    return this._event.parameters[9].value.toStringArray();
-  }
-
-  get fromTokenIds(): Array<BigInt> {
-    return this._event.parameters[10].value.toBigIntArray();
-  }
-
   get addedPublishTaxes(): BigInt {
-    return this._event.parameters[11].value.toBigInt();
-  }
-
-  get timestamp(): BigInt {
-    return this._event.parameters[12].value.toBigInt();
+    return this._event.parameters[1].value.toBigInt();
   }
 }
 
@@ -2197,12 +2075,16 @@ export class ReserveAuctionBidPlaced__Params {
     return this._event.parameters[4].value.toAddress();
   }
 
+  get currency(): Address {
+    return this._event.parameters[5].value.toAddress();
+  }
+
   get amount(): BigInt {
-    return this._event.parameters[5].value.toBigInt();
+    return this._event.parameters[6].value.toBigInt();
   }
 
   get endTime(): BigInt {
-    return this._event.parameters[6].value.toBigInt();
+    return this._event.parameters[7].value.toBigInt();
   }
 }
 
@@ -2241,40 +2123,8 @@ export class ReserveAuctionCreated__Params {
     return this._event.parameters[0].value.toAddress();
   }
 
-  get derivativeNFT(): Address {
-    return this._event.parameters[1].value.toAddress();
-  }
-
-  get projectId(): BigInt {
-    return this._event.parameters[2].value.toBigInt();
-  }
-
-  get tokenId(): BigInt {
-    return this._event.parameters[3].value.toBigInt();
-  }
-
-  get units(): BigInt {
-    return this._event.parameters[4].value.toBigInt();
-  }
-
-  get tokenIdInEscrow(): BigInt {
-    return this._event.parameters[5].value.toBigInt();
-  }
-
-  get duration(): BigInt {
-    return this._event.parameters[6].value.toBigInt();
-  }
-
-  get extensionDuration(): BigInt {
-    return this._event.parameters[7].value.toBigInt();
-  }
-
-  get reservePrice(): BigInt {
-    return this._event.parameters[8].value.toBigInt();
-  }
-
   get auctionId(): BigInt {
-    return this._event.parameters[9].value.toBigInt();
+    return this._event.parameters[1].value.toBigInt();
   }
 }
 
@@ -2420,6 +2270,48 @@ export class RoyaltySet__Params {
   }
 }
 
+export class SBTValueReceived extends ethereum.Event {
+  get params(): SBTValueReceived__Params {
+    return new SBTValueReceived__Params(this);
+  }
+}
+
+export class SBTValueReceived__Params {
+  _event: SBTValueReceived;
+
+  constructor(event: SBTValueReceived) {
+    this._event = event;
+  }
+
+  get sender(): Address {
+    return this._event.parameters[0].value.toAddress();
+  }
+
+  get operator(): Address {
+    return this._event.parameters[1].value.toAddress();
+  }
+
+  get fromTokenId(): BigInt {
+    return this._event.parameters[2].value.toBigInt();
+  }
+
+  get toTokenId(): BigInt {
+    return this._event.parameters[3].value.toBigInt();
+  }
+
+  get value(): BigInt {
+    return this._event.parameters[4].value.toBigInt();
+  }
+
+  get data(): Bytes {
+    return this._event.parameters[5].value.toBytes();
+  }
+
+  get gas(): BigInt {
+    return this._event.parameters[6].value.toBigInt();
+  }
+}
+
 export class SetContractWhitelisted extends ethereum.Event {
   get params(): SetContractWhitelisted__Params {
     return new SetContractWhitelisted__Params(this);
@@ -2505,12 +2397,16 @@ export class SubmitTransaction__Params {
     return this._event.parameters[2].value.toAddress();
   }
 
+  get currency(): Address {
+    return this._event.parameters[3].value.toAddress();
+  }
+
   get value(): BigInt {
-    return this._event.parameters[3].value.toBigInt();
+    return this._event.parameters[4].value.toBigInt();
   }
 
   get data(): Bytes {
-    return this._event.parameters[4].value.toBytes();
+    return this._event.parameters[5].value.toBytes();
   }
 }
 
@@ -2592,20 +2488,20 @@ export class UserAmountLimitSet__Params {
   }
 }
 
-export class WithdrawnEarnestMoney extends ethereum.Event {
-  get params(): WithdrawnEarnestMoney__Params {
-    return new WithdrawnEarnestMoney__Params(this);
+export class WithdrawnEarnestFunds extends ethereum.Event {
+  get params(): WithdrawnEarnestFunds__Params {
+    return new WithdrawnEarnestFunds__Params(this);
   }
 }
 
-export class WithdrawnEarnestMoney__Params {
-  _event: WithdrawnEarnestMoney;
+export class WithdrawnEarnestFunds__Params {
+  _event: WithdrawnEarnestFunds;
 
-  constructor(event: WithdrawnEarnestMoney) {
+  constructor(event: WithdrawnEarnestFunds) {
     this._event = event;
   }
 
-  get toSoulBoundTokenId(): BigInt {
+  get soulBoundTokenId(): BigInt {
     return this._event.parameters[0].value.toBigInt();
   }
 
@@ -2613,11 +2509,11 @@ export class WithdrawnEarnestMoney__Params {
     return this._event.parameters[1].value.toAddress();
   }
 
-  get value(): BigInt {
-    return this._event.parameters[2].value.toBigInt();
+  get currency(): Address {
+    return this._event.parameters[2].value.toAddress();
   }
 
-  get availableBalance(): BigInt {
+  get amount(): BigInt {
     return this._event.parameters[3].value.toBigInt();
   }
 }

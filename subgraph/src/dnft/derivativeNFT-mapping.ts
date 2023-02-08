@@ -27,7 +27,7 @@ import {
     Account,
 } from "../../generated/schema"
 import { loadOrCreateDNFTContract, loadOrCreateDNFT } from "../dnft";
-import { ZERO_ADDRESS_STRING, ZERO_BIG_DECIMAL } from "../shared/constants";
+import { ZERO_ADDRESS_STRING, ZERO_BIG_DECIMAL, ZERO_BIG_INT } from "../shared/constants";
 import { loadOrCreateAccount } from "../shared/accounts";
 import { recordDnftEvent } from "../shared/events";
 import { getLogId } from "../shared/ids";
@@ -86,10 +86,10 @@ export function handleDNFTTransfer(event: Transfer): void {
               dnft.tokenIPFSPath = pathResult.value;
             }            
             dnft.ownedOrListedBy = dnft.owner;
-            dnft.netSalesInSBTValue = ZERO_BIG_DECIMAL;
-            dnft.netSalesPendingInSBTValue = ZERO_BIG_DECIMAL;
-            dnft.netRevenueInSBTValue = ZERO_BIG_DECIMAL;
-            dnft.netRevenuePendingInSBTValue = ZERO_BIG_DECIMAL;
+            dnft.netSales = ZERO_BIG_INT;
+            dnft.netSalesPending = ZERO_BIG_INT;
+            dnft.netRevenue = ZERO_BIG_INT;
+            dnft.netRevenuePending = ZERO_BIG_INT;
             dnft.isFirstSale = true;
             dnft.save();
 
@@ -101,6 +101,7 @@ export function handleDNFTTransfer(event: Transfer): void {
                 dnft as DNFT, 
                 "Minted", 
                 creatorAccount, 
+                null, 
                 null, 
                 null, 
                 null, 
@@ -123,6 +124,7 @@ export function handleDNFTTransfer(event: Transfer): void {
                     dnft as DNFT,
                     "Transferred",
                     loadOrCreateAccount(event.params._from),
+                    null,
                     null,
                     null,
                     null,
@@ -315,6 +317,7 @@ export function handleDNFTTransferValue(event: TransferValue): void {
                 dnft as DNFT,
                 "ValueTransferred",
                 loadOrCreateAccount(resultTokenCreator.value),
+                null,
                 null,
                 null,
                 null,

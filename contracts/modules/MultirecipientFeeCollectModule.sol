@@ -78,6 +78,7 @@ contract MultirecipientFeeCollectModule is BaseFeeCollectModule {
         uint256 publishId,
         uint256 ownershipSoulBoundTokenId,
         uint256 tokenId,
+        address currency,
         uint256 amount,
         bytes calldata data        
     ) external override onlyManager {
@@ -93,6 +94,7 @@ contract MultirecipientFeeCollectModule is BaseFeeCollectModule {
             projectId: initData.projectId,
             publishId: publishId,
             salePrice: initData.salePrice, 
+            currency: currency,
             amount: amount, 
             royaltyPoints: initData.royaltyPoints
         });
@@ -152,15 +154,20 @@ contract MultirecipientFeeCollectModule is BaseFeeCollectModule {
         uint16[] memory royaltyPoints = _royaltyPointsByPublicationByProfile[projectId];
         uint256 len = royaltyPoints.length;
 
+        //(address treasury, ) = _treasuryData();
+
         uint256 royaltyAmount;
         for (uint256 i = 0; i < len; ) {
             royaltyAmount = (saleprice * royaltyPoints[i]) / BASIS_POINTS;
             if (royaltyAmount != 0 && royaltyPoints[i] !=0 )
+
+                //TODO
                 INFTDerivativeProtocolTokenV1(_sbt()).transferValue(
                     collectorSoulBoundTokenId, 
                     recipients[i],
                     royaltyAmount);
 
+  
 
             unchecked {
                 ++i;

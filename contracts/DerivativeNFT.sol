@@ -119,7 +119,7 @@ contract DerivativeNFT is
     // `initializer` marks the contract as initialized to prevent third parties to
     // call the `initialize` method on the implementation (this contract)
     constructor(address manager) {
-        if (manager == address(0)) revert Errors.InitParamsInvalid();
+        if (manager == address(0)) revert Errors.InitParamsManagerInvalid();
         MANAGER = manager;
         _initialized = true;
     }
@@ -140,11 +140,11 @@ contract DerivativeNFT is
         if (_initialized) revert Errors.Initialized();
         _initialized = true;
         
-        if (sbt == address(0)) revert Errors.InitParamsInvalid();
+        if (sbt == address(0)) revert Errors.InitParamsSBTInvalid();
         _SBT = sbt;
-        if (bankTreasury == address(0)) revert Errors.InitParamsInvalid();
+        if (bankTreasury == address(0)) revert Errors.InitParamsTreasuryInvalid();
         _banktreasury = bankTreasury;
-        if (marketPlace == address(0)) revert Errors.InitParamsInvalid();
+        if (marketPlace == address(0)) revert Errors.InitParamsMarketPlaceInvalid();
         _marketPlace = marketPlace;
 
         if (metadataDescriptor_ == address(0x0)) revert Errors.ZeroAddress();
@@ -277,9 +277,17 @@ contract DerivativeNFT is
         address to_,
         uint256 value_
     ) external whenPublishingEnabled returns(uint256) {
-        if (!(MANAGER == msg.sender || _marketPlace == msg.sender))
+        //call only by manager or market place contract or owner
+        if (!(MANAGER == msg.sender || 
+                _marketPlace == msg.sender || 
+                msg.sender == ERC3525Upgradeable.ownerOf(fromTokenId_)
+            ))
             revert Errors.NotManagerNorMarketPlace();
-            
+        
+        if (msg.sender == ERC3525Upgradeable.ownerOf(fromTokenId_)) {
+            if (to_ != msg.sender) revert Errors.CanNotSplitToAnother();
+        }
+
         uint256 newTokenId = ERC3525Upgradeable._createDerivedTokenId(fromTokenId_);
       
         _tokenIdByPublishId[newTokenId] = publishId_;
@@ -294,10 +302,20 @@ contract DerivativeNFT is
         uint256 fromTokenId_,
         uint256 toTokenId_,
         uint256 value_
-    ) external whenNotPaused {
-        //call only by manager or market place contract
-        if (!(MANAGER == msg.sender || _marketPlace == msg.sender))
+    ) external whenNotPaused whenPublishingEnabled {
+        //call only by manager or market place contract or owner
+        if (!(MANAGER == msg.sender || 
+                _marketPlace == msg.sender || 
+                msg.sender == ERC3525Upgradeable.ownerOf(fromTokenId_)
+        )) {
             revert Errors.NotManagerNorMarketPlace();
+        } 
+
+        if (msg.sender == ERC3525Upgradeable.ownerOf(fromTokenId_)) 
+        {
+            if (ERC3525Upgradeable.ownerOf(toTokenId_) != msg.sender)
+                revert Errors.CanNotTransferValueToAnother();
+        }
 
         ERC3525Upgradeable._transferValue(fromTokenId_, toTokenId_, value_);
     }

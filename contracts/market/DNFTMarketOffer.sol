@@ -8,17 +8,17 @@ import {Events} from "../libraries/Events.sol";
 import {Errors} from "../libraries/Errors.sol";
 import {ICollectModule} from "../interfaces/ICollectModule.sol";
 import "./DNFTMarketCore.sol";
-// import {MarketFees} from "./MarketFees.sol";
+
+import "hardhat/console.sol";
 
 /**
  * @title Allows collectors to make an offer for an DNFT, valid for 24-25 hours.
- * @notice Funds are escrowed in the SBT token contract.
- * @author batu-inal & HardlyDifficult
+ * @notice Funds are escrowed in the Bank Treasury token contract.
+ * @author bitsoul
  */
 abstract contract DNFTMarketOffer is
   Initializable,
   DNFTMarketCore
-  // MarketFees
 {
   // using AddressUpgradeable for address;
   // using SafeMathUpgradeable for uint256;
@@ -34,7 +34,6 @@ abstract contract DNFTMarketOffer is
    * @param soulBoundTokenId The soulBoundTokenId of owner.
    * @param derivativeNFT The address of the DNFT contract.
    * @param tokenId The id of the DNFT.
-   * @param units The units of the buyer want.
    * @param offerFrom The address of the collector that you wish to sell to.
    * If the current highest offer is not from this user, the transaction will revert.
    * This could happen if a last minute offer was made by another collector,
@@ -47,14 +46,13 @@ abstract contract DNFTMarketOffer is
     uint256 soulBoundTokenId,
     address derivativeNFT,
     uint256 tokenId,
-    uint128 units,
     address offerFrom,
-    uint256 minAmount
-  ) external returns (uint256){
-    if ( units == 0 || minAmount == 0 )
+    uint96 minAmount
+  ) external{
+    if ( soulBoundTokenId == 0 || minAmount == 0 || derivativeNFT == address(0))
       revert Errors.InvalidParameter();
 
-    // validate martket is open for this contract?
+    // validate martket is open for this contract
     if (!_getMarketInfo(derivativeNFT).isOpen)
         revert Errors.Market_DNFT_Is_Not_Open(derivativeNFT);
        
@@ -65,109 +63,130 @@ abstract contract DNFTMarketOffer is
   
     DataTypes.Offer storage offer = nftContractToIdToOffer[derivativeNFT][tokenId];
 
-    // Validate offer expiry and amount and units
+    // Validate offer expiry and amount
     if (offer.expiration < block.timestamp) {
       revert Errors.DNFTMarketOffer_Offer_Expired(offer.expiration);
     } else if (offer.amount < minAmount) {
       revert Errors.DNFTMarketOffer_Offer_Below_Min_Amount(offer.amount);
-    } else if (offer.units < units) {
-       revert Errors.DNFTMarketOffer_Offer_Insufficient_Units(offer.units);
-    }
+    } 
     
     // Validate the buyer
     if (offer.buyer != offerFrom) {
       revert Errors.DNFTMarketOffer_Offer_From_Does_Not_Match(offer.buyer);
     }
 
-   return _acceptOffer(soulBoundTokenId, derivativeNFT, tokenId, units);
+    _acceptOffer(soulBoundTokenId, derivativeNFT, tokenId);
   }
 
   /**
    * @notice Make an offer for any DNFT which is valid for 24-25 hours.
-   * The funds will be locked in the SBT token contract and become available once the offer is outbid or has expired.
+   * The funds will be locked in the Treasury contract and become available once the offer is outbid or has expired.
    * @dev An offer may be made for an DNFT before it is minted, although we generally not recommend you do that.
    * If there is a buy price set at this price or lower, that will be accepted instead of making an offer.
-   * `msg.value` must be <= `amount` and any delta will be taken from the account's available SBT balance.
-   * @param soulBoundTokenIdBuyer The soulBoundTokenId of offer.
-   * @param derivativeNFT The address of the DNFT contract.
-   * @param tokenId The id of the DNFT.
-   * @param units The units buyer want to buy.
-   * @param amount The amount(price) to offer for this DNFT.
-   * @param soulBoundTokenIdReferrer The SBt id of refrerrer for the offer.
-   * @return expiration The timestamp for when this offer will expire.
+   * The account's available balance must be >= `amount`.
+   * 
+   * @param offerParam The parameters of offer.
    * This is provided as a return value in case another contract would like to leverage this information,
    * user's should refer to the expiration in the `OfferMade` event log.
    * If the buy price is accepted instead, `0` is returned as the expiration since that's n/a.
    */
   function makeOffer(
-    uint256 soulBoundTokenIdBuyer,
-    address derivativeNFT,
-    uint256 tokenId,
-    uint128 units,
-    uint256 amount,
-    uint256 soulBoundTokenIdReferrer
-  ) external payable returns (uint256 expiration) {
-    if ( units == 0 || amount == 0 )
+    DataTypes.OfferParam memory offerParam
+  ) external returns (uint256 expiration) {
+ if (
+      offerParam.soulBoundTokenIdBuyer == 0 || 
+      offerParam.derivativeNFT == address(0) || 
+      offerParam.amount == 0 
+    )    
       revert Errors.InvalidParameter();    
       
     // validate martket is open for this contract?
-    if (!_getMarketInfo(derivativeNFT).isOpen)
-        revert Errors.Market_DNFT_Is_Not_Open(derivativeNFT);
-       
-    address buyer = _getWallet(soulBoundTokenIdBuyer);
+    if (!_getMarketInfo(offerParam.derivativeNFT).isOpen)
+        revert Errors.Market_DNFT_Is_Not_Open(offerParam.derivativeNFT);
+
+    // validate currency is in whitelisted
+    if (!_isCurrencyWhitelisted(offerParam.currency))
+        revert Errors.CurrencyNotInWhitelisted(offerParam.currency);
+
+    address buyer = _getWallet(offerParam.soulBoundTokenIdBuyer);
     if (buyer != msg.sender) {
       revert Errors.NotProfileOwner();
-    }    
+    }
 
     // If there is a buy price set at this price or lower, accept that instead.
-    
-    if (_autoAcceptBuyPrice(soulBoundTokenIdBuyer, derivativeNFT, tokenId, units, amount)) {
+    if (_autoAcceptBuyPrice(
+        offerParam.soulBoundTokenIdBuyer, 
+        offerParam.derivativeNFT, 
+        offerParam.tokenId, 
+        offerParam.amount
+    )) {
       // If the buy price is accepted, `0` is returned as the expiration since that's n/a.
       return 0;
     }
 
-    if (_isInActiveAuction(derivativeNFT, tokenId)) {
+    if (_isInActiveAuction(offerParam.derivativeNFT, offerParam.tokenId)) {
       revert Errors.DNFTMarketOffer_Cannot_Be_Made_While_In_Auction();
     }
+      
+    uint128 units = uint128(IERC3525(offerParam.derivativeNFT).balanceOf(offerParam.tokenId));
 
-    DataTypes.Offer storage offer = nftContractToIdToOffer[derivativeNFT][tokenId];
+    DataTypes.Offer storage offer = nftContractToIdToOffer[offerParam.derivativeNFT][offerParam.tokenId];
 
     if (offer.expiration < block.timestamp) {
       // This is a new offer for the DNFT (no other offer found or the previous offer expired)
-      // Lock the offer amount in SBT until the offer expires in 24-25 hours.
-      expiration = treasury.marketLockupFor(buyer, soulBoundTokenIdBuyer, units * amount);
+      // Lock the offer amount in Treasury until the offer expires in 24-25 hours.
+      expiration = treasury.marketLockupFor(
+        buyer, 
+        offerParam.soulBoundTokenIdBuyer, 
+        offerParam.currency, 
+        offerParam.amount
+      );
 
     } else {
       // A previous offer exists and has not expired
 
       uint256 minIncrement = _getMinIncrement(offer.amount);
-      if (amount < minIncrement) {
+      if (offerParam.amount < minIncrement) {
         // A non-trivial increase in price is required to avoid sniping
         revert Errors.DNFTMarketOffer_Offer_Must_Be_At_Least_Min_Amount(minIncrement);
       }
 
-      // Unlock the previous offer so that the earnest money are available for other offers or to transfer / withdraw
+      // Unlock the previous offer so that the earnest funds are available for other offers or to transfer / withdraw
       // and lock the new offer amounts in treasury until the offer expires in 24-25 hours.
       
       expiration = treasury.marketChangeLockup(
         offer.soulBoundTokenIdBuyer, // unlock previous offer
+        offer.currency,
         offer.expiration,
-        offer.units * offer.amount,
-        soulBoundTokenIdBuyer, // current offer's SBT id
-        units * amount
+        offer.amount,
+        offer.soulBoundTokenIdBuyer, // current offer's SBT id
+        offer.amount
       );
     }
 
     // Record offer details
-    offer.buyer = msg.sender;
-    offer.soulBoundTokenIdBuyer = soulBoundTokenIdBuyer;
+    offer.derivativeNFT = offerParam.derivativeNFT;
+    offer.buyer = buyer;
+    offer.soulBoundTokenIdBuyer = offerParam.soulBoundTokenIdBuyer;
     // The SBT contract guarantees that the expiration fits into 32 bits.
     offer.expiration = uint32(expiration);
-    offer.amount = uint96(amount);
-    offer.units = units;
-    offer.soulBoundTokenIdReferrer = soulBoundTokenIdReferrer;
 
-    emit Events.OfferMade(derivativeNFT, tokenId, msg.sender, units * amount, expiration);
+    //@notice not change
+    offer.currency = offerParam.currency;
+    offer.amount = uint96(offerParam.amount);
+    offer.units = units;
+    offer.soulBoundTokenIdReferrer = offerParam.soulBoundTokenIdReferrer;
+
+    emit Events.OfferMade(
+      offer.derivativeNFT, 
+      offerParam.tokenId,
+      offer.units,
+      buyer, 
+      offer.currency, 
+      offer.amount, 
+      expiration
+    );
+
   }
 
   /**
@@ -179,33 +198,29 @@ abstract contract DNFTMarketOffer is
   function _acceptOffer(
     uint256 soulBoundTokenIdOwner,
     address derivativeNFT, 
-    uint256 tokenId, 
-    uint128 units
-    ) private returns(uint256 newTokenId){
+    uint256 tokenId
+  ) private{
     DataTypes.Offer memory offer = nftContractToIdToOffer[derivativeNFT][tokenId];
 
     // Remove offer
     delete nftContractToIdToOffer[derivativeNFT][tokenId];
    
-    // Withdraw earnest money from the buyer's account in the BankTreasury contract.
-    treasury.marketWithdrawLocked(
+    // After accept the highest offer, Transfer earnest funds from the buyer's escrpw balance in the BankTreasury contract.
+    treasury.marketTransferLocked(
       offer.buyer, 
       offer.soulBoundTokenIdBuyer, 
-      msg.sender, 
+      msg.sender, //seller
       soulBoundTokenIdOwner, 
       offer.expiration, 
+      offer.currency,
       offer.amount
     );
 
-    uint256 publishId = IDerivativeNFT(derivativeNFT).getPublishIdByTokenId(tokenId);
-
-    // Transfer the DNFT to the buyer.
-    uint256 newTokenIdBuyer = IDerivativeNFT(derivativeNFT).split(
-        publishId, 
-        tokenId, 
-        offer.buyer,
-        units
-    );
+    if (IERC3525(derivativeNFT).ownerOf(tokenId) == msg.sender) {
+        IERC3525(derivativeNFT).transferFrom(msg.sender, offer.buyer, tokenId);
+    } else {
+        _transferFromEscrow(derivativeNFT, tokenId, offer.buyer, address(0));
+    }
 
     // Distribute revenue for this sale leveraging the SBT Value received from the SBT contract in the line above.
     uint256 projectId = _getMarketInfo(derivativeNFT).projectId;
@@ -218,19 +233,20 @@ abstract contract DNFTMarketOffer is
         soulBoundTokenIdOwner,
         offer.soulBoundTokenIdBuyer,
         projectId,
-        uint96(units * offer.amount),
+        uint96(offer.amount),
+        true,
         collectModuleInitData
     );
 
     emit Events.OfferAccepted(
       derivativeNFT, 
-      newTokenIdBuyer, 
+      tokenId, 
       offer.buyer, 
       msg.sender,  //seller
+      offer.currency,
       royaltyAmounts
     );
 
-    return newTokenIdBuyer;
   }
 
   /**
@@ -241,32 +257,25 @@ abstract contract DNFTMarketOffer is
     _invalidateOffer(derivativeNFT, tokenId);
     super._beforeAuctionStarted(derivativeNFT, tokenId);
   }
-
+ 
   /**
    * @inheritdoc DNFTMarketCore
    */
   function _autoAcceptOffer(
-    DataTypes.SaleParam memory saleParam
-  ) internal override returns (uint256, uint128) {
-    DataTypes.Offer storage offer = nftContractToIdToOffer[saleParam.derivativeNFT][saleParam.tokenId];
-    if (offer.expiration < block.timestamp || offer.amount < saleParam.salePrice) {
+    DataTypes.BuyPriceParam memory buyPriceParam,
+    uint128 units 
+  ) internal override {
+    DataTypes.Offer storage offer = nftContractToIdToOffer[buyPriceParam.derivativeNFT][buyPriceParam.tokenId];
+    if (offer.expiration < block.timestamp || offer.amount < buyPriceParam.salePrice * units) {
       // No offer found, the most recent offer is now expired, or the highest offer is below the minimum amount.
-      return (0, saleParam.putOnListUnits);
+      return;
     }
     
-    uint128 leftUnits;
-    if (offer.units < saleParam.putOnListUnits) {
-      leftUnits = saleParam.putOnListUnits - offer.units;
-    }
-
-    uint256 newTokenId =  _acceptOffer(
-            saleParam.soulBoundTokenId, 
-            saleParam.derivativeNFT, 
-            saleParam.tokenId, 
-            offer.units
+    _acceptOffer(
+          buyPriceParam.soulBoundTokenId, 
+          buyPriceParam.derivativeNFT, 
+          buyPriceParam.tokenId
     );
-
-    return (newTokenId, leftUnits);
   }
 
   /**
@@ -291,11 +300,17 @@ abstract contract DNFTMarketOffer is
       // An offer was found and it has not already expired
       DataTypes.Offer memory offer = nftContractToIdToOffer[derivativeNFT][tokenId];
 
-      // Remove offer?
+      // Remove offer
       delete nftContractToIdToOffer[derivativeNFT][tokenId];
 
       // Unlock the offer so that the SBT tokens are available for other offers or to transfer / withdraw
-      treasury.marketUnlockFor(offer.buyer, offer.soulBoundTokenIdBuyer, offer.expiration, offer.amount);
+      treasury.marketUnlockFor(
+         offer.buyer,
+         offer.soulBoundTokenIdBuyer, 
+         offer.expiration, 
+         offer.currency, 
+         offer.amount
+      );
 
       emit Events.OfferInvalidated(derivativeNFT, tokenId);
     }
@@ -337,7 +352,7 @@ abstract contract DNFTMarketOffer is
     returns (
       address buyer,
       uint256 expiration,
-      uint256 amount,
+      uint96 amount,
       uint256 soulBoundTokenIdReferrer
     )
   {

@@ -115,7 +115,7 @@ makeSuiteCleanRoom('UUPS ability', function () {
         
       });
 
-      it("Successful upgrade BankTreasury, constructor paramters is changed, etc. lockupDuration", async () => {
+      it("Successful upgrade BankTreasury, constructor parameters is changed, etc. lockupDuration", async () => {
         const lockupDurationV1 = (await bankTreasuryContract.getLockupDuration()).toNumber();
         console.log("\n\t lockupDurationV1: ", lockupDurationV1);
 

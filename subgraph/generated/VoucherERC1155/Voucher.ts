@@ -1339,20 +1339,20 @@ export class SetApprovalForAllCall__Outputs {
   }
 }
 
-export class SetGlobalModuleCall extends ethereum.Call {
-  get inputs(): SetGlobalModuleCall__Inputs {
-    return new SetGlobalModuleCall__Inputs(this);
+export class SetGlobalModulesCall extends ethereum.Call {
+  get inputs(): SetGlobalModulesCall__Inputs {
+    return new SetGlobalModulesCall__Inputs(this);
   }
 
-  get outputs(): SetGlobalModuleCall__Outputs {
-    return new SetGlobalModuleCall__Outputs(this);
+  get outputs(): SetGlobalModulesCall__Outputs {
+    return new SetGlobalModulesCall__Outputs(this);
   }
 }
 
-export class SetGlobalModuleCall__Inputs {
-  _call: SetGlobalModuleCall;
+export class SetGlobalModulesCall__Inputs {
+  _call: SetGlobalModulesCall;
 
-  constructor(call: SetGlobalModuleCall) {
+  constructor(call: SetGlobalModulesCall) {
     this._call = call;
   }
 
@@ -1361,10 +1361,10 @@ export class SetGlobalModuleCall__Inputs {
   }
 }
 
-export class SetGlobalModuleCall__Outputs {
-  _call: SetGlobalModuleCall;
+export class SetGlobalModulesCall__Outputs {
+  _call: SetGlobalModulesCall;
 
-  constructor(call: SetGlobalModuleCall) {
+  constructor(call: SetGlobalModulesCall) {
     this._call = call;
   }
 }

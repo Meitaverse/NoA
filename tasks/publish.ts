@@ -47,6 +47,7 @@ task("publish", "publish function")
   const userTwo = accounts[3];
   const userThree = accounts[4];
 
+
   const userAddress = user.address;
   const userTwoAddress = userTwo.address;
   const userThreeAddress = userThree.address;
@@ -107,6 +108,7 @@ task("publish", "publish function")
         soulBoundTokenId: SECOND_PROFILE_ID,
         hubId: FIRST_HUB_ID,
         projectId: projectid,
+        currency: sbt.address,
         amount: 11,
         salePrice: DEFAULT_COLLECT_PRICE,
         royaltyBasisPoints: Default_royaltyBasisPoints,

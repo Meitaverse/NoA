@@ -36,7 +36,6 @@ library PublishLogic {
         );
  
         emit Events.PublishPrepared(
-            publication,
             publishId,
             previousPublishId,
             publishTaxAmount
@@ -74,20 +73,24 @@ library PublishLogic {
             fromTokenIds
         );
         
+        // emit Events.PublishUpdated(
+        //     _projectDataByPublishId[publishId].publication.hubId,
+        //     _projectDataByPublishId[publishId].publication.projectId,
+        //     publishId,
+        //     _projectDataByPublishId[publishId].publication.soulBoundTokenId,
+        //     salePrice,
+        //     royaltyBasisPoints,
+        //     amount,
+        //     name,
+        //     description,
+        //     materialURIs,
+        //     fromTokenIds,
+        //     addedPublishTaxes,
+        //     block.timestamp
+        // );
         emit Events.PublishUpdated(
-            _projectDataByPublishId[publishId].publication.hubId,
-            _projectDataByPublishId[publishId].publication.projectId,
             publishId,
-            _projectDataByPublishId[publishId].publication.soulBoundTokenId,
-            salePrice,
-            royaltyBasisPoints,
-            amount,
-            name,
-            description,
-            materialURIs,
-            fromTokenIds,
-            addedPublishTaxes,
-            block.timestamp
+            addedPublishTaxes 
         );
     }
 
@@ -136,6 +139,7 @@ library PublishLogic {
                     publishId,
                     publication.soulBoundTokenId,
                     newTokenId,
+                    publication.currency,
                     publication.amount,
                     publication.collectModule,
                     publication.collectModuleInitData,
@@ -153,6 +157,7 @@ library PublishLogic {
         uint256 publishId,
         uint256 ownershipSoulBoundTokenId,
         uint256 newTokenId,
+        address currency,
         uint256 amount,
         address collectModule,
         bytes memory collectModuleInitData,
@@ -165,6 +170,7 @@ library PublishLogic {
                 publishId,
                 ownershipSoulBoundTokenId,
                 newTokenId,
+                currency,
                 amount,
                 collectModuleInitData 
         );
@@ -218,35 +224,32 @@ library PublishLogic {
         if (collectData.collectorSoulBoundTokenId == 0) revert Errors.InitParamsInvalid();
         if (collectData.collectUnits == 0) revert Errors.InitParamsInvalid();
 
-        if ( derivativeNFT== address(0)) 
-            revert Errors.DerivativeNFTIsZero();
-
-
         uint256 projectId = _projectDataByPublishId[collectData.publishId].publication.projectId;
 
         //new tokenId use the same collectModule
         _pubByIdByProfile[projectId][newTokenId].collectModule = _pubByIdByProfile[projectId][tokenId].collectModule;
 
-        uint256 ownershipSoulBoundTokenId = _projectDataByPublishId[collectData.publishId].publication.soulBoundTokenId;
+        // uint256 ownershipSoulBoundTokenId = _projectDataByPublishId[collectData.publishId].publication.soulBoundTokenId;
+        
 
         //processCollect: fees and royalties process
-        DataTypes.RoyaltyAmounts memory royaltyAmounts = ICollectModule(_pubByIdByProfile[projectId][tokenId].collectModule).processCollect(
-            ownershipSoulBoundTokenId,
+        ICollectModule(_pubByIdByProfile[projectId][tokenId].collectModule).processCollect(
+            _projectDataByPublishId[collectData.publishId].publication.soulBoundTokenId,
             collectData.collectorSoulBoundTokenId,
             collectData.publishId,
             uint96(collectData.collectUnits * _projectDataByPublishId[collectData.publishId].publication.salePrice),
+            false,
             collectData.data 
         );
 
         emit Events.DerivativeNFTCollected(
             projectId,
             derivativeNFT,
-            ownershipSoulBoundTokenId,
+            _projectDataByPublishId[collectData.publishId].publication.soulBoundTokenId,
             collectData.collectorSoulBoundTokenId,
             tokenId,
             collectData.collectUnits,
-            newTokenId,
-            royaltyAmounts
+            newTokenId
         );
     }
     

@@ -82,6 +82,7 @@ dataSources:
       entities:
         - EmergencyAdminSet
         - ManagerGovernanceSet
+        - GlobalModulesSet
         - HubCreated
         - HubUpdated
         - PublishPrepared
@@ -100,6 +101,8 @@ dataSources:
           file: ../artifacts/contracts/Manager.sol/Manager.json
         - name: Events
           file: ../artifacts/contracts/libraries/Events.sol/Events.json
+        - name: ModuleGlobals
+          file: ../artifacts/contracts/modules/ModuleGlobals.sol/ModuleGlobals.json
       eventHandlers:
         - event: EmergencyAdminSet(indexed address,indexed address,indexed
             address,uint256)
@@ -107,14 +110,15 @@ dataSources:
         - event: ManagerGovernanceSet(indexed address,indexed address,indexed
             address,uint256)
           handler: handleManagerGovernanceSet
-        - event: HubCreated(indexed uint256,indexed address,indexed
-            uint256,string,string,string,uint256)
+        - event: GlobalModulesSet(indexed address)
+          handler: handleGlobalModulesSet
+        - event: HubCreated(indexed address,indexed uint256)
           handler: handleHubCreated
-        - event: HubUpdated(indexed uint256,indexed address,string,string,string,uint256)
+        - event: HubUpdated(indexed uint256)
           handler: handleHubUpdated
-        - event: PublishPrepared((uint256,uint256,uint256,uint256,uint256,uint256,string,string,bool,string[],uint256[],address,bytes,address,bytes),uint256,uint256,uint256)
+        - event: PublishPrepared(uint256,uint256,uint256)
           handler: handlePublishPrepared
-        - event: PublishUpdated(uint256,uint256,uint256,uint256,uint256,uint256,uint256,string,string,string[],uint256[],uint256,uint256)
+        - event: PublishUpdated(uint256,uint256)
           handler: handlePublishUpdated
         - event: PublishCreated(indexed uint256,indexed
             uint256,uint256,uint256,uint256,bytes)
@@ -125,8 +129,7 @@ dataSources:
             uint256,address,uint256)
           handler: handleDerivativeNFTDeployed
         - event: DerivativeNFTCollected(uint256,address,indexed uint256,indexed
-            uint256,indexed
-            uint256,uint256,uint256,(uint96,uint96,uint96,uint96,uint96))
+            uint256,indexed uint256,uint256,uint256)
           handler: handleDerivativeNFTCollected
         - event: DerivativeNFTAirdroped(uint256,uint256,address,uint256,uint256,uint256[],uint256[],uint256[],uint256)
           handler: handleDerivativeNFTAirdroped
@@ -147,10 +150,11 @@ dataSources:
       apiVersion: 0.0.6
       language: wasm/assemblyscript
       entities:
-        - Deposit
+        - DepositEther
         - DepositByFallback
-        - ERC3525Received
-        - ExchangeSBTByEth
+        - SBTValueReceived
+        - Deposit
+        - BuySBTByEth
         - ExchangeEthBySBT
         - SubmitTransaction
         - ConfirmTransaction
@@ -160,8 +164,8 @@ dataSources:
         - ExchangeVoucher
         - BalanceLocked
         - BalanceUnlocked
-        - OfferWithdrawn
-        - WithdrawnEarnestMoney
+        - OfferTransfered
+        - WithdrawnEarnestFunds
       abis:
         - name: SBT
           file: ../artifacts/contracts/NFTDerivativeProtocolTokenV1.sol/NFTDerivativeProtocolTokenV1.json
@@ -170,24 +174,27 @@ dataSources:
         - name: Events
           file: ../artifacts/contracts/libraries/Events.sol/Events.json
       eventHandlers:
-        - event: Deposit(indexed address,uint256,indexed address,uint256)
-          handler: handleDeposit
+        - event: DepositEther(indexed address,indexed uint256,indexed address,uint256)
+          handler: handleDepositEther
         - event: DepositByFallback(indexed address,uint256,bytes,indexed address,uint256)
           handler: handleDepositByFallback
-        - event: ERC3525Received(indexed address,indexed address,indexed
+        - event: SBTValueReceived(indexed address,indexed address,indexed
             uint256,uint256,uint256,bytes,uint256)
-          handler: handleERC3525Received
-        - event: ExchangeSBTByEth(indexed uint256,indexed address,indexed uint256,uint256)
-          handler: handleExchangeSBTByEth
+          handler: handleSBTValueReceived
+        - event: Deposit(indexed address,indexed uint256,indexed address,uint256)
+          handler: handleDeposit
+        - event: BuySBTByEth(indexed uint256,indexed address,indexed uint256,uint256)
+          handler: handleBuySBTByEth
         - event: ExchangeEthBySBT(indexed uint256,indexed address,indexed
             uint256,uint256,uint256,uint256)
           handler: handleExchangeEthBySBT
         - event: SubmitTransaction(indexed address,indexed uint256,indexed
-            address,uint256,bytes)
+            address,address,uint256,bytes)
           handler: handleSubmitTransaction
         - event: ConfirmTransaction(indexed address,indexed uint256)
           handler: handleConfirmTransaction
-        - event: ExecuteTransaction(indexed address,indexed uint256,address,uint256)
+        - event: ExecuteTransaction(indexed address,indexed
+            uint256,address,address,uint256)
           handler: handleExecuteTransaction
         - event: ExecuteTransactionERC3525(indexed address,indexed uint256,indexed
             uint256,uint256,uint256)
@@ -198,16 +205,17 @@ dataSources:
             uint256,uint256,uint256)
           handler: handleExchangeVoucher
         - event: BalanceLocked(indexed address,indexed uint256,indexed
-            uint256,uint256,uint256)
+            uint256,address,uint256)
           handler: handleBalanceLocked
-        - event: BalanceUnlocked(indexed address,indexed uint256,indexed uint256,uint256)
+        - event: BalanceUnlocked(indexed address,indexed uint256,indexed
+            uint256,address,uint256)
           handler: handleBalanceUnlocked
-        - event: OfferWithdrawn(indexed address,indexed uint256,address,indexed
-            uint256,uint256)
-          handler: handleOfferWithdrawn
-        - event: WithdrawnEarnestMoney(indexed uint256,indexed address,indexed
-            uint256,uint256)
-          handler: handleWithdrawnEarnestMoney
+        - event: OfferTransfered(indexed address,indexed uint256,address,indexed
+            uint256,address,uint256)
+          handler: handleOfferTransfered
+        - event: WithdrawnEarnestFunds(indexed uint256,indexed address,indexed
+            address,uint256)
+          handler: handleWithdrawnEarnestFunds
       file: ./src/bankTreasury-mapping.ts
   - kind: ethereum/contract
     name: Voucher
@@ -284,6 +292,7 @@ dataSources:
         - ModuleGlobalsGovernanceSet
         - ModuleGlobalsPublishRoyaltySet
         - ModuleGlobalsTreasuryFeeSet
+        - ModuleGlobalsCurrencyWhitelisted
       abis:
         - name: Events
           file: ../artifacts/contracts/libraries/Events.sol/Events.json
@@ -314,6 +323,9 @@ dataSources:
           handler: handlePublishModuleWhitelisted
         - event: TemplateWhitelisted(indexed address,indexed bool,uint256)
           handler: handleTemplateWhitelisted
+        - event: ModuleGlobalsCurrencyWhitelisted(indexed address,indexed bool,indexed
+            bool,uint256)
+          handler: handleModuleGlobalsCurrencyWhitelisted
       file: ./src/moduleGlobals-mapping.ts
   - kind: ethereum/contract
     name: FeeCollectModule
@@ -327,7 +339,7 @@ dataSources:
       apiVersion: 0.0.6
       language: wasm/assemblyscript
       entities:
-        - FeesForCollect
+        - Distribute
       abis:
         - name: ModuleGlobals
           file: ../artifacts/contracts/modules/ModuleGlobals.sol/ModuleGlobals.json
@@ -338,8 +350,8 @@ dataSources:
         - name: Events
           file: ../artifacts/contracts/libraries/Events.sol/Events.json
       eventHandlers:
-        - event: FeesForCollect(uint256,uint256,uint96,(uint256,uint256,uint256,uint256,uint256),(uint96,uint96,uint96,uint96,uint96))
-          handler: handleFeesForCollect
+        - event: Distribute(uint256,uint256,address,uint96,(uint256,uint256,uint256,uint256,uint256),(uint96,uint96,uint96,uint96,uint96))
+          handler: handleDistribute
       file: ./src/feeCollectModule-mapping.ts
   - kind: ethereum/contract
     name: Receiver
@@ -408,12 +420,11 @@ dataSources:
         - event: RemoveMarket(address)
           handler: handleRemoveMarket
         - event: ReserveAuctionBidPlaced(indexed uint256,indexed uint256,indexed
-            uint256,uint256,address,uint256,uint256)
+            uint256,uint256,address,address,uint256,uint256)
           handler: handleReserveAuctionBidPlaced
         - event: ReserveAuctionCanceled(indexed uint256)
           handler: handleReserveAuctionCanceled
-        - event: ReserveAuctionCreated(indexed address,indexed address,indexed
-            uint256,uint256,uint256,uint256,uint256,uint256,uint256,uint256)
+        - event: ReserveAuctionCreated(indexed address,indexed uint256)
           handler: handleReserveAuctionCreated
         - event: ReserveAuctionFinalized(indexed uint256,indexed address,indexed
             address,(uint96,uint96,uint96,uint96,uint96))
@@ -423,21 +434,21 @@ dataSources:
         - event: ReserveAuctionUpdated(indexed uint256,uint256)
           handler: handleReserveAuctionUpdated
         - event: OfferMade(indexed address,indexed uint256,indexed
-            address,uint256,uint256)
+            uint256,address,address,uint256,uint256)
           handler: handleOfferMade
         - event: OfferAccepted(indexed address,indexed uint256,indexed
-            address,address,(uint96,uint96,uint96,uint96,uint96))
+            address,address,address,(uint96,uint96,uint96,uint96,uint96))
           handler: handleOfferAccepted
         - event: OfferInvalidated(indexed address,indexed uint256)
           handler: handleOfferInvalidated
-        - event: BuyPriceSet((uint256,address,address,uint256,uint256,uint256,uint256,uint128,uint128,uint128))
+        - event: BuyPriceSet(indexed address,indexed uint256)
           handler: handleBuyPriceSet
         - event: BuyPriceCanceled(indexed address,indexed uint256)
           handler: handleBuyPriceCanceled
         - event: BuyPriceInvalidated(indexed address,indexed uint256)
           handler: handleBuyPriceInvalidated
         - event: BuyPriceAccepted(indexed address,indexed uint256,indexed
-            uint256,address,address,(uint96,uint96,uint96,uint96,uint96))
+            address,address,address,(uint96,uint96,uint96,uint96,uint96))
           handler: handleBuyPriceAccepted
       file: ./src/marketplace-mapping.ts
   - kind: ethereum/contract

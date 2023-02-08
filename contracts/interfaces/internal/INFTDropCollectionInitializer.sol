@@ -3,7 +3,7 @@
 pragma solidity ^0.8.13;
 
 /**
- * @author batu-inal & HardlyDifficult
+ * @author bitsoul
  */
 interface INFTDropCollectionInitializer {
   function initialize(

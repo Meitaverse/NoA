@@ -52,11 +52,6 @@ contract Manager is
         _;
     }
 
-    modifier onlyOwner() {
-        _validateCallerIsOwner();
-        _;
-    }
-
     constructor(
         address dNftV1_, 
         address receiver_
@@ -149,9 +144,6 @@ contract Manager is
         uint256 hubId = _generateNextHubId();
         _hubIdBySoulBoundTokenId[hub.soulBoundTokenId] = hubId;
 
-        //address _sbt = IModuleGlobals(MODULE_GLOBALS).getSBT();
-        //address hubOwner = IERC3525(_sbt).ownerOf(hub.soulBoundTokenId);
-
         InteractionLogic.createHub(
             msg.sender,
             hubId,
@@ -163,8 +155,8 @@ contract Manager is
     }
 
     function updateHub(
-        uint256 soulBoundTokenId,
-        string calldata name,
+        uint256 hubId,
+        string calldata hubName,
         string calldata description,
         string calldata imageURI
     ) 
@@ -172,25 +164,25 @@ contract Manager is
         nonReentrant
         whenNotPaused 
     {
-        _validateCallerIsSoulBoundTokenOwnerOrDispathcher(soulBoundTokenId);
+        DataTypes.HubInfoData storage hub = _hubInfos[hubId];
 
-        if (!IModuleGlobals(MODULE_GLOBALS).isWhitelistHubCreator(soulBoundTokenId)) revert Errors.HubCreatorNotWhitelisted();
+        if (!( hub.hubOwner == msg.sender || _dispatcherByProfile[hub.soulBoundTokenId] == msg.sender)) 
+            revert Errors.NotHubOwner();
+
+        if (!IModuleGlobals(MODULE_GLOBALS).isWhitelistHubCreator(hub.soulBoundTokenId)) 
+            revert Errors.HubCreatorNotWhitelisted();
        
-        uint256 hubId = _hubIdBySoulBoundTokenId[soulBoundTokenId];
         if (hubId == 0) revert Errors.HubNotExists();
 
-        // address _sbt = IModuleGlobals(MODULE_GLOBALS).getSBT();
-        // address creator = IERC3525(_sbt).ownerOf(soulBoundTokenId);
-
         InteractionLogic.updateHub(
-            //creator,
             hubId,
-            name, 
+            hubName, 
             description, 
             imageURI, 
             _hubInfos
         );
     }
+
  
     /// @notice Only hub owner can creat projects
     function createProject(
@@ -201,7 +193,6 @@ contract Manager is
         nonReentrant
         returns (uint256) 
     {
-        
         _validateCallerIsSoulBoundTokenOwnerOrDispathcher(project.soulBoundTokenId);
         
         if (_hubIdBySoulBoundTokenId[project.soulBoundTokenId] != project.hubId) revert Errors.NotHubOwner();
@@ -400,7 +391,7 @@ contract Manager is
         returns (uint256) 
     { 
         if (publishId == 0) {
-            revert Errors.InitParamsInvalid();
+            revert Errors.InvalidProjectId();
         } else {
 
             _validateCallerIsSoulBoundTokenOwnerOrDispathcher(_projectDataByPublishId[publishId].publication.soulBoundTokenId);
@@ -413,7 +404,8 @@ contract Manager is
 
             address publisher = _soulBoundTokenIdToWallet[_projectDataByPublishId[publishId].publication.soulBoundTokenId];
             address derivativeNFT = _derivativeNFTByProjectId[_projectDataByPublishId[publishId].publication.projectId];
-            if (_projectDataByPublishId[publishId].publication.amount == 0) revert Errors.InitParamsInvalid();
+            if (_projectDataByPublishId[publishId].publication.amount == 0) 
+            revert Errors.AmountIsZero();
             
             if (!IModuleGlobals(MODULE_GLOBALS).isWhitelistCollectModule(_projectDataByPublishId[publishId].publication.collectModule))
                 revert Errors.CollectModuleNotWhitelisted();
@@ -495,7 +487,11 @@ contract Manager is
     function getPublishInfo(uint256 publishId_) external view returns (DataTypes.PublishData memory) {
         return _projectDataByPublishId[publishId_];
     }
- 
+
+    function getPublication(uint256 publishId_) external view returns (DataTypes.Publication memory) {
+        return _projectDataByPublishId[publishId_].publication;
+    }
+
     function getDerivativeNFT(uint256 projectId) external view returns (address) {
         return _derivativeNFTByProjectId[projectId];
     }
@@ -628,10 +624,11 @@ contract Manager is
         return _timeLock;
     }
 
-    function setGlobalModule(address moduleGlobals) external nonReentrant onlyGov {
+    function setGlobalModules(address moduleGlobals) external nonReentrant onlyGov {
         if (moduleGlobals == address(0)) revert Errors.InitParamsInvalid();
         MODULE_GLOBALS = moduleGlobals;
         _soulBoundTokenIdToWallet[1] = IModuleGlobals(MODULE_GLOBALS).getTreasury();
+        emit Events.GlobalModulesSet(moduleGlobals);  
     }
 
     function getGlobalModule() external view returns(address) {
@@ -675,6 +672,7 @@ contract Manager is
     }
 
     //--- internal  ---//
+
     function  _validateCallerIsSoulBoundTokenOwnerOrDispathcher(uint256 soulBoundTokenId_) internal view {
          address _sbt = IModuleGlobals(MODULE_GLOBALS).getSBT();
          if (IERC3525(_sbt).ownerOf(soulBoundTokenId_) == msg.sender || _dispatcherByProfile[soulBoundTokenId_] == msg.sender) {
@@ -691,11 +689,7 @@ contract Manager is
         address _sbt = IModuleGlobals(MODULE_GLOBALS).getSBT();
         if (IERC3525(_sbt).ownerOf(soulBoundTokenId_) != msg.sender) revert Errors.NotProfileOwner();
     }
-
-    function _validateCallerIsOwner() internal view {
-        if (msg.sender != _owner) revert Errors.NotOwner();
-    }
-
+    
     function _setDispatcher(uint256 soulBoundTokenId, address dispatcher) internal {
         _dispatcherByProfile[soulBoundTokenId] = dispatcher;
         emit Events.DispatcherSet(soulBoundTokenId, dispatcher, block.timestamp);

@@ -62,6 +62,8 @@ import {
   voucherContract,
   marketPlaceContract
 } from '../../__setup.spec';
+import { ContractTransaction } from 'ethers';
+import { getEarnestFundsExpectedExpiration } from '../../helpers/earnestFunds';
 
 let derivativeNFT: DerivativeNFT;
 
@@ -70,8 +72,10 @@ const SALE_ID = 1;
 const THIRD_DNFT_TOKEN_ID =3;
 const SALE_PRICE = 100;
 const OFFER_PRICE = 120;
+const INITIAL_EARNESTFUNDS = 10000;
 
 let receipt: TransactionReceipt;
+let expiry: number;
 
 makeSuiteCleanRoom('Market Place', function () {
 
@@ -89,7 +93,11 @@ makeSuiteCleanRoom('Market Place', function () {
              
       //mint some Values to user
       await manager.connect(governance).mintSBTValue(SECOND_PROFILE_ID, parseEther('10'));
-
+      await bankTreasuryContract.connect(user).deposit(
+        SECOND_PROFILE_ID,
+        sbtContract.address,
+        INITIAL_EARNESTFUNDS
+      );
 
       expect(
       await createProfileReturningTokenId({
@@ -105,12 +113,17 @@ makeSuiteCleanRoom('Market Place', function () {
       await manager.connect(governance).mintSBTValue(THIRD_PROFILE_ID, parseEther('10'));
       
       // @notice MUST deposit SBT value into bank treasury before buy
-      await sbtContract.connect(userTwo)['transferFrom(uint256,uint256,uint256)'](THIRD_PROFILE_ID, FIRST_PROFILE_ID, parseEther('1'));
+      await bankTreasuryContract.connect(userTwo).deposit(
+        THIRD_PROFILE_ID,
+        sbtContract.address,
+        1100
+      );
       
-      expect(await bankTreasuryContract['balanceOf(uint256)'](THIRD_PROFILE_ID)).to.eq(parseEther('1'));
-      
-      expect(await manager.getWalletBySoulBoundTokenId(SECOND_PROFILE_ID)).to.eq(userAddress);
-      expect(await manager.getWalletBySoulBoundTokenId(THIRD_PROFILE_ID)).to.eq(userTwoAddress);
+      expect(
+        await bankTreasuryContract['balanceOf(address,uint256)'](
+            sbtContract.address, 
+            THIRD_PROFILE_ID)
+       ).to.eq(1100);
       
       expect(
         await createHubReturningHubId({
@@ -182,6 +195,7 @@ makeSuiteCleanRoom('Market Place', function () {
           soulBoundTokenId: SECOND_PROFILE_ID,
           hubId: FIRST_HUB_ID,
           projectId: FIRST_PROJECT_ID,
+          currency: sbtContract.address,
           amount: 11,
           salePrice: DEFAULT_COLLECT_PRICE,
           royaltyBasisPoints: Default_royaltyBasisPoints,              
@@ -208,74 +222,84 @@ makeSuiteCleanRoom('Market Place', function () {
         await derivativeNFT.ownerOf(FIRST_DNFT_TOKEN_ID)
       ).to.eq(userAddress);
 
+      // approval market contract
       await derivativeNFT.connect(user).setApprovalForAll(marketPlaceContract.address, true);
-
-      // Make an offer for greater than the buy price we will set
-       await marketPlaceContract.connect(userTwo).makeOffer(
-            THIRD_PROFILE_ID,
-            derivativeNFT.address, 
-            FIRST_DNFT_TOKEN_ID, 
-            1,
-            OFFER_PRICE,
-            0
-       );
+      
   });
 
 
-  context('On `setBuyPrice`', function () {
+  context('On `makeOffer`', function () {
     beforeEach(async function () {
+        receipt = await waitForTx(
+            marketPlaceContract.connect(userTwo).makeOffer(
+            {
+                soulBoundTokenIdBuyer: THIRD_PROFILE_ID,
+                derivativeNFT: derivativeNFT.address, 
+                tokenId: FIRST_DNFT_TOKEN_ID, 
+                currency: sbtContract.address,
+                amount: SALE_PRICE * 11,
+                soulBoundTokenIdReferrer:0,
+            })
+        );
+        // await
+        //     marketPlaceContract.connect(userTwo).makeOffer(
+        //     {
+        //         soulBoundTokenIdBuyer: THIRD_PROFILE_ID,
+        //         derivativeNFT: derivativeNFT.address, 
+        //         tokenId: FIRST_DNFT_TOKEN_ID, 
+        //         currency: sbtContract.address,
+        //         amount: SALE_PRICE * 11,
+        //         soulBoundTokenIdReferrer:0,
+        //     }
+        // );
+
+       expiry = await getEarnestFundsExpectedExpiration(receipt);
+       
+    });
+
+    it("Emits OfferMade", async () => {
+
+        matchEvent(
+            receipt,
+            'OfferMade',
+            [
+                derivativeNFT.address, 
+                FIRST_DNFT_TOKEN_ID,
+                11,
+                userTwoAddress,
+                sbtContract.address,
+                SALE_PRICE * 11,
+                expiry
+            ],
+        );
+    });
+
+    it("userTwo has total balance", async () => {
+        const totalBalance = await bankTreasuryContract['totalBalanceOf(address,uint256)'](sbtContract.address, THIRD_PROFILE_ID)
+        expect(totalBalance).to.eq(SALE_PRICE * 11);
+
+      });
+
+    it("useTwo has 0 available free balance", async () => {
+        expect(
+          await bankTreasuryContract['balanceOf(address,uint256)'](
+              sbtContract.address, 
+              THIRD_PROFILE_ID)
+         ).to.eq(0);
+
+      });
       
-      //approve market contract
-      await derivativeNFT.connect(user)['approve(address,uint256)'](marketPlaceContract.address, FIRST_DNFT_TOKEN_ID);
-      
-      receipt = await waitForTx(
-         marketPlaceContract.connect(user).setBuyPrice({
-            soulBoundTokenId: SECOND_PROFILE_ID,
-            derivativeNFT: derivativeNFT.address,
-            tokenId: FIRST_DNFT_TOKEN_ID,
-            putOnListUnits: 11,
-            salePrice: SALE_PRICE,
-        })
-      );
+    it("useTwo has correct escrow balance", async () => {
+        const escrowBalance = await bankTreasuryContract['escrowBalanceOf(address,uint256)'](sbtContract.address, THIRD_PROFILE_ID)
+        expect(escrowBalance).to.eq(SALE_PRICE * 11);
+      });
 
-    });
-    
-    it('User should success to setBuyPrice', async function () {
-      
-        expect(
-          await derivativeNFT.ownerOf(FIRST_DNFT_TOKEN_ID)
-        ).to.eq(userAddress);
 
-        expect(
-          await derivativeNFT.ownerOf(THIRD_PROFILE_ID)
-        ).to.eq(marketPlaceContract.address);
-    
-    });
-    
-    it("Emits OfferAccepted", async () => {
-      matchEvent(
-        receipt,
-        'OfferAccepted',
-        [
-            derivativeNFT.address, 
-            SECOND_DNFT_TOKEN_ID,
-            userTwoAddress,
-            userAddress
-        ],
-      );
-    });
-    
-
-    it("Owner of new token id", async () => {
-        expect(
-            await derivativeNFT.ownerOf(SECOND_DNFT_TOKEN_ID)
-        ).to.eq(userTwoAddress);
-
-        expect(
-            await derivativeNFT['balanceOf(uint256)'](SECOND_DNFT_TOKEN_ID)
-        ).to.be.equal(1);
-    });
-    
+      it("Has a token lockup", async () => {
+        const lockups = await bankTreasuryContract.getLockups(sbtContract.address, THIRD_PROFILE_ID);
+        expect(lockups.amounts[0]).to.eq(SALE_PRICE * 11);
+        expect(lockups.expiries[0]).to.eq(expiry);
+      });
 
   });
   

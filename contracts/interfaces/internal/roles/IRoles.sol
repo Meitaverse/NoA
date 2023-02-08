@@ -4,7 +4,7 @@ pragma solidity ^0.8.13;
 
 /**
  * @notice Interface for a contract which implements admin roles.
- * @author batu-inal & HardlyDifficult
+ * @author bitsoul
  */
 interface IRoles {
   function isAdmin(address account) external view returns (bool);

@@ -57,6 +57,7 @@ import {
     MarketPlace__factory,
     SBTMetadataDescriptor__factory,
     MarketLogic__factory,
+    Currency__factory,
   } from '../typechain';
   import { deployContract, waitForTx , ProtocolState, Error, ZERO_ADDRESS} from './helpers/utils';
   import { ManagerLibraryAddresses } from '../typechain/factories/contracts/Manager__factory';
@@ -421,9 +422,15 @@ import { MarketPlaceLibraryAddresses } from '../typechain/factories/contracts/Ma
         );
         console.log('\t-- publishModule: ', publishModule.address);
         await exportAddress(hre, publishModule, 'PublishModule');
+        
+        // Currency -ERC20
+        console.log('\n\t-- Deploying Currency --');
+        const currency = await deployContract(
+            new Currency__factory(deployer).deploy({ nonce: deployerNonce++ })
+        );
 
         await waitForTx(
-            manager.connect(governance).setGlobalModule(moduleGlobals.address)
+            manager.connect(governance).setGlobalModules(moduleGlobals.address)
         );
   
         console.log('\n\t-- sbtContract set bankTreasuryContract address and INITIAL SUPPLY --');
@@ -459,15 +466,15 @@ import { MarketPlaceLibraryAddresses } from '../typechain/factories/contracts/Ma
 
 
         console.log('\n\t-- voucherContract set moduleGlobals address --');
-        await waitForTx( voucherContract.connect(deployer).setGlobalModule(moduleGlobals.address));
+        await waitForTx( voucherContract.connect(deployer).setGlobalModules(moduleGlobals.address));
         await waitForTx( voucherContract.connect(deployer).setUserAmountLimit(moduleGlobals.address));
       
         console.log('\n\t-- bankTreasuryContract set moduleGlobals address --');
-        await waitForTx( bankTreasuryContract.connect(governance).setGlobalModule(moduleGlobals.address));
+        await waitForTx( bankTreasuryContract.connect(governance).setGlobalModules(moduleGlobals.address));
         await waitForTx( bankTreasuryContract.connect(governance).setFoundationMarket(marketPlaceContract.address));
        
         console.log('\n\t-- marketPlaceContract set moduleGlobals address --');
-        await waitForTx( marketPlaceContract.connect(governance).setGlobalModule(moduleGlobals.address));
+        await waitForTx( marketPlaceContract.connect(governance).setGlobalModules(moduleGlobals.address));
 
         console.log('\n\t-- manager set Protocol state to unpaused --');
         await waitForTx( manager.connect(governance).setState(ProtocolState.Unpaused));
@@ -477,6 +484,23 @@ import { MarketPlaceLibraryAddresses } from '../typechain/factories/contracts/Ma
         // await waitForTx( moduleGlobals.connect(governance).whitelistProfileCreator(userTwo.address, true));
         // await waitForTx( moduleGlobals.connect(governance).whitelistProfileCreator(userThree.address, true));
         
+        // Whitelist the currency
+        console.log('\n\t-- Whitelisting SBT in Module Globals --');
+        await waitForTx(
+            moduleGlobals
+            .connect(governance)
+            .whitelistCurrency(sbtContract.address, true)
+        );
+
+        console.log('\t-- Whitelisting Currency in Module Globals --');
+        await waitForTx(
+            moduleGlobals
+            .connect(governance)
+            .whitelistCurrency(currency.address, true)
+        );
+
+        //TODO ether 
+
         if (await manager.connect(governance).getGlobalModule() == ZERO_ADDRESS) {
             console.log('\n\t ==== error: manager not set ModuleGlobas ====');
         }

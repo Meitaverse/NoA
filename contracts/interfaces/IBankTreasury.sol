@@ -28,18 +28,30 @@ interface IBankTreasury {
         uint256 _numConfirmationsRequired,
         uint256 _lockupDuration
     ) external;
-
+    
     /**
-     * @notice Implementation of an EIP-712 permit-style function for token burning. Allows anyone to burn
-     * a token on behalf of the owner with a signature.
+     * @notice Deposit a ERC20 or SBT value to earnest funds
+     *         after staked, the currency of avaliable tokens will be added.
      *
-     * @param toSoulBoundTokenId token ID to.
+     * @param soulBoundTokenId The SBT token Id 
+     * @param currency The ERC20 currency
      * @param amount The value of the token ID.
      */
-    //  * @param nonce nonce of sig.
-    //  * @param sig The EIP712 signature struct.
-    function WithdrawEarnestMoney(
-        uint256 toSoulBoundTokenId,
+    function deposit(
+        uint256 soulBoundTokenId, 
+        address currency, 
+        uint256 amount
+    ) external;
+
+    /**
+     * @notice Withdraw avaliable currency balance to msg.sender wallet
+     * @param soulBoundTokenId The soulBoundTokenId of caller.
+     * @param currency The currency of avaliable tokens.
+     * @param amount The total amount of balance, not include locked.
+     */
+    function withdrawEarnestFunds(
+        uint256 soulBoundTokenId,
+        address currency,
         uint256 amount
     ) external;
 
@@ -49,16 +61,17 @@ interface IBankTreasury {
     ) external;
     
 
-    function exchangeSBTByEth(
+    function buySBTByEth(
         uint256 soulBoundTokenId, 
-        uint256 amount,
-        DataTypes.EIP712Signature calldata sign
+        address currency,
+        uint256 amount
+        // DataTypes.EIP712Signature calldata sign
     ) external payable ;
 
      function exchangeEthBySBT(
         uint256 soulBoundTokenId,
-        uint256 sbtValue,
-        DataTypes.EIP712Signature calldata sign        
+        uint256 sbtValue
+        // DataTypes.EIP712Signature calldata sign        
     ) external payable;
 
     function getGlobalModule() external view returns(address);
@@ -75,11 +88,11 @@ interface IBankTreasury {
 
     function getVoucher() external view returns(address);
 
-    function balanceOf(uint256 soulBoundTokenId) external view returns (uint256 balance);
+    function balanceOf(address currency, uint256 soulBoundTokenId) external view returns (uint256 balance);
 
-    function calculateAmountEther(uint256 ethAmount) external view returns(uint256);
+    function calculateAmountCurrency(address currency, uint256 ethAmount) external view returns(uint256);
 
-    function calculateAmountSBT(uint256 sbtValue) external view returns(uint256);
+    function calculateAmountSBT(address currency, uint256 sbtValue) external view returns(uint256);
 
 
     /**
@@ -87,37 +100,44 @@ interface IBankTreasury {
      *
      * @return bytes32 The domain separator.
      */
-    function getDomainSeparator() external view returns (bytes32);
+    
+    //function getDomainSeparator() external view returns (bytes32);
 
     /**
      * @notice Save funds to mapping revenues, user can withdraw it if reach a limit amount
      *
      */
-    function saveFundsToUserRevenue(
+    function distributeFundsToUserRevenue(
         uint256 fromSoulBoundTokenId,
+        address currency,
         uint256 payValue,
         DataTypes.CollectFeeUsers memory collectFeeUsers,
         DataTypes.RoyaltyAmounts memory royaltyAmounts
     ) external;
 
-    function useEarnestMoneyForPay(
+
+    function refundEarnestFunds(
         uint256 soulBoundTokenId,
+        address currency,
         uint256 amount
     ) external;
 
-    function refundEarnestMoney(
+    function useEarnestFundsForPay(
         uint256 soulBoundTokenId,
+        address currency,
         uint256 amount
     ) external;
 
     function marketLockupFor(
         address account,
         uint256 soulBoundTokenId, 
+        address currency,
         uint256 amount
     ) external returns (uint256 expiration);
 
     function marketChangeLockup(
         uint256 unlockFromSoulBoundTokenId,
+         address currency,
         uint256 unlockExpiration,
         uint256 unlockAmount,
         uint256 lockupForSoulBoundTokenId,
@@ -128,15 +148,17 @@ interface IBankTreasury {
         address account,
         uint256 soulBoundTokenId,
         uint256 expiration,
+         address currency,
         uint256 amount
     ) external;
 
-    function marketWithdrawLocked(
+    function marketTransferLocked(
         address account,
         uint256 soulBoundTokenIdBuyer,
         address owner,
         uint256 soulBoundTokenIdOwner,
         uint256 expiration,
+         address currency,
         uint256 amount
     ) external;
 

@@ -10,7 +10,7 @@ import "./OZAccessControlUpgradeable.sol";
 /**
  * @title Defines a role for Foundation operator accounts.
  * @dev Wraps a role from OpenZeppelin's AccessControl for easy integration.
- * @author batu-inal & HardlyDifficult
+ * @author bitsoul
  */
 abstract contract OperatorRoleEnumerable is Initializable, OZAccessControlUpgradeable {
   bytes32 private constant OPERATOR_ROLE = keccak256("OPERATOR_ROLE");

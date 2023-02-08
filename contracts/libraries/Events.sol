@@ -28,48 +28,45 @@ library Events {
     /**
      * @dev Emitted when prepare a publish
      *
-     * @param publication The Publication data
      * @param publishId The publish Id, 
      * @param previousPublishId The previous publish Id
      * @param publishTaxAmount The publish tax amount
      */
     event PublishPrepared(
-        DataTypes.Publication publication,
         uint256 publishId,
         uint256 previousPublishId,
         uint256 publishTaxAmount
     );
 
-    /**
-     * @dev Emitted when update a publish while not publish on chain
-     *
-     * @param hubId The hub Id
-     * @param publishId The publish Id
-     * @param soulBoundTokenId The soulBoundToken Id
-     * @param salePrice The sale price while collet 
-     * @param royaltyBasisPoints The royalty basis points
-     * @param amount The amount of publish
-     * @param name The name of publish
-     * @param description The description of publish
-     * @param materialURIs Array of materialURI 
-     * @param fromTokenIds Array of fromTokenId 
-     * @param addedPublishTaxes The added publish taxes while taxed increased
-     * @param timestamp The current block timestamp.
-     */
+    // /**
+    //  * @dev Emitted when update a publish while not publish on chain
+    //  *
+    //  * @param hubId The hub Id
+    //  * @param publishId The publish Id
+    //  * @param soulBoundTokenId The soulBoundToken Id
+    //  * @param salePrice The sale price while collet 
+    //  * @param royaltyBasisPoints The royalty basis points
+    //  * @param amount The amount of publish
+    //  * @param name The name of publish
+    //  * @param description The description of publish
+    //  * @param materialURIs Array of materialURI 
+    //  * @param fromTokenIds Array of fromTokenId 
+    //  * @param addedPublishTaxes The added publish taxes while taxed increased
+    //  * @param timestamp The current block timestamp.
+    //  */
     event PublishUpdated(
-        uint256 hubId,
-        uint256 projectId,
+        // uint256 hubId,
+        // uint256 projectId,
         uint256 publishId,
-        uint256 soulBoundTokenId,
-        uint256 salePrice,
-        uint256 royaltyBasisPoints,
-        uint256 amount,
-        string name,
-        string description,
-        string[] materialURIs,
-        uint256[] fromTokenIds,
-        uint256 addedPublishTaxes,
-        uint256 timestamp
+        // uint256 soulBoundTokenId,
+        // uint256 salePrice,
+        // uint256 royaltyBasisPoints,
+        // uint256 amount,
+        // string name,
+        // string description,
+        // string[] materialURIs,
+        // uint256[] fromTokenIds,
+        uint256 addedPublishTaxes
     );
 
     // Signals frozen metadata to OpenSea; emitted in minting functions
@@ -105,44 +102,44 @@ library Events {
         uint256 indexed newTokenId
     );
 
-    /**
-     * @dev Emitted when a hub is created.
-     *
-     * @param soulBoundTokenId The newly created profile's token ID.
-     * @param hubOwner The profile creator, who created the token with the given profile ID.
-     * @param hubId The hub ID.
-     * @param name The name set for the hub.
-     * @param description The description set for the hub.
-     * @param imageURI The image uri set for the profile.
-     * @param timestamp The current block timestamp.
-     */
+    // /**
+    //  * @dev Emitted when a hub is created.
+    //  *
+    //  * @param soulBoundTokenId The newly created profile's token ID.
+    //  * @param hubOwner The profile creator, who created the token with the given profile ID.
+    //  * @param hubId The hub ID.
+    //  * @param name The name set for the hub.
+    //  * @param description The description set for the hub.
+    //  * @param imageURI The image uri set for the profile.
+    //  * @param timestamp The current block timestamp.
+    //  */
     event HubCreated(
-        uint256 indexed soulBoundTokenId,
+        // uint256 indexed soulBoundTokenId,
         address indexed hubOwner,
-        uint256 indexed hubId,
-        string name,
-        string description,
-        string imageURI,
-        uint256 timestamp
+        uint256 indexed hubId
+        // string name,
+        // string description,
+        // string imageURI,
+        // uint256 timestamp
     );
 
-    /**
-     * @dev Emitted when a hub is updated.
-     *
-     * @param hubId The hub id.
-     * @param hubOwner The hub creator.
-     * @param name The name set for the hub.
-     * @param description The description set for the hub.
-     * @param imageURI The image uri set for the profile.
-     * @param timestamp The current block timestamp.
-     */
+    // /**
+    //  * @dev Emitted when a hub is updated.
+    //  *
+    //  * @param hubId The hub id.
+    //  * @param hubOwner The hub creator.
+    //  * @param name The name set for the hub.
+    //  * @param description The description set for the hub.
+    //  * @param imageURI The image uri set for the profile.
+    //  * @param timestamp The current block timestamp.
+    //  */
     event HubUpdated(
-        uint256 indexed hubId,
-        address indexed hubOwner,
-        string name,
-        string description,
-        string imageURI,
-        uint256 timestamp
+        uint256 indexed hubId
+        // address indexed hubOwner
+        // string name,
+        // string description,
+        // string imageURI,
+        // uint256 timestamp
     );
 
     /**
@@ -191,7 +188,7 @@ library Events {
      * @param data The data extend
      * @param gas The gas left
      */    
-    event ERC3525Received(
+    event SBTValueReceived(
         address indexed sender, 
         address indexed operator, 
         uint256 indexed fromTokenId, 
@@ -353,6 +350,10 @@ library Events {
         uint256 timestamp
     );
     
+    event GlobalModulesSet(
+        address indexed globalModule
+    );
+
     /**
      * @dev Emitted when a profile creator is added to or removed from the whitelist.
      *
@@ -456,7 +457,6 @@ library Events {
      * @param tokenId The token id of the derivativeNFT
      * @param value The collect value 
      * @param newTokenId The new tokenId  of collect
-     * @param royaltyAmounts The royalty amounts data
      */
     event DerivativeNFTCollected(
         uint256 projectId,
@@ -465,8 +465,7 @@ library Events {
         uint256 indexed toSoulBoundTokenId,
         uint256 indexed tokenId,
         uint256 value,
-        uint256 newTokenId,
-        DataTypes.RoyaltyAmounts royaltyAmounts
+        uint256 newTokenId
     );
 
     /**
@@ -587,17 +586,17 @@ library Events {
      * @dev The total buy price that was accepted is `totalFees` + `creatorRev` + `sellerRev`.
      * @param derivativeNFT The address of the DNFT contract.
      * @param tokenId The token id of seller.
-     * @param newTokenIdBuyer The new token id of buyer .
      * @param seller The address of the seller which originally set the buy price.
      * @param buyer The address of the collector that purchased the DNFT using `buy`.
+     * @param currency The ERC20 currency
      * @param royaltyAmounts The Royalty Amounts data
      */
     event BuyPriceAccepted(
         address indexed derivativeNFT,
         uint256 indexed tokenId,
-        uint256 indexed newTokenIdBuyer,
-        address seller,
+        address indexed seller,
         address buyer,
+        address currency,
         DataTypes.RoyaltyAmounts royaltyAmounts
     );
     
@@ -622,11 +621,13 @@ library Events {
     /**
      * @notice Emitted when a buy price is set by the owner of an DNFT.
      * @dev The DNFT is transferred into the market contract for escrow unless it was already escrowed,
-     * e.g. for auction listing.
-     * @param buyPrice The BuyPrice data.
+     * e.g. for auction listing. 
+     * @param derivativeNFT The address of the DNFT contract.
+     * @param tokenId  The DNFT token Id.
      */
     event BuyPriceSet(
-        DataTypes.BuyPrice buyPrice
+        address indexed derivativeNFT,
+        uint256 indexed tokenId
     );
 
     /**
@@ -637,6 +638,7 @@ library Events {
      * @param tokenId The id of the DNFT.
      * @param buyer The address of the collector that made the offer which was accepted.
      * @param seller The address of the seller which accepted the offer.
+     * @param currency The address of the ERC20 which pay for the offer.
      * @param royaltyAmounts The royalty amounts.
      */
     event OfferAccepted(
@@ -644,6 +646,7 @@ library Events {
         uint256 indexed tokenId,
         address indexed buyer,
         address seller,
+        address currency,
         DataTypes.RoyaltyAmounts royaltyAmounts
     );
 
@@ -664,14 +667,18 @@ library Events {
      * remain available until the `expiration` date.
      * @param derivativeNFT The address of the DNFT contract.
      * @param tokenId The id of the DNFT.
+     * @param units The units of the DNFT.
      * @param buyer The address of the collector that made the offer to buy this DNFT.
+     * @param currency The ERC20 currency will pay for this offer
      * @param amount The amount, in wei, of the offer.
      * @param expiration The expiration timestamp for the offer.
      */
     event OfferMade(
         address indexed derivativeNFT,
         uint256 indexed tokenId,
-        address indexed buyer,
+        uint256 indexed units,
+        address buyer,
+        address currency,
         uint256 amount,
         uint256 expiration
     );
@@ -683,6 +690,7 @@ library Events {
      * @param originalAmount Refund originalAmount to original bidder.
      * @param soulBoundTokenIdBidder The SBT id of the bidder.
      * @param bidder The bidder address.
+     * @param currency The ERC20 currency will pay for this offer
      * @param amount The amount of the bid.
      * @param endTime The new end time of the auction (which may have been set or extended by this bid).
      */
@@ -692,6 +700,7 @@ library Events {
         uint256 indexed originalAmount,
         uint256 soulBoundTokenIdBidder, 
         address bidder,
+        address currency,
         uint256 amount,
         uint256 endTime
     );
@@ -706,27 +715,11 @@ library Events {
     /**
      * @notice Emitted when an DNFT is listed for auction.
      * @param seller The address of the seller.
-     * @param derivativeNFT The address of the DNFT contract.
-     * @param projectId The project id of the DNFT.
-     * @param tokenId The id of the DNFT.
-     * @param units The units of the DNFT.
-     * @param tokenIdInEscrow The escrow token id of the DNFT.
-     * @param duration The duration of the auction (always 24-hours).
-     * @param extensionDuration The duration of the auction extension window (always 15-minutes).
-     * @param reservePrice The reserve price to kick off the auction.
      * @param auctionId The id of the auction that was created.
      */
     event ReserveAuctionCreated(
         address indexed seller,
-        address indexed derivativeNFT,
-        uint256 indexed projectId,
-        uint256 tokenId,
-        uint256 units,
-        uint256 tokenIdInEscrow,
-        uint256 duration,
-        uint256 extensionDuration,
-        uint256 reservePrice,
-        uint256 auctionId
+        uint256 indexed auctionId
     );
    
     /**
@@ -763,17 +756,39 @@ library Events {
 
    
     //Bank Treasury
+
+    /**
+     * @notice Emitted when ERC20 tokens are stake into contract.
+     *  currency only in whitelisted can staked
+     * @param account The address of caller
+     * @param soulBoundTokenId The soulBoundTokenId of account
+     * @param currency The ERC20 currency will staked
+     * @param amount The number of ERC20 tokens staked.
+     */
+    event Deposit(
+        address indexed account, 
+        uint256 indexed soulBoundTokenId, 
+        address indexed currency, 
+        uint256 amount
+    );
+
     /**
      * @notice Emitted when SBT tokens are locked up by the Foundation market for 24-25 hours
      * and may include newly deposited SBT Value which is added to the account's total SBT balance.
      * @param account The address which has access to the SBT after the `expiration`.
      * @param soulBoundTokenId The soulBoundTokenId of account
      * @param expiration The time at which the `from` account will have access to the locked SBT.
+     * @param currency The ERC20 currency will locked
      * @param amount The number of SBT tokens which where locked up.
-     * @param valueDeposited The amount of ETH added to their account's total SBT balance,
-     * this may be lower than `amount` if available SBT was leveraged.
      */
-    event BalanceLocked(address indexed account, uint256 indexed soulBoundTokenId, uint256 indexed expiration, uint256 amount, uint256 valueDeposited);
+    event BalanceLocked(
+        address indexed account, 
+        uint256 indexed soulBoundTokenId, 
+        uint256 indexed expiration, 
+        address currency,
+        uint256 amount
+    );
+    
     /**
      * @notice Emitted when SBT tokens are unlocked by the Foundation market.
      * @dev This event will not be emitted when lockups expire,
@@ -781,14 +796,16 @@ library Events {
      * @param account The address which had locked SBT freed before expiration.
      * @param soulBoundTokenId The soulBoundTokenId of account
      * @param expiration The time this balance was originally scheduled to be unlocked.
+     * @param currency The ERC20 currency will unlocked
      * @param amount The number of SBT tokens which were unlocked.
      */
     event BalanceUnlocked(
         address indexed account,
         uint256 indexed soulBoundTokenId, 
         uint256 indexed expiration, 
+        address currency,
         uint256 amount
-    );    
+    );
 
     /**
      * @notice Emitted when accept offer is withdrawn from a buyer's account.
@@ -797,27 +814,29 @@ library Events {
      * @param soulBoundTokenIdBuyer The soulBoundTokenId of buyer was deducted in order to pay for.
      * @param owner The address of owner
      * @param soulBoundTokenIdOwner The soulBoundTokenId of owner was added because owner accept the offer.
+     * @param currency The ERC20 currency will withdrawn
      * @param amount The number of tokens which were deducted from the buyer's account and transferred to owner account.
      */
-    event OfferWithdrawn(
+    event OfferTransfered(
         address indexed buyer,
         uint256 indexed soulBoundTokenIdBuyer, 
         address owner,
         uint256 indexed soulBoundTokenIdOwner, 
+        address currency,
         uint256 amount
     );
 
     /**
      * @dev Emitted when ether send to bank treasury contract
      *
-     * @param sender The sender 
+     * @param account The sender will deposit
      * @param amount The amount
-     * @param sender The receiver 
+     * @param receiver The receiver 
      * @param balance balance of contract
      */
-    event Deposit(
-        address indexed sender, 
-        uint256 amount, 
+    event DepositEther(
+        address indexed account, 
+        uint256 indexed amount, 
         address indexed receiver, 
         uint256 balance
     );
@@ -845,6 +864,7 @@ library Events {
      * @param owner The owner 
      * @param txIndex The index of tx
      * @param to The to 
+     * @param currency The ERC20 currency is submit
      * @param value value of transcation
      * @param data data of transcation
      */
@@ -852,6 +872,7 @@ library Events {
         address indexed owner,
         uint256 indexed txIndex,
         address indexed to,
+        address currency,
         uint256 value,
         bytes data
     );    
@@ -883,6 +904,7 @@ library Events {
      *
      * @param owner The owner 
      * @param txIndex The index of tx
+     * @param currency The ERC20 currency is execute
      * @param value The value of transcation
      * 
      */
@@ -890,6 +912,7 @@ library Events {
         address indexed owner, 
         uint256 indexed txIndex, 
         address to, 
+        address currency,
         uint256 value
     );
 
@@ -912,18 +935,20 @@ library Events {
     );
 
     /**
-     * @dev Emitted when ERC3525 is withdrawn
+     * @dev Emitted when SBT Value or ERC20 token is withdrawn
      *
      * 
-     * @param toSoulBoundTokenId The to tokenId of transcation
-     * @param value The value of transcation
+     * @param soulBoundTokenId The SBT Id of withdrawer
+     * @param to The token receiver
+     * @param currency The currency of token
+     * @param amount The value of transcation
      * 
      */
-    event WithdrawnEarnestMoney(
-        uint256 indexed toSoulBoundTokenId, 
+    event WithdrawnEarnestFunds(
+        uint256 indexed soulBoundTokenId, 
         address indexed to,
-        uint256 indexed value,
-        uint256 availableBalance
+        address indexed currency,
+        uint256 amount
     );
 
     /**
@@ -964,7 +989,6 @@ library Events {
         bool indexed whitelisted,
         uint256 timestamp
     );
-
 
     /**
      * @dev Emitted when a voucher is generated
@@ -1051,30 +1075,49 @@ library Events {
      *
      * @param publishId  The publishId 
      * @param tokenId  The tokenId collected
-     * @param payValue  The SBT value will pay
+     * @param currenccy  The ERC20 contract
+     * @param payValue  The value will pay
      * @param collectFeeUsers The collectFeeUsers data
      * @param royaltyAmounts  The royaltyAmounts data
      */
-    event FeesForCollect (
+    event Distribute (
         uint256 publishId, 
         uint256 tokenId, 
+        address currenccy,
         uint96 payValue, 
         DataTypes.CollectFeeUsers collectFeeUsers,
         DataTypes.RoyaltyAmounts royaltyAmounts
     );
 
     /**
-     * @dev Emitted when exchange SBT value by ether
+     * @dev Emitted when buy SBT value by ether
      *
      * @param soulBoundTokenId  The contract address
      * @param exchangeWallet The exchangeWallet
      * @param sbtValue  The sbtValue
      * @param timestamp  The current block timestamp.
      */
-    event ExchangeSBTByEth(
+    event BuySBTByEth(
         uint256 indexed soulBoundTokenId,
         address indexed exchangeWallet,
         uint256 indexed sbtValue,
+        uint256 timestamp
+    );
+
+    /**
+     * @dev Emitted when buy SBT value by ERC20 currency
+     *
+     * @param soulBoundTokenId  The contract address
+     * @param exchangeWallet The exchangeWallet
+     * @param sbtValue  The sbtValue
+     * @param currency  The ERC20 currency
+     * @param timestamp  The current block timestamp.
+     */
+    event BuySBTByERC20(
+        uint256 indexed soulBoundTokenId,
+        address indexed exchangeWallet,
+        uint256 indexed sbtValue,
+        address currency,
         uint256 timestamp
     );
 
@@ -1149,6 +1192,20 @@ library Events {
     );
 
 
+    /**
+     * @notice Emitted when a currency is added to or removed from the ModuleGlobals whitelist.
+     *
+     * @param currency The currency address.
+     * @param prevWhitelisted Whether or not the currency was previously whitelisted.
+     * @param newWhitelisted Whether or not the currency is whitelisted.
+     * @param timestamp The current block timestamp.
+     */
+    event ModuleGlobalsCurrencyWhitelisted(
+        address indexed currency,
+        bool indexed prevWhitelisted,
+        bool indexed newWhitelisted,
+        uint256 timestamp
+    );
 
 }
 

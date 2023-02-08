@@ -115,12 +115,10 @@ contract Voucher is
 
         if (msg.sender != IManager(_manager).getWalletBySoulBoundTokenId(soulBoundTokenId) ) {
             revert Errors.Unauthorized();
-            return 0;
         }
 
         if (amountSBT == 0)  {
             revert Errors.AmountSBTIsZero();
-            return 0;
         }
         
         if (_userAmountLimit > 0 ){
@@ -130,10 +128,13 @@ contract Voucher is
             uint256 _tokenId = _generateNextVoucherId();
 
             address _sbt =  IModuleGlobals(MODULE_GLOBALS).getSBT();
-            address _bankTreasury = IModuleGlobals(MODULE_GLOBALS).getTreasury();
 
             //not need to approve this contract first 
-            INFTDerivativeProtocolTokenV1(_sbt).transferValue(soulBoundTokenId, BANK_TREASURY_SOUL_BOUND_TOKENID, amountSBT);
+            INFTDerivativeProtocolTokenV1(_sbt).transferValue(
+                soulBoundTokenId, 
+                BANK_TREASURY_SOUL_BOUND_TOKENID, 
+                amountSBT
+            );
 
             _mint(account, _tokenId, amountSBT, "");
 
@@ -390,7 +391,7 @@ contract Voucher is
         _setURIPrefix(_newBaseMetadataURI);
     }
 
-    function setGlobalModule(address moduleGlobals) 
+    function setGlobalModules(address moduleGlobals) 
         external 
         nonReentrant
         whenNotPaused  

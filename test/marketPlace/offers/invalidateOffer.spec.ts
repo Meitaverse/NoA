@@ -60,8 +60,13 @@ import {
   bankTreasuryContract,
   deployer,
   voucherContract,
-  marketPlaceContract
+  marketPlaceContract,
+  userThree,
+  userThreeAddress,
+  NickName2
 } from '../../__setup.spec';
+import { ContractTransaction, ethers } from 'ethers';
+import { getEarnestFundsExpectedExpiration } from '../../helpers/earnestFunds';
 
 let derivativeNFT: DerivativeNFT;
 
@@ -70,10 +75,12 @@ const SALE_ID = 1;
 const THIRD_DNFT_TOKEN_ID =3;
 const SALE_PRICE = 100;
 const OFFER_PRICE = 120;
+const BID_PRICE = 110;
 const INITIAL_EARNESTFUNDS = 10000;
 
 let receipt: TransactionReceipt;
-let auctionId = 0;
+let expiry: number;
+let auctionId =1;
 
 makeSuiteCleanRoom('Market Place', function () {
 
@@ -96,13 +103,13 @@ makeSuiteCleanRoom('Market Place', function () {
         sbtContract.address,
         INITIAL_EARNESTFUNDS
       );
-
+      
       expect(
-      await createProfileReturningTokenId({
+        await createProfileReturningTokenId({
             sender: userTwo,
             vars: {
             wallet: userTwoAddress,
-            nickName: NickName3,
+            nickName: NickName2,
             imageURI: MOCK_PROFILE_URI,
             },
           }) 
@@ -111,16 +118,43 @@ makeSuiteCleanRoom('Market Place', function () {
       await manager.connect(governance).mintSBTValue(THIRD_PROFILE_ID, parseEther('10'));
       
       // @notice MUST deposit SBT value into bank treasury before buy
-      await bankTreasuryContract.connect(userTwo).deposit(
+       await bankTreasuryContract.connect(userTwo).deposit(
         THIRD_PROFILE_ID,
         sbtContract.address,
-        10000
+        INITIAL_EARNESTFUNDS
       );
-      expect(await bankTreasuryContract['balanceOf(address,uint256)'](sbtContract.address, THIRD_PROFILE_ID)).to.eq(10000);
+      expect(
+        await bankTreasuryContract['balanceOf(address,uint256)'](
+            sbtContract.address, 
+            THIRD_PROFILE_ID)
+      ).to.eq(INITIAL_EARNESTFUNDS);
+
+      //registed userThree
+      expect(
+        await createProfileReturningTokenId({
+            sender: userThree,
+            vars: {
+                wallet: userThreeAddress,
+                nickName: NickName3,
+                imageURI: MOCK_PROFILE_URI,
+            },
+          }) 
+        ).to.eq(FOUR_PROFILE_ID);
+
+      await manager.connect(governance).mintSBTValue(FOUR_PROFILE_ID, parseEther('10'));
       
-      
-      expect(await manager.getWalletBySoulBoundTokenId(SECOND_PROFILE_ID)).to.eq(userAddress);
-      expect(await manager.getWalletBySoulBoundTokenId(THIRD_PROFILE_ID)).to.eq(userTwoAddress);
+      // @notice MUST deposit SBT value into bank treasury before buy
+       await bankTreasuryContract.connect(userThree).deposit(
+        FOUR_PROFILE_ID,
+        sbtContract.address,
+        INITIAL_EARNESTFUNDS
+      );
+      expect(
+        await bankTreasuryContract['balanceOf(address,uint256)'](
+            sbtContract.address, 
+            FOUR_PROFILE_ID)
+      ).to.eq(INITIAL_EARNESTFUNDS);
+
       
       expect(
         await createHubReturningHubId({
@@ -219,88 +253,101 @@ makeSuiteCleanRoom('Market Place', function () {
         await derivativeNFT.ownerOf(FIRST_DNFT_TOKEN_ID)
       ).to.eq(userAddress);
 
+      // approval market contract
       await derivativeNFT.connect(user).setApprovalForAll(marketPlaceContract.address, true);
-     
-      //approve market contract
-    //  await derivativeNFT.connect(user)['approve(address,uint256)'](marketPlaceContract.address, FIRST_DNFT_TOKEN_ID);
-        
 
-      await waitForTx(
-        marketPlaceContract.connect(user).setBuyPrice({
-          soulBoundTokenId: SECOND_PROFILE_ID,
-          derivativeNFT: derivativeNFT.address,
-          tokenId: FIRST_DNFT_TOKEN_ID,
-          currency: sbtContract.address,
-          salePrice: SALE_PRICE,
-        })
+      // Make an offer to accept
+      receipt = await waitForTx(
+         marketPlaceContract.connect(userTwo).makeOffer(
+         {
+            soulBoundTokenIdBuyer: THIRD_PROFILE_ID,
+            derivativeNFT: derivativeNFT.address, 
+            tokenId: FIRST_DNFT_TOKEN_ID, 
+            currency: sbtContract.address,
+            amount: SALE_PRICE * 11,
+            soulBoundTokenIdReferrer: 0,
+         })
       );
 
+      expiry = await getEarnestFundsExpectedExpiration(receipt);
 
-    // Create an auction
-    await expect(
-        marketPlaceContract.connect(user).createReserveAuction(
+       // Create an auction to invalidate the offer
+       await marketPlaceContract.connect(user).createReserveAuction(
             SECOND_PROFILE_ID,
             derivativeNFT.address, 
             FIRST_DNFT_TOKEN_ID, 
             sbtContract.address,
             SALE_PRICE
-        )
-    ).to.not.be.reverted;
-   
+        );
+        
+        // The offer is still valid when there is a reserve price
+        const offer = await marketPlaceContract.getOffer(derivativeNFT.address, FIRST_DNFT_TOKEN_ID);
+        expect(offer.amount).to.eq(SALE_PRICE * 11);
+       
   });
 
-
-  context('The buy price is invalidated when the first bid is placed', function () {
-    
-    beforeEach(async () => {
-      auctionId = (await marketPlaceContract.connect(user).getReserveAuctionIdFor(
-        derivativeNFT.address, 
-        FIRST_DNFT_TOKEN_ID, 
-      )).toNumber();
-      console.log('\n\t getReserveAuctionIdFor, auctionId:', auctionId)
-            
-      let info = await marketPlaceContract.getReserveAuction(1);
-      console.log('\n\t getReserveAuction, soulBoundTokenId:', info.soulBoundTokenId)
-      console.log('\t\t, --- derivativeNFT:', info.derivativeNFT)
-      console.log('\t\t, --- projectId:', info.projectId)
-      console.log('\t\t, --- tokenId:', info.tokenId)
-      console.log('\t\t, --- units:', info.units)
-      console.log('\t\t, --- seller:', info.seller)
-      console.log('\t\t, --- units:', info.units)
-      console.log('\t\t, --- duration:', info.duration)
-      console.log('\t\t, --- extensionDuration:', info.extensionDuration)
-      console.log('\t\t, --- endTime:', info.endTime)
-      console.log('\t\t, --- bidder:', info.bidder)
-      console.log('\t\t, --- soulBoundTokenIdBidder:', info.soulBoundTokenIdBidder)
-      console.log('\t\t, --- amount:', info.amount)
-
-
-      // When a bid is placed, the dNFT is reserved for the winner of the auction
-      receipt = await waitForTx(
-          marketPlaceContract.connect(userTwo).placeBid(
-              THIRD_PROFILE_ID,
-              auctionId,
-              SALE_PRICE * 11 + 2,
-              0,
-          )
-      );
-    });
-    
-
-    it("Emits BuyPriceInvalidated", async () => {
-
-      matchEvent(
-        receipt,
-        'BuyPriceInvalidated',
-        [
-            derivativeNFT.address, 
-            FIRST_DNFT_TOKEN_ID
-        ],
-      );
+  context('Invalidate on auction start', function () {
+    beforeEach(async function () {
+        // When a bid is placed by userThree, the dNFT is reserved for the winner of the auction
+        receipt = await waitForTx(
+            marketPlaceContract.connect(userThree).placeBid(
+                FOUR_PROFILE_ID, //soulBoundTokenIdBidder
+                auctionId, 
+                SALE_PRICE * 11, 
+                0
+            )
+        );
 
     });
-    
 
+    it("Emits OfferInvalidated", async () => {
+
+        matchEvent(
+            receipt,
+            'OfferInvalidated',
+            [
+                derivativeNFT.address, 
+                FIRST_DNFT_TOKEN_ID
+            ],
+        );
+    });
+
+    it("The EarnestFunds balance is now available for use", async () => {
+
+      const auctionInfo = await marketPlaceContract.getReserveAuction(auctionId);
+      // console.log("\n\t-----getReserveAuction: ");
+      // console.log("\t\t-----auctionInfo.soulBoundTokenId: ", auctionInfo.soulBoundTokenId);
+      // console.log("\t\t-----auctionInfo.soulBoundTokenIdBidder: ", auctionInfo.soulBoundTokenIdBidder);
+      // console.log("\t\t-----auctionInfo.reservePrice: ", auctionInfo.reservePrice);
+      // console.log("\t\t-----auctionInfo.units: ", auctionInfo.units);
+      // console.log("\t\t-----auctionInfo.amount: ", auctionInfo.amount);
+
+      const freeBalance_userTwo = await bankTreasuryContract['balanceOf(address,uint256)'](sbtContract.address, THIRD_PROFILE_ID);
+      // console.log("\n\t\t-----userTwo freeBalance: ", freeBalance_userTwo);
+      const escrowBalance_userTwo = await bankTreasuryContract['escrowBalanceOf(address,uint256)'](sbtContract.address, THIRD_PROFILE_ID)
+      // console.log("\t\t-----userTwo escrowBalance: ", escrowBalance_userTwo);
+
+      const freeBalance_userThree = await bankTreasuryContract['balanceOf(address,uint256)'](sbtContract.address, FOUR_PROFILE_ID);
+      // console.log("\n\t\t-----userThree freeBalance: ", freeBalance_userThree);
+      const escrowBalance_userThree = await bankTreasuryContract['escrowBalanceOf(address,uint256)'](sbtContract.address, FOUR_PROFILE_ID)
+      // console.log("\t\t-----userThree escrowBalance: ", escrowBalance_userThree);
+
+      expect(freeBalance_userTwo).to.eq(INITIAL_EARNESTFUNDS);
+      expect(escrowBalance_userTwo).to.eq(0);
+      expect(freeBalance_userThree).to.eq(INITIAL_EARNESTFUNDS - (SALE_PRICE * 11));
+      expect(escrowBalance_userThree).to.eq(0);
+    });
+  
+      it("Token lockup does not apply", async () => {
+        const lockups = await bankTreasuryContract.getLockups(sbtContract.address, THIRD_PROFILE_ID);
+        expect(lockups.amounts.length).to.eq(0);
+      });
+
+      it("The offer is no longer found", async () => {
+        const offer = await marketPlaceContract.getOffer(derivativeNFT.address, FIRST_DNFT_TOKEN_ID);
+        expect(offer.amount).to.eq(0);
+        expect(offer.buyer).to.eq(ethers.constants.AddressZero);
+      });
   });
   
 

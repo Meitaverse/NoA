@@ -71,6 +71,7 @@ const SALE_ID = 1;
 const THIRD_DNFT_TOKEN_ID =3;
 const SALE_PRICE = 100;
 const OFFER_PRICE = 120;
+const INITIAL_EARNESTFUNDS = 10000;
 
 let receipt: TransactionReceipt;
 let auctionId = 0;
@@ -91,7 +92,11 @@ makeSuiteCleanRoom('Market Place', function () {
              
       //mint some Values to user
       await manager.connect(governance).mintSBTValue(SECOND_PROFILE_ID, parseEther('10'));
-
+      await bankTreasuryContract.connect(user).deposit(
+        SECOND_PROFILE_ID,
+        sbtContract.address,
+        INITIAL_EARNESTFUNDS
+      );
 
       expect(
       await createProfileReturningTokenId({
@@ -107,9 +112,13 @@ makeSuiteCleanRoom('Market Place', function () {
       await manager.connect(governance).mintSBTValue(THIRD_PROFILE_ID, parseEther('10'));
       
       // @notice MUST deposit SBT value into bank treasury before buy
-      await sbtContract.connect(userTwo)['transferFrom(uint256,uint256,uint256)'](THIRD_PROFILE_ID, FIRST_PROFILE_ID, parseEther('1'));
+      await bankTreasuryContract.connect(userTwo).deposit(
+        THIRD_PROFILE_ID,
+        sbtContract.address,
+        10000
+      );
       
-      expect(await bankTreasuryContract['balanceOf(uint256)'](THIRD_PROFILE_ID)).to.eq(parseEther('1'));
+      expect(await bankTreasuryContract['balanceOf(address,uint256)'](sbtContract.address, THIRD_PROFILE_ID)).to.eq(10000);
       
       
       expect(await manager.getWalletBySoulBoundTokenId(SECOND_PROFILE_ID)).to.eq(userAddress);
@@ -185,6 +194,7 @@ makeSuiteCleanRoom('Market Place', function () {
           soulBoundTokenId: SECOND_PROFILE_ID,
           hubId: FIRST_HUB_ID,
           projectId: FIRST_PROJECT_ID,
+          currency: sbtContract.address,
           amount: 11,
           salePrice: DEFAULT_COLLECT_PRICE,
           royaltyBasisPoints: Default_royaltyBasisPoints,              
@@ -219,7 +229,7 @@ makeSuiteCleanRoom('Market Place', function () {
                 SECOND_PROFILE_ID,
                 derivativeNFT.address, 
                 FIRST_DNFT_TOKEN_ID, 
-                11,
+                sbtContract.address,
                 SALE_PRICE
             )
       );
@@ -237,7 +247,6 @@ makeSuiteCleanRoom('Market Place', function () {
       console.log('\t\t  --- derivativeNFT:', info.derivativeNFT)
       console.log('\t\t  --- projectId:', info.projectId)
       console.log('\t\t  --- tokenId:', info.tokenId)
-      console.log('\t\t  --- tokenIdInEscrow:', info.tokenIdInEscrow)
       console.log('\t\t  --- seller:', info.seller)
       console.log('\t\t  --- units:', info.units)
    
@@ -270,7 +279,7 @@ makeSuiteCleanRoom('Market Place', function () {
 
     it("The DNFT has been returned to the creator", async () => {
         expect(
-            await derivativeNFT.ownerOf(SECOND_DNFT_TOKEN_ID)
+            await derivativeNFT.ownerOf(FIRST_DNFT_TOKEN_ID)
           ).to.eq(userAddress);
     });
 

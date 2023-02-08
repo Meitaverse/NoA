@@ -4,6 +4,7 @@ pragma solidity ^0.8.13;
 
 import '../libraries/Constants.sol';
 import {Errors} from '../libraries/Errors.sol';
+import {DataTypes} from '../libraries/DataTypes.sol';
 import {Events} from '../libraries/Events.sol';
 import {IModuleGlobals} from '../interfaces/IModuleGlobals.sol';
 import {INFTDerivativeProtocolTokenV1} from "../interfaces/INFTDerivativeProtocolTokenV1.sol";
@@ -23,6 +24,7 @@ import "hardhat/console.sol";
  * 
  */
 contract ModuleGlobals is IModuleGlobals, GlobalStorage {
+
 
     modifier onlyGov() {
         _validateCallerIsGovernance();
@@ -60,6 +62,7 @@ contract ModuleGlobals is IModuleGlobals, GlobalStorage {
         _setVoucher(voucher);
         _setTreasuryFee(treasuryFee);
         _setPublishRoyalty(publishRoyalty);
+
     }
 
     function setManager(address newManager) external override onlyGov {
@@ -244,6 +247,37 @@ contract ModuleGlobals is IModuleGlobals, GlobalStorage {
     
     function _validateCallerIsGovernance() internal view {
         if (msg.sender != _governance) revert Errors.NotGovernance();
+    }
+
+    function whitelistCurrency(address currency, bool toWhitelist) external override onlyGov {
+        _whitelistCurrency(currency, toWhitelist);
+    }
+
+    function isCurrencyWhitelisted(address currency) external view override returns (bool) {
+        return _currencyWhitelisted[currency];
+    }
+
+    function _whitelistCurrency(address currency, bool toWhitelist) internal {
+        if (currency == address(0)) revert Errors.InitParamsInvalid();
+        bool prevWhitelisted = _currencyWhitelisted[currency];
+        _currencyWhitelisted[currency] = toWhitelist;
+        emit Events.ModuleGlobalsCurrencyWhitelisted(
+            currency,
+            prevWhitelisted,
+            toWhitelist,
+            block.timestamp
+        );
+    }
+
+    /// @notice Just avoid Manager proxy by admin
+    function getHubInfo(uint256 hubId) external view returns(DataTypes.HubInfoData memory) {
+        return IManager(_manager).getHubInfo(hubId);
+        
+    }
+
+    /// @notice Just avoid Manager proxy by admin
+    function getPublication(uint256 publishId_) external view returns (DataTypes.Publication memory) {
+        return IManager(_manager).getPublication(publishId_);
     }
 
 }

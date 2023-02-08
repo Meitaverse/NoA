@@ -295,44 +295,48 @@ export class DerivativeNFT__getSlotDetailResultValue0PublicationStruct extends e
     return this[4].toBigInt();
   }
 
+  get currency(): Address {
+    return this[5].toAddress();
+  }
+
   get amount(): BigInt {
-    return this[5].toBigInt();
+    return this[6].toBigInt();
   }
 
   get name(): string {
-    return this[6].toString();
-  }
-
-  get description(): string {
     return this[7].toString();
   }
 
+  get description(): string {
+    return this[8].toString();
+  }
+
   get canCollect(): boolean {
-    return this[8].toBoolean();
+    return this[9].toBoolean();
   }
 
   get materialURIs(): Array<string> {
-    return this[9].toStringArray();
+    return this[10].toStringArray();
   }
 
   get fromTokenIds(): Array<BigInt> {
-    return this[10].toBigIntArray();
+    return this[11].toBigIntArray();
   }
 
   get collectModule(): Address {
-    return this[11].toAddress();
+    return this[12].toAddress();
   }
 
   get collectModuleInitData(): Bytes {
-    return this[12].toBytes();
+    return this[13].toBytes();
   }
 
   get publishModule(): Address {
-    return this[13].toAddress();
+    return this[14].toAddress();
   }
 
   get publishModuleInitData(): Bytes {
-    return this[14].toBytes();
+    return this[15].toBytes();
   }
 }
 
@@ -357,44 +361,48 @@ export class DerivativeNFT__publishInputPublicationStruct extends ethereum.Tuple
     return this[4].toBigInt();
   }
 
+  get currency(): Address {
+    return this[5].toAddress();
+  }
+
   get amount(): BigInt {
-    return this[5].toBigInt();
+    return this[6].toBigInt();
   }
 
   get name(): string {
-    return this[6].toString();
-  }
-
-  get description(): string {
     return this[7].toString();
   }
 
+  get description(): string {
+    return this[8].toString();
+  }
+
   get canCollect(): boolean {
-    return this[8].toBoolean();
+    return this[9].toBoolean();
   }
 
   get materialURIs(): Array<string> {
-    return this[9].toStringArray();
+    return this[10].toStringArray();
   }
 
   get fromTokenIds(): Array<BigInt> {
-    return this[10].toBigIntArray();
+    return this[11].toBigIntArray();
   }
 
   get collectModule(): Address {
-    return this[11].toAddress();
+    return this[12].toAddress();
   }
 
   get collectModuleInitData(): Bytes {
-    return this[12].toBytes();
+    return this[13].toBytes();
   }
 
   get publishModule(): Address {
-    return this[13].toAddress();
+    return this[14].toAddress();
   }
 
   get publishModuleInitData(): Bytes {
-    return this[14].toBytes();
+    return this[15].toBytes();
   }
 }
 
@@ -632,7 +640,7 @@ export class DerivativeNFT extends ethereum.SmartContract {
   getSlotDetail(slot_: BigInt): DerivativeNFT__getSlotDetailResultValue0Struct {
     let result = super.call(
       "getSlotDetail",
-      "getSlotDetail(uint256):(((uint256,uint256,uint256,uint256,uint256,uint256,string,string,bool,string[],uint256[],address,bytes,address,bytes),string,uint256))",
+      "getSlotDetail(uint256):(((uint256,uint256,uint256,uint256,uint256,address,uint256,string,string,bool,string[],uint256[],address,bytes,address,bytes),string,uint256))",
       [ethereum.Value.fromUnsignedBigInt(slot_)]
     );
 
@@ -646,7 +654,7 @@ export class DerivativeNFT extends ethereum.SmartContract {
   ): ethereum.CallResult<DerivativeNFT__getSlotDetailResultValue0Struct> {
     let result = super.tryCall(
       "getSlotDetail",
-      "getSlotDetail(uint256):(((uint256,uint256,uint256,uint256,uint256,uint256,string,string,bool,string[],uint256[],address,bytes,address,bytes),string,uint256))",
+      "getSlotDetail(uint256):(((uint256,uint256,uint256,uint256,uint256,address,uint256,string,string,bool,string[],uint256[],address,bytes,address,bytes),string,uint256))",
       [ethereum.Value.fromUnsignedBigInt(slot_)]
     );
     if (result.reverted) {
@@ -810,7 +818,7 @@ export class DerivativeNFT extends ethereum.SmartContract {
   ): BigInt {
     let result = super.call(
       "publish",
-      "publish(uint256,(uint256,uint256,uint256,uint256,uint256,uint256,string,string,bool,string[],uint256[],address,bytes,address,bytes),address):(uint256)",
+      "publish(uint256,(uint256,uint256,uint256,uint256,uint256,address,uint256,string,string,bool,string[],uint256[],address,bytes,address,bytes),address):(uint256)",
       [
         ethereum.Value.fromUnsignedBigInt(publishId),
         ethereum.Value.fromTuple(publication),
@@ -828,7 +836,7 @@ export class DerivativeNFT extends ethereum.SmartContract {
   ): ethereum.CallResult<BigInt> {
     let result = super.tryCall(
       "publish",
-      "publish(uint256,(uint256,uint256,uint256,uint256,uint256,uint256,string,string,bool,string[],uint256[],address,bytes,address,bytes),address):(uint256)",
+      "publish(uint256,(uint256,uint256,uint256,uint256,uint256,address,uint256,string,string,bool,string[],uint256[],address,bytes,address,bytes),address):(uint256)",
       [
         ethereum.Value.fromUnsignedBigInt(publishId),
         ethereum.Value.fromTuple(publication),
@@ -1440,44 +1448,48 @@ export class PublishCallPublicationStruct extends ethereum.Tuple {
     return this[4].toBigInt();
   }
 
+  get currency(): Address {
+    return this[5].toAddress();
+  }
+
   get amount(): BigInt {
-    return this[5].toBigInt();
+    return this[6].toBigInt();
   }
 
   get name(): string {
-    return this[6].toString();
-  }
-
-  get description(): string {
     return this[7].toString();
   }
 
+  get description(): string {
+    return this[8].toString();
+  }
+
   get canCollect(): boolean {
-    return this[8].toBoolean();
+    return this[9].toBoolean();
   }
 
   get materialURIs(): Array<string> {
-    return this[9].toStringArray();
+    return this[10].toStringArray();
   }
 
   get fromTokenIds(): Array<BigInt> {
-    return this[10].toBigIntArray();
+    return this[11].toBigIntArray();
   }
 
   get collectModule(): Address {
-    return this[11].toAddress();
+    return this[12].toAddress();
   }
 
   get collectModuleInitData(): Bytes {
-    return this[12].toBytes();
+    return this[13].toBytes();
   }
 
   get publishModule(): Address {
-    return this[13].toAddress();
+    return this[14].toAddress();
   }
 
   get publishModuleInitData(): Bytes {
-    return this[14].toBytes();
+    return this[15].toBytes();
   }
 }
 

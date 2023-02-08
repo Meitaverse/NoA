@@ -1,4 +1,26 @@
 
+# Protocol Contract
+type ProtocolContract @entity {
+  "Contract-Name"
+  id: ID!
+
+  "The contract"
+  contract: Bytes!
+}
+
+# Currency Whitelist
+type CurrencyWhitelist @entity {
+  "CurrencyAddress-Name"
+  id: ID!
+
+  "The currency contract"
+  currency: Bytes!
+
+  whitelisted: Boolean!
+
+  timestamp: BigInt!
+}
+
 type Account @entity {
   "The account's address"
   id: ID!
@@ -18,8 +40,8 @@ type Account @entity {
   "Link to Hub "
   hub: Hub @derivedFrom(field: "hubOwner")
 
-  "Deposit history to bank treasury by this account"
-  deposits: [ERC3525ReceivedHistory!]! @derivedFrom(field: "from")
+  "Bank treasury On Received SBT Value history by this account"
+  sbtValueReceivedHistories: [SBTValueReceivedHistory!]! @derivedFrom(field: "from")
 
   "All Voucher mint history by this account"
   voucherMintHistories: [NFTVoucherHistory!]! @derivedFrom(field: "account")
@@ -42,14 +64,14 @@ type Account @entity {
   "All prepare publish history by this account"
   preparePublishFeesHistories: [PreparePublishFeesHistory!]! @derivedFrom(field: "publisher")
 
-  "All collected history by this account"
-  collectHistories: [FeesForCollectHistory!]! @derivedFrom(field: "collector")
+  "All distributed history by this account"
+  distributeHistories: [DistributeHistory!]! @derivedFrom(field: "collector")
 
   "All fee history that is genesis creator by this account"
-  genesisCreatorFeeHistories: [FeesForCollectHistory!]! @derivedFrom(field: "genesisCreator")
+  genesisCreatorFeeHistories: [DistributeHistory!]! @derivedFrom(field: "genesisCreator")
 
   "All fee history that is previous creator by this account"
-  previousCreatorFeeHistories: [FeesForCollectHistory!]! @derivedFrom(field: "previousCreator")
+  previousCreatorFeeHistories: [DistributeHistory!]! @derivedFrom(field: "previousCreator")
 
   "All airdroped dNFTs from  this account"
   dnftAirdropedHistories: [DnftAirdropedHistory!]! @derivedFrom(field: "from")
@@ -72,11 +94,11 @@ type Account @entity {
   "dNFT transfers to this account from another"
   nftTransfersIn: [DnftTransfer!]! @derivedFrom(field: "to")
 
-  "The total SBTValue earned by this account, excluding any dNFTs minted by this creator"
-  netRevenueInSBTValue: BigDecimal!
+  "The total Value earned by this account, excluding any dNFTs minted by this creator"
+  netRevenue: BigInt!
 
-  "The total SBTValue earned by this account but still pending finalization, excluding any dNFTs minted by this creator"
-  netRevenuePendingInSBTValue: BigDecimal!
+  "The total Value earned by this account but still pending finalization, excluding any dNFTs minted by this creator"
+  netRevenuePending: BigInt!
 
   "Approvals granted by this account, note this does not include dnft.approvedSpender"
   dnftAccountApprovals: [DnftAccountApproval!]! @derivedFrom(field: "owner")
@@ -87,8 +109,8 @@ type Account @entity {
   "dNFT actions initiated by this account"
   dnftHistory: [DnftHistory!]! @derivedFrom(field: "actorAccount")
 
-  "All Fsbt entries related to this account."
-  fsbt: [Fsbt!]! @derivedFrom(field: "user")
+  "All CurrencyEarnestFunds entries related to this account."
+  currencyEarnestFunds: [CurrencyEarnestFunds!]! @derivedFrom(field: "user")
 
   "All offers made by this account"
   nftOffersMade: [DnftMarketOffer!]! @derivedFrom(field: "buyer")
@@ -214,7 +236,7 @@ type SBTSlotChangedHistory @entity {
   timestamp: BigInt!
 } 
 
-# Mint SBTValue history    
+# Mint Value history    
 type MintSBTValueHistory @entity {
   "TransactionHash-logsIndex"
   id: ID!
@@ -330,6 +352,8 @@ type Publication @entity {
   salePrice: BigInt!
 
   royaltyBasisPoints: BigInt!
+
+  currency: Bytes!
 
   amount: BigInt!
 
@@ -457,8 +481,8 @@ type DnftAirdropedHistory @entity {
   timestamp: BigInt!
 }
 
-# Bank Contract Deposit event
-type DepositHistory @entity {
+# Bank Contract Receive Ether event
+type DepositEtherHistory @entity {
   id: ID!
   sender: Bytes!
   amount: BigInt!
@@ -467,7 +491,6 @@ type DepositHistory @entity {
   data: Bytes
   timestamp: BigInt!
 }
-
 
 type Transaction @entity {
   id: ID!
@@ -547,8 +570,8 @@ type ProfileCreatorWhitelistedRecord @entity {
   timestamp: BigInt!
 }
 
-# FeeCollectModule
-type FeesForCollectHistory @entity {
+# In FeeCollectModule when event Distribute is emitted
+type DistributeHistory @entity {
   id: ID!
   publish: Publish!
   tokenId: BigInt!
@@ -595,8 +618,8 @@ type StateSetHistory @entity {
   timestamp: BigInt!
 }
 
-# Bank treasury ERC3525Received history
-type ERC3525ReceivedHistory @entity {
+# Bank treasury SBT Value Received history
+type SBTValueReceivedHistory @entity {
   id: ID!
   sender: Bytes!
   operator: Bytes!
@@ -605,6 +628,15 @@ type ERC3525ReceivedHistory @entity {
   value: BigInt!
   data: Bytes!
   gas: BigInt!
+  timestamp: BigInt!
+}
+
+# Bank treasury earnest funds staked history
+type DepositHistory @entity {
+  id: ID!
+  account: Account!
+  currency: Bytes!
+  amount: BigInt!
   timestamp: BigInt!
 }
 
@@ -727,8 +759,8 @@ type TemplateWhitelistedRecord @entity {
   timestamp: BigInt!
 }
 
-# Bank treasury ExchangeSBTByEth history
-type ExchangeSBTByEthHistory @entity {
+# Bank treasury BuySBTByEth history
+type BuySBTByEthHistory @entity {
   id: ID!
   account: Account!
   exchangeWallet: Bytes!
@@ -782,17 +814,17 @@ type Creator @entity {
   "All dNFTs minted by this creator"
   dnfts: [DNFT!]! @derivedFrom(field: "creator")
 
-  "The total SBTValue for sales of dNFTs this creator minted"
-  netSalesInSBTValue: BigDecimal!
+  "The total Value for sales of dNFTs this creator minted"
+  netSales: BigInt!
 
-  "The total SBTValue for sales of dNFTs this creator minted but still pending finalization"
-  netSalesPendingInSBTValue: BigDecimal!
+  "The total Value for sales of dNFTs this creator minted but still pending finalization"
+  netSalesPending: BigInt!
 
-  "The total SBTValue earned by this creator"
-  netRevenueInSBTValue: BigDecimal!
+  "The total Value earned by this creator"
+  netRevenue: BigInt!
 
-  "The total SBTValue earned by this creator but still pending finalization"
-  netRevenuePendingInSBTValue: BigDecimal!
+  "The total Value earned by this creator but still pending finalization"
+  netRevenuePending: BigInt!
 }
 
 type DerivativeNFTContract @entity {
@@ -888,9 +920,12 @@ type DnftMarketAuction @entity {
 
   "The tx hash where this auction was canceled, if applicable"
   transactionHashCanceled: Bytes
+  
+  "The ERC20 currency contract"
+  currency: Bytes!
 
   "The initial reserve price which needs to be met in order to begin the auction countdown"
-  reservePriceInSBTValue: BigDecimal!
+  reservePrice: BigInt!
 
   "The first bid which met the reserve price"
   initialBid: DnftMarketBid
@@ -902,16 +937,16 @@ type DnftMarketAuction @entity {
   bids: [DnftMarketBid!]! @derivedFrom(field: "dnftMarketAuction")
 
   "How much the creator earned from this auction, set once there a bid is placed"
-  creatorRevenueInSBTValue: BigDecimal
+  creatorRevenue: BigInt
 
   "How much the previous creator earned from this auction, set once there a bid is placed"
-  previousCreatorRevenueInSBTValue: BigDecimal
+  previousCreatorRevenue: BigInt
 
   "How much Foundation earned from this auction, set once there a bid is placed"
-  foundationRevenueInSBTValue: BigDecimal
+  foundationRevenue: BigInt
 
   "How much the owner (if not the creator) earned from this auction, set once there a bid is placed"
-  ownerRevenueInSBTValue: BigDecimal
+  ownerRevenue: BigInt
 
   "How long the auction runs for once the reserve price has been met in seconds"
   duration: BigInt!
@@ -925,8 +960,8 @@ type DnftMarketAuction @entity {
   "How many bids have been placed for any auction on Foundation"
   numberOfBids: BigInt!
 
-  "The volume of SBTValue bid"
-  bidVolumeInSBTValue: BigDecimal!
+  "The volume of Value bid"
+  bidVolume: BigInt!
 
   "The date/time the auction was invalidated in seconds since Unix epoch, if applicable"
   dateInvalidated: BigInt
@@ -938,13 +973,13 @@ type DnftMarketAuction @entity {
   buyReferrer: Account
 
   "Referral fee paid for the winner bid, if applicable"
-  buyReferrerFee: BigDecimal
+  buyReferrerFee: BigInt
 
   "Referral fee paid for the winner bid from owner fee, if applicable"
-  buyReferrerSellerFee: BigDecimal
+  buyReferrerSellerFee: BigInt
 
   "How much Foundation earned from this auction"
-  foundationProtocolFeeInSBTValue: BigDecimal
+  foundationProtocolFee: BigInt
 }
 
 enum DnftMarketBidStatus {
@@ -978,7 +1013,7 @@ type DnftMarketBid @entity {
   transactionHashPlaced: Bytes!
 
   "The size of the bid placed, including fees"
-  amountInSBTValue: BigDecimal!
+  amount: BigInt!
 
   "The current status of this bid"
   status: DnftMarketBidStatus!
@@ -1127,13 +1162,13 @@ type DnftHistory @entity {
   "The destination of the dNFT for events where the dNFT was transferred, null if n/a"
   nftRecipient: Account
 
-  "The value amount associated with this event, in SBTValue. Null if unknown or n/a"
-  amountInSBTValue: BigDecimal
+  "The value amount associated with this event, in Value. Null if unknown or n/a"
+  amount: BigInt
 
-  "The ERC-20 value associated with this event. Null if unknown or SBTValue was used"
+  "The ERC-20 value associated with this event. Null if unknown or Value was used"
   amountInTokens: BigInt
 
-  "The ERC-20 token address associated with this event. Null if unknown or SBTValue was used"
+  "The ERC-20 token address associated with this event. Null if unknown or Value was used"
   tokenAddress: Bytes
 }
 
@@ -1172,20 +1207,27 @@ type PercentSplit @entity {
   dateCreated: BigInt!
 }
 
-type Fsbt @entity {
-  "userAddress"
+type CurrencyEarnestFunds @entity {
+  "currency-userAddress"
   id: ID!
+
+  "The currency contract"
+  currency: Bytes!
+
   user: Account!
-  balanceInSBTValue: BigDecimal!
-  escrow: [FsbtEscrow!]! @derivedFrom(field: "fsbt")
+
+  balance: BigInt!
+
+  escrow: [CurrencyEarnestFundsEscrow!]! @derivedFrom(field: "currencyEarnestFunds")
+
   dateLastUpdated: BigInt!
 }
 
-type FsbtEscrow @entity {
+type CurrencyEarnestFundsEscrow @entity {
   "userAddress-dateExpiry"
   id: ID!
-  fsbt: Fsbt!
-  amountInSBTValue: BigDecimal!
+  currencyEarnestFunds: CurrencyEarnestFunds!
+  amount: BigInt!
   dateExpiry: BigInt!
   transactionHashCreated: Bytes!
   transactionHashRemoved: Bytes
@@ -1234,8 +1276,10 @@ type DnftMarketOffer @entity {
   "The seller which accepted this offer, if applicable"
   seller: Account
 
+  currency: Bytes!
+
   "The value being offered for this dNFT"
-  amountInSBTValue: BigDecimal!
+  amount: BigInt!
 
   "The date/time the offer was initially created in seconds since Unix epoch"
   dateCreated: BigInt!
@@ -1274,16 +1318,16 @@ type DnftMarketOffer @entity {
   transactionHashInvalidated: Bytes
 
   "How much the creator earned from this offer, set once accepted"
-  creatorRevenueInSBTValue: BigDecimal
+  creatorRevenue: BigInt
 
   "How much the previous creator earned from this auction, set once there a bid is placed"
-  previousCreatorRevenueInSBTValue: BigDecimal
+  previousCreatorRevenue: BigInt
 
   "How much Protocol earned from this offer, set once accepted"
-  foundationRevenueInSBTValue: BigDecimal
+  foundationRevenue: BigInt
 
   "How much the owner (if not the creator) earned from this offer, set once accepted"
-  ownerRevenueInSBTValue: BigDecimal
+  ownerRevenue: BigInt
 
   "True if this is the first sale on Foundation and being sold by the creator, not known until the offer is accepted"
   isPrimarySale: Boolean
@@ -1298,13 +1342,13 @@ type DnftMarketOffer @entity {
   buyReferrer: Account
 
   "Referral fee paid for the accepted offer, if applicable"
-  buyReferrerFee: BigDecimal
+  buyReferrerFee: BigInt
 
   "Referral fee paid for the accepted offer from owner fee, if applicable"
-  buyReferrerSellerFee: BigDecimal
+  buyReferrerSellerFee: BigInt
 
   "How much Foundation earned from this offer, set once accepted"
-  foundationProtocolFeeInSBTValue: BigDecimal
+  foundationProtocolFee: BigInt
 }
 
 enum DnftMarketBuyNowStatus {
@@ -1343,17 +1387,17 @@ type DnftMarketBuyNow @entity {
   "The seller which owns the dNFT."
   seller: Account!
 
-  "The value being bought at for this dNFT"
-  amountInSBTValue: BigDecimal!
+  "The currency"
+  currency: Bytes!
+
+  "The sal price of this dNFT"
+  salePrice: BigInt!
 
   "The units put on sell for this dNFT"
-  tokenIdEscrow: BigInt!
+  tokenId: BigInt!
 
   "The units put on sell for this dNFT"
-  onSellUnits: BigInt!
-
-  "The units put on sell for this dNFT"
-  seledUnits: BigInt!
+  units: BigInt!
 
   "The date/time the buy now was initially created in seconds since Unix epoch"
   dateCreated: BigInt!
@@ -1383,16 +1427,16 @@ type DnftMarketBuyNow @entity {
   transactionHashInvalidated: Bytes
 
   "How much the creator earned from this buy now, set once accepted"
-  creatorRevenueInSBTValue: BigDecimal
+  creatorRevenue: BigInt
 
   "How much the previous creator earned from this auction, set once there a bid is placed"
-  previousCreatorRevenueInSBTValue: BigDecimal
+  previousCreatorRevenue: BigInt
 
   "How much Protocol earned from this buy now, set once accepted"
-  foundationRevenueInSBTValue: BigDecimal
+  foundationRevenue: BigInt
 
   "How much the owner (if not the creator) earned from this buy now, set once accepted"
-  ownerRevenueInSBTValue: BigDecimal
+  ownerRevenue: BigInt
 
   "True if this is the first sale on Foundation and being sold by the creator, not known until the offer is accepted"
   isPrimarySale: Boolean
@@ -1401,13 +1445,13 @@ type DnftMarketBuyNow @entity {
   buyReferrer: Account
 
   "Referral fee paid for the buy, if applicable"
-  buyReferrerFee: BigDecimal
+  buyReferrerFee: BigInt
 
   "Referral fee paid for the buy from owner fee, if applicable"
-  buyReferrerSellerFee: BigDecimal
+  buyReferrerSellerFee: BigInt
 
   "How much Foundation earned from this buy now, set once accepted"
-  foundationProtocolFeeInSBTValue: BigDecimal
+  foundationProtocolFee: BigInt
 }
 
 ### DNFT ###
@@ -1467,17 +1511,17 @@ type DNFT @entity {
   "All history ever collected for this dNFT"
   collectedHistories: [DnftCollectedHistory!]! @derivedFrom(field: "dnft")
 
-  "The total SBTValue for sales of this dNFT"
-  netSalesInSBTValue: BigDecimal!
+  "The total Value for sales of this dNFT"
+  netSales: BigInt!
 
-  "The total SBTValue for sales of this dNFT but still pending finalization"
-  netSalesPendingInSBTValue: BigDecimal!
+  "The total Value for sales of this dNFT but still pending finalization"
+  netSalesPending: BigInt!
 
-  "The total SBTValue earned by the creator from this dNFT"
-  netRevenueInSBTValue: BigDecimal!
+  "The total Value earned by the creator from this dNFT"
+  netRevenue: BigInt!
 
-  "The total SBTValue earned by this creator from this dNFT but still pending finalization"
-  netRevenuePendingInSBTValue: BigDecimal!
+  "The total Value earned by this creator from this dNFT but still pending finalization"
+  netRevenuePending: BigInt!
 
   "True if the dNFT has not yet been sold in the Foundation market"
   isFirstSale: Boolean!
@@ -1504,7 +1548,7 @@ type DNFT @entity {
   percentSplit: PercentSplit
 
   "The most recent sale price in the Foundation marketplace, if there has been one"
-  lastSalePriceInSBTValue: BigDecimal
+  lastSalePrice: BigInt
 
   "All offers made for this dNFT"
   nftOffers: [DnftMarketOffer!]! @derivedFrom(field: "dnft")
@@ -1680,3 +1724,5 @@ type DnftImageURI @entity {
 
   timestamp: BigInt!
 }
+
+

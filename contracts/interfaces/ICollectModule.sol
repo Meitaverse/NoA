@@ -25,6 +25,7 @@ interface ICollectModule {
         uint256 publishId,
         uint256 ownershipSoulBoundTokenId,
         uint256 tokenId,
+        address currency,
         uint256 amount,
         bytes calldata data
     ) external;
@@ -36,6 +37,7 @@ interface ICollectModule {
      * @param collectorSoulBoundTokenId The collector token ID of the profile associated with the publication being collected.
      * @param publishId The publish Id.
      * @param payValue The total amount of SBT value will pay for
+     * @param useEarnestFundsForPay Which way will pay for, true - EarnestFunds, false - SBT value in user wallet
      * @param data Arbitrary data __passed from the collector!__ to be decoded.
      */
     function processCollect(
@@ -43,6 +45,7 @@ interface ICollectModule {
         uint256 collectorSoulBoundTokenId,
         uint256 publishId,
         uint96 payValue,
+        bool useEarnestFundsForPay,
         bytes calldata data
     ) external returns (DataTypes.RoyaltyAmounts memory);
 }

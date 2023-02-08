@@ -24,7 +24,7 @@ task("bankTreasury-set", "bankTreasury-set function")
   const moduleGlobals = await loadContract(hre, ModuleGlobals__factory, "ModuleGlobals");
 
   console.log('\n\t--- bankTreasury set moduleGlobals address --');
-  await waitForTx( bankTreasury.connect(governance).setGlobalModule(moduleGlobals.address));
+  await waitForTx( bankTreasury.connect(governance).setGlobalModules(moduleGlobals.address));
 
   console.log(
     "\t--- bankTreasury name: ", (await bankTreasury.name())

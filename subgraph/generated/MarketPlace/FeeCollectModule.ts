@@ -62,28 +62,32 @@ export class FeeCollectModule__getPublicationDataResultValue0Struct extends ethe
     return this[2].toBigInt();
   }
 
-  get amount(): BigInt {
-    return this[3].toBigInt();
+  get currency(): Address {
+    return this[3].toAddress();
   }
 
-  get salePrice(): BigInt {
+  get amount(): BigInt {
     return this[4].toBigInt();
   }
 
-  get royaltyBasisPoints(): BigInt {
+  get salePrice(): BigInt {
     return this[5].toBigInt();
   }
 
-  get ownershipSoulBoundTokenId(): BigInt {
+  get royaltyBasisPoints(): BigInt {
     return this[6].toBigInt();
   }
 
+  get ownershipSoulBoundTokenId(): BigInt {
+    return this[7].toBigInt();
+  }
+
   get genesisFee(): i32 {
-    return this[7].toI32();
+    return this[8].toI32();
   }
 
   get previousFee(): i32 {
-    return this[8].toI32();
+    return this[9].toI32();
   }
 }
 
@@ -215,7 +219,7 @@ export class FeeCollectModule extends ethereum.SmartContract {
   ): FeeCollectModule__getPublicationDataResultValue0Struct {
     let result = super.call(
       "getPublicationData",
-      "getPublicationData(uint256):((uint256,uint256,uint256,uint256,uint256,uint256,uint256,uint16,uint16))",
+      "getPublicationData(uint256):((uint256,uint256,uint256,address,uint256,uint256,uint256,uint256,uint16,uint16))",
       [ethereum.Value.fromUnsignedBigInt(publishId)]
     );
 
@@ -231,7 +235,7 @@ export class FeeCollectModule extends ethereum.SmartContract {
   > {
     let result = super.tryCall(
       "getPublicationData",
-      "getPublicationData(uint256):((uint256,uint256,uint256,uint256,uint256,uint256,uint256,uint16,uint16))",
+      "getPublicationData(uint256):((uint256,uint256,uint256,address,uint256,uint256,uint256,uint256,uint16,uint16))",
       [ethereum.Value.fromUnsignedBigInt(publishId)]
     );
     if (result.reverted) {
@@ -366,12 +370,16 @@ export class InitializePublicationCollectModuleCall__Inputs {
     return this._call.inputValues[2].value.toBigInt();
   }
 
+  get currency(): Address {
+    return this._call.inputValues[3].value.toAddress();
+  }
+
   get amount(): BigInt {
-    return this._call.inputValues[3].value.toBigInt();
+    return this._call.inputValues[4].value.toBigInt();
   }
 
   get data(): Bytes {
-    return this._call.inputValues[4].value.toBytes();
+    return this._call.inputValues[5].value.toBytes();
   }
 }
 

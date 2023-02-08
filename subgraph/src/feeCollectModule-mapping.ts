@@ -1,7 +1,7 @@
 import { log, Address, BigInt, Bytes, store, TypedMap } from "@graphprotocol/graph-ts";
 
 import {
-    FeesForCollect,
+    Distribute,
 } from "../generated/FeeCollectModule/Events"
 
 import {
@@ -17,15 +17,16 @@ import {
 } from "../generated/FeeCollectModule/SBT"
 
 import {
-    FeesForCollectHistory, Publication,
+    DistributeHistory, Publication,
 } from "../generated/schema"
 import { loadOrCreateAccount } from "./shared/accounts";
 import { loadOrCreatePublish } from "./shared/publish";
 import { loadOrCreateSoulBoundToken } from "./shared/soulBoundToken";
 import { ZERO_ADDRESS } from "../../test/helpers/constants";
+import { getLogId } from "./shared/ids";
 
-export function handleFeesForCollect(event: FeesForCollect): void {
-    log.info("handleFeesForCollect, event.address: {}", [event.address.toHexString()])
+export function handleDistribute(event: Distribute): void {
+    log.info("handleDistribute, event.address: {}", [event.address.toHexString()])
 
     let owner : Address = Address.zero();
     let collector : Address = Address.zero();
@@ -68,8 +69,8 @@ export function handleFeesForCollect(event: FeesForCollect): void {
         }
     }
 
-    let _idString = event.params.collectFeeUsers.collectorSoulBoundTokenId.toString() + "-" +  event.block.timestamp.toString()
-    const history = FeesForCollectHistory.load(_idString) || new FeesForCollectHistory(_idString)
+    let _idString =  getLogId(event)
+    const history = DistributeHistory.load(_idString) || new DistributeHistory(_idString)
 
     if (history) {
         history.owner = loadOrCreateAccount(owner).id
@@ -88,8 +89,5 @@ export function handleFeesForCollect(event: FeesForCollect): void {
         history.timestamp = event.block.timestamp
         history.save()
     }
-
-    //TODO save fee to every account: treasury, genesis creator, previous creator, current owner, referrer
-
   
 }

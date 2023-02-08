@@ -1,20 +1,20 @@
-import { BigDecimal } from "@graphprotocol/graph-ts";
+import { BigInt } from "@graphprotocol/graph-ts";
 
 import { Account, Creator, DNFT } from "../../generated/schema";
 
 export function recordSale(
   nft: DNFT,
   seller: Account,
-  creatorRevenueInSBTValue: BigDecimal | null,
-  previousCreatorRevenueInSBTValue: BigDecimal | null,
-  ownerRevenueInSBTValue: BigDecimal | null,
-  foundationRevenueInSBTValue: BigDecimal | null,
+  creatorRevenue: BigInt | null,
+  previousCreatorRevenue: BigInt | null,
+  ownerRevenue: BigInt | null,
+  foundationRevenue: BigInt | null,
 ): void {
-  if (!creatorRevenueInSBTValue || !previousCreatorRevenueInSBTValue || !ownerRevenueInSBTValue || !foundationRevenueInSBTValue) {
+  if (!creatorRevenue || !previousCreatorRevenue || !ownerRevenue || !foundationRevenue) {
     // This should never occur
     return;
   }
-  let amountInSBTValue = creatorRevenueInSBTValue.plus(previousCreatorRevenueInSBTValue).plus(ownerRevenueInSBTValue).plus(foundationRevenueInSBTValue);
+  let amount = creatorRevenue.plus(previousCreatorRevenue).plus(ownerRevenue).plus(foundationRevenue);
 
   // Creator revenue & sales
   let creator: Creator | null;
@@ -24,19 +24,19 @@ export function recordSale(
     creator = null;
   }
   if (creator) {
-    creator.netRevenueInSBTValue = creator.netRevenueInSBTValue.plus(creatorRevenueInSBTValue);
-    creator.netSalesInSBTValue = creator.netSalesInSBTValue.plus(amountInSBTValue);
+    creator.netRevenue = creator.netRevenue.plus(creatorRevenue);
+    creator.netSales = creator.netSales.plus(amount);
     creator.save();
   }
 
   // Account revenue
-  seller.netRevenueInSBTValue = seller.netRevenueInSBTValue.plus(ownerRevenueInSBTValue);
+  seller.netRevenue = seller.netRevenue.plus(ownerRevenue);
   seller.save();
 
   // NFT revenue & sales
-  nft.netSalesInSBTValue = nft.netSalesInSBTValue.plus(amountInSBTValue);
-  nft.netRevenueInSBTValue = nft.netRevenueInSBTValue.plus(creatorRevenueInSBTValue);
+  nft.netSales = nft.netSales.plus(amount);
+  nft.netRevenue = nft.netRevenue.plus(creatorRevenue);
   nft.isFirstSale = false;
-  nft.lastSalePriceInSBTValue = amountInSBTValue;
+  nft.lastSalePrice = amount;
   nft.save();
 }
