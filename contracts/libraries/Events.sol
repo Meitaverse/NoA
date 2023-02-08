@@ -1071,10 +1071,9 @@ library Events {
     );
 
     /**
-     * @dev Emitted when pay fees for collect
+     * @dev Emitted when pay fees
      *
      * @param publishId  The publishId 
-     * @param tokenId  The tokenId collected
      * @param currenccy  The ERC20 contract
      * @param payValue  The value will pay
      * @param collectFeeUsers The collectFeeUsers data
@@ -1082,7 +1081,6 @@ library Events {
      */
     event Distribute (
         uint256 publishId, 
-        uint256 tokenId, 
         address currenccy,
         uint96 payValue, 
         DataTypes.CollectFeeUsers collectFeeUsers,

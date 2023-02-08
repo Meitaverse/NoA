@@ -11,7 +11,7 @@ import {ICollectModule} from '../interfaces/ICollectModule.sol';
 import {IPublishModule} from '../interfaces/IPublishModule.sol';
 /**
  * @title SBTLogic
- * @author bitsoul
+ * @author bitsoul Protocol
  *
  * @notice This is the library that contains the logic for create profile & burn process. 
  

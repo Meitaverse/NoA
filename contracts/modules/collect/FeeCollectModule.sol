@@ -2,6 +2,7 @@
 
 pragma solidity ^0.8.13;
 
+import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import {ICollectModule} from "../../interfaces/ICollectModule.sol";
 import {IBankTreasury} from "../../interfaces/IBankTreasury.sol";
 import {Errors} from "../../libraries/Errors.sol";
@@ -50,7 +51,7 @@ struct ProfilePublicationData {
  *
  * This module works by allowing unlimited collects for a publication at a given price.
  */
-contract FeeCollectModule is FeeModuleBase, ModuleBase, ICollectModule {
+contract FeeCollectModule is ReentrancyGuard, FeeModuleBase, ModuleBase, ICollectModule {
     using SafeERC20 for IERC20;
     using SafeMathUpgradeable for uint256;
 
@@ -70,7 +71,7 @@ contract FeeCollectModule is FeeModuleBase, ModuleBase, ICollectModule {
         address currency,
         uint256 amount,
         bytes calldata data 
-    ) external override onlyManager {
+    ) external override nonReentrant onlyManager {
         (uint256 genesisSoulBoundTokenId, uint16 genesisFee, uint256 salePrice, uint256 royaltyBasisPoints) = abi.decode(
             data,
             (uint256, uint16,  uint256, uint256)
@@ -116,8 +117,7 @@ contract FeeCollectModule is FeeModuleBase, ModuleBase, ICollectModule {
         uint256 publishId,
         uint96 payValue,
         bytes calldata data
-    ) external virtual override onlyManagerOrMarket returns (DataTypes.RoyaltyAmounts memory){
-        //TODO only manager or market 
+    ) external virtual override nonReentrant onlyManagerOrMarket returns (DataTypes.RoyaltyAmounts memory){
        return _processCollect(
             ownershipSoulBoundTokenId, 
             collectorSoulBoundTokenId, 
@@ -212,27 +212,18 @@ contract FeeCollectModule is FeeModuleBase, ModuleBase, ICollectModule {
                     previousSoulBoundTokenId: _dataByPublicationByProfile[publishId].previousSoulBoundTokenId,
                     referrerSoulBoundTokenId: referrerSoulBoundTokenId
                 });
-                
-                {
 
+                {
                     // distribute funds to assoassociated user revenue
                     IBankTreasury(treasury).distributeFundsToUserRevenue(
-                        collectorSoulBoundTokenId,
+                        publishId,
                         _dataByPublicationByProfile[publishId].currency,
                         payValue,
                         collectFeeUsers,
                         royaltyAmounts
-                    );
+                    ); 
                 }
-
-                emit Events.Distribute(
-                    publishId,
-                    _dataByPublicationByProfile[publishId].tokenId,
-                    _dataByPublicationByProfile[publishId].currency,
-                    payValue,
-                    collectFeeUsers,
-                    royaltyAmounts
-                );
+               
             }
         }
     }

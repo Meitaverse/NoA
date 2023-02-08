@@ -653,7 +653,7 @@ contract BankTreasuryV2 is
     }
 
     function distributeFundsToUserRevenue(
-        uint256 fromSoulBoundTokenId,
+        uint256 publishId,
         address currency,
         uint256 payValue,
         DataTypes.CollectFeeUsers memory collectFeeUsers,
@@ -679,7 +679,7 @@ contract BankTreasuryV2 is
                 revert Errors.InvalidRoyalties();
             }
 
-            _deductBalanceFrom(_freeFromEscrow(currency, fromSoulBoundTokenId), payValue);
+            // _deductBalanceFrom(_freeFromEscrow(currency, fromSoulBoundTokenId), payValue);
             _addBalanceTo(_freeFromEscrow(currency, soulBoundTokenIdBankTreasury), royaltyAmounts.treasuryAmount);
             _addBalanceTo(_freeFromEscrow(currency, collectFeeUsers.genesisSoulBoundTokenId), royaltyAmounts.genesisAmount);
             _addBalanceTo(_freeFromEscrow(currency, collectFeeUsers.previousSoulBoundTokenId), royaltyAmounts.previousAmount);

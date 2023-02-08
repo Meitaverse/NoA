@@ -17,7 +17,7 @@ import "../libraries/BytesLibrary.sol";
 
 /**
  * @title InteractionLogic
- * @author bitsoul
+ * @author bitsoul Protocol
  *
  * @notice This is the library that contains the logic for follows & collects. 
  

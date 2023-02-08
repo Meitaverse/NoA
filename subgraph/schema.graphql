@@ -574,7 +574,6 @@ type ProfileCreatorWhitelistedRecord @entity {
 type DistributeHistory @entity {
   id: ID!
   publish: Publish!
-  tokenId: BigInt!
   payValue: BigInt!
   owner: Account!
   collector: Account!

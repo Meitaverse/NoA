@@ -219,6 +219,7 @@ library Errors {
   error Must_Deposit_Non_Zero_Amount();
   error Must_Escrow_Non_Zero_Amount();
   error Only_BITSOUL_Market_Allowed();
+  error Only_Fee_Modules_Allowed();
   error Expiration_Too_Far_In_Future();
   error Invalid_Lockup_Duration();
   error Escrow_Expired();

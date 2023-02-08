@@ -1240,6 +1240,36 @@ export class BuySBTByEthCall__Outputs {
   }
 }
 
+export class ConfirmTransactionCall extends ethereum.Call {
+  get inputs(): ConfirmTransactionCall__Inputs {
+    return new ConfirmTransactionCall__Inputs(this);
+  }
+
+  get outputs(): ConfirmTransactionCall__Outputs {
+    return new ConfirmTransactionCall__Outputs(this);
+  }
+}
+
+export class ConfirmTransactionCall__Inputs {
+  _call: ConfirmTransactionCall;
+
+  constructor(call: ConfirmTransactionCall) {
+    this._call = call;
+  }
+
+  get _txIndex(): BigInt {
+    return this._call.inputValues[0].value.toBigInt();
+  }
+}
+
+export class ConfirmTransactionCall__Outputs {
+  _call: ConfirmTransactionCall;
+
+  constructor(call: ConfirmTransactionCall) {
+    this._call = call;
+  }
+}
+
 export class DepositCall extends ethereum.Call {
   get inputs(): DepositCall__Inputs {
     return new DepositCall__Inputs(this);
@@ -1295,7 +1325,7 @@ export class DistributeFundsToUserRevenueCall__Inputs {
     this._call = call;
   }
 
-  get fromSoulBoundTokenId(): BigInt {
+  get publishId(): BigInt {
     return this._call.inputValues[0].value.toBigInt();
   }
 
@@ -1474,6 +1504,36 @@ export class ExchangeVoucherCall__Outputs {
   _call: ExchangeVoucherCall;
 
   constructor(call: ExchangeVoucherCall) {
+    this._call = call;
+  }
+}
+
+export class ExecuteTransactionCall extends ethereum.Call {
+  get inputs(): ExecuteTransactionCall__Inputs {
+    return new ExecuteTransactionCall__Inputs(this);
+  }
+
+  get outputs(): ExecuteTransactionCall__Outputs {
+    return new ExecuteTransactionCall__Outputs(this);
+  }
+}
+
+export class ExecuteTransactionCall__Inputs {
+  _call: ExecuteTransactionCall;
+
+  constructor(call: ExecuteTransactionCall) {
+    this._call = call;
+  }
+
+  get _txIndex(): BigInt {
+    return this._call.inputValues[0].value.toBigInt();
+  }
+}
+
+export class ExecuteTransactionCall__Outputs {
+  _call: ExecuteTransactionCall;
+
+  constructor(call: ExecuteTransactionCall) {
     this._call = call;
   }
 }
@@ -1970,6 +2030,36 @@ export class RevokeAdminCall__Outputs {
   }
 }
 
+export class RevokeConfirmationCall extends ethereum.Call {
+  get inputs(): RevokeConfirmationCall__Inputs {
+    return new RevokeConfirmationCall__Inputs(this);
+  }
+
+  get outputs(): RevokeConfirmationCall__Outputs {
+    return new RevokeConfirmationCall__Outputs(this);
+  }
+}
+
+export class RevokeConfirmationCall__Inputs {
+  _call: RevokeConfirmationCall;
+
+  constructor(call: RevokeConfirmationCall) {
+    this._call = call;
+  }
+
+  get _txIndex(): BigInt {
+    return this._call.inputValues[0].value.toBigInt();
+  }
+}
+
+export class RevokeConfirmationCall__Outputs {
+  _call: RevokeConfirmationCall;
+
+  constructor(call: RevokeConfirmationCall) {
+    this._call = call;
+  }
+}
+
 export class RevokeFeeModuleCall extends ethereum.Call {
   get inputs(): RevokeFeeModuleCall__Inputs {
     return new RevokeFeeModuleCall__Inputs(this);
@@ -2090,6 +2180,60 @@ export class SetGlobalModulesCall__Outputs {
   _call: SetGlobalModulesCall;
 
   constructor(call: SetGlobalModulesCall) {
+    this._call = call;
+  }
+}
+
+export class SubmitTransactionCall extends ethereum.Call {
+  get inputs(): SubmitTransactionCall__Inputs {
+    return new SubmitTransactionCall__Inputs(this);
+  }
+
+  get outputs(): SubmitTransactionCall__Outputs {
+    return new SubmitTransactionCall__Outputs(this);
+  }
+}
+
+export class SubmitTransactionCall__Inputs {
+  _call: SubmitTransactionCall;
+
+  constructor(call: SubmitTransactionCall) {
+    this._call = call;
+  }
+
+  get _currency(): Address {
+    return this._call.inputValues[0].value.toAddress();
+  }
+
+  get _currencyType(): i32 {
+    return this._call.inputValues[1].value.toI32();
+  }
+
+  get _to(): Address {
+    return this._call.inputValues[2].value.toAddress();
+  }
+
+  get _fromTokenId(): BigInt {
+    return this._call.inputValues[3].value.toBigInt();
+  }
+
+  get _toTokenId(): BigInt {
+    return this._call.inputValues[4].value.toBigInt();
+  }
+
+  get _value(): BigInt {
+    return this._call.inputValues[5].value.toBigInt();
+  }
+
+  get _data(): Bytes {
+    return this._call.inputValues[6].value.toBytes();
+  }
+}
+
+export class SubmitTransactionCall__Outputs {
+  _call: SubmitTransactionCall;
+
+  constructor(call: SubmitTransactionCall) {
     this._call = call;
   }
 }

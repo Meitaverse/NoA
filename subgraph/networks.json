@@ -36,10 +36,6 @@
       "address": "0x59b670e9fA9D0A427751Af201D676719a970857b",
       "startBlock": 1
     },
-    "FeeCollectModule": {
-      "address": "0x322813Fd9A801c5507c9de605d63CEA4f2CE6c44",
-      "startBlock": 1
-    },
     "DerivativeNFT": {
       "address": "0x6566AEEFD57Fd2BBB28c4ebE030777138095D9E8",
       "startBlock": 1

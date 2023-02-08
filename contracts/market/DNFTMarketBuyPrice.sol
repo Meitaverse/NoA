@@ -15,7 +15,7 @@ import {ICollectModule} from "../interfaces/ICollectModule.sol";
 /**
  * @title Allows sellers to set a buy price of their DNFTs that may be accepted and instantly transferred to the buyer.
  * @notice DNFTs with a buy price set are escrowed in the market contract.
- * @author bitsoul
+ * @author bitsoul Protocol
  */
 abstract contract DNFTMarketBuyPrice is
   Initializable,

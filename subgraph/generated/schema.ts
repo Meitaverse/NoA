@@ -2825,15 +2825,6 @@ export class DistributeHistory extends Entity {
     this.set("publish", Value.fromString(value));
   }
 
-  get tokenId(): BigInt {
-    let value = this.get("tokenId");
-    return value!.toBigInt();
-  }
-
-  set tokenId(value: BigInt) {
-    this.set("tokenId", Value.fromBigInt(value));
-  }
-
   get payValue(): BigInt {
     let value = this.get("payValue");
     return value!.toBigInt();

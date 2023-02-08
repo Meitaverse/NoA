@@ -3,7 +3,7 @@
 pragma solidity ^0.8.13;
 
 /**
- * @author bitsoul
+ * @author bitsoul Protocol
  */
 interface INFTDropCollectionInitializer {
   function initialize(

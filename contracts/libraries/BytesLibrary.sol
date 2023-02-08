@@ -7,7 +7,7 @@ error BytesLibrary_Start_Location_Too_Large();
 
 /**
  * @title A library for manipulation of byte arrays.
- * @author bitsoul
+ * @author bitsoul Protocol
  */
 library BytesLibrary {
   /// @notice An address is 20 bytes long

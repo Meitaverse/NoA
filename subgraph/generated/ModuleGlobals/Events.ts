@@ -769,27 +769,23 @@ export class Distribute__Params {
     return this._event.parameters[0].value.toBigInt();
   }
 
-  get tokenId(): BigInt {
-    return this._event.parameters[1].value.toBigInt();
-  }
-
   get currenccy(): Address {
-    return this._event.parameters[2].value.toAddress();
+    return this._event.parameters[1].value.toAddress();
   }
 
   get payValue(): BigInt {
-    return this._event.parameters[3].value.toBigInt();
+    return this._event.parameters[2].value.toBigInt();
   }
 
   get collectFeeUsers(): DistributeCollectFeeUsersStruct {
     return changetype<DistributeCollectFeeUsersStruct>(
-      this._event.parameters[4].value.toTuple()
+      this._event.parameters[3].value.toTuple()
     );
   }
 
   get royaltyAmounts(): DistributeRoyaltyAmountsStruct {
     return changetype<DistributeRoyaltyAmountsStruct>(
-      this._event.parameters[5].value.toTuple()
+      this._event.parameters[4].value.toTuple()
     );
   }
 }

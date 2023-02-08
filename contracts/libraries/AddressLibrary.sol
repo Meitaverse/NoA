@@ -11,7 +11,7 @@ struct CallWithoutValue {
 
 /**
  * @title A library for address helpers not already covered by the OZ library.
- * @author bitsoul
+ * @author bitsoul Protocol
  */
 library AddressLibrary {
   using AddressUpgradeable for address;

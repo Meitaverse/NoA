@@ -9,7 +9,7 @@ import "./OZAccessControlUpgradeable.sol";
 /**
  * @title Defines a role for Foundation admin accounts.
  * @dev Wraps the default admin role from OpenZeppelin's AccessControl for easy integration.
- * @author bitsoul
+ * @author bitsoul Protocol
  */
 abstract contract AdminRoleEnumerable is Initializable, OZAccessControlUpgradeable {
   modifier onlyAdmin() {

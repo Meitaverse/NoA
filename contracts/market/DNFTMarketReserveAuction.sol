@@ -14,7 +14,7 @@ import {ICollectModule} from "../interfaces/ICollectModule.sol";
  * @notice DNFTs in auction are escrowed in the market contract.
  * @dev There is room to optimize the storage for auctions, significantly reducing gas costs.
  * This may be done in the future, but for now it will remain as is in order to ease upgrade compatibility.
- * @author bitsoul
+ * @author bitsoul Protocol
  */
 abstract contract DNFTMarketReserveAuction is
   Initializable,

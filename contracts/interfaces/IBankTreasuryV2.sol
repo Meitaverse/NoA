@@ -79,7 +79,7 @@ interface IBankTreasuryV2 {
      *
      */
     function distributeFundsToUserRevenue(
-        uint256 fromSoulBoundTokenId,
+        uint256 publishId,
         address currency,
         uint256 payValue,
         DataTypes.CollectFeeUsers memory collectFeeUsers,

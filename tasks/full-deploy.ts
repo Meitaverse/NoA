@@ -409,8 +409,8 @@ import { MarketPlaceLibraryAddresses } from '../typechain/factories/contracts/Ma
                 { nonce: deployerNonce++ })
         );
         console.log('\t-- feeCollectModule: ', feeCollectModule.address);
-        await exportAddress(hre, feeCollectModule, 'FeeCollectModule');
-        await exportSubgraphNetworksJson(hre, feeCollectModule, 'FeeCollectModule');
+        // await exportAddress(hre, feeCollectModule, 'FeeCollectModule');
+        // await exportSubgraphNetworksJson(hre, feeCollectModule, 'FeeCollectModule');
 
         console.log('\n\t-- Deploying publishModule --');
         const publishModule = await deployContract(

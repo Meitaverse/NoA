@@ -156,7 +156,14 @@ contract BankTreasury is
      * @notice Make any arbitrary calls.
      * @dev This should not be necessary, but here just in case you need to recover other assets.
      */
-    function proxyCall(address payable target, bytes memory callData, uint256 value) external {
+    function proxyCall(
+        address payable target, 
+        bytes memory callData, 
+        uint256 value
+    )
+        external 
+        nonReentrant
+    {
         if (!hasRole(DEFAULT_ADMIN_ROLE, _msgSender())) revert Errors.Unauthorized();
         target.functionCallWithValue(callData, value);
     }
@@ -258,6 +265,7 @@ contract BankTreasury is
     )
         external 
         whenNotPaused
+        nonReentrant
     {
         if (soulBoundTokenId == 0 || 
             soulBoundTokenId == soulBoundTokenIdBankTreasury || 
@@ -304,7 +312,7 @@ contract BankTreasury is
         uint256 _toTokenId,
         uint256 _value,
         bytes memory _data
-    ) public whenNotPaused onlySigner {
+    ) public whenNotPaused nonReentrant onlySigner {
         uint256 txIndex = _transactions.length;
 
         _transactions.push(
@@ -333,7 +341,7 @@ contract BankTreasury is
 
     function confirmTransaction(
         uint256 _txIndex
-    ) public whenNotPaused onlySigner txExists(_txIndex) notExecuted(_txIndex) notConfirmed(_txIndex) {
+    ) public whenNotPaused nonReentrant onlySigner txExists(_txIndex) notExecuted(_txIndex) notConfirmed(_txIndex) {
         DataTypes.Transaction storage transaction = _transactions[_txIndex];
         transaction.numConfirmations += 1;
         _isConfirmed[_txIndex][msg.sender] = true;
@@ -343,7 +351,7 @@ contract BankTreasury is
 
     function executeTransaction(
         uint256 _txIndex
-    ) public whenNotPaused onlySigner txExists(_txIndex) notExecuted(_txIndex) {
+    ) public whenNotPaused nonReentrant onlySigner txExists(_txIndex) notExecuted(_txIndex) {
         address _sbt = IModuleGlobals(MODULE_GLOBALS).getSBT();
         DataTypes.Transaction storage transaction = _transactions[_txIndex];
 
@@ -386,7 +394,7 @@ contract BankTreasury is
 
     function revokeConfirmation(
         uint256 _txIndex
-    ) public whenNotPaused onlySigner txExists(_txIndex) notExecuted(_txIndex) {
+    ) public whenNotPaused nonReentrant onlySigner txExists(_txIndex) notExecuted(_txIndex) {
         DataTypes.Transaction storage transaction = _transactions[_txIndex];
 
         if (!_isConfirmed[_txIndex][msg.sender]) revert Errors.TxNotConfirmed();
@@ -849,7 +857,7 @@ contract BankTreasury is
     }
 
     function distributeFundsToUserRevenue(
-        uint256 fromSoulBoundTokenId,
+        uint256 publishId,
         address currency,
         uint256 payValue,
         DataTypes.CollectFeeUsers memory collectFeeUsers,
@@ -859,10 +867,10 @@ contract BankTreasury is
         whenNotPaused 
         nonReentrant 
     {
-        // valid caller is only have fee module grant role or is foundationMarket
+        // valid caller is only have fee module grant role 
 
-        if (!( isFeeModule(msg.sender) || msg.sender == _foundationMarket )) {
-            revert Errors.Only_BITSOUL_Market_Allowed();
+        if (!isFeeModule(msg.sender)) {
+            revert Errors.Only_Fee_Modules_Allowed();
         }
 
         unchecked {
@@ -882,6 +890,14 @@ contract BankTreasury is
             _addBalanceTo(_freeFromEscrow(currency, collectFeeUsers.referrerSoulBoundTokenId), royaltyAmounts.referrerAmount);
             //owner or seller
             _addBalanceTo(_freeFromEscrow(currency, collectFeeUsers.ownershipSoulBoundTokenId), royaltyAmounts.adjustedAmount);
+
+             emit Events.Distribute(
+                    publishId,
+                    currency,
+                    uint96(payValue),
+                    collectFeeUsers,
+                    royaltyAmounts
+            );
         }
     }
 

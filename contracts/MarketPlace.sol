@@ -180,7 +180,7 @@ contract MarketPlace is
         // console.log('Market Place, onERC3525Received, fromTokenId:', fromTokenId);
         // console.log('Market Place, onERC3525Received, toTokenId:', toTokenId);
         // console.log('Market Place, onERC3525Received, value:', value);
-        //TODO
+
         if (value == 0) {
             revert Errors.Must_Escrow_Non_Zero_Amount();
         }

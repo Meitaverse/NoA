@@ -14,7 +14,7 @@ import "./DNFTMarketCore.sol";
 /**
  * @title Allows collectors to make an offer for an DNFT, valid for 24-25 hours.
  * @notice Funds are escrowed in the Bank Treasury token contract.
- * @author bitsoul
+ * @author bitsoul Protocol
  */
 abstract contract DNFTMarketOffer is
   Initializable,

@@ -11,7 +11,7 @@ import './Constants.sol';
 
 /**
  * @title MarketLogic
- * @author bitsoul
+ * @author bitsoul Protocol
  *
  * @notice This is the library that contains the logic for market place. 
  

@@ -4,7 +4,7 @@ pragma solidity ^0.8.13;
 
 /**
  * @title Helper functions for arrays.
- * @author bitsoul
+ * @author bitsoul Protocol
  */
 library ArrayLibrary {
   /**

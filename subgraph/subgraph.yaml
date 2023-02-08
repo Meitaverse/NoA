@@ -166,6 +166,7 @@ dataSources:
         - BalanceUnlocked
         - OfferTransfered
         - WithdrawnEarnestFunds
+        - Distribute
       abis:
         - name: SBT
           file: ../artifacts/contracts/NFTDerivativeProtocolTokenV1.sol/NFTDerivativeProtocolTokenV1.json
@@ -216,6 +217,8 @@ dataSources:
         - event: WithdrawnEarnestFunds(indexed uint256,indexed address,indexed
             address,uint256)
           handler: handleWithdrawnEarnestFunds
+        - event: Distribute(uint256,address,uint96,(uint256,uint256,uint256,uint256,uint256),(uint96,uint96,uint96,uint96,uint96))
+          handler: handleDistribute
       file: ./src/bankTreasury-mapping.ts
   - kind: ethereum/contract
     name: Voucher
@@ -327,32 +330,6 @@ dataSources:
             bool,uint256)
           handler: handleModuleGlobalsCurrencyWhitelisted
       file: ./src/moduleGlobals-mapping.ts
-  - kind: ethereum/contract
-    name: FeeCollectModule
-    network: mainnet
-    source:
-      abi: Events
-      address: "0x322813Fd9A801c5507c9de605d63CEA4f2CE6c44"
-      startBlock: 1
-    mapping:
-      kind: ethereum/events
-      apiVersion: 0.0.6
-      language: wasm/assemblyscript
-      entities:
-        - Distribute
-      abis:
-        - name: ModuleGlobals
-          file: ../artifacts/contracts/modules/ModuleGlobals.sol/ModuleGlobals.json
-        - name: FeeCollectModule
-          file: ../artifacts/contracts/modules/collect/FeeCollectModule.sol/FeeCollectModule.json
-        - name: SBT
-          file: ../artifacts/contracts/NFTDerivativeProtocolTokenV1.sol/NFTDerivativeProtocolTokenV1.json
-        - name: Events
-          file: ../artifacts/contracts/libraries/Events.sol/Events.json
-      eventHandlers:
-        - event: Distribute(uint256,uint256,address,uint96,(uint256,uint256,uint256,uint256,uint256),(uint96,uint96,uint96,uint96,uint96))
-          handler: handleDistribute
-      file: ./src/feeCollectModule-mapping.ts
   - kind: ethereum/contract
     name: Receiver
     network: mainnet

@@ -171,18 +171,9 @@ abstract contract BaseFeeCollectModule is
          
         // uint256 payFees = collectUnits * fraction;
 
-        (address treasury, uint16 treasuryFee) = _treasuryData();
+        (, uint16 treasuryFee) = _treasuryData();
         uint256 treasuryAmount = (payFees * treasuryFee) / BASIS_POINTS;
-        if (treasuryAmount > 0) 
-
-                //TODO Must grantFeeModule
-                IBankTreasury(treasury).useEarnestFundsForPay(
-                            collectorSoulBoundTokenId,
-                            _dataByPublicationByProfile[projectId].currency,
-                            treasuryAmount
-                        );    
   
-            
         if (payFees - treasuryAmount > 0) 
             // Send amount after treasury cut, to all recipients
             _transferToRecipients(

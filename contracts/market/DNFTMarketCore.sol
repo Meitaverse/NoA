@@ -23,7 +23,7 @@ error DNFTMarketCore_Seller_Not_Found();
 /**
  * @title A place for common modifiers and functions used by various NFTMarket mixins, if any.
  * @dev This also leaves a gap which can be used to add a new mixin to the top of the inheritance tree.
- * @author bitsoul
+ * @author bitsoul Protocol
  */
 abstract contract DNFTMarketCore is Initializable {
   using AddressUpgradeable for address;
