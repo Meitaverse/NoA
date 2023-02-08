@@ -256,7 +256,6 @@ abstract contract DNFTMarketBuyPrice is
         soulBoundTokenIdBuyer,
         buyPrice.projectId,
         buyPrice.amount, 
-        true,
         collectModuleInitData
     );
 

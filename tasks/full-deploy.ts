@@ -443,10 +443,12 @@ import { MarketPlaceLibraryAddresses } from '../typechain/factories/contracts/Ma
         
         console.log('\n\t-- Whitelisting sbtContract Contract address --');
         const transferValueRole = await sbtContract.TRANSFER_VALUE_ROLE();
+        await waitForTx( sbtContract.connect(deployer).grantRole(transferValueRole, manager.address));
         await waitForTx( sbtContract.connect(deployer).grantRole(transferValueRole, publishModule.address));
         await waitForTx( sbtContract.connect(deployer).grantRole(transferValueRole, feeCollectModule.address));
         await waitForTx( sbtContract.connect(deployer).grantRole(transferValueRole, bankTreasuryContract.address));
         await waitForTx( sbtContract.connect(deployer).grantRole(transferValueRole, voucherContract.address));
+        await waitForTx( sbtContract.connect(deployer).grantRole(transferValueRole, marketPlaceContract.address));
         
         await waitForTx(
           bankTreasuryContract.connect(deployer).grantFeeModule(feeCollectModule.address)

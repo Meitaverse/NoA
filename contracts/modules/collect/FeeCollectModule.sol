@@ -115,7 +115,6 @@ contract FeeCollectModule is FeeModuleBase, ModuleBase, ICollectModule {
         uint256 collectorSoulBoundTokenId,
         uint256 publishId,
         uint96 payValue,
-        bool useEarnestFundsForPay,
         bytes calldata data
     ) external virtual override onlyManagerOrMarket returns (DataTypes.RoyaltyAmounts memory){
         //TODO only manager or market 
@@ -124,7 +123,6 @@ contract FeeCollectModule is FeeModuleBase, ModuleBase, ICollectModule {
             collectorSoulBoundTokenId, 
             publishId, 
             payValue,
-            useEarnestFundsForPay,
             data
         );
     }
@@ -168,7 +166,6 @@ contract FeeCollectModule is FeeModuleBase, ModuleBase, ICollectModule {
         uint256 collectorSoulBoundTokenId,
         uint256 publishId, 
         uint96 payValue,
-        bool useEarnestFundsForPay,
         bytes calldata data
     ) internal returns (DataTypes.RoyaltyAmounts memory royaltyAmounts){
         uint256 referrerSoulBoundTokenId;
@@ -182,12 +179,6 @@ contract FeeCollectModule is FeeModuleBase, ModuleBase, ICollectModule {
             if (referrerFee >  BUY_REFERRER_FEE_DENOMINATOR ) {
                 revert Errors.ReferrerFeeExceeded();
             }
-        }
-
-        if (!useEarnestFundsForPay) {
-            //TODO
-            //transferValue
-
         }
 
         unchecked {

@@ -183,6 +183,18 @@ library DataTypes {
         bytes data;
     }    
 
+    struct CollectDataParam {
+        uint256 publishId;
+        uint256 collectorSoulBoundTokenId;
+        uint256 collectUnits;
+        bytes data;
+        uint256 tokenId;
+        uint256 newTokenId;
+        address derivativeNFT;
+        address sbt;
+    }    
+       
+
     struct AirdropData {
         uint256 publishId;
         uint256 ownershipSoulBoundTokenId;

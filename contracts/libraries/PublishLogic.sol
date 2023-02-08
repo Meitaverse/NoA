@@ -3,6 +3,7 @@
 pragma solidity ^0.8.13;
 
 import {IERC3525} from "@solvprotocol/erc-3525/contracts/IERC3525.sol";
+import {INFTDerivativeProtocolTokenV1} from "../interfaces/INFTDerivativeProtocolTokenV1.sol";
 import {DataTypes} from './DataTypes.sol';
 import {Errors} from './Errors.sol';
 import {Events} from './Events.sol';
@@ -52,7 +53,7 @@ library PublishLogic {
         string[] memory materialURIs,
         uint256[] memory fromTokenIds,
         mapping(uint256 => DataTypes.PublishData) storage _projectDataByPublishId
-    )external {
+    ) external {
 
         _projectDataByPublishId[publishId].publication.salePrice = salePrice;
         _projectDataByPublishId[publishId].publication.royaltyBasisPoints = royaltyBasisPoints;
@@ -72,22 +73,7 @@ library PublishLogic {
             materialURIs,
             fromTokenIds
         );
-        
-        // emit Events.PublishUpdated(
-        //     _projectDataByPublishId[publishId].publication.hubId,
-        //     _projectDataByPublishId[publishId].publication.projectId,
-        //     publishId,
-        //     _projectDataByPublishId[publishId].publication.soulBoundTokenId,
-        //     salePrice,
-        //     royaltyBasisPoints,
-        //     amount,
-        //     name,
-        //     description,
-        //     materialURIs,
-        //     fromTokenIds,
-        //     addedPublishTaxes,
-        //     block.timestamp
-        // );
+
         emit Events.PublishUpdated(
             publishId,
             addedPublishTaxes 
@@ -183,7 +169,7 @@ library PublishLogic {
         uint256 treasuryOfSoulBoundTokenId,
         DataTypes.Publication memory publication,
         mapping(uint256 => DataTypes.PublishData) storage _projectDataByPublishId
-    ) private  returns(uint256) {
+    ) private returns(uint256) {
         
         if (_projectDataByPublishId[publishId].previousPublishId == 0) _projectDataByPublishId[publishId].previousPublishId = publishId;
       
@@ -204,52 +190,50 @@ library PublishLogic {
      * @notice Collects the given dNFT, executing the necessary logic and module call before minting the
      * collect NFT to the toSoulBoundTokenId.
      * 
-     * @param collectData The collect Data struct
-     * @param tokenId The collect tokenId
-     * @param newTokenId The new tokenId after collected
-     * @param derivativeNFT The dNFT contract
+     * @param collectDataParam The collect Data parameters
      * @param _pubByIdByProfile The collect Data struct
      * @param _projectDataByPublishId The collect Data struct
      */
     function collectDerivativeNFT(
-        DataTypes.CollectData calldata collectData,
-        uint256 tokenId,
-        uint256 newTokenId,
-        address derivativeNFT,
+        DataTypes.CollectDataParam calldata collectDataParam,
         mapping(uint256 => mapping(uint256 => DataTypes.PublicationStruct))
             storage _pubByIdByProfile,
         mapping(uint256 => DataTypes.PublishData) storage _projectDataByPublishId
     ) external {
-        if (collectData.publishId == 0) revert Errors.InitParamsInvalid();
-        if (collectData.collectorSoulBoundTokenId == 0) revert Errors.InitParamsInvalid();
-        if (collectData.collectUnits == 0) revert Errors.InitParamsInvalid();
+        if (collectDataParam.publishId == 0) revert Errors.InitParamsInvalid();
+        if (collectDataParam.collectorSoulBoundTokenId == 0) revert Errors.InitParamsInvalid();
+        if (collectDataParam.collectUnits == 0) revert Errors.InitParamsInvalid();
 
-        uint256 projectId = _projectDataByPublishId[collectData.publishId].publication.projectId;
+        uint256 projectId = _projectDataByPublishId[collectDataParam.publishId].publication.projectId;
 
         //new tokenId use the same collectModule
-        _pubByIdByProfile[projectId][newTokenId].collectModule = _pubByIdByProfile[projectId][tokenId].collectModule;
+        _pubByIdByProfile[projectId][collectDataParam.newTokenId].collectModule = _pubByIdByProfile[projectId][collectDataParam.tokenId].collectModule;
 
-        // uint256 ownershipSoulBoundTokenId = _projectDataByPublishId[collectData.publishId].publication.soulBoundTokenId;
-        
+        //Transfer Value of total pay to treasury 
+        uint96 payValue = uint96(collectDataParam.collectUnits * _projectDataByPublishId[collectDataParam.publishId].publication.salePrice);
+        INFTDerivativeProtocolTokenV1(collectDataParam.sbt).transferValue(
+            collectDataParam.collectorSoulBoundTokenId, 
+            BANK_TREASURY_SOUL_BOUND_TOKENID, 
+            payValue
+        );
 
         //processCollect: fees and royalties process
-        ICollectModule(_pubByIdByProfile[projectId][tokenId].collectModule).processCollect(
-            _projectDataByPublishId[collectData.publishId].publication.soulBoundTokenId,
-            collectData.collectorSoulBoundTokenId,
-            collectData.publishId,
-            uint96(collectData.collectUnits * _projectDataByPublishId[collectData.publishId].publication.salePrice),
-            false,
-            collectData.data 
+        ICollectModule(_pubByIdByProfile[projectId][collectDataParam.tokenId].collectModule).processCollect(
+            _projectDataByPublishId[collectDataParam.publishId].publication.soulBoundTokenId,
+            collectDataParam.collectorSoulBoundTokenId,
+            collectDataParam.publishId,
+            payValue, 
+            collectDataParam.data 
         );
 
         emit Events.DerivativeNFTCollected(
             projectId,
-            derivativeNFT,
-            _projectDataByPublishId[collectData.publishId].publication.soulBoundTokenId,
-            collectData.collectorSoulBoundTokenId,
-            tokenId,
-            collectData.collectUnits,
-            newTokenId
+            collectDataParam.derivativeNFT,
+            _projectDataByPublishId[collectDataParam.publishId].publication.soulBoundTokenId,
+            collectDataParam.collectorSoulBoundTokenId,
+            collectDataParam.tokenId,
+            collectDataParam.collectUnits,
+            collectDataParam.newTokenId
         );
     }
     

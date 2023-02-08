@@ -28,7 +28,7 @@ import {AdminRoleEnumerable} from "./treasury/AdminRoleEnumerable.sol";
 import {FeeModuleRoleEnumerable} from "./treasury/FeeModuleRoleEnumerable.sol";
 
 import "./libraries/LockedBalance.sol";
-import "hardhat/console.sol";
+// import "hardhat/console.sol";
 
 /**
  *  @title Bank Treasury
@@ -295,7 +295,7 @@ contract BankTreasury is
             amount
         );
     }
-/*
+
     function submitTransaction(
         address _currency,
         DataTypes.CurrencyType _currencyType,
@@ -396,7 +396,7 @@ contract BankTreasury is
 
         emit Events.RevokeConfirmation(msg.sender, _txIndex);
     }
-*/
+
     function getSigners() external view returns (address[] memory) {
         return _signers;
     }

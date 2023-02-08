@@ -479,6 +479,10 @@ before(async function () {
   const transferValueRole = await sbtContract.TRANSFER_VALUE_ROLE();
 
   await expect(
+    sbtContract.connect(deployer).grantRole(transferValueRole, manager.address)
+  ).to.not.be.reverted;
+  
+  await expect(
     sbtContract.connect(deployer).grantRole(transferValueRole, publishModule.address)
   ).to.not.be.reverted;
 

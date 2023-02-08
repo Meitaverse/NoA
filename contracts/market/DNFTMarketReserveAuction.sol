@@ -339,7 +339,6 @@ abstract contract DNFTMarketReserveAuction is
         auction.soulBoundTokenIdBidder,
         auction.projectId,
         auction.amount,
-        true,
         collectModuleInitData
     );
 

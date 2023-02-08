@@ -61,13 +61,12 @@ abstract contract BaseFeeCollectModule is
         uint256 collectorSoulBoundTokenId,
         uint256 publishId,
         uint96 payValue,   
-        bool useEarnestFundsForPay,  
         bytes calldata data
     ) external virtual onlyManager returns (DataTypes.RoyaltyAmounts memory){
 
         _validateAndStoreCollect(collectorSoulBoundTokenId, ownershipSoulBoundTokenId, publishId, payValue, data);
 
-       return _processCollect(collectorSoulBoundTokenId, publishId, payValue, useEarnestFundsForPay, data);
+       return _processCollect(collectorSoulBoundTokenId, publishId, payValue, data);
     }
 
     /**
@@ -153,14 +152,12 @@ abstract contract BaseFeeCollectModule is
      * @param collectorSoulBoundTokenId The token ID  that will collect the post.
      * @param projectId The  publication ID associated with the publication being collected.
      * @param payFees The SBT value will be pay
-     * @param useEarnestFundsForPay Which way will pay for, true - EarnestFunds, false - SBT value in user wallet
      * @param data Arbitrary data __passed from the collector!__ to be decoded.
      */
     function _processCollect(
         uint256 collectorSoulBoundTokenId,
         uint256 projectId,
         uint96 payFees,
-        bool useEarnestFundsForPay,
         bytes calldata data
     ) internal virtual returns (DataTypes.RoyaltyAmounts memory){
         
@@ -177,7 +174,6 @@ abstract contract BaseFeeCollectModule is
         (address treasury, uint16 treasuryFee) = _treasuryData();
         uint256 treasuryAmount = (payFees * treasuryFee) / BASIS_POINTS;
         if (treasuryAmount > 0) 
-            if (useEarnestFundsForPay) {
 
                 //TODO Must grantFeeModule
                 IBankTreasury(treasury).useEarnestFundsForPay(
@@ -185,10 +181,7 @@ abstract contract BaseFeeCollectModule is
                             _dataByPublicationByProfile[projectId].currency,
                             treasuryAmount
                         );    
-            } else {
-                //TODO
-                // transferValue
-            }
+  
             
         if (payFees - treasuryAmount > 0) 
             // Send amount after treasury cut, to all recipients

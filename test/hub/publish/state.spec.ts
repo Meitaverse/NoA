@@ -412,7 +412,8 @@ makeSuiteCleanRoom('Multi state', function () {
 
             await manager.connect(governance).setState(ProtocolState.PublishingPaused);
             
-            await expect(manager.connect(user).collect({
+            await expect(
+                manager.connect(user).collect({
                     publishId: FIRST_PUBLISH_ID,
                     collectorSoulBoundTokenId: SECOND_PROFILE_ID,
                     collectUnits: 1,

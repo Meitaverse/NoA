@@ -81,7 +81,7 @@ export function handleDepositByFallback(event: DepositByFallback): void {
     } 
 }
 
-export function handleESBTValueReceived(event: SBTValueReceived): void {
+export function handleSBTValueReceived(event: SBTValueReceived): void {
     log.info("handleSBTValueReceived, event.address: {}", [event.address.toHexString()])
 
     const sbtFrom = loadOrCreateSoulBoundToken(event.params.fromTokenId)

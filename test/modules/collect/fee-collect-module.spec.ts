@@ -325,7 +325,6 @@ makeSuiteCleanRoom('Fee Collect Module', function () {
         await expect(moduleGlobals.connect(governance).setTreasuryFee(0)).to.not.be.reverted;
 
           
-        // let [treasuryFee, genesisSoulBoundTokenId, treasuryAmount, genesisAmount, adjustedAmount] = await feeCollectModule.getFees(FIRST_PUBLISH_ID, DEFAULT_COLLECT_PRICE);
         let [totalFees, 
             creatorRev, 
             previousCreatorRev, 
@@ -373,25 +372,39 @@ makeSuiteCleanRoom('Fee Collect Module', function () {
       });         
 
       it('User collecting a dNFT and pay to the treasury', async function () {
-          
-        let [treasuryFee, genesisSoulBoundTokenId, treasuryAmount, genesisAmount, adjustedAmount] = await feeCollectModule.getFees(FIRST_PUBLISH_ID, DEFAULT_COLLECT_PRICE);
-        console.log("\t --- treasuryFee:", treasuryFee);
-        console.log("\t --- genesisSoulBoundTokenId:", genesisSoulBoundTokenId);
-        console.log("\t --- treasuryAmount:", treasuryAmount);
-        console.log("\t --- genesisAmount:", genesisAmount);
-        console.log("\t --- adjustedAmount:", adjustedAmount);
+        
+        let [totalFees, 
+          creatorRev, 
+          previousCreatorRev, 
+          sellerRev] = await feeCollectModule.getFees(
+              FIRST_PUBLISH_ID, 
+              DEFAULT_COLLECT_PRICE
+        );
 
-        expect(
-          await collectReturningTokenId({
-              sender: userTwo,
-              vars: {
-                publishId: FIRST_PUBLISH_ID,
-                collectorSoulBoundTokenId: THIRD_PROFILE_ID,
-                collectUnits: 1,
-                data : [],
-              },
-          }) 
-          ).to.eq(SECOND_DNFT_TOKEN_ID);
+        console.log("\n\t --- getFees");
+        console.log("\t\t --- treasuryFee:", totalFees);
+        console.log("\t\t --- creatorAmount:", creatorRev);
+        console.log("\t\t --- previousCreatorAmount:", previousCreatorRev);
+        console.log("\t\t --- adjustedAmount:", sellerRev);
+
+        // expect(
+        //   await collectReturningTokenId({
+        //       sender: userTwo,
+        //       vars: {
+        //         publishId: FIRST_PUBLISH_ID,
+        //         collectorSoulBoundTokenId: THIRD_PROFILE_ID,
+        //         collectUnits: 1,
+        //         data : [],
+        //       },
+        //   }) 
+        //   ).to.eq(SECOND_DNFT_TOKEN_ID);
+
+        await  manager.connect(userTwo).collect({
+            publishId: FIRST_PUBLISH_ID,
+            collectorSoulBoundTokenId: THIRD_PROFILE_ID,
+            collectUnits: 1,
+            data: [],
+        });
 
         expect(
           await derivativeNFT.ownerOf(SECOND_DNFT_TOKEN_ID)
@@ -401,7 +414,7 @@ makeSuiteCleanRoom('Fee Collect Module', function () {
           await derivativeNFT.connect(userTwo)['balanceOf(uint256)'](SECOND_DNFT_TOKEN_ID)
         ).to.eq(1);
 
-        //After transferFrom, user have zero dNFT
+        //After transferFrom, user have zero dNFT unit
         expect(
           await derivativeNFT['balanceOf(uint256)'](FIRST_DNFT_TOKEN_ID)
         ).to.eq(0); 

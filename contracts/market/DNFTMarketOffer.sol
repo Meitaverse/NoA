@@ -9,7 +9,7 @@ import {Errors} from "../libraries/Errors.sol";
 import {ICollectModule} from "../interfaces/ICollectModule.sol";
 import "./DNFTMarketCore.sol";
 
-import "hardhat/console.sol";
+// import "hardhat/console.sol";
 
 /**
  * @title Allows collectors to make an offer for an DNFT, valid for 24-25 hours.
@@ -234,7 +234,6 @@ abstract contract DNFTMarketOffer is
         offer.soulBoundTokenIdBuyer,
         projectId,
         uint96(offer.amount),
-        true,
         collectModuleInitData
     );
 

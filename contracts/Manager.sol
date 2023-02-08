@@ -454,10 +454,16 @@ contract Manager is
         );
 
         PublishLogic.collectDerivativeNFT(
-            collectData,
-            _projectDataByPublishId[collectData.publishId].tokenId,
-            newTokenId,
-            _derivativeNFTByProjectId[_projectDataByPublishId[collectData.publishId].publication.projectId],
+            DataTypes.CollectDataParam(
+              collectData.publishId,
+              collectData.collectorSoulBoundTokenId,
+              collectData.collectUnits,
+              collectData.data,
+              _projectDataByPublishId[collectData.publishId].tokenId,
+              newTokenId,
+              _derivativeNFTByProjectId[_projectDataByPublishId[collectData.publishId].publication.projectId],
+              IModuleGlobals(MODULE_GLOBALS).getSBT()
+            ),
             _pubByIdByProfile,
             _projectDataByPublishId
         );

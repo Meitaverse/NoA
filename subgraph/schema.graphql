@@ -618,7 +618,7 @@ type StateSetHistory @entity {
   timestamp: BigInt!
 }
 
-# Bank treasury SBT Value Received history
+# Bank treasury SBT Value Received history - sbtvalueReceivedHistories
 type SBTValueReceivedHistory @entity {
   id: ID!
   sender: Bytes!
