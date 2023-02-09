@@ -35,10 +35,10 @@ interface IManagerV2 {
    */
    function setState(DataTypes.ProtocolState newState) external;
 
-    function mintSBTValue(
-        uint256 soulBoundTokenId, 
-        uint256 value
-    ) external;
+    // function mintSBTValue(
+    //     uint256 soulBoundTokenId, 
+    //     uint256 value
+    // ) external;
 
    function burnSBT(
         uint256 soulBoundTokenId

@@ -337,16 +337,12 @@ export class BuySBTByEth__Params {
     return this._event.parameters[2].value.toBigInt();
   }
 
-  get sbtValue(): BigInt {
+  get exchangePrice(): BigInt {
     return this._event.parameters[3].value.toBigInt();
   }
 
-  get exchangePrice(): BigInt {
+  get sbtValue(): BigInt {
     return this._event.parameters[4].value.toBigInt();
-  }
-
-  get totalAmount(): BigInt {
-    return this._event.parameters[5].value.toBigInt();
   }
 }
 
@@ -1300,36 +1296,6 @@ export class MintNFTVoucher__Params {
   }
 }
 
-export class MintSBTValue extends ethereum.Event {
-  get params(): MintSBTValue__Params {
-    return new MintSBTValue__Params(this);
-  }
-}
-
-export class MintSBTValue__Params {
-  _event: MintSBTValue;
-
-  constructor(event: MintSBTValue) {
-    this._event = event;
-  }
-
-  get caller(): Address {
-    return this._event.parameters[0].value.toAddress();
-  }
-
-  get soulBoundTokenId(): BigInt {
-    return this._event.parameters[1].value.toBigInt();
-  }
-
-  get value(): BigInt {
-    return this._event.parameters[2].value.toBigInt();
-  }
-
-  get timestamp(): BigInt {
-    return this._event.parameters[3].value.toBigInt();
-  }
-}
-
 export class ModuleBaseConstructed extends ethereum.Event {
   get params(): ModuleBaseConstructed__Params {
     return new ModuleBaseConstructed__Params(this);
@@ -1786,10 +1752,6 @@ export class ProfileCreated__Params {
   get imageURI(): string {
     return this._event.parameters[4].value.toString();
   }
-
-  get timestamp(): BigInt {
-    return this._event.parameters[5].value.toBigInt();
-  }
 }
 
 export class ProfileCreatorWhitelisted extends ethereum.Event {
@@ -1819,6 +1781,32 @@ export class ProfileCreatorWhitelisted__Params {
 
   get timestamp(): BigInt {
     return this._event.parameters[3].value.toBigInt();
+  }
+}
+
+export class ProfileUpdated extends ethereum.Event {
+  get params(): ProfileUpdated__Params {
+    return new ProfileUpdated__Params(this);
+  }
+}
+
+export class ProfileUpdated__Params {
+  _event: ProfileUpdated;
+
+  constructor(event: ProfileUpdated) {
+    this._event = event;
+  }
+
+  get soulBoundTokenId(): BigInt {
+    return this._event.parameters[0].value.toBigInt();
+  }
+
+  get nickName(): string {
+    return this._event.parameters[1].value.toString();
+  }
+
+  get imageURI(): string {
+    return this._event.parameters[2].value.toString();
   }
 }
 

@@ -105,8 +105,7 @@ makeSuiteCleanRoom('Profile Creation', function () {
                   userAddress, 
                   userAddress,
                   nickName,
-                  MOCK_PROFILE_URI,
-                  await getTimestamp(),
+                  MOCK_PROFILE_URI
                 ],
               );
 

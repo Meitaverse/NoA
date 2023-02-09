@@ -101,8 +101,15 @@ task("create-profile", "create-profile function")
   console.log(
     "\t\t--- ProfileCreated, imageURI: ", event.args.imageURI
   );
-  console.log(
-    "\t\t--- ProfileCreated, timestamp: ", event.args.timestamp.toNumber()
-  );
 
+  let balance = await sbt["balanceOf(uint256)"](event.args.soulBoundTokenId);
+  if (balance.eq(0)) {
+    //mint 10000000 Value to profileCreator
+    await bankTreasury.connect(profileCreator).buySBT(event.args.soulBoundTokenId, {value: 10000000});
+  }
+
+  balance = await sbt["balanceOf(uint256)"](event.args.soulBoundTokenId);
+  console.log(
+    "\n\t--- balanceOf profileCreator: ", balance
+  );
 });

@@ -16,17 +16,17 @@ interface INFTDerivativeProtocolTokenV2  {
     ) external returns(uint256);
 
 
-    /**
-     * @notice Mint value to a soulBoundTokenId.
-     *  Only admin can execute.
-     *
-     * @param soulBoundTokenId is the soulBoundTokenId of ERC3525 Token
-     * @param value is the value of tokenId
-     */
-    function mintValue(
-        uint256 soulBoundTokenId,
-        uint256 value
-    ) external payable;
+    // /**
+    //  * @notice Mint value to a soulBoundTokenId.
+    //  *  Only admin can execute.
+    //  *
+    //  * @param soulBoundTokenId is the soulBoundTokenId of ERC3525 Token
+    //  * @param value is the value of tokenId
+    //  */
+    // function mintValue(
+    //     uint256 soulBoundTokenId,
+    //     uint256 value
+    // ) external payable;
 
     /**
      * @notice Burn a tokenId.

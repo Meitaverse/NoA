@@ -17,7 +17,7 @@ dataSources:
       language: wasm/assemblyscript
       entities:
         - ProfileCreated
-        - MintSBTValue
+        - ProfileUpdated
         - BurnSBT
       abis:
         - name: Events
@@ -26,10 +26,10 @@ dataSources:
           file: ../artifacts/contracts/NFTDerivativeProtocolTokenV1.sol/NFTDerivativeProtocolTokenV1.json
       eventHandlers:
         - event: ProfileCreated(indexed uint256,indexed address,indexed
-            address,string,string,uint256)
+            address,string,string)
           handler: handleProfileCreated
-        - event: MintSBTValue(indexed address,indexed uint256,indexed uint256,uint256)
-          handler: handleMintSBTValue
+        - event: ProfileUpdated(indexed uint256,string,string)
+          handler: handleProfileUpdated
         - event: BurnSBT(indexed address,indexed uint256,indexed uint256,uint256)
           handler: handleBurnSBT
       file: ./src/sbt-mapping.ts
@@ -185,7 +185,7 @@ dataSources:
         - event: Deposit(indexed address,indexed uint256,indexed address,uint256)
           handler: handleDeposit
         - event: BuySBTByEth(indexed uint256,indexed address,indexed
-            uint256,uint256,uint256,uint256)
+            uint256,uint256,uint256)
           handler: handleBuySBTByEth
         - event: BuySBTByERC20(indexed uint256,indexed address,indexed
             address,uint256,uint256,uint256)

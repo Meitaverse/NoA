@@ -92,7 +92,7 @@ makeSuiteCleanRoom('Market Place', function () {
       ).to.eq(SECOND_PROFILE_ID);
              
       //mint some Values to user
-      await manager.connect(governance).mintSBTValue(SECOND_PROFILE_ID, parseEther('10'));
+      await bankTreasuryContract.connect(user).buySBT(SECOND_PROFILE_ID, {value: INITIAL_EARNESTFUNDS * 10});
       await bankTreasuryContract.connect(user).deposit(
         SECOND_PROFILE_ID,
         sbtContract.address,
@@ -110,7 +110,7 @@ makeSuiteCleanRoom('Market Place', function () {
           }) 
         ).to.eq(THIRD_PROFILE_ID);
 
-      await manager.connect(governance).mintSBTValue(THIRD_PROFILE_ID, parseEther('10'));
+      await bankTreasuryContract.connect(userTwo).buySBT(THIRD_PROFILE_ID, {value: INITIAL_EARNESTFUNDS * 10});
       
       // @notice MUST deposit SBT value into bank treasury before buy
       await bankTreasuryContract.connect(userTwo).deposit(

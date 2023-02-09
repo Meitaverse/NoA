@@ -1,9 +1,8 @@
 import { AbiCoder } from '@ethersproject/abi';
-import { parseEther } from '@ethersproject/units';
 import '@nomiclabs/hardhat-ethers';
 import { expect, use } from 'chai';
 import { solidity } from 'ethereum-waffle';
-import { BytesLike, Contract, Signer, Wallet } from 'ethers';
+import { BigNumber, BytesLike, Contract, Signer, Wallet } from 'ethers';
 import { ethers } from "hardhat";
 import {
   MIN_DELAY,
@@ -86,7 +85,6 @@ import { MarketPlaceLibraryAddresses } from '../typechain/factories/contracts/Ma
 use(solidity);
 
 export const NUM_CONFIRMATIONS_REQUIRED = 3;
-// export const CURRENCY_MINT_AMOUNT = parseEther('100');
 export const BPS_MAX = 10000;
 export const TREASURY_FEE_BPS = 500;
 export const PublishRoyaltySBT = 100;
@@ -118,7 +116,7 @@ export const TreasuryFee = 50;
 export const MARKET_MAX_DURATION = 86400000; //1000 days in seconds
 export const LOCKUP_DURATION = 86400; //24h in seconds
 
-export const INITIAL_SUPPLY = 1000000;  //SBT初始发行总量
+export const INITIAL_SUPPLY:BigNumber = BigNumber.from(1000000000);  //SBT初始发行总量, 1000000000 * 1e18
 export const VOUCHER_AMOUNT_LIMIT = 100;  //用户用SBT兑换Voucher的最低数量 
 
 export const DEFAULT_COLLECT_PRICE = 10;
@@ -511,6 +509,11 @@ before(async function () {
     bankTreasuryContract.connect(deployer).grantFeeModule(marketPlaceContract.address)
   ).to.not.be.reverted;
 
+  await expect(
+    bankTreasuryContract.connect(governance).setExchangePrice(sbtContract.address, 1)
+  ).to.not.be.reverted;
+  console.log('bankTreasuryContract setExchangePrice ok, 1 Ether = 1 SBT Value');
+
 
   await expect(
     marketPlaceContract.connect(governance).grantOperator(governanceAddress)
@@ -551,7 +554,6 @@ before(async function () {
   expect((await sbtContract.version()).toNumber()).to.eq(1);
   // expect((await sbtContract.getManager()).toUpperCase()).to.eq(manager.address.toUpperCase());
   console.log('sbtContract getManager ok ');
-
   
   expect((await bankTreasuryContract.getManager()).toUpperCase()).to.eq(manager.address.toUpperCase());
   console.log('bankTreasuryContract getManager ok ');

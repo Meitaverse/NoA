@@ -1657,40 +1657,6 @@ export class InitializeCall__Outputs {
   }
 }
 
-export class MintSBTValueCall extends ethereum.Call {
-  get inputs(): MintSBTValueCall__Inputs {
-    return new MintSBTValueCall__Inputs(this);
-  }
-
-  get outputs(): MintSBTValueCall__Outputs {
-    return new MintSBTValueCall__Outputs(this);
-  }
-}
-
-export class MintSBTValueCall__Inputs {
-  _call: MintSBTValueCall;
-
-  constructor(call: MintSBTValueCall) {
-    this._call = call;
-  }
-
-  get soulBoundTokenId(): BigInt {
-    return this._call.inputValues[0].value.toBigInt();
-  }
-
-  get value(): BigInt {
-    return this._call.inputValues[1].value.toBigInt();
-  }
-}
-
-export class MintSBTValueCall__Outputs {
-  _call: MintSBTValueCall;
-
-  constructor(call: MintSBTValueCall) {
-    this._call = call;
-  }
-}
-
 export class PrePublishCall extends ethereum.Call {
   get inputs(): PrePublishCall__Inputs {
     return new PrePublishCall__Inputs(this);

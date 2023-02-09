@@ -43,6 +43,7 @@ import {
   feeCollectModule,
   template,
   receiverMock,
+  bankTreasuryContract,
   
 } from '../../__setup.spec';
 
@@ -117,7 +118,7 @@ makeSuiteCleanRoom('Publishing', function () {
             );
 
             //mint 100Value to user
-            await manager.connect(governance).mintSBTValue(SECOND_PROFILE_ID, 100);
+            await bankTreasuryContract.connect(user).buySBT(SECOND_PROFILE_ID, {value: 100});
 
             await expect(
                  manager.connect(user).prePublish({
@@ -165,7 +166,7 @@ makeSuiteCleanRoom('Publishing', function () {
             );
 
             //mint 100Value to user
-            await manager.connect(governance).mintSBTValue(SECOND_PROFILE_ID, 100);
+            await bankTreasuryContract.connect(user).buySBT(SECOND_PROFILE_ID, {value: 100});
             
             expect((await sbtContract['balanceOf(uint256)'](SECOND_PROFILE_ID)).toNumber()).to.eq(100);
 
@@ -206,7 +207,7 @@ makeSuiteCleanRoom('Publishing', function () {
             );
             
             //mint 100Value to user
-            await manager.connect(governance).mintSBTValue(SECOND_PROFILE_ID, 100);
+            await bankTreasuryContract.connect(user).buySBT(SECOND_PROFILE_ID, {value: 100});
 
             expect((await sbtContract['balanceOf(uint256)'](SECOND_PROFILE_ID)).toNumber()).to.eq(100);
 
@@ -265,7 +266,7 @@ makeSuiteCleanRoom('Publishing', function () {
             );
             
             //mint 100Value to user
-            await manager.connect(governance).mintSBTValue(SECOND_PROFILE_ID, 100);
+            await bankTreasuryContract.connect(user).buySBT(SECOND_PROFILE_ID, {value: 100});
 
             expect((await sbtContract['balanceOf(uint256)'](SECOND_PROFILE_ID)).toNumber()).to.eq(100);
             

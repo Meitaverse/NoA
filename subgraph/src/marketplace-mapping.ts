@@ -423,7 +423,7 @@ export function handleReserveAuctionBidPlaced(event: ReserveAuctionBidPlaced): v
       auction.initialBid = currentBid.id;
       currentBid.extendedAuction = false;
     } else {
-      currentBid.extendedAuction = auction.dateEnding != event.params.endTime;
+      currentBid.extendedAuction = auction.dateEnding !== event.params.endTime;
     }
     auction.dateEnding = event.params.endTime;
     auction.numberOfBids = auction.numberOfBids.plus(ONE_BIG_INT);

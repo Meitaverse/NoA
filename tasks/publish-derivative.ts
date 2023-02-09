@@ -114,14 +114,14 @@ task("publish-derivative", "publish-derivative function")
       derivativeNFT.connect(creator).setApprovalForAll(derivativeNFT.address, true)
     );
 
-    let balance_bank =(await sbt["balanceOf(uint256)"](FIRST_PROFILE_ID)).toNumber();
+    let balance_bank =(await sbt["balanceOf(uint256)"](FIRST_PROFILE_ID));
     console.log('\n\t--- balance of bank : ', balance_bank);
  
     let balance_sbtid =(await sbt["balanceOf(uint256)"](sbtid)).toNumber();
-    if (balance_sbtid == 0) {
-      //mint 10000000 Value to creator
-      await manager.connect(governance).mintSBTValue(sbtid, 10000000);
-    }
+    // if (balance_sbtid == 0) {
+    //   //mint 10000000 Value to creator
+    //   await bankTreasury.connect(creator).buySBT(sbtid, {value: 10000000});
+    // }
     console.log('\t--- balance of sbtid: ', (await sbt["balanceOf(uint256)"](sbtid)).toNumber());
 
 
@@ -220,7 +220,7 @@ task("publish-derivative", "publish-derivative function")
           "\t\t---newTokenId: ", newTokenId
         );
 
-    balance_bank =(await sbt["balanceOf(uint256)"](FIRST_PROFILE_ID)).toNumber();
+    balance_bank =(await sbt["balanceOf(uint256)"](FIRST_PROFILE_ID));
     console.log('\n\t--- balance of bank : ', balance_bank);
 
     let balance_user =(await sbt["balanceOf(uint256)"](SECOND_PROFILE_ID)).toNumber();

@@ -89,10 +89,10 @@ interface IManager {
        address metadataDescriptor
     ) external;
 
-    function mintSBTValue(
-        uint256 soulBoundTokenId, 
-        uint256 value
-    ) external;
+    // function mintSBTValue(
+    //     uint256 soulBoundTokenId, 
+    //     uint256 value
+    // ) external;
 
     function burnSBT(
         uint256 soulBoundTokenId
@@ -104,12 +104,25 @@ interface IManager {
      *
      * @param vars A CreateProfileData struct containing the following params:
      *      to: The address receiving the profile.
-     *      nickName: The nickName to set for the profile, must be unique and non-empty.
+     *      nickName: The nickName to set for the profile, must be non-empty.
      *      imageURI: The URI to set for the profile image.
      */
     function createProfile(
         DataTypes.CreateProfileData calldata vars
     ) external returns (uint256);
+    
+    //   /**
+    //  * @notice Update a profile
+    //  *
+    //  * @param soulBoundTokenId The SBT id
+    //  * @param nickName: The nickName to set for the profile, must be non-empty.
+    //  * @param imageURI: The URI to set for the profile image.
+    //  */
+    // function updateProfile(
+    //     uint256 soulBoundTokenId,
+    //     string calldata nickName,
+    //     string calldata imageURI
+    // )  external;
 
     /**
      * @notice Returns the genesis publishId by projectId

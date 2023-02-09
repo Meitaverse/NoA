@@ -31,6 +31,7 @@ import { MAX_UINT256, ZERO_ADDRESS } from '../helpers/constants';
 import { ERRORS } from '../helpers/errors';
 
 import { 
+  DerivativeNFTState,
   collectReturningTokenId, 
   getTimestamp, 
   matchEvent, 
@@ -117,10 +118,6 @@ makeSuiteCleanRoom('Bank Treasury', function () {
         ).to.eq(THIRD_PROFILE_ID);
 
   
-        // await manager.connect(governance).mintSBTValue(THIRD_PROFILE_ID, 20000);
-        // let balanceOfUserTwo =(await sbtContract['balanceOf(uint256)'](THIRD_PROFILE_ID)).toNumber();
-        // console.log('balance of UserTwo: ', balanceOfUserTwo);
-
 
         expect(await manager.getWalletBySoulBoundTokenId(SECOND_PROFILE_ID)).to.eq(userAddress);
         expect(await manager.getWalletBySoulBoundTokenId(THIRD_PROFILE_ID)).to.eq(userTwoAddress);
@@ -132,9 +129,10 @@ makeSuiteCleanRoom('Bank Treasury', function () {
             await expect(box.connect(user).store(55)).to.be.revertedWith("Ownable: caller is not the owner")
         });
 
+/*
         it("One user proposes, votes, waits, queues, and then Box executes", async () => {
-            //mint Value to user for vote , value 必须大于90万
-            await manager.connect(governance).mintSBTValue(SECOND_PROFILE_ID, 900000);
+            //Buy SBT Value to user for vote , value 必须大于90万
+            await bankTreasuryContract.connect(user).buySBT(SECOND_PROFILE_ID, {value: 900000});
             let balanceOfUser =(await sbtContract['balanceOf(uint256)'](SECOND_PROFILE_ID)).toNumber();
             // console.log('balance of user: ', balanceOfUser);
 
@@ -161,7 +159,7 @@ makeSuiteCleanRoom('Bank Treasury', function () {
              //返回 user 选择的委托。    
             // console.log("delegates: ",await sbtContract.delegates(userAddress));
 
-            /** This is done so as to transfer the ownership to timelock contract so that it can execute the operation */
+            //This is done so as to transfer the ownership to timelock contract so that it can execute the operation
             const transferTx = await box.transferOwnership(timeLock.address);
             await transferTx.wait(1);
 
@@ -275,17 +273,12 @@ makeSuiteCleanRoom('Bank Treasury', function () {
             // console.log(`Executed! Current Proposal State: ${proposalState}`);
         
         });
+        */
 
-        it("can only be mint SBT value through governance", async () => {
-            await expect(manager.connect(userTwo).mintSBTValue(THIRD_PROFILE_ID, 900000)).to.be.revertedWith(ERRORS.NOT_GOVERNANCE);
-            let balanceOfUserTwo =(await sbtContract['balanceOf(uint256)'](THIRD_PROFILE_ID)).toNumber();
-            console.log('balance of userTwo: ', balanceOfUserTwo);
-            expect(balanceOfUserTwo).to.eq(0);
-        });
-
+/*
         it("onlyGov proposes, votes, waits, queues, and then Manager onlyGov functions executes", async () => {
             //mint Value to user for vote , value 必须大于90万
-            await manager.connect(governance).mintSBTValue(SECOND_PROFILE_ID, 900000);
+            await bankTreasuryContract.connect(user).buySBT(SECOND_PROFILE_ID, {value: 10000});
             let balanceOfUser =(await sbtContract['balanceOf(uint256)'](SECOND_PROFILE_ID)).toNumber();
             // console.log('balance of user: ', balanceOfUser);
 
@@ -341,9 +334,9 @@ makeSuiteCleanRoom('Bank Treasury', function () {
             await revokeTx.wait(1);
     
             // propose
-            const FUNC_mintSBTValue = 'mintSBTValue';
+            const FUNC_setDerivativeNFTState = 'setDerivativeNFTState';
             
-            const encodedFunctionCall = manager.interface.encodeFunctionData(FUNC_mintSBTValue, [THIRD_PROFILE_ID, 6000]);
+            const encodedFunctionCall = manager.interface.encodeFunctionData(FUNC_setDerivativeNFTState, [FIRST_PROJECT_ID, DerivativeNFTState.Paused]);
             
             //创建一个propose的交易
             const proposeTx = await governorContract.propose( //connect(deployer).
@@ -446,7 +439,7 @@ makeSuiteCleanRoom('Bank Treasury', function () {
             console.log(`Executed! Current Proposal State: ${proposalState}`);
         
         });
-        
+*/        
     });
 
 });

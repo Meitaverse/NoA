@@ -92,15 +92,15 @@ task("publish", "publish function")
         [template.address, DEFAULT_TEMPLATE_NUMBER],
     );
     const FIRST_PROFILE_ID =1;
-    let balance_bank =(await sbt["balanceOf(uint256)"](FIRST_PROFILE_ID)).toNumber();
+    let balance_bank =(await sbt["balanceOf(uint256)"](FIRST_PROFILE_ID));
     console.log('\n\t--- balance of bank : ', balance_bank);
 
  
     let balance =(await sbt["balanceOf(uint256)"](SECOND_PROFILE_ID)).toNumber();
-    if (balance == 0) {
-      //mint 10000000 Value to user
-      await manager.connect(governance).mintSBTValue(SECOND_PROFILE_ID, 10000000);
-    }
+    // if (balance == 0) {
+    //   //mint 10000000 Value to user
+    //   await bankTreasury.connect(user).buySBT(SECOND_PROFILE_ID, {value: 10000000});
+    // }
     console.log('\t--- balance of user: ', (await sbt["balanceOf(uint256)"](SECOND_PROFILE_ID)).toNumber());
 
     const receipt = await waitForTx(
@@ -229,7 +229,7 @@ task("publish", "publish function")
           "\t\t---newTokenId: ", newTokenId
         );
 
-    balance_bank =(await sbt["balanceOf(uint256)"](FIRST_PROFILE_ID)).toNumber();
+    balance_bank =(await sbt["balanceOf(uint256)"](FIRST_PROFILE_ID));
     console.log('\n\t--- balance of bank : ', balance_bank);
 
     let balance_left =(await sbt["balanceOf(uint256)"](SECOND_PROFILE_ID)).toNumber();

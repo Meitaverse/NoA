@@ -25,7 +25,7 @@ contract Currency is ERC20, Ownable, Pausable {
         ERC20('Currency', 'SBTCoin') 
    {
         _decimals = 18;
-        _mint(address(this), TOTAL_SUPPLY * 1e8);
+        _mint(address(this), TOTAL_SUPPLY * 1e18);
     }
 
     receive() external payable {}

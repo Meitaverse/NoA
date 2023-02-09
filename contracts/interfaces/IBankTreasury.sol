@@ -85,11 +85,9 @@ interface IBankTreasury {
      * @notice Buy SBT Value by Ether.
      *  The surplus funds provided are refunded.
      * @param soulBoundTokenId The soulBoundTokenId of caller.
-     * @param amount The value of SBT value to buy.
      */
     function buySBT(
-        uint256 soulBoundTokenId, 
-        uint256 amount
+        uint256 soulBoundTokenId
     ) external payable;
 
 /*

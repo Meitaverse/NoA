@@ -39,8 +39,28 @@ library SBTLogic {
             creator,
             wallet,    
             nickName,
-            imageURI,
-            block.timestamp
+            imageURI
+        );
+    }
+
+    function updateProfile(
+        uint256 soulBoundTokenId,
+        string calldata nickName,
+        string calldata imageURI,
+        mapping(uint256 => DataTypes.SoulBoundTokenDetail) storage _sbtDetails
+    ) external {
+        if (soulBoundTokenId == 0) revert Errors.TokenIdIsZero();
+        
+        _sbtDetails[soulBoundTokenId] = DataTypes.SoulBoundTokenDetail({
+            nickName: nickName,
+            imageURI: imageURI,
+            locked: true
+        });
+
+        emit Events.ProfileUpdated(
+            soulBoundTokenId,
+            nickName,
+            imageURI
         );
     }
 

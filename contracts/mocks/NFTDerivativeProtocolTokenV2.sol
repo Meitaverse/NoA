@@ -97,7 +97,7 @@ contract NFTDerivativeProtocolTokenV2 is
 
         return tokenId_;
     }
-
+/*
     function mintValue(
         uint256 soulBoundTokenId, 
         uint256 value
@@ -116,6 +116,7 @@ contract NFTDerivativeProtocolTokenV2 is
         emit Events.MintSBTValue(msg.sender, soulBoundTokenId, value, block.timestamp);
     }
 
+*/
 
     function burn(uint256 soulBoundTokenId) 
         external 

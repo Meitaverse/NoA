@@ -15,7 +15,7 @@ import {IManager} from "./interfaces/IManager.sol";
 import {ERC3525Votes} from "./extensions/ERC3525Votes.sol";
 import "./storage/SBTStorage.sol";
 import {INFTDerivativeProtocolTokenV1} from "./interfaces/INFTDerivativeProtocolTokenV1.sol";
-import "hardhat/console.sol";
+// import "hardhat/console.sol";
 
 /**
  *  @title NFT Derivative Protocol Token
@@ -29,7 +29,7 @@ contract NFTDerivativeProtocolTokenV1 is
     UUPSUpgradeable
 {
     uint256 internal constant VERSION = 1;
-    uint256 public constant MAX_SUPPLY = 100000000 * 1e18;
+    uint256 public constant MAX_SUPPLY = 10000000000 * 1e18;
     bytes32 public constant TRANSFER_VALUE_ROLE = keccak256("TRANSFER_VALUE_ROLE");
     bytes32 public constant UPGRADER_ROLE = keccak256("UPGRADER_ROLE");
 
@@ -86,11 +86,11 @@ contract NFTDerivativeProtocolTokenV1 is
         if (_banktreasury != address(0)) revert Errors.InitialIsAlreadyDone();
         _banktreasury = bankTreasury;
         
-        total_supply += initialSupply;
+        total_supply += initialSupply * 1e18;
         if (total_supply > MAX_SUPPLY) revert Errors.MaxSupplyExceeded();
 
         //create profile for bankTreasury, tokenId is 1, not vote power
-        uint256 tokenId_ = ERC3525Upgradeable._mint(_banktreasury, 1, initialSupply);
+        uint256 tokenId_ = ERC3525Upgradeable._mint(_banktreasury, 1, initialSupply * 1e18);
 
         SBTLogic.createProfile(
             tokenId_,
@@ -130,10 +130,27 @@ contract NFTDerivativeProtocolTokenV1 is
         return tokenId_;
     }
 
+    function updateProfile(
+        uint256 soulBoundTokenId,
+        string calldata nickName,
+        string calldata imageURI
+    ) 
+        external 
+        onlyManager 
+    { 
+        SBTLogic.updateProfile(
+            soulBoundTokenId,   
+            nickName,
+            imageURI,
+            _sbtDetails
+        );
+    }
+
     function getProfileDetail(uint256 soulBoundTokenId) external view returns (DataTypes.SoulBoundTokenDetail memory){
         return _sbtDetails[soulBoundTokenId];
     }
 
+/*
     function mintValue(
         uint256 soulBoundTokenId, 
         uint256 value
@@ -150,6 +167,7 @@ contract NFTDerivativeProtocolTokenV1 is
         _mintValue(soulBoundTokenId, value);
         emit Events.MintSBTValue(msg.sender, soulBoundTokenId, value, block.timestamp);
     }
+    */
 
     function burn(uint256 soulBoundTokenId) 
         external 

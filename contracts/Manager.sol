@@ -82,6 +82,7 @@ contract Manager is
         deverivateNFTInstance = Clones.predictDeterministicAddress(_DNFT_IMPL, salt);
     }
 
+/*
     function mintSBTValue(uint256 soulBoundTokenId, uint256 value) 
         external 
         whenNotPaused 
@@ -92,6 +93,7 @@ contract Manager is
         
         INFTDerivativeProtocolTokenV1(_sbt).mintValue(soulBoundTokenId, value);
     }
+*/
 
     function burnSBT(uint256 tokenId) 
         external 
@@ -123,6 +125,27 @@ contract Manager is
 
         return soulBoundTokenId;
     }
+
+    // function updateProfile(
+    //     uint256 soulBoundTokenId,
+    //     string calldata nickName,
+    //     string calldata imageURI
+    // ) 
+    //     external 
+    //     whenNotPaused 
+    //     nonReentrant
+    // {
+    //     _validateCallerIsSoulBoundTokenOwnerOrDispathcher(soulBoundTokenId);
+    //     _validateNickName(nickName);
+
+    //     address _sbt = IModuleGlobals(MODULE_GLOBALS).getSBT();
+    //     INFTDerivativeProtocolTokenV1(_sbt).updateProfile(
+    //         soulBoundTokenId, 
+    //         nickName, 
+    //         imageURI
+    //     );
+
+    // }
 
     function createHub(
         DataTypes.HubData calldata hub

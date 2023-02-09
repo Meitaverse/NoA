@@ -527,17 +527,7 @@ contract BankTreasuryV2 is
             revert Errors.CurrencyNotInWhitelisted(currency);
 
         DataTypes.AccountInfo storage accountInfo = _freeFromEscrow(currency, soulBoundTokenId);
-        uint256 freedBalance = accountInfo.freedBalance;
-        
-        if (freedBalance == 0) {
-            revert Errors.SBT_No_Funds_To_Withdraw(); 
-        }
-        if (freedBalance < amount) {
-            revert Errors.InsufficientBalance(); 
-        }
-
         _deductBalanceFrom(accountInfo, amount);
-
 
         address _sbt = IModuleGlobals(MODULE_GLOBALS).getSBT();
         if (_sbt == currency) {
@@ -556,7 +546,6 @@ contract BankTreasuryV2 is
             currency,
             amount
         );
-    
     }
 
     function calculateAmountCurrency(address currency, uint256 ethAmount) external view returns (uint256) {
@@ -570,8 +559,7 @@ contract BankTreasuryV2 is
     }
 
     function buySBT(
-        uint256 soulBoundTokenId,
-        uint256 amount
+        uint256 soulBoundTokenId
     ) external payable whenNotPaused nonReentrant {
         // only called by owner of soulBoundTokenId
         _validateCallerIsSoulBoundTokenOwner(soulBoundTokenId);
@@ -579,41 +567,25 @@ contract BankTreasuryV2 is
         address currency = IModuleGlobals(MODULE_GLOBALS).getSBT();
 
         if (_exchangePrice[currency] == 0) revert Errors.ExchangePriceIsZero();
-        if (amount == 0) revert Errors.AmountIsZero();
+        if (msg.value == 0) revert Errors.PaymentError();
         
         address exchangeWallet = payable(msg.sender);
        
-        uint256 totalAmount = _exchangePrice[currency].mul(amount);
-        if (msg.value < totalAmount) {
+        uint256 sbtValue = _exchangePrice[currency].mul(msg.value);
 
-            revert Errors.PaymentError();
-        }
-
-        if (msg.value > totalAmount) {
-            //refund to msg.sender
-            // Cap the gas to prevent consuming all available gas to block a tx from completing successfully
-            // solhint-disable-next-line avoid-low-level-calls
-            (bool success, ) = exchangeWallet.call{ value: msg.value - totalAmount, gas: SEND_VALUE_GAS_LIMIT_SINGLE_RECIPIENT }("");
-            if (!success) {
-                // emit the funds that failed to send for the user in the ETH token
-               emit Events.RefundToETH(exchangeWallet, msg.value - totalAmount);
-            }
-        }
-        
         address _sbt = IModuleGlobals(MODULE_GLOBALS).getSBT();
         INFTDerivativeProtocolTokenV1(_sbt).transferValue(
             soulBoundTokenIdBankTreasury, 
             soulBoundTokenId, 
-            amount
+            sbtValue
         );
 
         emit Events.BuySBTByEth(
             soulBoundTokenId, 
             exchangeWallet, 
             msg.value, 
-            amount, 
             _exchangePrice[currency],
-            totalAmount
+            sbtValue
         );
     }
 

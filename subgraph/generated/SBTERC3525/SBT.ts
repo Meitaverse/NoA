@@ -1516,40 +1516,6 @@ export class InitializeCall__Outputs {
   }
 }
 
-export class MintValueCall extends ethereum.Call {
-  get inputs(): MintValueCall__Inputs {
-    return new MintValueCall__Inputs(this);
-  }
-
-  get outputs(): MintValueCall__Outputs {
-    return new MintValueCall__Outputs(this);
-  }
-}
-
-export class MintValueCall__Inputs {
-  _call: MintValueCall;
-
-  constructor(call: MintValueCall) {
-    this._call = call;
-  }
-
-  get soulBoundTokenId(): BigInt {
-    return this._call.inputValues[0].value.toBigInt();
-  }
-
-  get value(): BigInt {
-    return this._call.inputValues[1].value.toBigInt();
-  }
-}
-
-export class MintValueCall__Outputs {
-  _call: MintValueCall;
-
-  constructor(call: MintValueCall) {
-    this._call = call;
-  }
-}
-
 export class PermitCall extends ethereum.Call {
   get inputs(): PermitCall__Inputs {
     return new PermitCall__Inputs(this);
@@ -1972,6 +1938,44 @@ export class TransferValueCall__Outputs {
   _call: TransferValueCall;
 
   constructor(call: TransferValueCall) {
+    this._call = call;
+  }
+}
+
+export class UpdateProfileCall extends ethereum.Call {
+  get inputs(): UpdateProfileCall__Inputs {
+    return new UpdateProfileCall__Inputs(this);
+  }
+
+  get outputs(): UpdateProfileCall__Outputs {
+    return new UpdateProfileCall__Outputs(this);
+  }
+}
+
+export class UpdateProfileCall__Inputs {
+  _call: UpdateProfileCall;
+
+  constructor(call: UpdateProfileCall) {
+    this._call = call;
+  }
+
+  get soulBoundTokenId(): BigInt {
+    return this._call.inputValues[0].value.toBigInt();
+  }
+
+  get nickName(): string {
+    return this._call.inputValues[1].value.toString();
+  }
+
+  get imageURI(): string {
+    return this._call.inputValues[2].value.toString();
+  }
+}
+
+export class UpdateProfileCall__Outputs {
+  _call: UpdateProfileCall;
+
+  constructor(call: UpdateProfileCall) {
     this._call = call;
   }
 }

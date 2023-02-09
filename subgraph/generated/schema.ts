@@ -447,6 +447,46 @@ export class Account extends Entity {
   set nftOffersMade(value: Array<string>) {
     this.set("nftOffersMade", Value.fromStringArray(value));
   }
+
+  get buySBTByEthHistories(): Array<string> | null {
+    let value = this.get("buySBTByEthHistories");
+    if (!value || value.kind == ValueKind.NULL) {
+      return null;
+    } else {
+      return value.toStringArray();
+    }
+  }
+
+  set buySBTByEthHistories(value: Array<string> | null) {
+    if (!value) {
+      this.unset("buySBTByEthHistories");
+    } else {
+      this.set(
+        "buySBTByEthHistories",
+        Value.fromStringArray(<Array<string>>value)
+      );
+    }
+  }
+
+  get buySBTByERC20Histories(): Array<string> | null {
+    let value = this.get("buySBTByERC20Histories");
+    if (!value || value.kind == ValueKind.NULL) {
+      return null;
+    } else {
+      return value.toStringArray();
+    }
+  }
+
+  set buySBTByERC20Histories(value: Array<string> | null) {
+    if (!value) {
+      this.unset("buySBTByERC20Histories");
+    } else {
+      this.set(
+        "buySBTByERC20Histories",
+        Value.fromStringArray(<Array<string>>value)
+      );
+    }
+  }
 }
 
 export class Profile extends Entity {
@@ -673,26 +713,6 @@ export class SBTAsset extends Entity {
       this.unset("transferValues");
     } else {
       this.set("transferValues", Value.fromStringArray(<Array<string>>value));
-    }
-  }
-
-  get mintSBTValueHistories(): Array<string> | null {
-    let value = this.get("mintSBTValueHistories");
-    if (!value || value.kind == ValueKind.NULL) {
-      return null;
-    } else {
-      return value.toStringArray();
-    }
-  }
-
-  set mintSBTValueHistories(value: Array<string> | null) {
-    if (!value) {
-      this.unset("mintSBTValueHistories");
-    } else {
-      this.set(
-        "mintSBTValueHistories",
-        Value.fromStringArray(<Array<string>>value)
-      );
     }
   }
 
@@ -928,85 +948,6 @@ export class SBTSlotChangedHistory extends Entity {
 
   set newSlot(value: BigInt) {
     this.set("newSlot", Value.fromBigInt(value));
-  }
-
-  get timestamp(): BigInt {
-    let value = this.get("timestamp");
-    return value!.toBigInt();
-  }
-
-  set timestamp(value: BigInt) {
-    this.set("timestamp", Value.fromBigInt(value));
-  }
-}
-
-export class MintSBTValueHistory extends Entity {
-  constructor(id: string) {
-    super();
-    this.set("id", Value.fromString(id));
-  }
-
-  save(): void {
-    let id = this.get("id");
-    assert(id != null, "Cannot save MintSBTValueHistory entity without an ID");
-    if (id) {
-      assert(
-        id.kind == ValueKind.STRING,
-        `Entities of type MintSBTValueHistory must have an ID of type String but the id '${id.displayData()}' is of type ${id.displayKind()}`
-      );
-      store.set("MintSBTValueHistory", id.toString(), this);
-    }
-  }
-
-  static load(id: string): MintSBTValueHistory | null {
-    return changetype<MintSBTValueHistory | null>(
-      store.get("MintSBTValueHistory", id)
-    );
-  }
-
-  get id(): string {
-    let value = this.get("id");
-    return value!.toString();
-  }
-
-  set id(value: string) {
-    this.set("id", Value.fromString(value));
-  }
-
-  get sbtAsset(): string {
-    let value = this.get("sbtAsset");
-    return value!.toString();
-  }
-
-  set sbtAsset(value: string) {
-    this.set("sbtAsset", Value.fromString(value));
-  }
-
-  get caller(): Bytes {
-    let value = this.get("caller");
-    return value!.toBytes();
-  }
-
-  set caller(value: Bytes) {
-    this.set("caller", Value.fromBytes(value));
-  }
-
-  get account(): string {
-    let value = this.get("account");
-    return value!.toString();
-  }
-
-  set account(value: string) {
-    this.set("account", Value.fromString(value));
-  }
-
-  get value(): BigInt {
-    let value = this.get("value");
-    return value!.toBigInt();
-  }
-
-  set value(value: BigInt) {
-    this.set("value", Value.fromBigInt(value));
   }
 
   get timestamp(): BigInt {

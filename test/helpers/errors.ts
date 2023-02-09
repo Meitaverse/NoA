@@ -65,4 +65,5 @@ export const ERRORS = {
   Amount_Limit: 'AmountLimit()',
   AmountSBT_Is_Zero: 'AmountSBTIsZero()',
   SBT_No_Funds_To_Withdraw: 'SBT_No_Funds_To_Withdraw()',
+  Insufficient_Available_Funds: 'Insufficient_Available_Funds()',
 };

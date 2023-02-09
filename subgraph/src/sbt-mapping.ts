@@ -2,7 +2,7 @@ import { log, Address, BigInt, Bytes, store, TypedMap } from "@graphprotocol/gra
 
 import {
     ProfileCreated,
-    MintSBTValue,
+    ProfileUpdated,
     BurnSBT,
 } from "../generated/SBT/Events"
 
@@ -17,7 +17,7 @@ import {
 } from "../generated/SBTERC3525/SBT"
 
 import {
-    MintSBTValueHistory,
+    // MintSBTValueHistory,
     BurnSBTHistory,
     SBTTransferHistory,
     SBTAsset,
@@ -44,7 +44,7 @@ export function handleProfileCreated(event: ProfileCreated): void {
         profile.wallet = event.params.wallet
         profile.nickName = event.params.nickName
         profile.imageURI = event.params.imageURI
-        profile.timestamp = event.params.timestamp
+        profile.timestamp = event.block.timestamp
         profile.save()
 
         const sbt = loadOrCreateSoulBoundToken(event.params.soulBoundTokenId)
@@ -56,6 +56,20 @@ export function handleProfileCreated(event: ProfileCreated): void {
     } 
 }
 
+export function handleProfileUpdated(event: ProfileUpdated): void {
+    log.info("handleProfileUpdated, event.address: {}", [event.address.toHexString()])
+    const sbt = loadOrCreateSoulBoundToken(event.params.soulBoundTokenId)
+    if (sbt) {
+        const profile = loadOrCreateProfile(Address.fromBytes(sbt.wallet));
+        if (profile) {
+            profile.nickName = event.params.nickName
+            profile.imageURI = event.params.imageURI
+            profile.timestamp = event.block.timestamp
+            profile.save()
+        }   
+    } 
+}
+/*
 export function handleMintSBTValue(event: MintSBTValue): void {
     log.info("handleMintSBTValue, event.address: {}", [event.address.toHexString()])
     
@@ -77,6 +91,7 @@ export function handleMintSBTValue(event: MintSBTValue): void {
         } 
     }
 }
+*/
 
 export function handleBurnSBT(event: BurnSBT): void {
     log.info("handleBurnSBT, event.address: {}", [event.address.toHexString()])

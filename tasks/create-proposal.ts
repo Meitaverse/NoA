@@ -38,6 +38,7 @@ import {
 import { loadContract } from "./config";
 
 import { deployContract, waitForTx , ProtocolState, Error} from './helpers/utils';
+import { parseEther } from "ethers/lib/utils";
 
 export let runtimeHRE: HardhatRuntimeEnvironment;
 
@@ -86,8 +87,8 @@ task("create-proposal", "create-proposal function")
       "\n\t--- moduleGlobals whitelistHubCreator set true for user: ", userAddress
     );
 
-    //mint Value to user for vote , value 必须大于90万
-    await manager.connect(governance).mintSBTValue(SECOND_PROFILE_ID, 900000);
+    //mint Value to user for vote , value 必须大于90%
+    await bankTreasury.connect(user).buySBT(SECOND_PROFILE_ID, {value: 10000});
     let balanceOfUser =(await sbt['balanceOf(uint256)'](SECOND_PROFILE_ID)).toNumber();
     console.log('balance of user: ', balanceOfUser);
 

@@ -1184,10 +1184,6 @@ export class BuySBTCall__Inputs {
   get soulBoundTokenId(): BigInt {
     return this._call.inputValues[0].value.toBigInt();
   }
-
-  get amount(): BigInt {
-    return this._call.inputValues[1].value.toBigInt();
-  }
 }
 
 export class BuySBTCall__Outputs {

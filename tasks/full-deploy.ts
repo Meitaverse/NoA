@@ -1,5 +1,5 @@
 import '@nomiclabs/hardhat-ethers';
-import { hexlify, keccak256, RLP } from 'ethers/lib/utils';
+import { hexlify, keccak256, parseEther, RLP } from 'ethers/lib/utils';
 import fs from 'fs';
 import { task } from 'hardhat/config';
 // import { readFile, writeFile } from "fs/promises";
@@ -70,7 +70,7 @@ import { MarketPlaceLibraryAddresses } from '../typechain/factories/contracts/Ma
   const  RECEIVER_MAGIC_VALUE = '0x009ce20b';
   const TreasuryFee = 50; 
   const FIRST_PROFILE_ID = 1; //金库
-  const INITIAL_SUPPLY = 1000000;  //SBT初始发行总量
+  const INITIAL_SUPPLY =  1000000;  //SBT初始发行总量, 1000000 * 1e18
   const VOUCHER_AMOUNT_LIMIT = 100;  //用户用SBT兑换Voucher的最低数量 
   
 
@@ -439,7 +439,7 @@ import { MarketPlaceLibraryAddresses } from '../typechain/factories/contracts/Ma
             INITIAL_SUPPLY
         ));
         let balance =  await sbtContract['balanceOf(uint256)'](FIRST_PROFILE_ID); 
-        console.log('\t-- INITIAL SUPPLY of the first soul bound token id:', balance.toNumber());
+        console.log('\t-- INITIAL SUPPLY of the first soul bound token id:', balance);
         
         console.log('\n\t-- Whitelisting sbtContract Contract address --');
         const transferValueRole = await sbtContract.TRANSFER_VALUE_ROLE();
@@ -469,12 +469,13 @@ import { MarketPlaceLibraryAddresses } from '../typechain/factories/contracts/Ma
 
         console.log('\n\t-- voucherContract set moduleGlobals address --');
         await waitForTx( voucherContract.connect(deployer).setGlobalModules(moduleGlobals.address));
-        await waitForTx( voucherContract.connect(deployer).setUserAmountLimit(moduleGlobals.address));
-      
+        await waitForTx( voucherContract.connect(deployer).setUserAmountLimit(VOUCHER_AMOUNT_LIMIT));
+
         console.log('\n\t-- bankTreasuryContract set moduleGlobals address --');
         await waitForTx( bankTreasuryContract.connect(governance).setGlobalModules(moduleGlobals.address));
         await waitForTx( bankTreasuryContract.connect(governance).setFoundationMarket(marketPlaceContract.address));
-       
+        
+  
         console.log('\n\t-- marketPlaceContract set moduleGlobals address --');
         await waitForTx( marketPlaceContract.connect(governance).setGlobalModules(moduleGlobals.address));
 
@@ -500,7 +501,10 @@ import { MarketPlaceLibraryAddresses } from '../typechain/factories/contracts/Ma
             .connect(governance)
             .whitelistCurrency(currency.address, true)
         );
-
+    
+        console.log('\n\t-- bankTreasuryContract setExchangePrice, 1 Ether = 1 SBT Value');
+        await waitForTx( bankTreasuryContract.connect(governance).setExchangePrice(sbtContract.address, 1));
+        
         //TODO ether 
 
         if (await manager.connect(governance).getGlobalModule() == ZERO_ADDRESS) {

@@ -46,6 +46,7 @@ import {
   template,
   receiverMock,
   THIRD_PROFILE_ID,
+  bankTreasuryContract,
   
 } from '../../__setup.spec';
 import { DerivativeNFT, DerivativeNFT__factory } from '../../../typechain';
@@ -56,23 +57,7 @@ const Default_royaltyBasisPoints = 50; //
 makeSuiteCleanRoom('Multi state', function () {
     context('Negatives when state is set to pause', function () {
         
-        it('User should fail to mint SBT value when state is set to pause', async function () {
-            
-            await expect( 
-                manager.connect(user).createProfile({
-                wallet: userAddress,
-                nickName: 'Alice',
-                imageURI: MOCK_PROFILE_URI,
-              })
-            ).to.not.be.reverted;
-
-            await manager.connect(governance).setState(ProtocolState.Paused);
-
-            await expect( 
-                 manager.connect(governance).mintSBTValue(SECOND_PROFILE_ID, 100)
-            ).to.be.revertedWith(ERRORS.PAUSED);
-
-        });
+       
         it('User should fail to burn SBT value when state is set to pause', async function () {
             
             await expect( 
@@ -85,7 +70,7 @@ makeSuiteCleanRoom('Multi state', function () {
 
             
             await expect( 
-                manager.connect(governance).mintSBTValue(SECOND_PROFILE_ID, 100)
+               bankTreasuryContract.connect(user).buySBT(SECOND_PROFILE_ID, {value: 100})
             ).to.not.be.reverted;
                 
                 
@@ -246,7 +231,7 @@ makeSuiteCleanRoom('Multi state', function () {
             );
 
             //mint 100Value to user
-            await manager.connect(governance).mintSBTValue(SECOND_PROFILE_ID, 100);
+            await bankTreasuryContract.connect(user).buySBT(SECOND_PROFILE_ID, {value: 100});
 
             await expect(
                  manager.connect(user).prePublish({
@@ -283,7 +268,7 @@ makeSuiteCleanRoom('Multi state', function () {
             );
 
             //mint 100Value to user
-            await manager.connect(governance).mintSBTValue(SECOND_PROFILE_ID, 100);
+            await bankTreasuryContract.connect(user).buySBT(SECOND_PROFILE_ID, {value: 100});
             
             await expect(
                     manager.connect(user).prePublish({
@@ -335,7 +320,7 @@ makeSuiteCleanRoom('Multi state', function () {
             );
 
             //mint 100Value to user
-            await manager.connect(governance).mintSBTValue(SECOND_PROFILE_ID, 100);
+            await bankTreasuryContract.connect(user).buySBT(SECOND_PROFILE_ID, {value: 100});
             
             await expect(
                     manager.connect(user).prePublish({
@@ -380,7 +365,8 @@ makeSuiteCleanRoom('Multi state', function () {
             );
 
             //mint 100Value to user
-            await manager.connect(governance).mintSBTValue(SECOND_PROFILE_ID, 100);
+            await bankTreasuryContract.connect(user).buySBT(SECOND_PROFILE_ID, {value: 100});
+
             
             await expect(
                     manager.connect(user).prePublish({
@@ -435,7 +421,7 @@ makeSuiteCleanRoom('Multi state', function () {
             );
 
             //mint 100Value to user
-            await manager.connect(governance).mintSBTValue(SECOND_PROFILE_ID, 100);
+            await bankTreasuryContract.connect(user).buySBT(SECOND_PROFILE_ID, {value: 100});
             
             await expect(
                     manager.connect(user).prePublish({
@@ -545,7 +531,7 @@ makeSuiteCleanRoom('Multi state', function () {
             );
 
             //mint 100Value to user
-            await manager.connect(governance).mintSBTValue(SECOND_PROFILE_ID, 100);
+            await bankTreasuryContract.connect(user).buySBT(SECOND_PROFILE_ID, {value: 100});
             
             await expect(
                     manager.connect(user).prePublish({
@@ -589,7 +575,7 @@ makeSuiteCleanRoom('Multi state', function () {
             );
 
             //mint 100Value to user
-            await manager.connect(governance).mintSBTValue(SECOND_PROFILE_ID, 100);
+            await bankTreasuryContract.connect(user).buySBT(SECOND_PROFILE_ID, {value: 100});
             
             await expect(
                     manager.connect(user).prePublish({
@@ -643,7 +629,7 @@ makeSuiteCleanRoom('Multi state', function () {
             );
 
             //mint 100Value to user
-            await manager.connect(governance).mintSBTValue(SECOND_PROFILE_ID, 100);
+            await bankTreasuryContract.connect(user).buySBT(SECOND_PROFILE_ID, {value: 100});
             
             await expect(
                     manager.connect(user).prePublish({
@@ -699,7 +685,7 @@ makeSuiteCleanRoom('Multi state', function () {
             );
 
             //mint 100Value to user
-            await manager.connect(governance).mintSBTValue(SECOND_PROFILE_ID, 100);
+            await bankTreasuryContract.connect(user).buySBT(SECOND_PROFILE_ID, {value: 100});
             
             await expect(
                     manager.connect(user).prePublish({
@@ -754,7 +740,7 @@ makeSuiteCleanRoom('Multi state', function () {
             );
 
             //mint 100Value to user
-            await manager.connect(governance).mintSBTValue(SECOND_PROFILE_ID, 100);
+            await bankTreasuryContract.connect(user).buySBT(SECOND_PROFILE_ID, {value: 100});
             
             await expect(
                     manager.connect(user).prePublish({

@@ -46,7 +46,8 @@ import {
   FIRST_PUBLISH_ID,
   THIRD_PROFILE_ID,
   FIRST_DNFT_TOKEN_ID,
-  testWallet
+  testWallet,
+  bankTreasuryContract
 } from '../../__setup.spec';
 import { DerivativeNFT, DerivativeNFT__factory } from '../../../typechain';
 import { parseEther } from 'ethers/lib/utils';
@@ -75,10 +76,9 @@ makeSuiteCleanRoom('Dispatcher Functionality', function () {
       ).to.not.be.reverted;
 
       //mint some Value to user
-      await manager.connect(governance).mintSBTValue(SECOND_PROFILE_ID, parseEther('0.1'));
-      
+      await bankTreasuryContract.connect(user).buySBT(SECOND_PROFILE_ID, {value: 10000});
       //mint some  Value to userTwo
-      await manager.connect(governance).mintSBTValue(THIRD_PROFILE_ID, parseEther('0.1'));
+      await bankTreasuryContract.connect(userTwo).buySBT(THIRD_PROFILE_ID, {value: 10000});
       
     });
 
@@ -227,10 +227,11 @@ makeSuiteCleanRoom('Dispatcher Functionality', function () {
 
 
       //mint 10000 Value to testWallet
-      await manager.connect(governance).mintSBTValue(SECOND_PROFILE_ID, 10000);
+      await bankTreasuryContract.connect(testWallet).buySBT(SECOND_PROFILE_ID, {value: 10000});
       
     });
 
+//TODO
     context('Negatives', function () {
       it('TestWallet should fail to set dispatcher with sig with signature deadline mismatch', async function () {
         const nonce = (await manager.sigNonces(testWallet.address)).toNumber();
@@ -395,5 +396,6 @@ makeSuiteCleanRoom('Dispatcher Functionality', function () {
     });
     
   });
+  
   
 });

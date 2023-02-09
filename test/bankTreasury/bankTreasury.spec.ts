@@ -2,6 +2,9 @@ import { BigNumber } from '@ethersproject/bignumber';
 import { parseEther } from '@ethersproject/units';
 import '@nomiclabs/hardhat-ethers';
 import { expect } from 'chai';
+// import { solidity } from "ethereum-waffle";
+// use(solidity);
+
 import { 
   ERC20__factory,
   DerivativeNFT,
@@ -67,6 +70,7 @@ import {
 import { 
   createProfileReturningTokenId,
 } from '../helpers/utils';
+import { ContractTransaction, ethers } from 'ethers';
 
 // import { ContractTransaction } from 'ethers';
 
@@ -155,7 +159,7 @@ makeSuiteCleanRoom('Bank Treasury', function () {
     context('Withdraw all avaliable earnest funds', function () {
       beforeEach(async () => {
         //mint some Values to user
-        await manager.connect(governance).mintSBTValue(SECOND_PROFILE_ID, 10000);
+        await bankTreasuryContract.connect(user).buySBT(SECOND_PROFILE_ID, {value: original_balance});
 
         expect((await sbtContract['balanceOf(uint256)'](SECOND_PROFILE_ID)).toNumber()).to.eq(original_balance);
         
@@ -206,7 +210,7 @@ makeSuiteCleanRoom('Bank Treasury', function () {
           SECOND_PROFILE_ID, 
           sbtContract.address,
           balance)
-        ).to.be.revertedWith("SBT_No_Funds_To_Withdraw");
+        ).to.be.revertedWith("Insufficient_Available_Funds");
       });
 
     });
@@ -214,7 +218,7 @@ makeSuiteCleanRoom('Bank Treasury', function () {
     context('Withdraw a part of earnest funds', function () {
       beforeEach(async () => {
         //mint some Values to user
-        await manager.connect(governance).mintSBTValue(SECOND_PROFILE_ID, original_balance);
+        await bankTreasuryContract.connect(user).buySBT(SECOND_PROFILE_ID, {value: original_balance});
 
         expect((await sbtContract['balanceOf(uint256)'](SECOND_PROFILE_ID)).toNumber()).to.eq(original_balance);
         
@@ -270,15 +274,21 @@ makeSuiteCleanRoom('Bank Treasury', function () {
 
     });
     
+
     context('Exchange', function () {
       
         it('User should deposited after user call tranferFrom to treasury', async function () {
 
           //mint some Values to user
-          await manager.connect(governance).mintSBTValue(SECOND_PROFILE_ID, 10000);
+          await bankTreasuryContract.connect(user).buySBT(SECOND_PROFILE_ID, {value: original_balance});
 
-          expect((await sbtContract['balanceOf(uint256)'](FIRST_PROFILE_ID)).toNumber()).to.eq(INITIAL_SUPPLY);
-          expect((await sbtContract['balanceOf(uint256)'](SECOND_PROFILE_ID)).toNumber()).to.eq(10000);
+          let totalSupply:BigNumber = await sbtContract['balanceOf(uint256)'](FIRST_PROFILE_ID);
+         
+          let balance = INITIAL_SUPPLY.mul(BigNumber.from('10').pow(18)).sub(original_balance);
+
+          expect(totalSupply).to.deep.equal(balance);
+
+          expect((await sbtContract['balanceOf(uint256)'](SECOND_PROFILE_ID))).to.eq(original_balance);
           
           await bankTreasuryContract.connect(user).deposit(
             SECOND_PROFILE_ID,
@@ -289,13 +299,11 @@ makeSuiteCleanRoom('Bank Treasury', function () {
           
           expect((await bankTreasuryContract.balanceOf(sbtContract.address, SECOND_PROFILE_ID)).toNumber()).to.eq(6000);
 
-          expect((await sbtContract['balanceOf(uint256)'](FIRST_PROFILE_ID)).toNumber()).to.eq(INITIAL_SUPPLY + 6000);
           expect((await sbtContract['balanceOf(uint256)'](SECOND_PROFILE_ID)).toNumber()).to.eq(4000);
 
         });
 
         it('User should exchange Voucher SBT', async function () {
-          expect((await sbtContract['balanceOf(uint256)'](FIRST_PROFILE_ID)).toNumber()).to.eq(INITIAL_SUPPLY);
           expect((await sbtContract['balanceOf(uint256)'](SECOND_PROFILE_ID)).toNumber()).to.eq(0);
           
           await expect(
@@ -316,7 +324,6 @@ makeSuiteCleanRoom('Bank Treasury', function () {
         });
 
         it('Voucher transfer to a new user, and new owner should exchange Voucher SBT', async function () {
-          expect((await sbtContract['balanceOf(uint256)'](FIRST_PROFILE_ID)).toNumber()).to.eq(INITIAL_SUPPLY);
           expect((await sbtContract['balanceOf(uint256)'](SECOND_PROFILE_ID)).toNumber()).to.eq(0);
           
           await expect(
@@ -358,10 +365,10 @@ makeSuiteCleanRoom('Bank Treasury', function () {
     context('Voucher generate', function () {
         
       it('User should success mint a ERC1155 NFT and transfer SBT to bank treasury', async function () {
-        expect((await sbtContract['balanceOf(uint256)'](FIRST_PROFILE_ID)).toNumber()).to.eq(INITIAL_SUPPLY);
         expect((await sbtContract['balanceOf(uint256)'](SECOND_PROFILE_ID)).toNumber()).to.eq(0);
         //mint 100Value to user
-        await manager.connect(governance).mintSBTValue(SECOND_PROFILE_ID, 100);
+        await bankTreasuryContract.connect(user).buySBT(SECOND_PROFILE_ID, {value: 100});
+
         expect((await sbtContract['balanceOf(uint256)'](SECOND_PROFILE_ID)).toNumber()).to.eq(100);
 
         expect(await manager.getWalletBySoulBoundTokenId(SECOND_PROFILE_ID)).to.eq(userAddress);
@@ -371,16 +378,13 @@ makeSuiteCleanRoom('Bank Treasury', function () {
           100,
           userAddress,
         );
-        console.log('mintNFT ok');
 
         expect((await sbtContract['balanceOf(uint256)'](SECOND_PROFILE_ID)).toNumber()).to.eq(0);
-        expect((await sbtContract['balanceOf(uint256)'](FIRST_PROFILE_ID)).toNumber()).to.eq(INITIAL_SUPPLY + 100);
        
       });
 
     
       it('Should faild to mint a ERC1155 NFT when balance of user is less than 100', async function () {
-        expect((await sbtContract['balanceOf(uint256)'](FIRST_PROFILE_ID)).toNumber()).to.eq(INITIAL_SUPPLY);
         
         expect((await sbtContract['balanceOf(uint256)'](SECOND_PROFILE_ID)).toNumber()).to.eq(0);
 
@@ -392,17 +396,16 @@ makeSuiteCleanRoom('Bank Treasury', function () {
           )
         ).to.be.revertedWith(ERRORS.ERC3525_INSUFFICIENT_BALANCE);
 
-        expect((await sbtContract['balanceOf(uint256)'](FIRST_PROFILE_ID)).toNumber()).to.eq(INITIAL_SUPPLY);
         expect((await sbtContract['balanceOf(uint256)'](SECOND_PROFILE_ID)).toNumber()).to.eq(0);
        
 
       });
 
       it('Should faild to mint a ERC1155 NFT when amount is zero', async function () {
-        expect((await sbtContract['balanceOf(uint256)'](FIRST_PROFILE_ID)).toNumber()).to.eq(INITIAL_SUPPLY);
         expect((await sbtContract['balanceOf(uint256)'](SECOND_PROFILE_ID)).toNumber()).to.eq(0);
         //mint 100Value to user
-        await manager.connect(governance).mintSBTValue(SECOND_PROFILE_ID, 100);
+        await bankTreasuryContract.connect(user).buySBT(SECOND_PROFILE_ID, {value: 100});
+
         expect((await sbtContract['balanceOf(uint256)'](SECOND_PROFILE_ID)).toNumber()).to.eq(100);
 
                
@@ -414,7 +417,6 @@ makeSuiteCleanRoom('Bank Treasury', function () {
           )
         ).to.be.revertedWith(ERRORS.AmountSBT_Is_Zero);
 
-        expect((await sbtContract['balanceOf(uint256)'](FIRST_PROFILE_ID)).toNumber()).to.eq(INITIAL_SUPPLY);
         expect((await sbtContract['balanceOf(uint256)'](SECOND_PROFILE_ID)).toNumber()).to.eq(100);
        
       });

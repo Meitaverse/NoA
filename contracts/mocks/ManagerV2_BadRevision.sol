@@ -66,9 +66,9 @@ contract ManagerV2_BadRevision is
     }
 
 
-    function mintSBTValue(uint256 soulBoundTokenId, uint256 value) external whenNotPaused onlyGov {
-        INFTDerivativeProtocolTokenV1(SBT).mintValue(soulBoundTokenId, value);
-    }
+    // function mintSBTValue(uint256 soulBoundTokenId, uint256 value) external whenNotPaused onlyGov {
+    //     INFTDerivativeProtocolTokenV1(SBT).mintValue(soulBoundTokenId, value);
+    // }
 
     function burnSBT(uint256 tokenId) external whenNotPaused onlyGov {
         INFTDerivativeProtocolTokenV1(SBT).burn(tokenId);

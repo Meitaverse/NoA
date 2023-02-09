@@ -603,8 +603,7 @@ contract BankTreasury is
     }
 
     function buySBT(
-        uint256 soulBoundTokenId,
-        uint256 amount
+        uint256 soulBoundTokenId
     ) external payable whenNotPaused nonReentrant {
         // only called by owner of soulBoundTokenId
         _validateCallerIsSoulBoundTokenOwner(soulBoundTokenId);
@@ -612,41 +611,25 @@ contract BankTreasury is
         address currency = IModuleGlobals(MODULE_GLOBALS).getSBT();
 
         if (_exchangePrice[currency] == 0) revert Errors.ExchangePriceIsZero();
-        if (amount == 0) revert Errors.AmountIsZero();
+        if (msg.value == 0) revert Errors.PaymentError();
         
         address exchangeWallet = payable(msg.sender);
        
-        uint256 totalAmount = _exchangePrice[currency].mul(amount);
-        if (msg.value < totalAmount) {
+        uint256 sbtValue = _exchangePrice[currency].mul(msg.value);
 
-            revert Errors.PaymentError();
-        }
-
-        if (msg.value > totalAmount) {
-            //refund to msg.sender
-            // Cap the gas to prevent consuming all available gas to block a tx from completing successfully
-            // solhint-disable-next-line avoid-low-level-calls
-            (bool success, ) = exchangeWallet.call{ value: msg.value - totalAmount, gas: SEND_VALUE_GAS_LIMIT_SINGLE_RECIPIENT }("");
-            if (!success) {
-                // emit the funds that failed to send for the user in the ETH token
-               emit Events.RefundToETH(exchangeWallet, msg.value - totalAmount);
-            }
-        }
-        
         address _sbt = IModuleGlobals(MODULE_GLOBALS).getSBT();
         INFTDerivativeProtocolTokenV1(_sbt).transferValue(
             soulBoundTokenIdBankTreasury, 
             soulBoundTokenId, 
-            amount
+            sbtValue
         );
 
         emit Events.BuySBTByEth(
             soulBoundTokenId, 
             exchangeWallet, 
             msg.value, 
-            amount, 
             _exchangePrice[currency],
-            totalAmount
+            sbtValue
         );
     }
 
@@ -780,9 +763,10 @@ contract BankTreasury is
         emit Events.VoucherDeposited(soulBoundTokenId, msg.sender, tokenId, voucherData.sbtValue, block.timestamp);
     }
 
+    /// @notice 1 SBT =  1e18 wei, 1 ether = 1 SBT 
     function setExchangePrice(
         address currency,
-         uint256 exchangePrice
+        uint256 exchangePrice
     ) 
         external 
         nonReentrant

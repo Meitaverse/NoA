@@ -14,15 +14,19 @@ library Events {
      * @param wallet The address receiving the profile with the given profile ID.
      * @param nickName The nickName set for the profile.
      * @param imageURI The image uri set for the profile.
-     * @param timestamp The current block timestamp.
      */
     event ProfileCreated(
         uint256 indexed soulBoundTokenId,
         address indexed creator,
         address indexed wallet,
         string nickName,
-        string imageURI,
-        uint256 timestamp
+        string imageURI
+    );
+
+    event ProfileUpdated(
+        uint256 indexed soulBoundTokenId,
+        string nickName,
+        string imageURI
     );
 
     /**
@@ -432,20 +436,20 @@ library Events {
         uint256 timestamp
     );
 
-    /**
-     * @dev Emitted when Manager call to mintValue of SBT Tokens.
-     * 
-     * @param caller The caller who mint SBT value.
-     * @param soulBoundTokenId The token id of SBT
-     * @param value The value of mint SBT
-     * @param timestamp The current block timestamp.
-     */
-    event MintSBTValue(
-        address indexed caller,
-        uint256 indexed soulBoundTokenId,
-        uint256 indexed value,
-        uint256 timestamp
-    );
+    // /**
+    //  * @dev Emitted when Manager call to mintValue of SBT Tokens.
+    //  * 
+    //  * @param caller The caller who mint SBT value.
+    //  * @param soulBoundTokenId The token id of SBT
+    //  * @param value The value of mint SBT
+    //  * @param timestamp The current block timestamp.
+    //  */
+    // event MintSBTValue(
+    //     address indexed caller,
+    //     uint256 indexed soulBoundTokenId,
+    //     uint256 indexed value,
+    //     uint256 timestamp
+    // );
 
     /**
      * @dev Emitted when derivativeNFT is collected and a new tokenId is generated.
@@ -1093,17 +1097,15 @@ library Events {
      * @param soulBoundTokenId  The contract address
      * @param exchangeWallet The exchangeWallet
      * @param etherValue  The ether value
-     * @param sbtValue  The sbtValue
      * @param exchangePrice  The exchange price
-     * @param totalAmount  The total amount
+     * @param sbtValue  The sbtValue
      */
     event BuySBTByEth(
         uint256 indexed soulBoundTokenId,
         address indexed exchangeWallet,
         uint256 indexed etherValue,
-        uint256 sbtValue,
         uint256 exchangePrice,
-        uint256 totalAmount
+        uint256 sbtValue
     );
 
     /**
