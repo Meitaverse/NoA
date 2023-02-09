@@ -1092,14 +1092,18 @@ library Events {
      *
      * @param soulBoundTokenId  The contract address
      * @param exchangeWallet The exchangeWallet
+     * @param etherValue  The ether value
      * @param sbtValue  The sbtValue
-     * @param timestamp  The current block timestamp.
+     * @param exchangePrice  The exchange price
+     * @param totalAmount  The total amount
      */
     event BuySBTByEth(
         uint256 indexed soulBoundTokenId,
         address indexed exchangeWallet,
-        uint256 indexed sbtValue,
-        uint256 timestamp
+        uint256 indexed etherValue,
+        uint256 sbtValue,
+        uint256 exchangePrice,
+        uint256 totalAmount
     );
 
     /**
@@ -1107,35 +1111,52 @@ library Events {
      *
      * @param soulBoundTokenId  The contract address
      * @param exchangeWallet The exchangeWallet
-     * @param sbtValue  The sbtValue
      * @param currency  The ERC20 currency
-     * @param timestamp  The current block timestamp.
+     * @param amount  The amount to buy
+     * @param exchangePrice  The exchange price
+     * @param sbtValue  The sbtValue will get
      */
     event BuySBTByERC20(
         uint256 indexed soulBoundTokenId,
         address indexed exchangeWallet,
-        uint256 indexed sbtValue,
-        address currency,
-        uint256 timestamp
+        address indexed currency,
+        uint256 amount,
+        uint256 exchangePrice,
+        uint256 sbtValue
     );
 
+    // /**
+    //  * @dev Emitted when exchange ether by SBT value
+    //  *
+    //  * @param soulBoundTokenId  The contract address
+    //  * @param toWallet The to Wallet
+    //  * @param sbtValue  The sbtValue
+    //  * @param exchangePrice  The exchange price set with admin
+    //  * @param ethAmount  The exchange ether amount
+    //  */
+    // event ExchangeEthBySBT(
+    //      uint256 indexed soulBoundTokenId,
+    //      address indexed toWallet,
+    //      uint256 indexed sbtValue,
+    //      uint256 exchangePrice,
+    //      uint256 ethAmount
+    // );
+
     /**
-     * @dev Emitted when exchange ether by SBT value
+     * @dev Emitted when exchange ERC20 by SBT value
      *
      * @param soulBoundTokenId  The contract address
      * @param toWallet The to Wallet
      * @param sbtValue  The sbtValue
      * @param exchangePrice  The exchange price set with admin
-     * @param ethAmount  The exchange ether amount
-     * @param timestamp  The current block timestamp.
+     * @param erc20Amount  The exchange amount of ERC20
      */
-    event ExchangeEthBySBT(
+    event ExchangeERC20BySBT(
          uint256 indexed soulBoundTokenId,
          address indexed toWallet,
          uint256 indexed sbtValue,
          uint256 exchangePrice,
-         uint256 ethAmount,
-         uint256 timestamp
+         uint256 erc20Amount
     );
 
     /**
@@ -1147,13 +1168,21 @@ library Events {
      * @param sbtValue  The sbtValue
      * @param timestamp  The current block timestamp.
      */
-    event ExchangeVoucher(
+    event VoucherDeposited(
         uint256 indexed soulBoundTokenId,
         address indexed operator,
         uint256 indexed tokenId,
         uint256 sbtValue,
         uint256 timestamp
     );
+
+    /**
+     * @notice Emitted when refund to ETH.
+     * @param user The account which has withdrawn ETH.
+     * @param amount The amount of ETH which has been refunded.
+     */
+    event RefundToETH(address indexed user, uint256 amount);
+
 
     //votes
 

@@ -11,7 +11,6 @@ import {IManager} from "./interfaces/IManager.sol";
 import {IDerivativeNFT} from "./interfaces/IDerivativeNFT.sol";
 import './libraries/Constants.sol';
 import "./base/DerivativeNFTMultiState.sol";
-import './libraries/Constants.sol';
 import "hardhat/console.sol";
 
 /**

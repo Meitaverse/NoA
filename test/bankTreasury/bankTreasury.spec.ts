@@ -114,7 +114,7 @@ makeSuiteCleanRoom('Bank Treasury', function () {
       it('User should fail to exchange Voucher SBT using none exists Voucher card', async function () {
         
         await expect(
-          bankTreasuryContract.connect(user).exchangeVoucher(FIRST_VOUCHER_TOKEN_ID, SECOND_PROFILE_ID)
+          bankTreasuryContract.connect(user).depositFromVoucher(FIRST_VOUCHER_TOKEN_ID, SECOND_PROFILE_ID)
         ).to.be.revertedWith(ERRORS.VOUCHER_NOT_EXISTS);
         // await bankTreasuryContract.connect(user).exchangeVoucher(
         //   FIRST_VOUCHER_TOKEN_ID, 
@@ -130,11 +130,11 @@ makeSuiteCleanRoom('Bank Treasury', function () {
 
 
         await expect(
-          bankTreasuryContract.connect(user).exchangeVoucher(FIRST_VOUCHER_TOKEN_ID, SECOND_PROFILE_ID)
+          bankTreasuryContract.connect(user).depositFromVoucher(FIRST_VOUCHER_TOKEN_ID, SECOND_PROFILE_ID)
         ).to.not.be.reverted;
 
         await expect(
-          bankTreasuryContract.connect(user).exchangeVoucher(FIRST_VOUCHER_TOKEN_ID, SECOND_PROFILE_ID)
+          bankTreasuryContract.connect(user).depositFromVoucher(FIRST_VOUCHER_TOKEN_ID, SECOND_PROFILE_ID)
         ).to.be.revertedWith(ERRORS.VOUCHER_IS_USED);
 
       });
@@ -145,14 +145,14 @@ makeSuiteCleanRoom('Bank Treasury', function () {
         ).to.not.be.reverted;
 
         await expect(
-          bankTreasuryContract.connect(userTwo).exchangeVoucher(FIRST_VOUCHER_TOKEN_ID, THIRD_PROFILE_ID)
+          bankTreasuryContract.connect(userTwo).depositFromVoucher(FIRST_VOUCHER_TOKEN_ID, THIRD_PROFILE_ID)
         ).to.be.revertedWith(ERRORS.NOT_OWNER_VOUCHER);
 
       });
 
     });
 
-    context('Withdraw all avaliable earnest funds ', function () {
+    context('Withdraw all avaliable earnest funds', function () {
       beforeEach(async () => {
         //mint some Values to user
         await manager.connect(governance).mintSBTValue(SECOND_PROFILE_ID, 10000);
@@ -169,7 +169,7 @@ makeSuiteCleanRoom('Bank Treasury', function () {
 
         
         receipt = await waitForTx(
-           bankTreasuryContract.connect(user).withdrawEarnestFunds(
+           bankTreasuryContract.connect(user).withdraw(
             SECOND_PROFILE_ID, 
             sbtContract.address, 
             balance
@@ -202,7 +202,7 @@ makeSuiteCleanRoom('Bank Treasury', function () {
       });
 
       it("Cannot withdraw again", async () => {
-        await expect(bankTreasuryContract.connect(user).withdrawEarnestFunds(
+        await expect(bankTreasuryContract.connect(user).withdraw(
           SECOND_PROFILE_ID, 
           sbtContract.address,
           balance)
@@ -227,7 +227,7 @@ makeSuiteCleanRoom('Bank Treasury', function () {
         
         
         receipt = await waitForTx(
-           bankTreasuryContract.connect(user).withdrawEarnestFunds(
+           bankTreasuryContract.connect(user).withdraw(
             SECOND_PROFILE_ID, 
             sbtContract.address, 
             balance
@@ -260,7 +260,7 @@ makeSuiteCleanRoom('Bank Treasury', function () {
 
       it("Can withdraw again", async () => {
         await expect(
-          bankTreasuryContract.connect(user).withdrawEarnestFunds(
+          bankTreasuryContract.connect(user).withdraw(
             SECOND_PROFILE_ID, 
             sbtContract.address, 
             balance
@@ -309,7 +309,7 @@ makeSuiteCleanRoom('Bank Treasury', function () {
           expect(voucherData.isUsed).to.eq(false);
 
           await expect(
-            bankTreasuryContract.connect(user).exchangeVoucher(FIRST_VOUCHER_TOKEN_ID, SECOND_PROFILE_ID)
+            bankTreasuryContract.connect(user).depositFromVoucher(FIRST_VOUCHER_TOKEN_ID, SECOND_PROFILE_ID)
           ).to.not.be.reverted;
 
           expect((await sbtContract['balanceOf(uint256)'](SECOND_PROFILE_ID)).toNumber()).to.eq(100);
@@ -341,7 +341,7 @@ makeSuiteCleanRoom('Bank Treasury', function () {
           expect(await voucherContract.balanceOf(userTwoAddress, FIRST_VOUCHER_TOKEN_ID)).to.eq(100);  
 
           await expect(
-            bankTreasuryContract.connect(userTwo).exchangeVoucher(FIRST_VOUCHER_TOKEN_ID, THIRD_PROFILE_ID)
+            bankTreasuryContract.connect(userTwo).depositFromVoucher(FIRST_VOUCHER_TOKEN_ID, THIRD_PROFILE_ID)
           ).to.not.be.reverted;
 
           expect((await sbtContract['balanceOf(uint256)'](THIRD_PROFILE_ID)).toNumber()).to.eq(100);

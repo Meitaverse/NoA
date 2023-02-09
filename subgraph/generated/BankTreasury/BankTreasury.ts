@@ -1164,6 +1164,40 @@ export class DefaultCall__Outputs {
   }
 }
 
+export class BuySBTCall extends ethereum.Call {
+  get inputs(): BuySBTCall__Inputs {
+    return new BuySBTCall__Inputs(this);
+  }
+
+  get outputs(): BuySBTCall__Outputs {
+    return new BuySBTCall__Outputs(this);
+  }
+}
+
+export class BuySBTCall__Inputs {
+  _call: BuySBTCall;
+
+  constructor(call: BuySBTCall) {
+    this._call = call;
+  }
+
+  get soulBoundTokenId(): BigInt {
+    return this._call.inputValues[0].value.toBigInt();
+  }
+
+  get amount(): BigInt {
+    return this._call.inputValues[1].value.toBigInt();
+  }
+}
+
+export class BuySBTCall__Outputs {
+  _call: BuySBTCall;
+
+  constructor(call: BuySBTCall) {
+    this._call = call;
+  }
+}
+
 export class BuySBTByERC20Call extends ethereum.Call {
   get inputs(): BuySBTByERC20Call__Inputs {
     return new BuySBTByERC20Call__Inputs(this);
@@ -1198,44 +1232,6 @@ export class BuySBTByERC20Call__Outputs {
   _call: BuySBTByERC20Call;
 
   constructor(call: BuySBTByERC20Call) {
-    this._call = call;
-  }
-}
-
-export class BuySBTByEthCall extends ethereum.Call {
-  get inputs(): BuySBTByEthCall__Inputs {
-    return new BuySBTByEthCall__Inputs(this);
-  }
-
-  get outputs(): BuySBTByEthCall__Outputs {
-    return new BuySBTByEthCall__Outputs(this);
-  }
-}
-
-export class BuySBTByEthCall__Inputs {
-  _call: BuySBTByEthCall;
-
-  constructor(call: BuySBTByEthCall) {
-    this._call = call;
-  }
-
-  get soulBoundTokenId(): BigInt {
-    return this._call.inputValues[0].value.toBigInt();
-  }
-
-  get currency(): Address {
-    return this._call.inputValues[1].value.toAddress();
-  }
-
-  get amount(): BigInt {
-    return this._call.inputValues[2].value.toBigInt();
-  }
-}
-
-export class BuySBTByEthCall__Outputs {
-  _call: BuySBTByEthCall;
-
-  constructor(call: BuySBTByEthCall) {
     this._call = call;
   }
 }
@@ -1304,6 +1300,40 @@ export class DepositCall__Outputs {
   _call: DepositCall;
 
   constructor(call: DepositCall) {
+    this._call = call;
+  }
+}
+
+export class DepositFromVoucherCall extends ethereum.Call {
+  get inputs(): DepositFromVoucherCall__Inputs {
+    return new DepositFromVoucherCall__Inputs(this);
+  }
+
+  get outputs(): DepositFromVoucherCall__Outputs {
+    return new DepositFromVoucherCall__Outputs(this);
+  }
+}
+
+export class DepositFromVoucherCall__Inputs {
+  _call: DepositFromVoucherCall;
+
+  constructor(call: DepositFromVoucherCall) {
+    this._call = call;
+  }
+
+  get tokenId(): BigInt {
+    return this._call.inputValues[0].value.toBigInt();
+  }
+
+  get soulBoundTokenId(): BigInt {
+    return this._call.inputValues[1].value.toBigInt();
+  }
+}
+
+export class DepositFromVoucherCall__Outputs {
+  _call: DepositFromVoucherCall;
+
+  constructor(call: DepositFromVoucherCall) {
     this._call = call;
   }
 }
@@ -1436,74 +1466,6 @@ export class ExchangeERC20BySBTCall__Outputs {
   _call: ExchangeERC20BySBTCall;
 
   constructor(call: ExchangeERC20BySBTCall) {
-    this._call = call;
-  }
-}
-
-export class ExchangeEthBySBTCall extends ethereum.Call {
-  get inputs(): ExchangeEthBySBTCall__Inputs {
-    return new ExchangeEthBySBTCall__Inputs(this);
-  }
-
-  get outputs(): ExchangeEthBySBTCall__Outputs {
-    return new ExchangeEthBySBTCall__Outputs(this);
-  }
-}
-
-export class ExchangeEthBySBTCall__Inputs {
-  _call: ExchangeEthBySBTCall;
-
-  constructor(call: ExchangeEthBySBTCall) {
-    this._call = call;
-  }
-
-  get soulBoundTokenId(): BigInt {
-    return this._call.inputValues[0].value.toBigInt();
-  }
-
-  get amountOfSBT(): BigInt {
-    return this._call.inputValues[1].value.toBigInt();
-  }
-}
-
-export class ExchangeEthBySBTCall__Outputs {
-  _call: ExchangeEthBySBTCall;
-
-  constructor(call: ExchangeEthBySBTCall) {
-    this._call = call;
-  }
-}
-
-export class ExchangeVoucherCall extends ethereum.Call {
-  get inputs(): ExchangeVoucherCall__Inputs {
-    return new ExchangeVoucherCall__Inputs(this);
-  }
-
-  get outputs(): ExchangeVoucherCall__Outputs {
-    return new ExchangeVoucherCall__Outputs(this);
-  }
-}
-
-export class ExchangeVoucherCall__Inputs {
-  _call: ExchangeVoucherCall;
-
-  constructor(call: ExchangeVoucherCall) {
-    this._call = call;
-  }
-
-  get tokenId(): BigInt {
-    return this._call.inputValues[0].value.toBigInt();
-  }
-
-  get soulBoundTokenId(): BigInt {
-    return this._call.inputValues[1].value.toBigInt();
-  }
-}
-
-export class ExchangeVoucherCall__Outputs {
-  _call: ExchangeVoucherCall;
-
-  constructor(call: ExchangeVoucherCall) {
     this._call = call;
   }
 }
@@ -2000,6 +1962,36 @@ export class RefundEarnestFundsCall__Outputs {
   }
 }
 
+export class RemoveERC20Call extends ethereum.Call {
+  get inputs(): RemoveERC20Call__Inputs {
+    return new RemoveERC20Call__Inputs(this);
+  }
+
+  get outputs(): RemoveERC20Call__Outputs {
+    return new RemoveERC20Call__Outputs(this);
+  }
+}
+
+export class RemoveERC20Call__Inputs {
+  _call: RemoveERC20Call;
+
+  constructor(call: RemoveERC20Call) {
+    this._call = call;
+  }
+
+  get currency(): Address {
+    return this._call.inputValues[0].value.toAddress();
+  }
+}
+
+export class RemoveERC20Call__Outputs {
+  _call: RemoveERC20Call;
+
+  constructor(call: RemoveERC20Call) {
+    this._call = call;
+  }
+}
+
 export class RevokeAdminCall extends ethereum.Call {
   get inputs(): RevokeAdminCall__Inputs {
     return new RevokeAdminCall__Inputs(this);
@@ -2366,20 +2358,20 @@ export class UseEarnestFundsForPayCall__Outputs {
   }
 }
 
-export class WithdrawEarnestFundsCall extends ethereum.Call {
-  get inputs(): WithdrawEarnestFundsCall__Inputs {
-    return new WithdrawEarnestFundsCall__Inputs(this);
+export class WithdrawCall extends ethereum.Call {
+  get inputs(): WithdrawCall__Inputs {
+    return new WithdrawCall__Inputs(this);
   }
 
-  get outputs(): WithdrawEarnestFundsCall__Outputs {
-    return new WithdrawEarnestFundsCall__Outputs(this);
+  get outputs(): WithdrawCall__Outputs {
+    return new WithdrawCall__Outputs(this);
   }
 }
 
-export class WithdrawEarnestFundsCall__Inputs {
-  _call: WithdrawEarnestFundsCall;
+export class WithdrawCall__Inputs {
+  _call: WithdrawCall;
 
-  constructor(call: WithdrawEarnestFundsCall) {
+  constructor(call: WithdrawCall) {
     this._call = call;
   }
 
@@ -2396,10 +2388,10 @@ export class WithdrawEarnestFundsCall__Inputs {
   }
 }
 
-export class WithdrawEarnestFundsCall__Outputs {
-  _call: WithdrawEarnestFundsCall;
+export class WithdrawCall__Outputs {
+  _call: WithdrawCall;
 
-  constructor(call: WithdrawEarnestFundsCall) {
+  constructor(call: WithdrawCall) {
     this._call = call;
   }
 }

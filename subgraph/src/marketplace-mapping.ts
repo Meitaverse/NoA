@@ -125,8 +125,6 @@ export function handleBuyPriceSet(event: BuyPriceSet): void {
       return;
     }
 
-    //TODO
-
     let dnft = loadOrCreateDNFT(event.params.derivativeNFT, event.params.tokenId, event);
 
     let project = loadProject(resultBuyPrice.value.projectId);

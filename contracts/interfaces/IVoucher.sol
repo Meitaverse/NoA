@@ -71,7 +71,7 @@ interface IVoucher {
      * @param tokenId The soulBoundTokenId of  
      *
      */
-    function useVoucher(address account, uint256 tokenId, uint256 soulBoundTokenId) external;
+    function depositFromVoucher(address account, uint256 tokenId, uint256 soulBoundTokenId) external;
 
     function burn(
         address owner,

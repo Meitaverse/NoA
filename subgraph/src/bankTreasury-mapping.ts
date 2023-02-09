@@ -6,8 +6,9 @@ import {
     SBTValueReceived,
     Deposit,
     BuySBTByEth,
-    ExchangeEthBySBT,
-    ExchangeVoucher,
+    BuySBTByERC20,
+    // ExchangeEthBySBT,
+    VoucherDeposited,
     SubmitTransaction,
     ConfirmTransaction,
     ExecuteTransaction,
@@ -33,11 +34,12 @@ import {
     SBTValueReceivedHistory,
     DepositHistory,
     BuySBTByEthHistory,
+    BuySBTByERC20History,
     ExchangeEthBySBTHistory,
     Transaction,
     ExecuteTransactionHistory,
     ExecuteTransactionERC3525History,
-    ExchangeVoucherHistory,
+    VoucherDepositedHistory,
     ProtocolContract,
     DistributeHistory,
 } from "../generated/schema"
@@ -64,7 +66,7 @@ export function handleDepositEther(event: DepositEther): void {
         history.balance = event.params.balance
         history.timestamp = event.block.timestamp
         history.save()
-    } 
+    }
 }
 
 export function handleDepositByFallback(event: DepositByFallback): void {
@@ -124,7 +126,6 @@ export function handleSBTValueReceived(event: SBTValueReceived): void {
 export function handleDeposit(event: Deposit): void {
     log.info("handleDeposit, event.address: {}", [event.address.toHexString()])
 
-
     let _idString =  getLogId(event)
     const history = DepositHistory.load(_idString) || new DepositHistory(_idString)
     if (history) {
@@ -133,6 +134,7 @@ export function handleDeposit(event: Deposit): void {
         history.amount = event.params.amount
         history.timestamp = event.block.timestamp
         history.save()
+       
         let account = loadOrCreateAccount(event.params.account)
         let earnestFunds = loadOrCreateCurrencyEarnestFunds(event.params.currency, account, event.block)
         if (earnestFunds) {
@@ -141,9 +143,7 @@ export function handleDeposit(event: Deposit): void {
             earnestFunds.balance = earnestFunds.balance.plus(event.params.amount)
             earnestFunds.dateLastUpdated = event.block.timestamp;
         }
-              
     } 
-    
 }
 
 export function handleBuySBTByEth(event: BuySBTByEth): void {
@@ -158,12 +158,31 @@ export function handleBuySBTByEth(event: BuySBTByEth): void {
             history.account = loadOrCreateAccount(Address.fromBytes(sbtAccount.wallet)).id
             history.exchangeWallet = event.params.exchangeWallet
             history.sbtValue       = event.params.sbtValue
-            history.timestamp      = event.params.timestamp
+            history.timestamp      = event.block.timestamp
             history.save()
         }
     } 
 }
 
+export function handleBuySBTByERC20(event: BuySBTByERC20): void {
+    log.info("handleBuySBTByERC20, event.address: {}", [event.address.toHexString()])
+
+    let _idString = getLogId(event)
+    const history = BuySBTByERC20History.load(_idString) || new BuySBTByERC20History(_idString)
+    if (history) {
+        const sbtAccount = loadOrCreateSoulBoundToken(event.params.soulBoundTokenId)
+    
+        if (sbtAccount.wallet.toHex() != ZERO_ADDRESS ) {
+            history.account = loadOrCreateAccount(Address.fromBytes(sbtAccount.wallet)).id
+            history.exchangeWallet = event.params.exchangeWallet
+            history.sbtValue       = event.params.sbtValue
+            history.timestamp      = event.block.timestamp
+            history.save()
+        }
+    } 
+}
+
+/*
 export function handleExchangeEthBySBT(event: ExchangeEthBySBT): void {
     log.info("handleExchangeEthBySBT, event.address: {}", [event.address.toHexString()])
 
@@ -184,12 +203,13 @@ export function handleExchangeEthBySBT(event: ExchangeEthBySBT): void {
         }
     } 
 }
+*/
 
-export function handleExchangeVoucher(event: ExchangeVoucher): void {
-    log.info("handleExchangeVoucher, event.address: {}", [event.address.toHexString()])
+export function handleVoucherDeposited(event: VoucherDeposited): void {
+    log.info("handleVoucherDeposited, event.address: {}", [event.address.toHexString()])
 
     let _idString = getLogId(event)
-    const history = ExchangeVoucherHistory.load(_idString) || new ExchangeVoucherHistory(_idString)
+    const history = VoucherDepositedHistory.load(_idString) || new VoucherDepositedHistory(_idString)
     if (history) {
         history.soulBoundTokenId = event.params.soulBoundTokenId
         history.operator = event.params.operator
@@ -321,10 +341,10 @@ export function handleBalanceLocked(event: BalanceLocked): void {
     earnestFundsFrom.save();
 
     let buyer = loadOrCreateAccount(event.params.buyer);
-    let fsbtBuyer = loadOrCreateCurrencyEarnestFunds(event.params.currency, buyer, event.block);
-    fsbtBuyer.balance = fsbtBuyer.balance.plus(event.params.amount);
-    fsbtBuyer.dateLastUpdated = event.block.timestamp;
-    fsbtBuyer.save();
+    let currencyEarnestFundsBuyer = loadOrCreateCurrencyEarnestFunds(event.params.currency, buyer, event.block);
+    currencyEarnestFundsBuyer.balance = currencyEarnestFundsBuyer.balance.plus(event.params.amount);
+    currencyEarnestFundsBuyer.dateLastUpdated = event.block.timestamp;
+    currencyEarnestFundsBuyer.save();
   }
   
   export function handleWithdrawnEarnestFunds(event: WithdrawnEarnestFunds): void {

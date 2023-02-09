@@ -512,7 +512,7 @@ type ExecuteTransactionHistory @entity {
   timestamp: BigInt!
 }
 
-type ExchangeVoucherHistory @entity {
+type VoucherDepositedHistory @entity {
   id: ID!
   soulBoundTokenId: BigInt!
   operator: Bytes!
@@ -758,8 +758,17 @@ type TemplateWhitelistedRecord @entity {
   timestamp: BigInt!
 }
 
-# Bank treasury BuySBTByEth history
+# Bank treasury Buy SBT By Eth history
 type BuySBTByEthHistory @entity {
+  id: ID!
+  account: Account!
+  exchangeWallet: Bytes!
+  sbtValue: BigInt!
+  timestamp: BigInt!
+}
+
+# Bank treasury Buy SBT By ERC20  history
+type BuySBTByERC20History @entity {
   id: ID!
   account: Account!
   exchangeWallet: Bytes!
@@ -1217,7 +1226,7 @@ type CurrencyEarnestFunds @entity {
 
   balance: BigInt!
 
-  escrow: [CurrencyEarnestFundsEscrow!]! @derivedFrom(field: "currencyEarnestFunds")
+  escrows: [CurrencyEarnestFundsEscrow!]! @derivedFrom(field: "currencyEarnestFunds")
 
   dateLastUpdated: BigInt!
 }

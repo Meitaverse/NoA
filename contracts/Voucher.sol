@@ -280,7 +280,7 @@ contract Voucher is
         return _vouchers[tokenId];
     }
 
-    function useVoucher(address account, uint256 tokenId, uint256 soulBoundTokenId) 
+    function depositFromVoucher(address account, uint256 tokenId, uint256 soulBoundTokenId) 
         external 
         nonReentrant
         whenNotPaused  

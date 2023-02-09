@@ -919,6 +919,44 @@ export class BurnBatchCall__Outputs {
   }
 }
 
+export class DepositFromVoucherCall extends ethereum.Call {
+  get inputs(): DepositFromVoucherCall__Inputs {
+    return new DepositFromVoucherCall__Inputs(this);
+  }
+
+  get outputs(): DepositFromVoucherCall__Outputs {
+    return new DepositFromVoucherCall__Outputs(this);
+  }
+}
+
+export class DepositFromVoucherCall__Inputs {
+  _call: DepositFromVoucherCall;
+
+  constructor(call: DepositFromVoucherCall) {
+    this._call = call;
+  }
+
+  get account(): Address {
+    return this._call.inputValues[0].value.toAddress();
+  }
+
+  get tokenId(): BigInt {
+    return this._call.inputValues[1].value.toBigInt();
+  }
+
+  get soulBoundTokenId(): BigInt {
+    return this._call.inputValues[2].value.toBigInt();
+  }
+}
+
+export class DepositFromVoucherCall__Outputs {
+  _call: DepositFromVoucherCall;
+
+  constructor(call: DepositFromVoucherCall) {
+    this._call = call;
+  }
+}
+
 export class GenerateVoucherCall extends ethereum.Call {
   get inputs(): GenerateVoucherCall__Inputs {
     return new GenerateVoucherCall__Inputs(this);
@@ -1579,44 +1617,6 @@ export class UpgradeToAndCallCall__Outputs {
   _call: UpgradeToAndCallCall;
 
   constructor(call: UpgradeToAndCallCall) {
-    this._call = call;
-  }
-}
-
-export class UseVoucherCall extends ethereum.Call {
-  get inputs(): UseVoucherCall__Inputs {
-    return new UseVoucherCall__Inputs(this);
-  }
-
-  get outputs(): UseVoucherCall__Outputs {
-    return new UseVoucherCall__Outputs(this);
-  }
-}
-
-export class UseVoucherCall__Inputs {
-  _call: UseVoucherCall;
-
-  constructor(call: UseVoucherCall) {
-    this._call = call;
-  }
-
-  get account(): Address {
-    return this._call.inputValues[0].value.toAddress();
-  }
-
-  get tokenId(): BigInt {
-    return this._call.inputValues[1].value.toBigInt();
-  }
-
-  get soulBoundTokenId(): BigInt {
-    return this._call.inputValues[2].value.toBigInt();
-  }
-}
-
-export class UseVoucherCall__Outputs {
-  _call: UseVoucherCall;
-
-  constructor(call: UseVoucherCall) {
     this._call = call;
   }
 }

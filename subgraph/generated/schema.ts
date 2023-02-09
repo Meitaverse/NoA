@@ -2295,7 +2295,7 @@ export class ExecuteTransactionHistory extends Entity {
   }
 }
 
-export class ExchangeVoucherHistory extends Entity {
+export class VoucherDepositedHistory extends Entity {
   constructor(id: string) {
     super();
     this.set("id", Value.fromString(id));
@@ -2305,20 +2305,20 @@ export class ExchangeVoucherHistory extends Entity {
     let id = this.get("id");
     assert(
       id != null,
-      "Cannot save ExchangeVoucherHistory entity without an ID"
+      "Cannot save VoucherDepositedHistory entity without an ID"
     );
     if (id) {
       assert(
         id.kind == ValueKind.STRING,
-        `Entities of type ExchangeVoucherHistory must have an ID of type String but the id '${id.displayData()}' is of type ${id.displayKind()}`
+        `Entities of type VoucherDepositedHistory must have an ID of type String but the id '${id.displayData()}' is of type ${id.displayKind()}`
       );
-      store.set("ExchangeVoucherHistory", id.toString(), this);
+      store.set("VoucherDepositedHistory", id.toString(), this);
     }
   }
 
-  static load(id: string): ExchangeVoucherHistory | null {
-    return changetype<ExchangeVoucherHistory | null>(
-      store.get("ExchangeVoucherHistory", id)
+  static load(id: string): VoucherDepositedHistory | null {
+    return changetype<VoucherDepositedHistory | null>(
+      store.get("VoucherDepositedHistory", id)
     );
   }
 
@@ -4381,6 +4381,76 @@ export class BuySBTByEthHistory extends Entity {
   }
 }
 
+export class BuySBTByERC20History extends Entity {
+  constructor(id: string) {
+    super();
+    this.set("id", Value.fromString(id));
+  }
+
+  save(): void {
+    let id = this.get("id");
+    assert(id != null, "Cannot save BuySBTByERC20History entity without an ID");
+    if (id) {
+      assert(
+        id.kind == ValueKind.STRING,
+        `Entities of type BuySBTByERC20History must have an ID of type String but the id '${id.displayData()}' is of type ${id.displayKind()}`
+      );
+      store.set("BuySBTByERC20History", id.toString(), this);
+    }
+  }
+
+  static load(id: string): BuySBTByERC20History | null {
+    return changetype<BuySBTByERC20History | null>(
+      store.get("BuySBTByERC20History", id)
+    );
+  }
+
+  get id(): string {
+    let value = this.get("id");
+    return value!.toString();
+  }
+
+  set id(value: string) {
+    this.set("id", Value.fromString(value));
+  }
+
+  get account(): string {
+    let value = this.get("account");
+    return value!.toString();
+  }
+
+  set account(value: string) {
+    this.set("account", Value.fromString(value));
+  }
+
+  get exchangeWallet(): Bytes {
+    let value = this.get("exchangeWallet");
+    return value!.toBytes();
+  }
+
+  set exchangeWallet(value: Bytes) {
+    this.set("exchangeWallet", Value.fromBytes(value));
+  }
+
+  get sbtValue(): BigInt {
+    let value = this.get("sbtValue");
+    return value!.toBigInt();
+  }
+
+  set sbtValue(value: BigInt) {
+    this.set("sbtValue", Value.fromBigInt(value));
+  }
+
+  get timestamp(): BigInt {
+    let value = this.get("timestamp");
+    return value!.toBigInt();
+  }
+
+  set timestamp(value: BigInt) {
+    this.set("timestamp", Value.fromBigInt(value));
+  }
+}
+
 export class ExchangeEthBySBTHistory extends Entity {
   constructor(id: string) {
     super();
@@ -6042,13 +6112,13 @@ export class CurrencyEarnestFunds extends Entity {
     this.set("balance", Value.fromBigInt(value));
   }
 
-  get escrow(): Array<string> {
-    let value = this.get("escrow");
+  get escrows(): Array<string> {
+    let value = this.get("escrows");
     return value!.toStringArray();
   }
 
-  set escrow(value: Array<string>) {
-    this.set("escrow", Value.fromStringArray(value));
+  set escrows(value: Array<string>) {
+    this.set("escrows", Value.fromStringArray(value));
   }
 
   get dateLastUpdated(): BigInt {
