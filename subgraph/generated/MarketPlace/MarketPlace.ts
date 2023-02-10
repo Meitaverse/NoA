@@ -320,48 +320,52 @@ export class MarketPlace__getReserveAuctionResultAuctionStruct extends ethereum.
     return this[2].toBigInt();
   }
 
-  get tokenId(): BigInt {
+  get publishId(): BigInt {
     return this[3].toBigInt();
   }
 
-  get units(): BigInt {
+  get tokenId(): BigInt {
     return this[4].toBigInt();
   }
 
+  get units(): BigInt {
+    return this[5].toBigInt();
+  }
+
   get seller(): Address {
-    return this[5].toAddress();
+    return this[6].toAddress();
   }
 
   get duration(): BigInt {
-    return this[6].toBigInt();
-  }
-
-  get extensionDuration(): BigInt {
     return this[7].toBigInt();
   }
 
-  get endTime(): BigInt {
+  get extensionDuration(): BigInt {
     return this[8].toBigInt();
   }
 
+  get endTime(): BigInt {
+    return this[9].toBigInt();
+  }
+
   get bidder(): Address {
-    return this[9].toAddress();
+    return this[10].toAddress();
   }
 
   get soulBoundTokenIdBidder(): BigInt {
-    return this[10].toBigInt();
+    return this[11].toBigInt();
   }
 
   get currency(): Address {
-    return this[11].toAddress();
+    return this[12].toAddress();
   }
 
   get reservePrice(): BigInt {
-    return this[12].toBigInt();
+    return this[13].toBigInt();
   }
 
   get amount(): BigInt {
-    return this[13].toBigInt();
+    return this[14].toBigInt();
   }
 }
 
@@ -690,7 +694,7 @@ export class MarketPlace extends ethereum.SmartContract {
   ): MarketPlace__getReserveAuctionResultAuctionStruct {
     let result = super.call(
       "getReserveAuction",
-      "getReserveAuction(uint256):((uint256,address,uint256,uint256,uint128,address,uint256,uint256,uint256,address,uint256,address,uint256,uint96))",
+      "getReserveAuction(uint256):((uint256,address,uint256,uint256,uint256,uint128,address,uint256,uint256,uint256,address,uint256,address,uint256,uint96))",
       [ethereum.Value.fromUnsignedBigInt(auctionId)]
     );
 
@@ -704,7 +708,7 @@ export class MarketPlace extends ethereum.SmartContract {
   ): ethereum.CallResult<MarketPlace__getReserveAuctionResultAuctionStruct> {
     let result = super.tryCall(
       "getReserveAuction",
-      "getReserveAuction(uint256):((uint256,address,uint256,uint256,uint128,address,uint256,uint256,uint256,address,uint256,address,uint256,uint96))",
+      "getReserveAuction(uint256):((uint256,address,uint256,uint256,uint256,uint128,address,uint256,uint256,uint256,address,uint256,address,uint256,uint96))",
       [ethereum.Value.fromUnsignedBigInt(auctionId)]
     );
     if (result.reverted) {

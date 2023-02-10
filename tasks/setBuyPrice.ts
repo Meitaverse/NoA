@@ -36,12 +36,13 @@ import { market } from "../typechain/contracts";
 
 export let runtimeHRE: HardhatRuntimeEnvironment;
 
-// yarn hardhat --network local setBuyPrice --sbtid 2 --nftid 2
+// yarn hardhat --network local setBuyPrice --sbtid 2 --nftid 1 -- price 100
 
 task("setBuyPrice", "setBuyPrice a dNFT to market place function")
 .addParam("sbtid", "soul bound token id ")
 .addParam("nftid", "nft id")
-.setAction(async ({sbtid, nftid}: {sbtid:number, nftid:number}, hre) =>  {
+.addParam("price", "sale price")
+.setAction(async ({sbtid, nftid, price}: {sbtid:number, nftid:number, price:number}, hre) =>  {
   runtimeHRE = hre;
   const ethers = hre.ethers;
   const accounts = await ethers.getSigners();
@@ -81,7 +82,6 @@ task("setBuyPrice", "setBuyPrice a dNFT to market place function")
     console.log('\t--- balance of owner: ', (await sbt["balanceOf(uint256)"](sbtid)).toNumber());
 
     const FIRST_PROJECT_ID = 1; 
-    const SALE_PRICE = 100;
 
     let derivativeNFT: DerivativeNFT;
     derivativeNFT = DerivativeNFT__factory.connect(
@@ -94,11 +94,9 @@ task("setBuyPrice", "setBuyPrice a dNFT to market place function")
         console.log(
             "\n\t--- Market is not open for this project, Pls add to market first."
           );
-
        return;   
     }
 
-       
     console.log(
         "\n\t--- setBuyPrice  ..."
       );
@@ -111,7 +109,7 @@ task("setBuyPrice", "setBuyPrice a dNFT to market place function")
             derivativeNFT: derivativeNFT.address,
             tokenId: nftid,
             currency: sbt.address,
-            salePrice: SALE_PRICE,  //price of one unit
+            salePrice: price,  //price of one unit
     }));
 
     let eventsLib = await new Events__factory(deployer).deploy();
@@ -134,6 +132,14 @@ task("setBuyPrice", "setBuyPrice a dNFT to market place function")
     
     console.log(
       "\t--- buyPrice.salePrice: ", buyPrice.salePrice
+    );
+
+    console.log(
+      "\t--- buyPrice.units: ", buyPrice.units
+    );
+
+    console.log(
+      "\t--- buyPrice.amount: ", buyPrice.amount
     );
 
 });

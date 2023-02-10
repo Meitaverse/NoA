@@ -809,7 +809,7 @@ contract BankTreasury is
         if (!isFeeModule(msg.sender)) {
             revert Errors.Only_Fee_Modules_Allowed();
         }
-
+        
         unchecked {
             if (payValue != royaltyAmounts.treasuryAmount + 
                             royaltyAmounts.genesisAmount +

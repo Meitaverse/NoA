@@ -10,7 +10,7 @@ import {IModuleGlobals} from '../interfaces/IModuleGlobals.sol';
 import {INFTDerivativeProtocolTokenV1} from "../interfaces/INFTDerivativeProtocolTokenV1.sol";
 import {IManager} from "../interfaces/IManager.sol";
 import {GlobalStorage} from "../storage/GlobalStorage.sol";
-import "hardhat/console.sol";
+// import "hardhat/console.sol";
 
 /**
  * @title ModuleGlobals

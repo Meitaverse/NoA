@@ -36,12 +36,14 @@ import { market } from "../typechain/contracts";
 
 export let runtimeHRE: HardhatRuntimeEnvironment;
 
-// yarn hardhat --network local acceptOffer --sbtid 2 --nftid 1
+// yarn hardhat --network local acceptOffer --sbtid 2  --fromsbtid 3 --nftid 1
 
 task("acceptOffer", "acceptOffer a dNFT to market place function")
 .addParam("sbtid", "soul bound token id ")
+.addParam("fromsbtid", "from soul bound token id ")
 .addParam("nftid", "nft id")
-.setAction(async ({sbtid, nftid}: {sbtid:number, nftid:number}, hre) =>  {
+.addParam("price", "sale price")
+.setAction(async ({sbtid, fromsbtid, nftid, price}: {sbtid:number, fromsbtid:number, nftid:number, price:number}, hre) =>  {
   runtimeHRE = hre;
   const ethers = hre.ethers;
   const accounts = await ethers.getSigners();
@@ -74,12 +76,14 @@ task("acceptOffer", "acceptOffer a dNFT to market place function")
       "\t--- ModuleGlobals governance address: ", await moduleGlobals.getGovernance()
     );
 
-    let owner = accounts[sbtid];
-    console.log('\n\t-- owner: ', owner.address);
-    let balance =(await sbt["balanceOf(uint256)"](sbtid)).toNumber();
+    let seller = accounts[sbtid];
+    let offerFrom = accounts[fromsbtid];
 
-    console.log('\t--- balance of owner: ', (await sbt["balanceOf(uint256)"](sbtid)).toNumber());
+    console.log('\n\t-- seller: ', seller.address);
+    console.log('\n\t-- offerFrom: ', offerFrom.address);
 
+    let balance = (await sbt["balanceOf(uint256)"](sbtid)).toNumber();
+    console.log('\t--- balance of seller: ', balance);
 
     const FIRST_PROJECT_ID = 1; 
    
@@ -89,21 +93,21 @@ task("acceptOffer", "acceptOffer a dNFT to market place function")
 
     let derivativeNFT: DerivativeNFT;
     derivativeNFT = DerivativeNFT__factory.connect(
-      await manager.connect(owner).getDerivativeNFT(FIRST_PROJECT_ID),
+      await manager.connect(seller).getDerivativeNFT(FIRST_PROJECT_ID),
       user
     );
 
-    await derivativeNFT.connect(owner).setApprovalForAll(market.address, true);
+    await derivativeNFT.connect(seller).setApprovalForAll(market.address, true);
+
+    let units = await derivativeNFT['balanceOf(uint256)'](nftid)
 
     const receipt = await waitForTx(
-        market.connect(owner).acceptOffer(
+        market.connect(seller).acceptOffer(
           sbtid,
           derivativeNFT.address, 
           nftid,
-          owner.address,
-          100 * 11
+          offerFrom.address,
+          price * units.toNumber() //minAmount
     ));
-
-
 
 });

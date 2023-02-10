@@ -36,12 +36,11 @@ import { market } from "../typechain/contracts";
 
 export let runtimeHRE: HardhatRuntimeEnvironment;
 
-// yarn hardhat --network local cancelOffer --sbtid 2 --nftid 1
+// yarn hardhat --network local getReserveAuction --auctionid 3
 
-task("cancelOffer", "cancelOffer a dNFT to market place function")
-.addParam("sbtid", "soul bound token id ")
-.addParam("nftid", "nft id")
-.setAction(async ({sbtid, nftid}: {sbtid:number, nftid:number}, hre) =>  {
+task("getReserveAuction", "getReserveAuction a dNFT to market place function")
+.addParam("auctionid", "auction id")
+.setAction(async ({auctionid}: {auctionid:number}, hre) =>  {
   runtimeHRE = hre;
   const ethers = hre.ethers;
   const accounts = await ethers.getSigners();
@@ -74,40 +73,22 @@ task("cancelOffer", "cancelOffer a dNFT to market place function")
       "\t--- ModuleGlobals governance address: ", await moduleGlobals.getGovernance()
     );
 
-    let owner = accounts[sbtid];
-    console.log('\n\t-- owner: ', owner.address);
-    let balance =(await sbt["balanceOf(uint256)"](sbtid)).toNumber();
-
-    console.log('\t--- balance of owner: ', (await sbt["balanceOf(uint256)"](sbtid)).toNumber());
-
-
-    const FIRST_PROJECT_ID = 1; 
-   
-    console.log(
-      "\n\t--- cancelOffer  ..."
-    );
-
-    let derivativeNFT: DerivativeNFT;
-    derivativeNFT = DerivativeNFT__factory.connect(
-      await manager.connect(owner).getDerivativeNFT(FIRST_PROJECT_ID),
-      user
-    );
-
-    await derivativeNFT.connect(owner).setApprovalForAll(market.address, true);
-
-    const receipt = await waitForTx(
-        market.connect(owner).makeOffer(
-        {
-            soulBoundTokenIdBuyer: sbtid,
-            derivativeNFT: derivativeNFT.address, 
-            tokenId: nftid, 
-            currency: sbt.address,
-            amount: 100 * 11,
-            soulBoundTokenIdReferrer:0,
-        }
-    ));
-
-    const escrowBalance = await bankTreasury['escrowBalanceOf(address,uint256)'](sbt.address, sbtid)
-    console.log('\n\t escrowBalance:', escrowBalance)
+    let info = await market.getReserveAuction(auctionid);
+    console.log('\n\t getReserveAuction:')
+    console.log('\t\t--- oulBoundTokenId:', info.soulBoundTokenId)
+    console.log('\t\t--- derivativeNFT:', info.derivativeNFT)
+    console.log('\t\t--- projectId:', info.projectId)
+    console.log('\t\t--- publishId:', info.publishId)
+    console.log('\t\t--- tokenId:', info.tokenId)
+    console.log('\t\t--- units:', info.units)
+    console.log('\t\t--- seller:', info.seller)
+    console.log('\t\t--- units:', info.units)
+    console.log('\t\t--- duration:', info.duration)
+    console.log('\t\t--- extensionDuration:', info.extensionDuration)
+    console.log('\t\t--- endTime:', info.endTime)
+    console.log('\t\t--- bidder:', info.bidder)
+    console.log('\t\t--- soulBoundTokenIdBidder:', info.soulBoundTokenIdBidder)
+    console.log('\t\t--- amount:', info.amount)    
+    
 
 });

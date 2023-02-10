@@ -36,12 +36,13 @@ import { market } from "../typechain/contracts";
 
 export let runtimeHRE: HardhatRuntimeEnvironment;
 
-// yarn hardhat --network local createAuction --sbtid 2 --nftid 1
+// yarn hardhat --network local createAuction --sbtid 2 --nftid 2 --reserveprice 100
 
 task("createAuction", "createAuction a dNFT to market place function")
 .addParam("sbtid", "soul bound token id ")
 .addParam("nftid", "nft id")
-.setAction(async ({sbtid, nftid}: {sbtid:number, nftid:number}, hre) =>  {
+.addParam("reserveprice", "reserve price")
+.setAction(async ({sbtid, nftid, reserveprice}: {sbtid:number, nftid:number, reserveprice:number}, hre) =>  {
   runtimeHRE = hre;
   const ethers = hre.ethers;
   const accounts = await ethers.getSigners();
@@ -101,7 +102,7 @@ task("createAuction", "createAuction a dNFT to market place function")
             derivativeNFT.address,
             nftid,
             sbt.address,
-            100,  //price of one unit
+            reserveprice,  //price of one unit
     ));
 
     let auctionId = (await market.connect(user).getReserveAuctionIdFor(
@@ -111,7 +112,7 @@ task("createAuction", "createAuction a dNFT to market place function")
 
     console.log('\n\t getReserveAuctionIdFor, auctionId:', auctionId)
 
-    let info = await market.getReserveAuction(1);
+    let info = await market.getReserveAuction(auctionId);
     console.log('\n\t getReserveAuction')
     console.log('\t\t  --- soulBoundTokenId:', info.soulBoundTokenId)
     console.log('\t\t  --- derivativeNFT:', info.derivativeNFT)

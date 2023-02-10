@@ -248,6 +248,7 @@ makeSuiteCleanRoom('Market Place', function () {
       console.log('\t\t  --- soulBoundTokenId:', info.soulBoundTokenId)
       console.log('\t\t  --- derivativeNFT:', info.derivativeNFT)
       console.log('\t\t  --- projectId:', info.projectId)
+      console.log('\t\t  --- publishId:', info.publishId)
       console.log('\t\t  --- tokenId:', info.tokenId)
       console.log('\t\t  --- units:', info.units)
       console.log('\t\t  --- seller:', info.seller)

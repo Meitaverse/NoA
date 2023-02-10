@@ -59,7 +59,7 @@ abstract contract BaseFeeCollectModule is
     function processCollect(
         uint256 ownershipSoulBoundTokenId,
         uint256 collectorSoulBoundTokenId,
-        uint256 publishId,
+        uint256 publishId, //TODO publishId
         uint96 payValue,   
         bytes calldata data
     ) external virtual onlyManager returns (DataTypes.RoyaltyAmounts memory){

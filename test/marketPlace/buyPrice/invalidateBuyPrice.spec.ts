@@ -261,18 +261,19 @@ makeSuiteCleanRoom('Market Place', function () {
             
       let info = await marketPlaceContract.getReserveAuction(1);
       console.log('\n\t getReserveAuction, soulBoundTokenId:', info.soulBoundTokenId)
-      console.log('\t\t, --- derivativeNFT:', info.derivativeNFT)
-      console.log('\t\t, --- projectId:', info.projectId)
-      console.log('\t\t, --- tokenId:', info.tokenId)
-      console.log('\t\t, --- units:', info.units)
-      console.log('\t\t, --- seller:', info.seller)
-      console.log('\t\t, --- units:', info.units)
-      console.log('\t\t, --- duration:', info.duration)
-      console.log('\t\t, --- extensionDuration:', info.extensionDuration)
-      console.log('\t\t, --- endTime:', info.endTime)
-      console.log('\t\t, --- bidder:', info.bidder)
-      console.log('\t\t, --- soulBoundTokenIdBidder:', info.soulBoundTokenIdBidder)
-      console.log('\t\t, --- amount:', info.amount)
+      console.log('\t\t--- derivativeNFT:', info.derivativeNFT)
+      console.log('\t\t--- projectId:', info.projectId)
+      console.log('\t\t  --- publishId:', info.publishId)
+      console.log('\t\t--- tokenId:', info.tokenId)
+      console.log('\t\t--- units:', info.units)
+      console.log('\t\t--- seller:', info.seller)
+      console.log('\t\t--- units:', info.units)
+      console.log('\t\t--- duration:', info.duration)
+      console.log('\t\t--- extensionDuration:', info.extensionDuration)
+      console.log('\t\t--- endTime:', info.endTime)
+      console.log('\t\t--- bidder:', info.bidder)
+      console.log('\t\t--- soulBoundTokenIdBidder:', info.soulBoundTokenIdBidder)
+      console.log('\t\t--- amount:', info.amount)
 
 
       // When a bid is placed, the dNFT is reserved for the winner of the auction

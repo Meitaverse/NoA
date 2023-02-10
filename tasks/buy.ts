@@ -31,10 +31,13 @@ import {
 import { loadContract } from "./config";
 
 import { deployContract, waitForTx , ProtocolState, Error, findEvent} from './helpers/utils';
-import { ContractTransaction } from "ethers";
+import { ContractTransaction, ethers } from "ethers";
 import { market } from "../typechain/contracts";
+// import { AbiCoder } from "ethers/lib/utils";
 
 export let runtimeHRE: HardhatRuntimeEnvironment;
+
+let abiCoder = ethers.utils.defaultAbiCoder;
 
 // yarn hardhat --network local buy --sbtid 3 --nftid 2 --price 120
 
@@ -102,7 +105,7 @@ task("buy", "buy a dNFT to market place function")
         await bankTreasury.connect(buyer).deposit(
           sbtid,
           sbt.address,
-          price
+          10000
         );
 
         freeBalance =  await bankTreasury['balanceOf(address,uint256)'](sbt.address, sbtid)
@@ -129,7 +132,6 @@ task("buy", "buy a dNFT to market place function")
       "\t--- buyPrice.amount: ", buyPrice.amount
     );
 
-  //TODO 
   const receipt = await waitForTx(
       market.connect(buyer).buy(
         sbtid,
@@ -138,6 +140,6 @@ task("buy", "buy a dNFT to market place function")
         price,
         0
   ));
-  
+
 
 });

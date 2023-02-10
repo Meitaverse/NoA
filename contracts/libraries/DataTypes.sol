@@ -406,6 +406,9 @@ library DataTypes {
         address buyer;
 
         address derivativeNFT;
+
+        /// @notice The publishId of the token.
+        uint256 publishId;        
         
         /// @notice The expiration timestamp of when this offer expires.
         uint32 expiration;
@@ -431,6 +434,8 @@ library DataTypes {
         address derivativeNFT;
         /// @notice The project id of the DNFT.
         uint256 projectId;
+        /// @notice The publishId of the token.
+        uint256 publishId;        
         /// @notice The id of the DNFT.
         uint256 tokenId;
         /// @notice The units of auction.
@@ -468,7 +473,9 @@ library DataTypes {
         address derivativeNFT;
         /// @notice The project id of the DNFT.
         uint256 projectId;    
-        /// @notice The id of the DNFT.
+        /// @notice The publish id of the DNFT.
+        uint256 publishId;        
+        /// @notice The id of the DNFT.        
         uint256 tokenId;
         /// @notice The units of this reserve auction.
         uint128 units;

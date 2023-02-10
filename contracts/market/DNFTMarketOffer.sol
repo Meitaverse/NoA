@@ -166,6 +166,10 @@ abstract contract DNFTMarketOffer is
 
     // Record offer details
     offer.derivativeNFT = offerParam.derivativeNFT;
+
+    uint256 publishId = IDerivativeNFT(offerParam.derivativeNFT).getPublishIdByTokenId(offerParam.tokenId);
+    offer.publishId = publishId;
+
     offer.buyer = buyer;
     offer.soulBoundTokenIdBuyer = offerParam.soulBoundTokenIdBuyer;
     // The SBT contract guarantees that the expiration fits into 32 bits.
@@ -223,16 +227,12 @@ abstract contract DNFTMarketOffer is
     }
 
     // Distribute revenue for this sale leveraging the SBT Value received from the SBT contract in the line above.
-    uint256 projectId = _getMarketInfo(derivativeNFT).projectId;
-    if (projectId == 0) 
-      revert Errors.InvalidParameter();
-
     address collectModule = _getMarketInfo(derivativeNFT).collectModule;
     bytes memory collectModuleInitData = abi.encode(offer.soulBoundTokenIdReferrer, BUY_REFERRER_FEE_DENOMINATOR);
     DataTypes.RoyaltyAmounts memory royaltyAmounts = ICollectModule(collectModule).processCollect(
         soulBoundTokenIdOwner,
         offer.soulBoundTokenIdBuyer,
-        projectId,
+        offer.publishId,
         uint96(offer.amount),
         collectModuleInitData
     );

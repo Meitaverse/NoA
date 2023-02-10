@@ -112,7 +112,6 @@ export const MOCK_FOLLOW_NFT_URI =
   'https://ipfs.fleek.co/ipfs/ghostplantghostplantghostplantghostplantghostplantghostplan';
 
 export const  RECEIVER_MAGIC_VALUE = '0x009ce20b';
-export const TreasuryFee = 50; 
 export const MARKET_MAX_DURATION = 86400000; //1000 days in seconds
 export const LOCKUP_DURATION = 86400; //24h in seconds
 

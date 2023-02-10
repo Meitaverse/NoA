@@ -134,6 +134,8 @@ abstract contract DNFTMarketReserveAuction is
     if (projectId == 0) 
         revert Errors.InvalidParameter();
 
+    uint256 publishId = IDerivativeNFT(derivativeNFT).getPublishIdByTokenId(tokenId);
+
     uint128 units = uint128(IERC3525(derivativeNFT).balanceOf(tokenId));
 
     // Store the auction details
@@ -143,6 +145,8 @@ abstract contract DNFTMarketReserveAuction is
     auction.soulBoundTokenId = soulBoundTokenId;
     auction.derivativeNFT = derivativeNFT;
     auction.projectId = projectId;
+    auction.publishId = publishId;
+
     auction.tokenId = tokenId;
     auction.units = units;
     auction.seller = payable(msg.sender);
@@ -337,7 +341,7 @@ abstract contract DNFTMarketReserveAuction is
     DataTypes.RoyaltyAmounts memory royaltyAmounts = ICollectModule(collectModule).processCollect(
         auction.soulBoundTokenId,
         auction.soulBoundTokenIdBidder,
-        auction.projectId,
+        auction.publishId,
         auction.amount,
         collectModuleInitData
     );
@@ -477,6 +481,7 @@ abstract contract DNFTMarketReserveAuction is
       auctionStorage.soulBoundTokenId,
       auctionStorage.derivativeNFT,
       auctionStorage.projectId,
+      auctionStorage.publishId,
       auctionStorage.tokenId,
       auctionStorage.units,
       auctionStorage.seller,

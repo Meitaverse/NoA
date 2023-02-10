@@ -29,12 +29,13 @@ import { deployContract, waitForTx , ProtocolState, Error, findEvent} from './he
 
 export let runtimeHRE: HardhatRuntimeEnvironment;
 
-// yarn hardhat --network local update-profile --accountid 2 --nickname alice
+// yarn hardhat --network local update-profile --accountid 2 --nickname bayc#8888 --imageuri https://images-development.hyy.pe/700xAUTO/631964f57938570016b9dfd8-1662608753516.gif
 
 task("update-profile", "update-profile function")
 .addParam("accountid", "account id to collect ,from 2 to 4")
 .addParam("nickname", "new nickname")
-.setAction(async ({accountid}: {accountid : number}, hre) =>  {
+.addParam("imageuri", "new imageURI")
+.setAction(async ({accountid, nickname, imageuri}: {accountid : number, nickname: string, imageuri: string}, hre) =>  {
   runtimeHRE = hre;
   const ethers = hre.ethers;
   const accounts = await ethers.getSigners();
@@ -64,53 +65,29 @@ task("update-profile", "update-profile function")
   let profileCreator = accounts[accountid];
   console.log('\n\t-- profileCreator: ', profileCreator.address);
 
-  //add profile creator to whilelist
-   await waitForTx( moduleGlobals.connect(governance).whitelistProfileCreator(profileCreator.address, true));
-
-  console.log(
-    "\n\t--- moduleGlobals isWhitelistProfileCreator address: ", await moduleGlobals.isWhitelistProfileCreator(profileCreator.address)
-  );
       
   const receipt = await waitForTx(
       sbt.connect(profileCreator).updateProfile(
         accountid,
-        'user' + `${accountid}`,
-        'https://ipfs.io/ipfs/QmVnu7JQVoDRqSgHBzraYp7Hy78HwJtLFi6nUFCowTGdzp/' + `${accountid}` + '.png',
+        nickname,
+        imageuri,
       )
   );
 
-
   let eventsLib = await new Events__factory(deployer).deploy();
-  // console.log('\n\t--- eventsLib address: ', eventsLib.address);
 
-  const event = findEvent(receipt, 'ProfileCreated', eventsLib);
+  const event = findEvent(receipt, 'ProfileUpdated', eventsLib);
   console.log(
-    "\n\t--- CreateProfile success! Event ProfileCreated emited ..."
+    "\n\t--- updateProfile success! Event ProfileUpdated emited ..."
   );
   console.log(
-    "\t\t--- ProfileCreated, soulBoundTokenId: ", event.args.soulBoundTokenId.toNumber()
+    "\t\t--- soulBoundTokenId: ", event.args.soulBoundTokenId.toNumber()
   );
   console.log(
-    "\t\t--- ProfileCreated, creator: ", event.args.creator
+    "\t\t--- nickName: ", event.args.nickName
   );
   console.log(
-    "\t\t--- ProfileCreated, wallet: ", event.args.wallet
-  );
-  console.log(
-    "\t\t--- ProfileCreated, nickName: ", event.args.nickName
-  );
-  console.log(
-    "\t\t--- ProfileCreated, imageURI: ", event.args.imageURI
+    "\t\t--- imageURI: ", event.args.imageURI
   );
 
-  let balance = await sbt["balanceOf(uint256)"](event.args.soulBoundTokenId);
-  if (balance.eq(0)) {
-    //mint 10000000 Value to profileCreator
-    await bankTreasury.connect(profileCreator).buySBT(event.args.soulBoundTokenId, {value: 10000000});
-  }
-
-  balance = await sbt["balanceOf(uint256)"](event.args.soulBoundTokenId);
-  console.log(
-    "\n\t--- balanceOf profileCreator: ", balance
-  );
 });

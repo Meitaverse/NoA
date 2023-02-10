@@ -165,6 +165,7 @@ task("create-project", "create-project function")
     
     let marketInfo = await marketPlace.connect(user).getMarketInfo(derivativeNFT.address);
     console.log('\n\t--- marketInfo.isOpen : ', marketInfo.isOpen);
+    console.log('\n\t--- marketInfo.collectModule : ', marketInfo.collectModule);
     console.log('\n\t--- marketInfo.feePayType : ', marketInfo.feePayType);
     console.log('\n\t--- marketInfo.feeShareType : ', marketInfo.feeShareType);
     console.log('\n\t--- marketInfo.royaltyBasisPoints : ', marketInfo.royaltySharesPoints);

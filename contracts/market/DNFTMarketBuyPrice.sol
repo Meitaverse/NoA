@@ -9,7 +9,7 @@ import {Events} from "../libraries/Events.sol";
 import {Errors} from "../libraries/Errors.sol";
 import "./DNFTMarketCore.sol";
 import {ICollectModule} from "../interfaces/ICollectModule.sol";
-import "hardhat/console.sol";
+// import "hardhat/console.sol";
 
 
 /**
@@ -248,22 +248,25 @@ abstract contract DNFTMarketBuyPrice is
         buyPrice.amount
     );
 
-    //TODO
-/*
+
     // Distribute revenue for this sale.
     address collectModule = _getMarketInfo(derivativeNFT).collectModule;
-    bytes memory collectModuleInitData = abi.encode(soulBoundTokenIdReferrer, BUY_REFERRER_FEE_DENOMINATOR);
+  
+    bytes memory collectModuleInitData = abi.encode(
+      soulBoundTokenIdReferrer, 
+      BUY_REFERRER_FEE_DENOMINATOR
+    );
+
     DataTypes.RoyaltyAmounts memory royaltyAmounts = ICollectModule(collectModule).processCollect(
         buyPrice.soulBoundTokenIdSeller,
         soulBoundTokenIdBuyer,
-        buyPrice.projectId,
+        buyPrice.publishId,
         buyPrice.amount, 
         collectModuleInitData
     );
-*/
-
+    
     delete dnftContractToTokenIdToBuyPrice[derivativeNFT][tokenId];
-    /*
+    
     emit Events.BuyPriceAccepted(
       derivativeNFT,
       buyPrice.tokenId, 
@@ -272,7 +275,7 @@ abstract contract DNFTMarketBuyPrice is
       buyPrice.currency,
       royaltyAmounts
     );
-    */
+    
   }
 
   /**

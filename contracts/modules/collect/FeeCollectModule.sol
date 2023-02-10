@@ -57,7 +57,7 @@ contract FeeCollectModule is ReentrancyGuard, FeeModuleBase, ModuleBase, ICollec
 
     /// @notice The fee collected by the buy referrer for sales facilitated by this market contract.
     ///         This fee is calculated from the total protocol fee.
-    uint256 private constant BUY_REFERRER_FEE_DENOMINATOR = BASIS_POINTS / 100; // 1%
+    uint256 private constant BUY_REFERRER_FEE_DENOMINATOR = 100; // 1%
 
     // publishId => ProfilePublicationData
     mapping(uint256 =>  ProfilePublicationData) internal _dataByPublicationByProfile;
@@ -117,7 +117,14 @@ contract FeeCollectModule is ReentrancyGuard, FeeModuleBase, ModuleBase, ICollec
         uint256 publishId,
         uint96 payValue,
         bytes calldata data
-    ) external virtual override nonReentrant onlyManagerOrMarket returns (DataTypes.RoyaltyAmounts memory){
+    ) 
+        external 
+        virtual 
+        override 
+        nonReentrant  
+        onlyManagerOrMarket
+        returns (DataTypes.RoyaltyAmounts memory)
+    {
        return _processCollect(
             ownershipSoulBoundTokenId, 
             collectorSoulBoundTokenId, 
@@ -170,6 +177,8 @@ contract FeeCollectModule is ReentrancyGuard, FeeModuleBase, ModuleBase, ICollec
     ) internal returns (DataTypes.RoyaltyAmounts memory royaltyAmounts){
         uint256 referrerSoulBoundTokenId;
         uint16 referrerFee;
+
+        
         if (data.length != 0) {
             (referrerSoulBoundTokenId, referrerFee) = abi.decode(
                 data,
@@ -180,25 +189,27 @@ contract FeeCollectModule is ReentrancyGuard, FeeModuleBase, ModuleBase, ICollec
                 revert Errors.ReferrerFeeExceeded();
             }
         }
+        
 
         unchecked {
 
             if (payValue > 0) {
                 uint256 genesisSoulBoundTokenId = _dataByPublicationByProfile[publishId].genesisSoulBoundTokenId;
                 (address treasury, uint16 treasuryFee) = _treasuryData();
-
-                if (treasuryFee >0 && treasuryFee < referrerFee) {
-                    revert Errors.NFTMarketFees_Invalid_Referrer_Fee();   
-                }
-
+                
                 royaltyAmounts.treasuryAmount = uint96(payValue * treasuryFee / BASIS_POINTS);
                 royaltyAmounts.previousAmount = uint96(payValue * _dataByPublicationByProfile[publishId].previousFee / BASIS_POINTS);
                 royaltyAmounts.genesisAmount = uint96(payValue * _dataByPublicationByProfile[publishId].genesisFee / BASIS_POINTS);
                 royaltyAmounts.adjustedAmount = payValue - royaltyAmounts.treasuryAmount - royaltyAmounts.genesisAmount - royaltyAmounts.previousAmount;
-                if (referrerSoulBoundTokenId != 0 && referrerFee > 0) {
-                    royaltyAmounts.referrerAmount = uint96(payValue * referrerFee / BASIS_POINTS);
-                    royaltyAmounts.treasuryAmount = royaltyAmounts.treasuryAmount - royaltyAmounts.referrerAmount;
-                }
+                 if (treasuryFee >0 && treasuryFee > referrerFee ) {
+
+                    if (referrerSoulBoundTokenId != 0 && referrerFee > 0) {
+                        royaltyAmounts.referrerAmount = uint96(payValue * referrerFee / BASIS_POINTS);
+                        royaltyAmounts.treasuryAmount = royaltyAmounts.treasuryAmount - royaltyAmounts.referrerAmount;
+                    }
+
+                 }
+
                 // console.log("royaltyAmounts.treasuryAmount:", royaltyAmounts.treasuryAmount);
                 // console.log("royaltyAmounts.genesisAmount:", royaltyAmounts.genesisAmount);
                 // console.log("royaltyAmounts.previousAmount:", royaltyAmounts.previousAmount);

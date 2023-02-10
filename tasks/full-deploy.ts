@@ -66,9 +66,8 @@ import {
 import { NFTDerivativeProtocolTokenV1LibraryAddresses } from '../typechain/factories/contracts/NFTDerivativeProtocolTokenV1__factory';
 import { MarketPlaceLibraryAddresses } from '../typechain/factories/contracts/MarketPlace__factory';
   
-  const TREASURY_FEE_BPS = 50;
-  const  RECEIVER_MAGIC_VALUE = '0x009ce20b';
-  const TreasuryFee = 50; 
+  const TREASURY_FEE_BPS = 500;
+  const RECEIVER_MAGIC_VALUE = '0x009ce20b';
   const FIRST_PROFILE_ID = 1; //金库
   const INITIAL_SUPPLY =  1000000;  //SBT初始发行总量, 1000000 * 1e18
   const VOUCHER_AMOUNT_LIMIT = 100;  //用户用SBT兑换Voucher的最低数量 
@@ -78,9 +77,10 @@ import { MarketPlaceLibraryAddresses } from '../typechain/factories/contracts/Ma
   const SBT_SYMBOL = 'SBT';
   const SBT_DECIMALS = 18;
   
-  const MARKET_MAX_DURATION = 86400000; //1000 days in seconds
+  //TODO
+  const MARKET_DURATION = 1200; // default: 1 days in seconds
+
   const LOCKUP_DURATION = 86400; //24h in seconds
-  
   
   const NUM_CONFIRMATIONS_REQUIRED = 3;
   const PublishRoyaltySBT = 100;
@@ -353,7 +353,7 @@ import { MarketPlaceLibraryAddresses } from '../typechain/factories/contracts/Ma
         const marketPlaceImpl = await deployContract(
             new MarketPlace__factory(marketLibs, deployer).deploy(
                 bankTreasuryContract.address,
-                MARKET_MAX_DURATION,
+                MARKET_DURATION,
                 { nonce: deployerNonce++ })
         );
 

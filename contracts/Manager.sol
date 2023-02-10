@@ -22,7 +22,7 @@ import "./libraries/SafeMathUpgradeable128.sol";
 import {IBankTreasury} from "./interfaces/IBankTreasury.sol";
 import {VersionedInitializable} from './upgradeability/VersionedInitializable.sol';
 import {IModuleGlobals} from "./interfaces/IModuleGlobals.sol";
-import "hardhat/console.sol";
+// import "hardhat/console.sol";
 
 contract Manager is 
     ReentrancyGuard,

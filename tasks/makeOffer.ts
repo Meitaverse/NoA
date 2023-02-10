@@ -36,12 +36,13 @@ import { market } from "../typechain/contracts";
 
 export let runtimeHRE: HardhatRuntimeEnvironment;
 
-// yarn hardhat --network local makeOffer --sbtid 2 --nftid 1
+// yarn hardhat --network local makeOffer --sbtid 3 --nftid 1 --price 100
 
 task("makeOffer", "makeOffer a dNFT to market place function")
 .addParam("sbtid", "soul bound token id ")
 .addParam("nftid", "nft id")
-.setAction(async ({sbtid, nftid}: {sbtid:number, nftid:number}, hre) =>  {
+.addParam("price", "offer price")
+.setAction(async ({sbtid, nftid, price}: {sbtid:number, nftid:number, price:number}, hre) =>  {
   runtimeHRE = hre;
   const ethers = hre.ethers;
   const accounts = await ethers.getSigners();
@@ -74,11 +75,8 @@ task("makeOffer", "makeOffer a dNFT to market place function")
       "\t--- ModuleGlobals governance address: ", await moduleGlobals.getGovernance()
     );
 
-    let owner = accounts[sbtid];
-    console.log('\n\t-- owner: ', owner.address);
-    let balance =(await sbt["balanceOf(uint256)"](sbtid)).toNumber();
-
-    console.log('\t--- balance of owner: ', (await sbt["balanceOf(uint256)"](sbtid)).toNumber());
+    let buyer = accounts[sbtid];
+    console.log('\n\t-- buyer: ', buyer.address);
 
 
     const FIRST_PROJECT_ID = 1; 
@@ -89,23 +87,28 @@ task("makeOffer", "makeOffer a dNFT to market place function")
 
     let derivativeNFT: DerivativeNFT;
     derivativeNFT = DerivativeNFT__factory.connect(
-      await manager.connect(owner).getDerivativeNFT(FIRST_PROJECT_ID),
+      await manager.connect(buyer).getDerivativeNFT(FIRST_PROJECT_ID),
       user
     );
 
-    await derivativeNFT.connect(owner).setApprovalForAll(market.address, true);
+    await derivativeNFT.connect(buyer).setApprovalForAll(market.address, true);
+
+    let units = await derivativeNFT['balanceOf(uint256)'](nftid)
 
     const receipt = await waitForTx(
-        market.connect(owner).makeOffer(
+        market.connect(buyer).makeOffer(
         {
             soulBoundTokenIdBuyer: sbtid,
             derivativeNFT: derivativeNFT.address, 
             tokenId: nftid, 
             currency: sbt.address,
-            amount: 100 * 11,
+            amount: price * units.toNumber(),
             soulBoundTokenIdReferrer:0,
         }
     ));
+
+    let balance =(await sbt["balanceOf(uint256)"](sbtid)).toNumber();
+    console.log('\t--- balance of buyer: ', balance);
 
     const escrowBalance = await bankTreasury['escrowBalanceOf(address,uint256)'](sbt.address, sbtid)
     console.log('\n\t escrowBalance:', escrowBalance)
