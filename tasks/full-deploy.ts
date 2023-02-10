@@ -68,9 +68,9 @@ import { MarketPlaceLibraryAddresses } from '../typechain/factories/contracts/Ma
   
   const TREASURY_FEE_BPS = 500;
   const RECEIVER_MAGIC_VALUE = '0x009ce20b';
-  const FIRST_PROFILE_ID = 1; //金库
-  const INITIAL_SUPPLY =  1000000;  //SBT初始发行总量, 1000000 * 1e18
-  const VOUCHER_AMOUNT_LIMIT = 100;  //用户用SBT兑换Voucher的最低数量 
+  const FIRST_PROFILE_ID = 1; 
+  const INITIAL_SUPPLY =  1000000;
+  const VOUCHER_AMOUNT_LIMIT = 100;  
   
 
   const SBT_NAME = 'NFT Derivative Protocol';
