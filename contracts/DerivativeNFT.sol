@@ -11,7 +11,7 @@ import {IManager} from "./interfaces/IManager.sol";
 import {IDerivativeNFT} from "./interfaces/IDerivativeNFT.sol";
 import './libraries/Constants.sol';
 import "./base/DerivativeNFTMultiState.sol";
-import "hardhat/console.sol";
+// import "hardhat/console.sol";
 
 /**
  *  @title Derivative NFT
@@ -63,7 +63,6 @@ contract DerivativeNFT is
     uint256 internal _projectId;  //one derivativeNFT include one projectId
     uint256 internal _soulBoundTokenId;
    
-
     address internal _receiver;
     DataTypes.FeeShareType internal _feeShareType;
 
@@ -110,7 +109,6 @@ contract DerivativeNFT is
         _validateCallerIsManager();
         _;
     }
-
 
     //===== Initializer =====//
 

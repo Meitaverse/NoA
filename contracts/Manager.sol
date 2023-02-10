@@ -485,7 +485,8 @@ contract Manager is
               _projectDataByPublishId[collectData.publishId].tokenId,
               newTokenId,
               _derivativeNFTByProjectId[_projectDataByPublishId[collectData.publishId].publication.projectId],
-              IModuleGlobals(MODULE_GLOBALS).getSBT()
+              IModuleGlobals(MODULE_GLOBALS).getSBT(),
+              IModuleGlobals(MODULE_GLOBALS).getTreasury()
             ),
             _pubByIdByProfile,
             _projectDataByPublishId

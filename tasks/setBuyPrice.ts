@@ -25,20 +25,23 @@ import {
   Template__factory,
   PublishModule__factory,
   Events__factory,
+  MarketPlace__factory,
 } from '../typechain';
 
 import { loadContract } from "./config";
 
 import { deployContract, waitForTx , ProtocolState, Error, findEvent} from './helpers/utils';
+import { ContractTransaction } from "ethers";
+import { market } from "../typechain/contracts";
 
 export let runtimeHRE: HardhatRuntimeEnvironment;
 
-// yarn hardhat --network local collect --collectorid 3 --publishid 1
+// yarn hardhat --network local setBuyPrice --sbtid 2 --nftid 2
 
-task("collect", "collect a dNFT function")
-.addParam("collectorid", "soul bound token id ")
-.addParam("publishid", "publish id")
-.setAction(async ({collectorid, publishid}: {collectorid:number, publishid:number}, hre) =>  {
+task("setBuyPrice", "setBuyPrice a dNFT to market place function")
+.addParam("sbtid", "soul bound token id ")
+.addParam("nftid", "nft id")
+.setAction(async ({sbtid, nftid}: {sbtid:number, nftid:number}, hre) =>  {
   runtimeHRE = hre;
   const ethers = hre.ethers;
   const accounts = await ethers.getSigners();
@@ -53,6 +56,7 @@ task("collect", "collect a dNFT function")
   const manager = await loadContract(hre, Manager__factory, "Manager");
   const bankTreasury = await loadContract(hre, BankTreasury__factory, "BankTreasury");
   const sbt = await loadContract(hre, NFTDerivativeProtocolTokenV1__factory, "SBT");
+  const market = await loadContract(hre, MarketPlace__factory, "MarketPlace");
   const voucher = await loadContract(hre, Voucher__factory, "Voucher");
   const moduleGlobals = await loadContract(hre, ModuleGlobals__factory, "ModuleGlobals");
   const feeCollectModule = await loadContract(hre, FeeCollectModule__factory, "FeeCollectModule");
@@ -70,76 +74,66 @@ task("collect", "collect a dNFT function")
       "\t--- ModuleGlobals governance address: ", await moduleGlobals.getGovernance()
     );
 
-    let collector = accounts[collectorid];
-    console.log('\n\t-- collector: ', collector.address);
-    let balance =(await sbt["balanceOf(uint256)"](collectorid)).toNumber();
-    // if (balance == 0) {
-    //   //mint 10000000 Value to user
-    //   await bankTreasury.connect(collector).buySBT(collectorid, {value: 10000000});
-    // }
-    console.log('\t--- balance of collector: ', (await sbt["balanceOf(uint256)"](collectorid)).toNumber());
+    let owner = accounts[sbtid];
+    console.log('\n\t-- owner: ', owner.address);
+    let balance =(await sbt["balanceOf(uint256)"](sbtid)).toNumber();
 
+    console.log('\t--- balance of owner: ', (await sbt["balanceOf(uint256)"](sbtid)).toNumber());
 
     const FIRST_PROJECT_ID = 1; 
-   
-    console.log(
-      "\n\t--- Collet  ..."
-    );
-
-    const receipt = await waitForTx(
-      manager.connect(collector).collect({
-        publishId: publishid,
-        collectorSoulBoundTokenId: collectorid,
-        collectUnits: 1,
-        data: [],
-      })
-    );
-
-    let eventsLib = await new Events__factory(deployer).deploy();
-    // console.log('\n\t--- eventsLib address: ', eventsLib.address);
-
-    const event = findEvent(receipt, 'DerivativeNFTCollected', eventsLib);
-    const projectId = event.args.projectId.toNumber();
-    const derivativeNFTAddress = event.args.derivativeNFT;
-    const fromSoulBoundTokenId = event.args.fromSoulBoundTokenId.toNumber();
-    const toSoulBoundTokenId = event.args.toSoulBoundTokenId.toNumber();
-    const tokenId = event.args.tokenId.toNumber();
-    const value = event.args.value.toNumber();
-    const newTokenId = event.args.newTokenId.toNumber();
-
-    console.log(
-      "\n\t--- Event DerivativeNFTCollected emited ..."
-    );
-    console.log(
-      "\t--- DerivativeNFTCollected, projectId: ", projectId
-    );
-    console.log(
-      "\t--- DerivativeNFTCollected, derivativeNFT address: ", derivativeNFTAddress
-    );
-    console.log(
-      "\t--- DerivativeNFTCollected, fromSoulBoundTokenId: ", fromSoulBoundTokenId
-    );
-    console.log(
-      "\t--- DerivativeNFTCollected, toSoulBoundTokenId: ", toSoulBoundTokenId
-    );
-    console.log(
-      "\t--- DerivativeNFTCollected, tokenId: ", tokenId
-    );
-    console.log(
-      "\t--- DerivativeNFTCollected, collect value: ", value
-    );
-    console.log(
-      "\t--- DerivativeNFTCollected, newTokenId: ", newTokenId
-    );
-
+    const SALE_PRICE = 100;
 
     let derivativeNFT: DerivativeNFT;
     derivativeNFT = DerivativeNFT__factory.connect(
-      await manager.connect(collector).getDerivativeNFT(FIRST_PROJECT_ID),
+      await manager.connect(owner).getDerivativeNFT(FIRST_PROJECT_ID),
       user
     );
-      
-    console.log('\n\t--- ownerOf newTokenId : ', await derivativeNFT.ownerOf(newTokenId));
-    console.log('\t--- balanceOf newTokenId : ', (await derivativeNFT["balanceOf(uint256)"](newTokenId)).toNumber());
+
+    let marketInfo = await market.connect(user).getMarketInfo(derivativeNFT.address);
+    if (!marketInfo.isOpen) {
+        console.log(
+            "\n\t--- Market is not open for this project, Pls add to market first."
+          );
+
+       return;   
+    }
+
+       
+    console.log(
+        "\n\t--- setBuyPrice  ..."
+      );
+  
+    await derivativeNFT.connect(owner).setApprovalForAll(market.address, true);
+
+    const receipt = await waitForTx(
+        market.connect(owner).setBuyPrice({
+            soulBoundTokenId: sbtid,
+            derivativeNFT: derivativeNFT.address,
+            tokenId: nftid,
+            currency: sbt.address,
+            salePrice: SALE_PRICE,  //price of one unit
+    }));
+
+    let eventsLib = await new Events__factory(deployer).deploy();
+
+    const event = findEvent(receipt, 'BuyPriceSet', eventsLib);
+
+    const tokenId = event.args.tokenId.toNumber();
+    console.log(
+      "\n\t--- setBuyPrice success! Event BuyPriceSet emited ..."
+    );
+    console.log(
+      "\t--- tokenId: ", tokenId
+    );
     
+    const buyPrice = await market.getBuyPrice(derivativeNFT.address, tokenId);
+    
+    console.log(
+      "\n\t--- buyPrice.seller: ", buyPrice.seller
+    );
+    
+    console.log(
+      "\t--- buyPrice.salePrice: ", buyPrice.salePrice
+    );
+
 });

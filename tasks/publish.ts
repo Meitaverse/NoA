@@ -33,7 +33,7 @@ import { deployContract, waitForTx , ProtocolState, Error, findEvent} from './he
 
 export let runtimeHRE: HardhatRuntimeEnvironment;
 
-// yarn hardhat publish --projectid 1 --network local
+// yarn hardhat --network local publish --projectid 1
 
 task("publish", "publish function")
 .addParam("projectid", "project id to publish")
@@ -42,7 +42,7 @@ task("publish", "publish function")
   const ethers = hre.ethers;
   const accounts = await ethers.getSigners();
   const deployer = accounts[0];
-  const governance = accounts[1];  //治理合约地址
+  const governance = accounts[1];  
   const user = accounts[2];
   const userTwo = accounts[3];
   const userThree = accounts[4];

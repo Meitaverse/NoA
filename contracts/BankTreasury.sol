@@ -859,8 +859,12 @@ contract BankTreasury is
         external 
         whenNotPaused 
         nonReentrant  
-        onlyFoundationMarket
     {    
+
+        if ( !( isFeeModule(msg.sender) || msg.sender == _foundationMarket) ){
+            revert Errors.Only_Fee_Modules_Allowed();
+        } 
+            
         DataTypes.AccountInfo storage accountInfo = accountToInfo[soulBoundTokenId][currency];
         _deductBalanceFrom(accountInfo, amount);
     }

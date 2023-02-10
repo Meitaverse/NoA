@@ -136,8 +136,10 @@ contract NFTDerivativeProtocolTokenV1 is
         string calldata imageURI
     ) 
         external 
-        onlyManager 
     { 
+        if (msg.sender != ownerOf(soulBoundTokenId)) 
+            revert Errors.NotOwner();
+
         SBTLogic.updateProfile(
             soulBoundTokenId,   
             nickName,

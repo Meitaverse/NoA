@@ -1378,13 +1378,13 @@ type DnftMarketBuyNow @entity {
   "The seller which owns the dNFT."
   seller: Account!
 
-  "The currency"
+  "The currency of buy price"
   currency: Bytes!
 
-  "The sal price of this dNFT"
+  "The sale price of this dNFT"
   salePrice: BigInt!
 
-  "The units put on sell for this dNFT"
+  "The dNFT token id"
   tokenId: BigInt!
 
   "The units put on sell for this dNFT"

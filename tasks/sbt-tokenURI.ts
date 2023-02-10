@@ -32,7 +32,7 @@ import { deployContract, waitForTx , ProtocolState, Error} from './helpers/utils
 
 export let runtimeHRE: HardhatRuntimeEnvironment;
 
-// yarn hardhat sbt-tokenURI --tokenid 2 --network local
+// yarn hardhat --network local sbt-tokenURI --tokenid 2
 
 task("sbt-tokenURI", "get sbt tokenURI function")
 .addParam("tokenid", "token id")
@@ -41,7 +41,7 @@ task("sbt-tokenURI", "get sbt tokenURI function")
   const ethers = hre.ethers;
   const accounts = await ethers.getSigners();
   const deployer = accounts[0];
-  const governance = accounts[1];  //治理合约地址
+  const governance = accounts[1];  
   const user = accounts[2];
   const userTwo = accounts[3];
   const userThree = accounts[4];

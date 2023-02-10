@@ -11,6 +11,7 @@ import './Constants.sol';
 import {IDerivativeNFT} from "../interfaces/IDerivativeNFT.sol";
 import {ICollectModule} from '../interfaces/ICollectModule.sol';
 import {IPublishModule} from '../interfaces/IPublishModule.sol';
+import {IBankTreasury} from '../interfaces/IBankTreasury.sol';
 /**
  * @title PublishLogic
  * @author bitsoul Protocol
@@ -209,13 +210,23 @@ library PublishLogic {
         //new tokenId use the same collectModule
         _pubByIdByProfile[projectId][collectDataParam.newTokenId].collectModule = _pubByIdByProfile[projectId][collectDataParam.tokenId].collectModule;
 
-        //Transfer Value of total pay to treasury 
         uint96 payValue = uint96(collectDataParam.collectUnits * _projectDataByPublishId[collectDataParam.publishId].publication.salePrice);
-        INFTDerivativeProtocolTokenV1(collectDataParam.sbt).transferValue(
-            collectDataParam.collectorSoulBoundTokenId, 
-            BANK_TREASURY_SOUL_BOUND_TOKENID, 
-            payValue
-        );
+
+        if (collectDataParam.sbt == _projectDataByPublishId[collectDataParam.publishId].publication.currency) {
+            //Transfer Value of total pay to treasury 
+            INFTDerivativeProtocolTokenV1(collectDataParam.sbt).transferValue(
+                collectDataParam.collectorSoulBoundTokenId, 
+                BANK_TREASURY_SOUL_BOUND_TOKENID, 
+                payValue
+            );
+        } else {
+            //Use free earnest funs balance for pay 
+            IBankTreasury(collectDataParam.treasury).useEarnestFundsForPay(
+                collectDataParam.collectorSoulBoundTokenId, 
+                _projectDataByPublishId[collectDataParam.publishId].publication.currency,
+                payValue
+            );
+        }
 
         //processCollect: fees and royalties process
         ICollectModule(_pubByIdByProfile[projectId][collectDataParam.tokenId].collectModule).processCollect(

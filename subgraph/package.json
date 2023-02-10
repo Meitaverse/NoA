@@ -3,7 +3,7 @@
     "license": "UNLICENSED",
     "scripts": {
         "codegen": "graph codegen",
-        "build": "graph build --networkFile ./networks.json --network mainnet",
+        "build": "graph build --network mainnet",
         "prepare:mainnet": "mustache config/mainnet.js subgraph.template.yaml > subgraph.yaml",
         "deploy": "graph deploy --node https://api.studio.thegraph.com/deploy/ NoA/MySubgraph",
         "create-local": "graph create --node http://localhost:8020/ NoA/MySubgraph",

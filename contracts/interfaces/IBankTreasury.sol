@@ -139,7 +139,6 @@ interface IBankTreasury {
         uint256 amount
     ) external;
 
-
     /**
      * @notice Used by the market contract only:
      *      Refund orinigal escrow tokens to free balance

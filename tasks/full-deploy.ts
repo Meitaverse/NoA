@@ -96,7 +96,7 @@ import { MarketPlaceLibraryAddresses } from '../typechain/factories/contracts/Ma
         const ethers = hre.ethers;
         const accounts = await ethers.getSigners();
         const deployer = accounts[0];
-        const governance = accounts[1];  //治理合约地址
+        const governance = accounts[1];  
         const user = accounts[2];
         const userTwo = accounts[3];
         const userThree = accounts[4];
@@ -409,8 +409,8 @@ import { MarketPlaceLibraryAddresses } from '../typechain/factories/contracts/Ma
                 { nonce: deployerNonce++ })
         );
         console.log('\t-- feeCollectModule: ', feeCollectModule.address);
-        // await exportAddress(hre, feeCollectModule, 'FeeCollectModule');
-        // await exportSubgraphNetworksJson(hre, feeCollectModule, 'FeeCollectModule');
+        await exportAddress(hre, feeCollectModule, 'FeeCollectModule');
+        await exportSubgraphNetworksJson(hre, feeCollectModule, 'FeeCollectModule');
 
         console.log('\n\t-- Deploying publishModule --');
         const publishModule = await deployContract(
@@ -471,7 +471,7 @@ import { MarketPlaceLibraryAddresses } from '../typechain/factories/contracts/Ma
         await waitForTx( voucherContract.connect(deployer).setGlobalModules(moduleGlobals.address));
         await waitForTx( voucherContract.connect(deployer).setUserAmountLimit(VOUCHER_AMOUNT_LIMIT));
 
-        console.log('\n\t-- bankTreasuryContract set moduleGlobals address --');
+        console.log('\n\t-- bankTreasuryContract set moduleGlobals and  marketPlace--');
         await waitForTx( bankTreasuryContract.connect(governance).setGlobalModules(moduleGlobals.address));
         await waitForTx( bankTreasuryContract.connect(governance).setFoundationMarket(marketPlaceContract.address));
         

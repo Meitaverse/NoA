@@ -35,7 +35,7 @@ import { deployContract, waitForTx , ProtocolState, Error, findEvent} from './he
 export let runtimeHRE: HardhatRuntimeEnvironment;
 
 
-// yarn hardhat create-project --name bitsoul2 --network local
+// yarn hardhat --network local create-project --name bitsoul2
 
 task("create-project", "create-project function")
 .addParam("name", "unique project name")
@@ -44,7 +44,7 @@ task("create-project", "create-project function")
   const ethers = hre.ethers;
   const accounts = await ethers.getSigners();
   const deployer = accounts[0];
-  const governance = accounts[1];  //治理合约地址
+  const governance = accounts[1];  
   const user = accounts[2];
   const userTwo = accounts[3];
   const userThree = accounts[4];
@@ -148,14 +148,27 @@ task("create-project", "create-project function")
 
     await exportSubgraphNetworksJson(hre, derivativeNFT, projectContractName);
 
-  //   //addMarket
-  //   await waitForTx(
-  //     marketPlace.connect(governance).addMarket(
-  //         derivativeNFT.address,
-  //         0,
-  //         0,
-  //         50
-  //     )
-  // );
+
+    //addMarket
+    let feeCollectModuleAddress = "0x322813Fd9A801c5507c9de605d63CEA4f2CE6c44";
+    
+    await waitForTx(
+      marketPlace.connect(governance).addMarket(
+        derivativeNFT.address,
+        projectId,
+        feeCollectModuleAddress,
+        0,
+        0,
+        50,
+        )
+    );
+    
+    let marketInfo = await marketPlace.connect(user).getMarketInfo(derivativeNFT.address);
+    console.log('\n\t--- marketInfo.isOpen : ', marketInfo.isOpen);
+    console.log('\n\t--- marketInfo.feePayType : ', marketInfo.feePayType);
+    console.log('\n\t--- marketInfo.feeShareType : ', marketInfo.feeShareType);
+    console.log('\n\t--- marketInfo.royaltyBasisPoints : ', marketInfo.royaltySharesPoints);
+
+
     
 });

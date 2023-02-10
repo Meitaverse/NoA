@@ -32,7 +32,7 @@ import { deployContract, waitForTx , ProtocolState, Error} from './helpers/utils
 export let runtimeHRE: HardhatRuntimeEnvironment;
 
 
-// yarn hardhat add-market --network local
+// yarn hardhat --network local add-market
 
 task("add-market", "add-market function")
 .setAction(async ({}: {}, hre) =>  {
@@ -40,7 +40,7 @@ task("add-market", "add-market function")
   const ethers = hre.ethers;
   const accounts = await ethers.getSigners();
   const deployer = accounts[0];
-  const governance = accounts[1];  //治理合约地址
+  const governance = accounts[1];  
   const user = accounts[2];
   const userTwo = accounts[3];
   const userThree = accounts[4];
@@ -118,6 +118,7 @@ task("add-market", "add-market function")
       "\n\t---derivativeNFT: ", derivativeNFT.address
     );
 
+    /*
     //addMarket
     let feeCollectModuleAddress = "0x322813Fd9A801c5507c9de605d63CEA4f2CE6c44";
     await waitForTx(
@@ -130,15 +131,13 @@ task("add-market", "add-market function")
         50,
         )
     );
-    
+    */
     let marketInfo = await marketPlace.connect(user).getMarketInfo(derivativeNFT.address);
     console.log('\n\t--- marketInfo.isOpen : ', marketInfo.isOpen);
+    console.log('\n\t--- marketInfo.collectModule : ', marketInfo.collectModule);
     console.log('\n\t--- marketInfo.feePayType : ', marketInfo.feePayType);
     console.log('\n\t--- marketInfo.feeShareType : ', marketInfo.feeShareType);
     console.log('\n\t--- marketInfo.royaltyBasisPoints : ', marketInfo.royaltySharesPoints);
 
-    const FIRST_DNFT_TOKEN_ID = 1;
-    console.log('\n\t--- ownerOf FIRST_DNFT_TOKEN_ID : ', await derivativeNFT.ownerOf(FIRST_DNFT_TOKEN_ID));
-    console.log('\t--- balanceOf FIRST_DNFT_TOKEN_ID : ', (await derivativeNFT["balanceOf(uint256)"](FIRST_DNFT_TOKEN_ID)).toNumber());
     
 });

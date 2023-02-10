@@ -32,7 +32,7 @@ import { deployContract, waitForTx , ProtocolState, Error} from './helpers/utils
 
 export let runtimeHRE: HardhatRuntimeEnvironment;
 
-// yarn hardhat dNFT-tokenURI --projectid 1 --tokenid 1 --network local
+// yarn hardhat --network local dNFT-tokenURI --projectid 1 --tokenid 1
 
 task("dNFT-tokenURI", "get sbt tokenURI function")
 .addParam("projectid", "project id")
@@ -42,7 +42,7 @@ task("dNFT-tokenURI", "get sbt tokenURI function")
   const ethers = hre.ethers;
   const accounts = await ethers.getSigners();
   const deployer = accounts[0];
-  const governance = accounts[1];  //治理合约地址
+  const governance = accounts[1];  
   const user = accounts[2];
   const userTwo = accounts[3];
   const userThree = accounts[4];

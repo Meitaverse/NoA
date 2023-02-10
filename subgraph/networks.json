@@ -43,6 +43,10 @@
     "DerivativeNFT-2": {
       "address": "0x6E5FCF58BE308a71298cAa43A1714C946E5Cc758",
       "startBlock": 1
+    },
+    "FeeCollectModule": {
+      "address": "0x322813Fd9A801c5507c9de605d63CEA4f2CE6c44",
+      "startBlock": 1
     }
   }
 }

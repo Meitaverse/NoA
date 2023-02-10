@@ -142,11 +142,14 @@ export function handleBuyPriceSet(event: BuyPriceSet): void {
       buyNow.status = "Open";
       buyNow.seller = seller.id;
       buyNow.project = project.id;
+      buyNow.currency = resultBuyPrice.value.currency;
       buyNow.salePrice = resultBuyPrice.value.salePrice;
+      buyNow.tokenId = event.params.tokenId; //TODO
       buyNow.units = resultBuyPrice.value.units;
       buyNow.dateCreated = event.block.timestamp;
       buyNow.transactionHashCreated = event.transaction.hash;
       buyNow.save();
+
       removePreviousTransferEvent(event);
       recordDnftEvent(
         event,

@@ -29,10 +29,11 @@ import { deployContract, waitForTx , ProtocolState, Error, findEvent} from './he
 
 export let runtimeHRE: HardhatRuntimeEnvironment;
 
-// yarn hardhat --network local create-profile --accountid 2
+// yarn hardhat --network local update-profile --accountid 2 --nickname alice
 
-task("create-profile", "create-profile function")
+task("update-profile", "update-profile function")
 .addParam("accountid", "account id to collect ,from 2 to 4")
+.addParam("nickname", "new nickname")
 .setAction(async ({accountid}: {accountid : number}, hre) =>  {
   runtimeHRE = hre;
   const ethers = hre.ethers;
@@ -71,11 +72,11 @@ task("create-profile", "create-profile function")
   );
       
   const receipt = await waitForTx(
-      manager.connect(profileCreator).createProfile({
-        wallet: profileCreator.address,
-        nickName: 'user' + `${accountid}`,
-        imageURI: 'https://ipfs.io/ipfs/QmVnu7JQVoDRqSgHBzraYp7Hy78HwJtLFi6nUFCowTGdzp/' + `${accountid}` + '.png',
-      })
+      sbt.connect(profileCreator).updateProfile(
+        accountid,
+        'user' + `${accountid}`,
+        'https://ipfs.io/ipfs/QmVnu7JQVoDRqSgHBzraYp7Hy78HwJtLFi6nUFCowTGdzp/' + `${accountid}` + '.png',
+      )
   );
 
 

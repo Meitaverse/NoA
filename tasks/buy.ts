@@ -25,19 +25,24 @@ import {
   Template__factory,
   PublishModule__factory,
   Events__factory,
+  MarketPlace__factory,
 } from '../typechain';
 
 import { loadContract } from "./config";
 
 import { deployContract, waitForTx , ProtocolState, Error, findEvent} from './helpers/utils';
+import { ContractTransaction } from "ethers";
+import { market } from "../typechain/contracts";
 
 export let runtimeHRE: HardhatRuntimeEnvironment;
 
-// yarn hardhat --network local airdrop --nftid 1
+// yarn hardhat --network local buy --sbtid 3 --nftid 2 --price 120
 
-task("airdrop", "airdrop array of dNFTs to many users function")
-.addParam("nftid", "derivative nft id to collect")
-.setAction(async ({nftid}: {nftid: number}, hre) =>  {
+task("buy", "buy a dNFT to market place function")
+.addParam("sbtid", "soul bound token id ")
+.addParam("nftid", "nft id")
+.addParam("price", "buy price")
+.setAction(async ({sbtid, nftid, price}: {sbtid:number, nftid:number, price:number}, hre) =>  {
   runtimeHRE = hre;
   const ethers = hre.ethers;
   const accounts = await ethers.getSigners();
@@ -46,15 +51,13 @@ task("airdrop", "airdrop array of dNFTs to many users function")
   const user = accounts[2];
   const userTwo = accounts[3];
   const userThree = accounts[4];
-
-  const userAddress = user.address;
-  const userTwoAddress = userTwo.address;
-  const userThreeAddress = userThree.address;
+  const userFour = accounts[5];
 
   const managerImpl = await loadContract(hre, Manager__factory, "ManagerImpl");
   const manager = await loadContract(hre, Manager__factory, "Manager");
   const bankTreasury = await loadContract(hre, BankTreasury__factory, "BankTreasury");
   const sbt = await loadContract(hre, NFTDerivativeProtocolTokenV1__factory, "SBT");
+  const market = await loadContract(hre, MarketPlace__factory, "MarketPlace");
   const voucher = await loadContract(hre, Voucher__factory, "Voucher");
   const moduleGlobals = await loadContract(hre, ModuleGlobals__factory, "ModuleGlobals");
   const feeCollectModule = await loadContract(hre, FeeCollectModule__factory, "FeeCollectModule");
@@ -66,43 +69,75 @@ task("airdrop", "airdrop array of dNFTs to many users function")
   console.log('\t-- user: ', user.address);
   console.log('\t-- userTwo: ', userTwo.address);
   console.log('\t-- userThree: ', userThree.address);
+  console.log('\t-- userFour: ', userFour.address);
 
   console.log(
       "\t--- ModuleGlobals governance address: ", await moduleGlobals.getGovernance()
     );
-    let ownerid = 2;
-    let owner = user;
-    console.log('\n\t-- owner: ', owner.address);
+
+    let buyer = accounts[sbtid];
+    console.log('\n\t-- buyer: ', buyer.address);
+    let balance = await sbt["balanceOf(uint256)"](sbtid);
+
+    console.log('\t--- balance of buyer: ', balance.toNumber());
 
 
-    const FIRST_PUBLISH_ID =1; 
+    const FIRST_PROJECT_ID = 1; 
    
     console.log(
-      "\n\t--- Airdrop to [userTwo(3), userThree(4)] ..."
+      "\n\t--- buy  ..."
     );
 
-    const receipt =  await waitForTx(
-      manager.connect(owner).airdrop({
-        publishId: FIRST_PUBLISH_ID,
-        ownershipSoulBoundTokenId: ownerid,
-        toSoulBoundTokenIds: [3, 4], //userTwo, userThree
-        tokenId: nftid,
-        values: [1, 2],
-      })
+    let derivativeNFT: DerivativeNFT;
+    derivativeNFT = DerivativeNFT__factory.connect(
+      await manager.connect(buyer).getDerivativeNFT(FIRST_PROJECT_ID),
+      user
     );
 
-    //
-    let eventsLib = await new Events__factory(deployer).deploy();
-    // console.log('\n\t--- eventsLib address: ', eventsLib.address);
+    let freeBalance =  await bankTreasury['balanceOf(address,uint256)'](sbt.address, sbtid)
+   
+    if (freeBalance.eq(0)) {
 
-    const event = findEvent(receipt, 'DerivativeNFTAirdroped', eventsLib);
-    const newTokenIds = event.args.newTokenIds;
+        // @notice MUST deposit SBT value into bank treasury before buy
+        await bankTreasury.connect(buyer).deposit(
+          sbtid,
+          sbt.address,
+          price
+        );
+
+        freeBalance =  await bankTreasury['balanceOf(address,uint256)'](sbt.address, sbtid)
+    }
+   
     console.log(
-      "\n\t--- airdrop success! Event DerivativeNFTAirdroped emited ..."
+      "\n\t--- freeBalance of buyer:", freeBalance
+    );
+
+    const buyPrice = await market.getBuyPrice(derivativeNFT.address, nftid);
+    
+    console.log(
+      "\n\t--- buyPrice.seller: ", buyPrice.seller
     );
     
     console.log(
-      "\t\t--- newTokenIds:", newTokenIds
+      "\t--- buyPrice.salePrice: ", buyPrice.salePrice
     );
+    console.log(
+      "\t--- buyPrice.units: ", buyPrice.units
+    );
+
+    console.log(
+      "\t--- buyPrice.amount: ", buyPrice.amount
+    );
+
+  //TODO 
+  const receipt = await waitForTx(
+      market.connect(buyer).buy(
+        sbtid,
+        derivativeNFT.address, 
+        nftid, 
+        price,
+        0
+  ));
+  
 
 });

@@ -192,6 +192,7 @@ library DataTypes {
         uint256 newTokenId;
         address derivativeNFT;
         address sbt;
+        address treasury;
     }    
        
 
