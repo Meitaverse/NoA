@@ -43,9 +43,6 @@ type Account @entity {
   "Bank treasury On Received SBT Value history by this account"
   sbtValueReceivedHistories: [SBTValueReceivedHistory!]! @derivedFrom(field: "from")
 
-  "All Voucher mint history by this account"
-  voucherMintHistories: [NFTVoucherHistory!]! @derivedFrom(field: "account")
-
   "SBT Approval Values granted by this account"
   sbtApprovalValues: [SBTApprovalValue!]! @derivedFrom(field: "owner")
 
@@ -514,17 +511,6 @@ type ExecuteTransactionERC3525History @entity {
   timestamp: BigInt!
 }
 
-# Voucher dNFT
-type NFTVoucherHistory @entity {
-  id: ID!
-  soulBoundTokenId: BigInt!
-  account: Account!
-  vouchType: Int!
-  tokenId: BigInt!
-  sbtValue: BigInt!
-  generateTimestamp: BigInt!
-}
-
 #  Voucher Asset
 type VoucherAsset @entity {
   id: ID!
@@ -536,12 +522,11 @@ type VoucherAsset @entity {
 
 type VoucherRecord @entity {
   id: ID!
-  vouchType: Int!
-  tokenId: BigInt!
-  etherValue: BigInt!
-  sbtValue: BigInt!
+  creator: Account!
+  totalAmount: BigInt!
+  to: [Bytes!]!
+  amounts: [BigInt!]!
   generateTimestamp: BigInt!
-  endTimestamp: BigInt!
 }
 
 # ProfileCreator Whitelisted Record

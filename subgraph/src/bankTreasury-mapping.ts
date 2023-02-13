@@ -215,7 +215,7 @@ export function handleVoucherDeposited(event: VoucherDeposited): void {
         history.operator = event.params.operator
         history.tokenId = event.params.tokenId
         history.sbtValue = event.params.sbtValue
-        history.timestamp = event.params.timestamp
+        history.timestamp = event.block.timestamp
         history.save()
     } 
 }

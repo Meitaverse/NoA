@@ -114,7 +114,8 @@ contract Manager is
         returns (uint256) 
     {
         address _sbt = IModuleGlobals(MODULE_GLOBALS).getSBT();
-        if (!IModuleGlobals(MODULE_GLOBALS).isWhitelistProfileCreator(vars.wallet)) revert Errors.ProfileCreatorNotWhitelisted();
+        if (!IModuleGlobals(MODULE_GLOBALS).isWhitelistProfileCreator(vars.wallet)) 
+           revert Errors.ProfileCreatorNotWhitelisted();
         if (_sbt == address(0)) revert Errors.SBTNotSet();
         _validateNickName(vars.nickName);
 

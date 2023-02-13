@@ -212,15 +212,15 @@ export function handlePublishPrepared(event: PublishPrepared): void {
                     
                     let fromDNFTs: Array<string> = [];
 
-                        for (let index = 0; index <  result.value.fromTokenIds.length; index++) {
-                            let tokenId = result.value.fromTokenIds[index]
-                            let dnft = loadOrCreateDNFT(Address.fromString(project.derivativeNFT), tokenId, event);
-                            if (dnft) {
-                                fromDNFTs.push(dnft.id)
-                            }
+                    for (let index = 0; index <  result.value.fromTokenIds.length; index++) {
+                        let tokenId = result.value.fromTokenIds[index]
+                        let dnft = loadOrCreateDNFT(Address.fromString(project.derivativeNFT), tokenId, event);
+                        if (dnft) {
+                            fromDNFTs.push(dnft.id)
                         }
-                        publication.fromTokenIds = fromDNFTs
-                    
+                    }
+                    publication.fromTokenIds = fromDNFTs
+                
                 } 
                 let _id = getLogId(event) + "-" + event.params.publishId.toString()
                 let feesHistory = PreparePublishFeesHistory.load(_id) || new PreparePublishFeesHistory(_id)

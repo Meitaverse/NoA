@@ -232,15 +232,6 @@ export class Account extends Entity {
     this.set("sbtValueReceivedHistories", Value.fromStringArray(value));
   }
 
-  get voucherMintHistories(): Array<string> {
-    let value = this.get("voucherMintHistories");
-    return value!.toStringArray();
-  }
-
-  set voucherMintHistories(value: Array<string>) {
-    this.set("voucherMintHistories", Value.fromStringArray(value));
-  }
-
   get sbtApprovalValues(): Array<string> {
     let value = this.get("sbtApprovalValues");
     return value!.toStringArray();
@@ -2409,94 +2400,6 @@ export class ExecuteTransactionERC3525History extends Entity {
   }
 }
 
-export class NFTVoucherHistory extends Entity {
-  constructor(id: string) {
-    super();
-    this.set("id", Value.fromString(id));
-  }
-
-  save(): void {
-    let id = this.get("id");
-    assert(id != null, "Cannot save NFTVoucherHistory entity without an ID");
-    if (id) {
-      assert(
-        id.kind == ValueKind.STRING,
-        `Entities of type NFTVoucherHistory must have an ID of type String but the id '${id.displayData()}' is of type ${id.displayKind()}`
-      );
-      store.set("NFTVoucherHistory", id.toString(), this);
-    }
-  }
-
-  static load(id: string): NFTVoucherHistory | null {
-    return changetype<NFTVoucherHistory | null>(
-      store.get("NFTVoucherHistory", id)
-    );
-  }
-
-  get id(): string {
-    let value = this.get("id");
-    return value!.toString();
-  }
-
-  set id(value: string) {
-    this.set("id", Value.fromString(value));
-  }
-
-  get soulBoundTokenId(): BigInt {
-    let value = this.get("soulBoundTokenId");
-    return value!.toBigInt();
-  }
-
-  set soulBoundTokenId(value: BigInt) {
-    this.set("soulBoundTokenId", Value.fromBigInt(value));
-  }
-
-  get account(): string {
-    let value = this.get("account");
-    return value!.toString();
-  }
-
-  set account(value: string) {
-    this.set("account", Value.fromString(value));
-  }
-
-  get vouchType(): i32 {
-    let value = this.get("vouchType");
-    return value!.toI32();
-  }
-
-  set vouchType(value: i32) {
-    this.set("vouchType", Value.fromI32(value));
-  }
-
-  get tokenId(): BigInt {
-    let value = this.get("tokenId");
-    return value!.toBigInt();
-  }
-
-  set tokenId(value: BigInt) {
-    this.set("tokenId", Value.fromBigInt(value));
-  }
-
-  get sbtValue(): BigInt {
-    let value = this.get("sbtValue");
-    return value!.toBigInt();
-  }
-
-  set sbtValue(value: BigInt) {
-    this.set("sbtValue", Value.fromBigInt(value));
-  }
-
-  get generateTimestamp(): BigInt {
-    let value = this.get("generateTimestamp");
-    return value!.toBigInt();
-  }
-
-  set generateTimestamp(value: BigInt) {
-    this.set("generateTimestamp", Value.fromBigInt(value));
-  }
-}
-
 export class VoucherAsset extends Entity {
   constructor(id: string) {
     super();
@@ -2596,40 +2499,40 @@ export class VoucherRecord extends Entity {
     this.set("id", Value.fromString(value));
   }
 
-  get vouchType(): i32 {
-    let value = this.get("vouchType");
-    return value!.toI32();
+  get creator(): string {
+    let value = this.get("creator");
+    return value!.toString();
   }
 
-  set vouchType(value: i32) {
-    this.set("vouchType", Value.fromI32(value));
+  set creator(value: string) {
+    this.set("creator", Value.fromString(value));
   }
 
-  get tokenId(): BigInt {
-    let value = this.get("tokenId");
+  get totalAmount(): BigInt {
+    let value = this.get("totalAmount");
     return value!.toBigInt();
   }
 
-  set tokenId(value: BigInt) {
-    this.set("tokenId", Value.fromBigInt(value));
+  set totalAmount(value: BigInt) {
+    this.set("totalAmount", Value.fromBigInt(value));
   }
 
-  get etherValue(): BigInt {
-    let value = this.get("etherValue");
-    return value!.toBigInt();
+  get to(): Array<Bytes> {
+    let value = this.get("to");
+    return value!.toBytesArray();
   }
 
-  set etherValue(value: BigInt) {
-    this.set("etherValue", Value.fromBigInt(value));
+  set to(value: Array<Bytes>) {
+    this.set("to", Value.fromBytesArray(value));
   }
 
-  get sbtValue(): BigInt {
-    let value = this.get("sbtValue");
-    return value!.toBigInt();
+  get amounts(): Array<BigInt> {
+    let value = this.get("amounts");
+    return value!.toBigIntArray();
   }
 
-  set sbtValue(value: BigInt) {
-    this.set("sbtValue", Value.fromBigInt(value));
+  set amounts(value: Array<BigInt>) {
+    this.set("amounts", Value.fromBigIntArray(value));
   }
 
   get generateTimestamp(): BigInt {
@@ -2639,15 +2542,6 @@ export class VoucherRecord extends Entity {
 
   set generateTimestamp(value: BigInt) {
     this.set("generateTimestamp", Value.fromBigInt(value));
-  }
-
-  get endTimestamp(): BigInt {
-    let value = this.get("endTimestamp");
-    return value!.toBigInt();
-  }
-
-  set endTimestamp(value: BigInt) {
-    this.set("endTimestamp", Value.fromBigInt(value));
   }
 }
 

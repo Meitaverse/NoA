@@ -54,13 +54,19 @@ import {
   MultirecipientFeeCollectModule__factory,
   MarketLogic,
   MarketLogic__factory,
+  FETH,
+  FETH__factory,
   MarketPlace,
   MarketPlace__factory,
-  SBTLogic__factory,
+  VoucherMarket,
+  VoucherMarket__factory,
   SBTMetadataDescriptor,
   SBTMetadataDescriptor__factory,
   Currency,
   Currency__factory,
+
+  RoyaltyRegistry,
+  RoyaltyRegistry__factory,
 } from '../typechain';
 
 import { ManagerLibraryAddresses } from '../typechain/factories/contracts/Manager__factory';
@@ -79,7 +85,6 @@ import {
 // } from '../typechain/Template';
 
 import { DataTypes } from '../typechain/contracts/modules/template/Template';
-import { NFTDerivativeProtocolTokenV1LibraryAddresses } from '../typechain/factories/contracts/NFTDerivativeProtocolTokenV1__factory';
 import { MarketPlaceLibraryAddresses } from '../typechain/factories/contracts/MarketPlace__factory';
 
 use(solidity);
@@ -145,7 +150,6 @@ export let timeLock: TimeLock;
 export let abiCoder: AbiCoder;
 export let mockModuleData: BytesLike;
 export let managerLibs: ManagerLibraryAddresses;
-export let sbtLibs: NFTDerivativeProtocolTokenV1LibraryAddresses;
 export let eventsLib: Events;
 export let moduleGlobals: ModuleGlobals;
 export let helper: Helper;
@@ -155,11 +159,17 @@ export let bankTreasuryContract: BankTreasury
 export let marketLibs:MarketPlaceLibraryAddresses
 export let marketPlaceImpl: MarketPlace
 export let marketPlaceContract: MarketPlace
+export let voucherMarketImpl: VoucherMarket
+export let voucherMarketContract: VoucherMarket
 export let sbtImpl: NFTDerivativeProtocolTokenV1;
 export let sbtContract: NFTDerivativeProtocolTokenV1;
 export let derivativeNFTImpl: DerivativeNFT;
 export let metadataDescriptor: DerivativeMetadataDescriptor;
 export let sbtMetadataDescriptor: SBTMetadataDescriptor;
+
+export let fethImpl: FETH
+export let feth: FETH;
+export let royaltyRegistry: RoyaltyRegistry;
 
 export let voucherImpl: Voucher;
 export let voucherContract: Voucher
@@ -283,27 +293,12 @@ before(async function () {
   
   console.log("manager.address: ", manager.address);
 
-  voucherImpl = await new Voucher__factory(deployer).deploy();
-  let initializeVoucherData = voucherImpl.interface.encodeFunctionData("initialize", [
-      "https://api.bitsoul/v1/metadata/",
-  ]);
-  const voucherProxy = await new ERC1967Proxy__factory(deployer).deploy(
-    voucherImpl.address,
-    initializeVoucherData
-  );
-  voucherContract = new Voucher__factory(deployer).attach(voucherProxy.address);
-  console.log("voucherContract.address: ", voucherContract.address);
-
   //SBT descriptor
   sbtMetadataDescriptor = await new SBTMetadataDescriptor__factory(deployer).deploy(
     manager.address
   );
-  
-  const sbtLogic = await new SBTLogic__factory(deployer).deploy();
-  sbtLibs = {
-    'contracts/libraries/SBTLogic.sol:SBTLogic': sbtLogic.address,
-  };
-  sbtImpl = await new NFTDerivativeProtocolTokenV1__factory(sbtLibs, deployer).deploy();
+
+  sbtImpl = await new NFTDerivativeProtocolTokenV1__factory(deployer).deploy();
   let initializeSBTData = sbtImpl.interface.encodeFunctionData("initialize", [
       SBT_NAME, 
       SBT_SYMBOL, 
@@ -315,8 +310,22 @@ before(async function () {
     sbtImpl.address,
     initializeSBTData
   );
-  sbtContract = new NFTDerivativeProtocolTokenV1__factory(sbtLibs, deployer).attach(sbtProxy.address);
+  sbtContract = new NFTDerivativeProtocolTokenV1__factory(deployer).attach(sbtProxy.address);
   console.log("sbtContract.address: ", sbtContract.address);
+
+
+  voucherImpl = await new Voucher__factory(deployer).deploy( sbtContract.address );
+  let initializeVoucherData = voucherImpl.interface.encodeFunctionData("initialize", [
+     "Voucher Bitsoul",
+     "Voucher"
+  ]);
+  const voucherProxy = await new ERC1967Proxy__factory(deployer).deploy(
+    voucherImpl.address,
+    initializeVoucherData
+  );
+  voucherContract = new Voucher__factory(deployer).attach(voucherProxy.address);
+  console.log("voucherContract.address: ", voucherContract.address);
+
 
   const governorImpl = await new GovernorContract__factory(deployer).deploy();
   let initializeDataGovrnor = governorImpl.interface.encodeFunctionData("initialize", [
@@ -411,6 +420,43 @@ before(async function () {
     moduleGlobals.address
   );
 
+  fethImpl = await new FETH__factory(deployer).deploy(
+    LOCKUP_DURATION
+  )
+
+  royaltyRegistry = await new RoyaltyRegistry__factory(deployer).deploy();
+
+  voucherMarketImpl = await new VoucherMarket__factory(deployer).deploy(
+    bankTreasuryContract.address,
+    fethImpl.address,
+    royaltyRegistry.address
+  );
+
+  let voucherMarketData= voucherMarketImpl.interface.encodeFunctionData("initialize", [
+    governanceAddress,
+  ]);
+
+  const voucherMarketProxy = await new ERC1967Proxy__factory(deployer).deploy(
+    voucherMarketImpl.address,
+    voucherMarketData
+  );
+  voucherMarketContract = new VoucherMarket__factory(deployer).attach(voucherMarketProxy.address);
+  console.log("voucherMarketContract.address: ", voucherMarketContract.address);
+  
+  //feth init
+
+  let fethData= fethImpl.interface.encodeFunctionData("initialize", [
+    voucherMarketContract.address,
+  ]);
+
+  const fethProxy = await new ERC1967Proxy__factory(deployer).deploy(
+    fethImpl.address,
+    fethData
+  );
+  feth = new FETH__factory(deployer).attach(fethProxy.address);
+  console.log("feth.address: ", feth.address);
+
+
   expect(bankTreasuryContract).to.not.be.undefined;
   expect(marketPlaceContract).to.not.be.undefined;
   expect(sbtContract).to.not.be.undefined;
@@ -423,6 +469,9 @@ before(async function () {
   expect(feeCollectModule).to.not.be.undefined;
   expect(publishModule).to.not.be.undefined;
   expect(moduleGlobals).to.not.be.undefined;
+  expect(feth).to.not.be.undefined;
+  expect(royaltyRegistry).to.not.be.undefined;
+  expect(voucherMarketContract).to.not.be.undefined;
 
 
   // Add to module whitelist
@@ -519,9 +568,6 @@ before(async function () {
   ).to.not.be.reverted;
 
 
-  await expect(voucherContract.connect(deployer).setGlobalModules(moduleGlobals.address)).to.not.be.reverted;
-  console.log('voucherContract setGlobalModules ok ');
-  
   await expect(voucherContract.connect(deployer).setUserAmountLimit(VOUCHER_AMOUNT_LIMIT)).to.not.be.reverted;
 
   await expect(manager.connect(governance).setState(ProtocolState.Unpaused)).to.not.be.reverted;

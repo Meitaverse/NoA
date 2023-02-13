@@ -128,6 +128,36 @@ export class BeaconUpgraded__Params {
   }
 }
 
+export class BurnSBT extends ethereum.Event {
+  get params(): BurnSBT__Params {
+    return new BurnSBT__Params(this);
+  }
+}
+
+export class BurnSBT__Params {
+  _event: BurnSBT;
+
+  constructor(event: BurnSBT) {
+    this._event = event;
+  }
+
+  get caller(): Address {
+    return this._event.parameters[0].value.toAddress();
+  }
+
+  get soulBoundTokenId(): BigInt {
+    return this._event.parameters[1].value.toBigInt();
+  }
+
+  get balance(): BigInt {
+    return this._event.parameters[2].value.toBigInt();
+  }
+
+  get timestamp(): BigInt {
+    return this._event.parameters[3].value.toBigInt();
+  }
+}
+
 export class Initialized extends ethereum.Event {
   get params(): Initialized__Params {
     return new Initialized__Params(this);
@@ -143,6 +173,66 @@ export class Initialized__Params {
 
   get version(): i32 {
     return this._event.parameters[0].value.toI32();
+  }
+}
+
+export class ProfileCreated extends ethereum.Event {
+  get params(): ProfileCreated__Params {
+    return new ProfileCreated__Params(this);
+  }
+}
+
+export class ProfileCreated__Params {
+  _event: ProfileCreated;
+
+  constructor(event: ProfileCreated) {
+    this._event = event;
+  }
+
+  get soulBoundTokenId(): BigInt {
+    return this._event.parameters[0].value.toBigInt();
+  }
+
+  get creator(): Address {
+    return this._event.parameters[1].value.toAddress();
+  }
+
+  get wallet(): Address {
+    return this._event.parameters[2].value.toAddress();
+  }
+
+  get nickName(): string {
+    return this._event.parameters[3].value.toString();
+  }
+
+  get imageURI(): string {
+    return this._event.parameters[4].value.toString();
+  }
+}
+
+export class ProfileUpdated extends ethereum.Event {
+  get params(): ProfileUpdated__Params {
+    return new ProfileUpdated__Params(this);
+  }
+}
+
+export class ProfileUpdated__Params {
+  _event: ProfileUpdated;
+
+  constructor(event: ProfileUpdated) {
+    this._event = event;
+  }
+
+  get soulBoundTokenId(): BigInt {
+    return this._event.parameters[0].value.toBigInt();
+  }
+
+  get nickName(): string {
+    return this._event.parameters[1].value.toString();
+  }
+
+  get imageURI(): string {
+    return this._event.parameters[2].value.toString();
   }
 }
 

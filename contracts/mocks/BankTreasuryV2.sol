@@ -2,6 +2,7 @@
 
 pragma solidity ^0.8.13;
 
+import "@openzeppelin/contracts-upgradeable/token/ERC1155/IERC1155Upgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/access/AccessControlUpgradeable.sol";
@@ -9,6 +10,7 @@ import "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
 import "@openzeppelin/contracts/utils/introspection/IERC165.sol";
 import "@solvprotocol/erc-3525/contracts/IERC3525Receiver.sol";
 import "@solvprotocol/erc-3525/contracts/IERC3525.sol";
+import {IERC1155CreatorCore} from "../creatorCore/IERC1155CreatorCore.sol";
 import "@openzeppelin/contracts-upgradeable/security/ReentrancyGuardUpgradeable.sol";
 import "@openzeppelin/contracts/utils/Address.sol";
 import "@openzeppelin/contracts/utils/math/Math.sol";
@@ -23,7 +25,6 @@ import {Events} from "../libraries/Events.sol";
 import {DataTypes} from '../libraries/DataTypes.sol';
 import {IBankTreasuryV2} from '../interfaces/IBankTreasuryV2.sol';
 import {IManager} from "../interfaces/IManager.sol";
-import {IVoucher} from "../interfaces/IVoucher.sol";
 import "../storage/BankTreasuryStorage.sol";
 import {INFTDerivativeProtocolTokenV1} from "../interfaces/INFTDerivativeProtocolTokenV1.sol";
 import {IModuleGlobals} from "../interfaces/IModuleGlobals.sol";
@@ -698,7 +699,7 @@ contract BankTreasuryV2 is
             erc20Amount
         );
     }
-
+       
     function depositFromVoucher(
         uint256 tokenId, 
         uint256 soulBoundTokenId
@@ -710,21 +711,29 @@ contract BankTreasuryV2 is
         _validateCallerIsSoulBoundTokenOwner(soulBoundTokenId);
 
         address _sbt = IModuleGlobals(MODULE_GLOBALS).getSBT();
+
         address _voucher = IModuleGlobals(MODULE_GLOBALS).getVoucher();
    
-        DataTypes.VoucherData memory voucherData = IVoucher(_voucher).getVoucherData(tokenId);
-        if (voucherData.tokenId == 0) revert Errors.VoucherNotExists();
-        if (voucherData.isUsed) revert Errors.VoucherIsUsed();
+        uint256 sbtValue = IERC1155Upgradeable(_voucher).balanceOf(msg.sender, tokenId);
+        if ( sbtValue == 0) {
+            revert Errors.VoucherIsZeroAmount();
+        }
 
         INFTDerivativeProtocolTokenV1(_sbt).transferValue(
             soulBoundTokenIdBankTreasury, 
             soulBoundTokenId, 
-            voucherData.sbtValue
+            sbtValue
         );
-        IVoucher(_voucher).depositFromVoucher(msg.sender, tokenId, soulBoundTokenId);
+        uint256[] memory tokenIds = new uint256[](1);
+        uint256[] memory amounts = new uint256[](1);
+        tokenIds[0] = tokenId;
+        amounts[0] = sbtValue;
+         //need approved first
+        IERC1155CreatorCore(_voucher).burn(msg.sender, tokenIds, amounts);
  
-        emit Events.VoucherDeposited(soulBoundTokenId, msg.sender, tokenId, voucherData.sbtValue, block.timestamp);
+        emit Events.VoucherDeposited(soulBoundTokenId, msg.sender, tokenId, sbtValue, block.timestamp);
     }
+
 
     function setExchangePrice(
         address currency,

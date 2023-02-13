@@ -58,7 +58,7 @@ const config: HardhatUserConfig = {
         settings: {
           optimizer: {
             enabled: true,
-            runs: 200,
+            runs: 100,
             details: {
               yul: true,
             },
@@ -122,10 +122,13 @@ const config: HardhatUserConfig = {
     strict: true,
     only: [
       ':ModuleGlobals$', 
+      ':FETH$', 
       ':Voucher$', 
+      ':VoucherMarket$', 
       ':MarketPlace$', 
       ':Manager$',
       ':BankTreasury$',
+      ':RoyaltyRegistry$',
       ':DerivativeNFT$', 
       ':NFTDerivativeProtocolTokenV1$', 
       'GovernorContract$'],

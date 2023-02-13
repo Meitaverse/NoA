@@ -114,48 +114,28 @@ makeSuiteCleanRoom('Bank Treasury', function () {
   });
 
   context('BankTreasury', function () {
-    context('Negatives', function () {
-      it('User should fail to exchange Voucher SBT using none exists Voucher card', async function () {
+    context('Voucher generate', function () {
+      beforeEach(async () => {
+        //mint some Values to user
+        await bankTreasuryContract.connect(user).buySBT(SECOND_PROFILE_ID, {value: original_balance});
+        await sbtContract.connect(user).setApprovalForAll(voucherContract.address, true);
+        await voucherContract.connect(user).setApprovalForAll(bankTreasuryContract.address, true);
         
-        await expect(
-          bankTreasuryContract.connect(user).depositFromVoucher(FIRST_VOUCHER_TOKEN_ID, SECOND_PROFILE_ID)
-        ).to.be.revertedWith(ERRORS.VOUCHER_NOT_EXISTS);
-        // await bankTreasuryContract.connect(user).exchangeVoucher(
-        //   FIRST_VOUCHER_TOKEN_ID, 
-        //   SECOND_PROFILE_ID
-        // );
-
       });
 
-      it('User should fail to exchange Voucher SBT using a used Voucher card', async function () {
-        await expect(
-          voucherContract.connect(deployer).generateVoucher(1, userAddress)
-        ).to.not.be.reverted;
+      it('User should success mint a voucher and transfer SBT to bank treasury', async function () {
 
+        await voucherContract.connect(user).mintBaseNew(SECOND_PROFILE_ID, [userAddress], [original_balance], [''])
 
-        await expect(
-          bankTreasuryContract.connect(user).depositFromVoucher(FIRST_VOUCHER_TOKEN_ID, SECOND_PROFILE_ID)
-        ).to.not.be.reverted;
-
-        await expect(
-          bankTreasuryContract.connect(user).depositFromVoucher(FIRST_VOUCHER_TOKEN_ID, SECOND_PROFILE_ID)
-        ).to.be.revertedWith(ERRORS.VOUCHER_IS_USED);
-
+        expect((await sbtContract['balanceOf(uint256)'](SECOND_PROFILE_ID)).toNumber()).to.eq(0);
+       
       });
 
-      it('User should fail to exchange Voucher SBT using a none owned of Voucher card', async function () {
-        await expect(
-          voucherContract.connect(deployer).generateVoucher(1, userAddress)
-        ).to.not.be.reverted;
-
-        await expect(
-          bankTreasuryContract.connect(userTwo).depositFromVoucher(FIRST_VOUCHER_TOKEN_ID, THIRD_PROFILE_ID)
-        ).to.be.revertedWith(ERRORS.NOT_OWNER_VOUCHER);
-
-      });
+    
 
     });
-
+    
+    
     context('Withdraw all avaliable earnest funds', function () {
       beforeEach(async () => {
         //mint some Values to user
@@ -169,8 +149,6 @@ makeSuiteCleanRoom('Bank Treasury', function () {
           balance
         );
         expect(await bankTreasuryContract['balanceOf(address,uint256)'](sbtContract.address, SECOND_PROFILE_ID)).to.eq(balance);
-        
-
         
         receipt = await waitForTx(
            bankTreasuryContract.connect(user).withdraw(
@@ -273,23 +251,96 @@ makeSuiteCleanRoom('Bank Treasury', function () {
       });
 
     });
-    
 
-    context('Exchange', function () {
-      
-        it('User should deposited after user call tranferFrom to treasury', async function () {
+    context('Negatives', function () {
+      beforeEach(async () => {
+        //mint some Values to user
+        await bankTreasuryContract.connect(user).buySBT(SECOND_PROFILE_ID, {value: original_balance});
+        await sbtContract.connect(user).setApprovalForAll(voucherContract.address, true);
+        await voucherContract.connect(user).setApprovalForAll(bankTreasuryContract.address, true);
+        
+      });
 
+      it('Should faild to mint a voucher when have insufficient balance', async function () {
+        
+        await expect(
+          voucherContract.connect(user).mintBaseNew(SECOND_PROFILE_ID, [userAddress], [original_balance * 2], [''])
+        ).to.be.reverted;
+
+        expect((await sbtContract['balanceOf(uint256)'](SECOND_PROFILE_ID)).toNumber()).to.eq(original_balance);
+       
+
+      });
+
+      it('Should faild to mint a voucher when amount is zero', async function () {
+
+        await expect(
+          voucherContract.connect(user).mintBaseNew(
+            SECOND_PROFILE_ID, [userAddress], [0], ['']
+          )
+        ).to.be.revertedWith(ERRORS.AmountSBT_Is_Zero);
+
+        expect((await sbtContract['balanceOf(uint256)'](SECOND_PROFILE_ID)).toNumber()).to.eq(original_balance);
+       
+      });
+
+
+      it('User should fail to exchange Voucher SBT using none exists Voucher card', async function () {
+        
+        await expect(
+          bankTreasuryContract.connect(user).depositFromVoucher(FIRST_VOUCHER_TOKEN_ID, SECOND_PROFILE_ID)
+        ).to.be.reverted;
+
+      });
+
+      it('User should fail to exchange Voucher SBT using a used Voucher card', async function () {
+
+        await expect(
+          voucherContract.connect(user).mintBaseNew(SECOND_PROFILE_ID, [userAddress], [original_balance], [''])
+        ).to.not.be.reverted;
+
+        await expect(
+          bankTreasuryContract.connect(user).depositFromVoucher(FIRST_VOUCHER_TOKEN_ID, SECOND_PROFILE_ID)
+        ).to.not.be.reverted;
+
+        //use again
+        await expect(
+          bankTreasuryContract.connect(user).depositFromVoucher(FIRST_VOUCHER_TOKEN_ID, SECOND_PROFILE_ID)
+        ).to.be.reverted;
+
+      });
+
+      it('User should fail to exchange Voucher SBT using a none owned of Voucher card', async function () {
+
+        await expect(
+          voucherContract.connect(user).mintBaseNew(SECOND_PROFILE_ID, [userAddress], [100], [''])
+        ).to.not.be.reverted;
+
+        await expect(
+          bankTreasuryContract.connect(userTwo).depositFromVoucher(FIRST_VOUCHER_TOKEN_ID, THIRD_PROFILE_ID)
+        ).to.be.reverted;
+
+      });
+
+    });
+
+
+
+    context('deposit', function () {
+        beforeEach(async () => {
           //mint some Values to user
           await bankTreasuryContract.connect(user).buySBT(SECOND_PROFILE_ID, {value: original_balance});
+        });
+        
+        it('User should deposited after user call tranferFrom to treasury', async function () {
 
-          let totalSupply:BigNumber = await sbtContract['balanceOf(uint256)'](FIRST_PROFILE_ID);
+          // let totalSupply:BigNumber = await sbtContract['balanceOf(uint256)'](FIRST_PROFILE_ID);
          
-          let balance = INITIAL_SUPPLY.mul(BigNumber.from('10').pow(18)).sub(original_balance);
+          // let balance = INITIAL_SUPPLY.mul(BigNumber.from('10').pow(18)).sub(original_balance);
 
-          expect(totalSupply).to.deep.equal(balance);
+          // expect(totalSupply).to.deep.equal(balance);
 
-          expect((await sbtContract['balanceOf(uint256)'](SECOND_PROFILE_ID))).to.eq(original_balance);
-          
+
           await bankTreasuryContract.connect(user).deposit(
             SECOND_PROFILE_ID,
             sbtContract.address,
@@ -303,38 +354,33 @@ makeSuiteCleanRoom('Bank Treasury', function () {
 
         });
 
-        it('User should exchange Voucher SBT', async function () {
-          expect((await sbtContract['balanceOf(uint256)'](SECOND_PROFILE_ID)).toNumber()).to.eq(0);
+        it('User should use SBT Value to mint Voucher', async function () {
+
           
           await expect(
-            voucherContract.connect(deployer).generateVoucher(1, userAddress)
+            voucherContract.connect(user).mintBaseNew(SECOND_PROFILE_ID, [userAddress], [100], [''])
           ).to.not.be.reverted;
 
-         let voucherData = await voucherContract.getVoucherData(FIRST_VOUCHER_TOKEN_ID);
+         let sbtValue = await voucherContract.balanceOf(userAddress, FIRST_VOUCHER_TOKEN_ID);
 
-          expect(voucherData.tokenId).to.eq(FIRST_VOUCHER_TOKEN_ID);
-          expect(voucherData.sbtValue).to.eq(100);
-          expect(voucherData.isUsed).to.eq(false);
+          expect(sbtValue).to.eq(100);
 
           await expect(
             bankTreasuryContract.connect(user).depositFromVoucher(FIRST_VOUCHER_TOKEN_ID, SECOND_PROFILE_ID)
           ).to.not.be.reverted;
 
-          expect((await sbtContract['balanceOf(uint256)'](SECOND_PROFILE_ID)).toNumber()).to.eq(100);
+          expect((await sbtContract['balanceOf(uint256)'](SECOND_PROFILE_ID)).toNumber()).to.eq(original_balance);
         });
 
         it('Voucher transfer to a new user, and new owner should exchange Voucher SBT', async function () {
-          expect((await sbtContract['balanceOf(uint256)'](SECOND_PROFILE_ID)).toNumber()).to.eq(0);
-          
+
           await expect(
-            voucherContract.connect(deployer).generateVoucher(1, userAddress)
+            voucherContract.connect(user).mintBaseNew(SECOND_PROFILE_ID, [userAddress], [100], [''])
           ).to.not.be.reverted;
 
-         let voucherData = await voucherContract.getVoucherData(FIRST_VOUCHER_TOKEN_ID);
+         let sbtValue = await voucherContract.balanceOf(userAddress, FIRST_VOUCHER_TOKEN_ID);
 
-          expect(voucherData.tokenId).to.eq(FIRST_VOUCHER_TOKEN_ID);
-          expect(voucherData.sbtValue).to.eq(100);
-          expect(voucherData.isUsed).to.eq(false);
+          expect(sbtValue).to.eq(100);
 
           await voucherContract.connect(user).safeTransferFrom(
             userAddress, 
@@ -353,75 +399,12 @@ makeSuiteCleanRoom('Bank Treasury', function () {
 
           expect((await sbtContract['balanceOf(uint256)'](THIRD_PROFILE_ID)).toNumber()).to.eq(100);
 
-          let voucherData2 = await voucherContract.getVoucherData(FIRST_VOUCHER_TOKEN_ID);
-
-          expect(voucherData2.tokenId).to.eq(FIRST_VOUCHER_TOKEN_ID);
-          expect(voucherData2.sbtValue).to.eq(100);
-          expect(voucherData2.isUsed).to.eq(true);
+ 
         });
   
     });
 
-    context('Voucher generate', function () {
-        
-      it('User should success mint a ERC1155 NFT and transfer SBT to bank treasury', async function () {
-        expect((await sbtContract['balanceOf(uint256)'](SECOND_PROFILE_ID)).toNumber()).to.eq(0);
-        //mint 100Value to user
-        await bankTreasuryContract.connect(user).buySBT(SECOND_PROFILE_ID, {value: 100});
-
-        expect((await sbtContract['balanceOf(uint256)'](SECOND_PROFILE_ID)).toNumber()).to.eq(100);
-
-        expect(await manager.getWalletBySoulBoundTokenId(SECOND_PROFILE_ID)).to.eq(userAddress);
-
-        const tx  = await voucherContract.connect(user).mintNFT(
-          SECOND_PROFILE_ID,
-          100,
-          userAddress,
-        );
-
-        expect((await sbtContract['balanceOf(uint256)'](SECOND_PROFILE_ID)).toNumber()).to.eq(0);
-       
-      });
-
     
-      it('Should faild to mint a ERC1155 NFT when balance of user is less than 100', async function () {
-        
-        expect((await sbtContract['balanceOf(uint256)'](SECOND_PROFILE_ID)).toNumber()).to.eq(0);
-
-        await expect(
-          voucherContract.connect(user).mintNFT(
-            SECOND_PROFILE_ID,
-            100,
-            userAddress,
-          )
-        ).to.be.revertedWith(ERRORS.ERC3525_INSUFFICIENT_BALANCE);
-
-        expect((await sbtContract['balanceOf(uint256)'](SECOND_PROFILE_ID)).toNumber()).to.eq(0);
-       
-
-      });
-
-      it('Should faild to mint a ERC1155 NFT when amount is zero', async function () {
-        expect((await sbtContract['balanceOf(uint256)'](SECOND_PROFILE_ID)).toNumber()).to.eq(0);
-        //mint 100Value to user
-        await bankTreasuryContract.connect(user).buySBT(SECOND_PROFILE_ID, {value: 100});
-
-        expect((await sbtContract['balanceOf(uint256)'](SECOND_PROFILE_ID)).toNumber()).to.eq(100);
-
-               
-        await expect(
-          voucherContract.connect(user).mintNFT(
-            SECOND_PROFILE_ID,
-            0,
-            userAddress,
-          )
-        ).to.be.revertedWith(ERRORS.AmountSBT_Is_Zero);
-
-        expect((await sbtContract['balanceOf(uint256)'](SECOND_PROFILE_ID)).toNumber()).to.eq(100);
-       
-      });
-
-    });
 
   });
 

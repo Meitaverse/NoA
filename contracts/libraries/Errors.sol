@@ -128,6 +128,7 @@ library Errors {
   error InvidVoucherParValueType();
   error VoucherNotExists();
   error VoucherIsUsed();
+  error VoucherIsZeroAmount();
   error VoucherExpired();
   error NotOwnerVoucher();
   error ToWalletIsZero();
@@ -143,7 +144,6 @@ library Errors {
   error InvalidRecipientSplits();
   error TooManyRecipients();
 
-  error AmountLimit();
   error AmountOnlyIncrease();
   error InvalidSale();
   error OnlySeller();
@@ -218,6 +218,7 @@ library Errors {
   error Must_Lockup_Non_Zero_Amount();
   error Must_Deposit_Non_Zero_Amount();
   error Must_Escrow_Non_Zero_Amount();
+  error Only_BITSOUL_Voucher_Allowed();
   error Only_BITSOUL_Market_Allowed();
   error Only_Fee_Modules_Allowed();
   error Expiration_Too_Far_In_Future();

@@ -116,36 +116,6 @@ export class BalanceUnlocked__Params {
   }
 }
 
-export class BurnSBT extends ethereum.Event {
-  get params(): BurnSBT__Params {
-    return new BurnSBT__Params(this);
-  }
-}
-
-export class BurnSBT__Params {
-  _event: BurnSBT;
-
-  constructor(event: BurnSBT) {
-    this._event = event;
-  }
-
-  get caller(): Address {
-    return this._event.parameters[0].value.toAddress();
-  }
-
-  get soulBoundTokenId(): BigInt {
-    return this._event.parameters[1].value.toBigInt();
-  }
-
-  get balance(): BigInt {
-    return this._event.parameters[2].value.toBigInt();
-  }
-
-  get timestamp(): BigInt {
-    return this._event.parameters[3].value.toBigInt();
-  }
-}
-
 export class BuyPriceAccepted extends ethereum.Event {
   get params(): BuyPriceAccepted__Params {
     return new BuyPriceAccepted__Params(this);
@@ -996,44 +966,6 @@ export class FeeModuleBaseConstructed__Params {
   }
 }
 
-export class GenerateVoucher extends ethereum.Event {
-  get params(): GenerateVoucher__Params {
-    return new GenerateVoucher__Params(this);
-  }
-}
-
-export class GenerateVoucher__Params {
-  _event: GenerateVoucher;
-
-  constructor(event: GenerateVoucher) {
-    this._event = event;
-  }
-
-  get vouchType(): i32 {
-    return this._event.parameters[0].value.toI32();
-  }
-
-  get tokenId(): BigInt {
-    return this._event.parameters[1].value.toBigInt();
-  }
-
-  get etherValue(): BigInt {
-    return this._event.parameters[2].value.toBigInt();
-  }
-
-  get sbtValue(): BigInt {
-    return this._event.parameters[3].value.toBigInt();
-  }
-
-  get generateTimestamp(): BigInt {
-    return this._event.parameters[4].value.toBigInt();
-  }
-
-  get endTimestamp(): BigInt {
-    return this._event.parameters[5].value.toBigInt();
-  }
-}
-
 export class GlobalModulesSet extends ethereum.Event {
   get params(): GlobalModulesSet__Params {
     return new GlobalModulesSet__Params(this);
@@ -1279,20 +1211,16 @@ export class MintNFTVoucher__Params {
     return this._event.parameters[1].value.toAddress();
   }
 
-  get vouchType(): i32 {
-    return this._event.parameters[2].value.toI32();
-  }
-
   get tokenId(): BigInt {
-    return this._event.parameters[3].value.toBigInt();
+    return this._event.parameters[2].value.toBigInt();
   }
 
   get sbtValue(): BigInt {
-    return this._event.parameters[4].value.toBigInt();
+    return this._event.parameters[3].value.toBigInt();
   }
 
   get generateTimestamp(): BigInt {
-    return this._event.parameters[5].value.toBigInt();
+    return this._event.parameters[4].value.toBigInt();
   }
 }
 
@@ -1720,40 +1648,6 @@ export class PermanentURI__Params {
   }
 }
 
-export class ProfileCreated extends ethereum.Event {
-  get params(): ProfileCreated__Params {
-    return new ProfileCreated__Params(this);
-  }
-}
-
-export class ProfileCreated__Params {
-  _event: ProfileCreated;
-
-  constructor(event: ProfileCreated) {
-    this._event = event;
-  }
-
-  get soulBoundTokenId(): BigInt {
-    return this._event.parameters[0].value.toBigInt();
-  }
-
-  get creator(): Address {
-    return this._event.parameters[1].value.toAddress();
-  }
-
-  get wallet(): Address {
-    return this._event.parameters[2].value.toAddress();
-  }
-
-  get nickName(): string {
-    return this._event.parameters[3].value.toString();
-  }
-
-  get imageURI(): string {
-    return this._event.parameters[4].value.toString();
-  }
-}
-
 export class ProfileCreatorWhitelisted extends ethereum.Event {
   get params(): ProfileCreatorWhitelisted__Params {
     return new ProfileCreatorWhitelisted__Params(this);
@@ -1781,32 +1675,6 @@ export class ProfileCreatorWhitelisted__Params {
 
   get timestamp(): BigInt {
     return this._event.parameters[3].value.toBigInt();
-  }
-}
-
-export class ProfileUpdated extends ethereum.Event {
-  get params(): ProfileUpdated__Params {
-    return new ProfileUpdated__Params(this);
-  }
-}
-
-export class ProfileUpdated__Params {
-  _event: ProfileUpdated;
-
-  constructor(event: ProfileUpdated) {
-    this._event = event;
-  }
-
-  get soulBoundTokenId(): BigInt {
-    return this._event.parameters[0].value.toBigInt();
-  }
-
-  get nickName(): string {
-    return this._event.parameters[1].value.toString();
-  }
-
-  get imageURI(): string {
-    return this._event.parameters[2].value.toString();
   }
 }
 

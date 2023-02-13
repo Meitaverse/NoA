@@ -8,9 +8,7 @@ import "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
 import "@solvprotocol/erc-3525/contracts/ERC3525Upgradeable.sol";
 
 import {Errors} from "./libraries/Errors.sol";
-import {Events} from "./libraries/Events.sol";
 import './libraries/Constants.sol';
-import {SBTLogic} from './libraries/SBTLogic.sol';
 import {IManager} from "./interfaces/IManager.sol";
 import {ERC3525Votes} from "./extensions/ERC3525Votes.sol";
 import "./storage/SBTStorage.sol";
@@ -33,6 +31,43 @@ contract NFTDerivativeProtocolTokenV1 is
     bytes32 public constant TRANSFER_VALUE_ROLE = keccak256("TRANSFER_VALUE_ROLE");
     bytes32 public constant UPGRADER_ROLE = keccak256("UPGRADER_ROLE");
 
+    /**
+     * @dev Emitted when a profile is created.
+     *
+     * @param soulBoundTokenId The newly created profile's token ID.
+     * @param creator The profile creator, who created the token with the given profile ID.
+     * @param wallet The address receiving the profile with the given profile ID.
+     * @param nickName The nickName set for the profile.
+     * @param imageURI The image uri set for the profile.
+     */
+    event ProfileCreated(
+        uint256 indexed soulBoundTokenId,
+        address indexed creator,
+        address indexed wallet,
+        string nickName,
+        string imageURI
+    );
+
+    event ProfileUpdated(
+        uint256 indexed soulBoundTokenId,
+        string nickName,
+        string imageURI
+    );
+
+    /**
+     * @dev Emitted when a SBT Id is burned. The balance of this SBT Id will tranfer to bank treasury before burned.
+     * only manager can call
+     * @param caller The caller who burn SBT Id.
+     * @param soulBoundTokenId The SBT ID.
+     * @param balance The balance of SBT Id.
+     * @param timestamp The current block timestamp.
+     */
+    event BurnSBT(
+        address indexed caller,
+        uint256 indexed soulBoundTokenId, 
+        uint256 indexed balance, 
+        uint256 timestamp
+    );
     //===== Modifiers =====//
 
     /**
@@ -92,13 +127,20 @@ contract NFTDerivativeProtocolTokenV1 is
         //create profile for bankTreasury, tokenId is 1, not vote power
         uint256 tokenId_ = ERC3525Upgradeable._mint(_banktreasury, 1, initialSupply * 1e18);
 
-        SBTLogic.createProfile(
+        if (tokenId_ == 0) revert Errors.TokenIdIsZero();
+        
+        _sbtDetails[tokenId_] = DataTypes.SoulBoundTokenDetail({
+            nickName: "Bank Treasury",
+            imageURI: "",
+            locked: true
+        });
+
+        emit ProfileCreated(
             tokenId_,
             _msgSender(),
             _banktreasury,    
             "Bank Treasury",
-            "",
-            _sbtDetails
+            ""
         );
     }
     
@@ -118,13 +160,22 @@ contract NFTDerivativeProtocolTokenV1 is
         
         uint256 tokenId_ = _mint(vars.wallet, 1, 0);
         
-        SBTLogic.createProfile(
+        if (tokenId_ == 0) revert Errors.TokenIdIsZero();
+        
+        _sbtDetails[tokenId_] = DataTypes.SoulBoundTokenDetail({
+            nickName: vars.nickName,
+            imageURI: vars.imageURI,
+            locked: true
+        });
+
+        // this.setApprovalForAll(_banktreasury, true);
+
+        emit ProfileCreated(
             tokenId_,
             creator,
-            vars.wallet,    
+            vars.wallet,
             vars.nickName,
-            vars.imageURI,
-            _sbtDetails
+            vars.imageURI
         );
 
         return tokenId_;
@@ -140,36 +191,24 @@ contract NFTDerivativeProtocolTokenV1 is
         if (msg.sender != ownerOf(soulBoundTokenId)) 
             revert Errors.NotOwner();
 
-        SBTLogic.updateProfile(
-            soulBoundTokenId,   
+        if (soulBoundTokenId == 0) revert Errors.TokenIdIsZero();
+        
+        _sbtDetails[soulBoundTokenId] = DataTypes.SoulBoundTokenDetail({
+            nickName: nickName,
+            imageURI: imageURI,
+            locked: true
+        });
+
+        emit ProfileUpdated(
+            soulBoundTokenId,
             nickName,
-            imageURI,
-            _sbtDetails
-        );
+            imageURI
+        );        
     }
 
     function getProfileDetail(uint256 soulBoundTokenId) external view returns (DataTypes.SoulBoundTokenDetail memory){
         return _sbtDetails[soulBoundTokenId];
     }
-
-/*
-    function mintValue(
-        uint256 soulBoundTokenId, 
-        uint256 value
-    ) 
-        external 
-        payable 
-        onlyManager 
-    { 
-        if (value == 0) revert Errors.InvalidParameter();
-
-        total_supply += value;
-        if (total_supply > MAX_SUPPLY) revert Errors.MaxSupplyExceeded();
-
-        _mintValue(soulBoundTokenId, value);
-        emit Events.MintSBTValue(msg.sender, soulBoundTokenId, value, block.timestamp);
-    }
-    */
 
     function burn(uint256 soulBoundTokenId) 
         external 
@@ -180,7 +219,9 @@ contract NFTDerivativeProtocolTokenV1 is
             ERC3525Upgradeable._transferValue(soulBoundTokenId, BANK_TREASURY_SOUL_BOUND_TOKENID, balance);
         }
         ERC3525Upgradeable._burn(soulBoundTokenId);
-        SBTLogic.burnProcess(msg.sender, balance, soulBoundTokenId, _sbtDetails);
+        delete _sbtDetails[soulBoundTokenId];
+        emit BurnSBT(msg.sender, soulBoundTokenId, balance, block.timestamp);
+
     }
 
     function transferValue(

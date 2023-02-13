@@ -6,28 +6,6 @@ import {DataTypes} from "./DataTypes.sol";
 
 library Events {
 
-    /**
-     * @dev Emitted when a profile is created.
-     *
-     * @param soulBoundTokenId The newly created profile's token ID.
-     * @param creator The profile creator, who created the token with the given profile ID.
-     * @param wallet The address receiving the profile with the given profile ID.
-     * @param nickName The nickName set for the profile.
-     * @param imageURI The image uri set for the profile.
-     */
-    event ProfileCreated(
-        uint256 indexed soulBoundTokenId,
-        address indexed creator,
-        address indexed wallet,
-        string nickName,
-        string imageURI
-    );
-
-    event ProfileUpdated(
-        uint256 indexed soulBoundTokenId,
-        string nickName,
-        string imageURI
-    );
 
     /**
      * @dev Emitted when prepare a publish
@@ -420,36 +398,6 @@ library Events {
         address derivativeNFT,
         uint256 timestamp
     );
-
-    /**
-     * @dev Emitted when a SBT Id is burned. The balance of this SBT Id will tranfer to bank treasury before burned.
-     * only manager can call
-     * @param caller The caller who burn SBT Id.
-     * @param soulBoundTokenId The SBT ID.
-     * @param balance The balance of SBT Id.
-     * @param timestamp The current block timestamp.
-     */
-    event BurnSBT(
-        address indexed caller,
-        uint256 indexed soulBoundTokenId, 
-        uint256 indexed balance, 
-        uint256 timestamp
-    );
-
-    // /**
-    //  * @dev Emitted when Manager call to mintValue of SBT Tokens.
-    //  * 
-    //  * @param caller The caller who mint SBT value.
-    //  * @param soulBoundTokenId The token id of SBT
-    //  * @param value The value of mint SBT
-    //  * @param timestamp The current block timestamp.
-    //  */
-    // event MintSBTValue(
-    //     address indexed caller,
-    //     uint256 indexed soulBoundTokenId,
-    //     uint256 indexed value,
-    //     uint256 timestamp
-    // );
 
     /**
      * @dev Emitted when derivativeNFT is collected and a new tokenId is generated.
@@ -994,43 +942,6 @@ library Events {
         uint256 timestamp
     );
 
-    /**
-     * @dev Emitted when a voucher is generated
-     *
-     * @param vouchType The vouch type
-     * @param tokenId The tokenId
-     * @param etherValue The value of ether
-     * @param sbtValue The value of SBT
-     * @param generateTimestamp The current block timestamp.
-     * @param endTimestamp The expired timestamp, if set to 0 is not limit
-     */
-    event GenerateVoucher(
-        DataTypes.VoucherParValueType vouchType,
-        uint256 tokenId,
-        uint256 etherValue,
-        uint256 sbtValue,
-        uint256 generateTimestamp,
-        uint256 endTimestamp
-    );
-
-    /**
-     * @dev Emitted when a voucher is minted
-     *
-     * @param soulBoundTokenId  SBTId who mint this NFT voucher
-     * @param account The mint address 
-     * @param vouchType The vouch type
-     * @param tokenId The tokenId
-     * @param sbtValue The value of sbt
-     * @param generateTimestamp The generated timestamp
-     */
-    event MintNFTVoucher(
-        uint256 soulBoundTokenId,
-        address account,
-        DataTypes.VoucherParValueType vouchType,
-        uint256 tokenId,
-        uint256 sbtValue,
-        uint256 generateTimestamp
-    );
 
     /**
      * @dev Emitted when a voucher is minted
@@ -1168,14 +1079,12 @@ library Events {
      * @param operator The operator
      * @param tokenId  The tokenId
      * @param sbtValue  The sbtValue
-     * @param timestamp  The current block timestamp.
      */
     event VoucherDeposited(
         uint256 indexed soulBoundTokenId,
         address indexed operator,
         uint256 indexed tokenId,
-        uint256 sbtValue,
-        uint256 timestamp
+        uint256 sbtValue
     );
 
     /**
@@ -1235,6 +1144,8 @@ library Events {
         bool indexed newWhitelisted,
         uint256 timestamp
     );
+
+
 
 }
 

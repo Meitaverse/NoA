@@ -65,14 +65,14 @@ library SBTLogic {
     }
 
 
-    function burnProcess(
-        address caller,
-        uint256 balance,
-        uint256 soulBoundTokenId,
-        mapping(uint256 => DataTypes.SoulBoundTokenDetail) storage _sbtDetails
-    ) external {
-        delete _sbtDetails[soulBoundTokenId];
-        emit Events.BurnSBT(caller, soulBoundTokenId, balance, block.timestamp);
-    }
+    // function burnProcess(
+    //     address caller,
+    //     uint256 balance,
+    //     uint256 soulBoundTokenId,
+    //     mapping(uint256 => DataTypes.SoulBoundTokenDetail) storage _sbtDetails
+    // ) external {
+    //     delete _sbtDetails[soulBoundTokenId];
+    //     emit Events.BurnSBT(caller, soulBoundTokenId, balance, block.timestamp);
+    // }
 
 }    

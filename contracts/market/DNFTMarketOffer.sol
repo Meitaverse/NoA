@@ -86,6 +86,7 @@ abstract contract DNFTMarketOffer is
    * The account's available balance must be >= `amount`.
    * 
    * @param offerParam The parameters of offer.
+   * @return expiration The timestamp for when this offer will expire.
    * This is provided as a return value in case another contract would like to leverage this information,
    * user's should refer to the expiration in the `OfferMade` event log.
    * If the buy price is accepted instead, `0` is returned as the expiration since that's n/a.

@@ -36,7 +36,7 @@ import { market } from "../typechain/contracts";
 
 export let runtimeHRE: HardhatRuntimeEnvironment;
 
-// yarn hardhat --network local setBuyPrice --sbtid 2 --nftid 1 -- price 100
+// yarn hardhat --network local setBuyPrice --sbtid 2 --nftid 1 --price 100
 
 task("setBuyPrice", "setBuyPrice a dNFT to market place function")
 .addParam("sbtid", "soul bound token id ")

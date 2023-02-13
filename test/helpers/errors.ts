@@ -57,7 +57,7 @@ export const ERRORS = {
   VOUCHER_NOT_EXISTS: 'VoucherNotExists()',
   VOUCHER_IS_USED: 'VoucherIsUsed()',
   AIRDROP_TOTAL_EXCEED: 'AirdropTotalExceed()',
-  ERC3525_INSUFFICIENT_BALANCE: 'ERC3525: insufficient balance for transfer',
+  ERC3525_INSUFFICIENT_BALANCE: 'ERC3525: insufficient allowance',
   NOT_OWNEROF_TOKENID: 'NotOwerOFTokenId()',
   ERC3525INSUFFICIENTBALANCE: 'ERC3525INSUFFICIENTBALANCE()',
   NOT_OWNER_VOUCHER: 'NotOwnerVoucher()',

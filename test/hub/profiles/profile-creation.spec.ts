@@ -95,19 +95,16 @@ makeSuiteCleanRoom('Profile Creation', function () {
                           imageURI: MOCK_PROFILE_URI,
                         });
 
-              const receipt = await waitForTx(tx);
+              // const receipt = await waitForTx(tx);
 
-              matchEvent(
-                receipt,
-                'ProfileCreated',
-                [
-                  SECOND_PROFILE_ID, 
-                  userAddress, 
-                  userAddress,
-                  nickName,
-                  MOCK_PROFILE_URI
-                ],
+              await expect(tx).to.emit(sbtContract, "ProfileCreated").withArgs(
+                    SECOND_PROFILE_ID, 
+                    userAddress, 
+                    userAddress,
+                    nickName,
+                    MOCK_PROFILE_URI
               );
+
 
             });
 

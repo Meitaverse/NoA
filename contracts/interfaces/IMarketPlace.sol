@@ -14,18 +14,18 @@ interface IMarketPlace {
     /**
      * @notice Initializes the MarketPlace, setting the initial governance address
      *
-     * @param governance_ The address of Governance.
+     * @param admin The address of admin.
      */
     function initialize(    
-       address governance_
+       address admin
     ) external;
    
-    function getGlobalModule() external view returns(address);
+    //function getGlobalModule() external view returns(address);
 
-    function getMarketInfo(address derivativeNFT) external returns(DataTypes.Market memory);
+    // function getMarketInfo(address derivativeNFT) external returns(DataTypes.Market memory);
 
-    function removeMarket(
-        address derivativeNFT_
-    ) external;
+    // function removeMarket(
+    //     address derivativeNFT_
+    // ) external;
 
 }

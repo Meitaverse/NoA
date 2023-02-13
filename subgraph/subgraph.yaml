@@ -8,7 +8,7 @@ dataSources:
     name: SBT
     network: mainnet
     source:
-      abi: Events
+      abi: SBT
       address: "0x0DCd1Bf9A1b36cE34237eEaFef220932846BCD82"
       startBlock: 1
     mapping:
@@ -19,32 +19,6 @@ dataSources:
         - ProfileCreated
         - ProfileUpdated
         - BurnSBT
-      abis:
-        - name: Events
-          file: ../artifacts/contracts/libraries/Events.sol/Events.json
-        - name: SBT
-          file: ../artifacts/contracts/NFTDerivativeProtocolTokenV1.sol/NFTDerivativeProtocolTokenV1.json
-      eventHandlers:
-        - event: ProfileCreated(indexed uint256,indexed address,indexed
-            address,string,string)
-          handler: handleProfileCreated
-        - event: ProfileUpdated(indexed uint256,string,string)
-          handler: handleProfileUpdated
-        - event: BurnSBT(indexed address,indexed uint256,indexed uint256,uint256)
-          handler: handleBurnSBT
-      file: ./src/sbt-mapping.ts
-  - kind: ethereum/contract
-    name: SBTERC3525
-    network: mainnet
-    source:
-      abi: SBT
-      address: "0x0DCd1Bf9A1b36cE34237eEaFef220932846BCD82"
-      startBlock: 1
-    mapping:
-      kind: ethereum/events
-      apiVersion: 0.0.6
-      language: wasm/assemblyscript
-      entities:
         - Approval
         - ApprovalForAll
         - ApprovalValue
@@ -55,6 +29,13 @@ dataSources:
         - name: SBT
           file: ../artifacts/contracts/NFTDerivativeProtocolTokenV1.sol/NFTDerivativeProtocolTokenV1.json
       eventHandlers:
+        - event: ProfileCreated(indexed uint256,indexed address,indexed
+            address,string,string)
+          handler: handleProfileCreated
+        - event: ProfileUpdated(indexed uint256,string,string)
+          handler: handleProfileUpdated
+        - event: BurnSBT(indexed address,indexed uint256,indexed uint256,uint256)
+          handler: handleBurnSBT
         - event: Approval(indexed address,indexed address,indexed uint256)
           handler: handleApproval
         - event: ApprovalForAll(indexed address,indexed address,bool)
@@ -204,7 +185,7 @@ dataSources:
         - event: RevokeConfirmation(indexed address,indexed uint256)
           handler: handleRevokeConfirmation
         - event: VoucherDeposited(indexed uint256,indexed address,indexed
-            uint256,uint256,uint256)
+            uint256,uint256)
           handler: handleVoucherDeposited
         - event: BalanceLocked(indexed address,indexed uint256,indexed
             uint256,address,uint256)
@@ -225,32 +206,6 @@ dataSources:
     name: Voucher
     network: mainnet
     source:
-      abi: Events
-      address: "0x8A791620dd6260079BF849Dc5567aDC3F2FdC318"
-      startBlock: 1
-    mapping:
-      kind: ethereum/events
-      apiVersion: 0.0.6
-      language: wasm/assemblyscript
-      entities:
-        - MintNFTVoucher
-        - UserAmountLimitSet
-        - GenerateVoucher
-      abis:
-        - name: Events
-          file: ../artifacts/contracts/libraries/Events.sol/Events.json
-      eventHandlers:
-        - event: MintNFTVoucher(uint256,address,uint8,uint256,uint256,uint256)
-          handler: handleMintNFTVoucher
-        - event: UserAmountLimitSet(uint256,uint256,uint256)
-          handler: handleUserAmountLimitSet
-        - event: GenerateVoucher(uint8,uint256,uint256,uint256,uint256,uint256)
-          handler: handleGenerateVoucher
-      file: ./src/voucher-mapping.ts
-  - kind: ethereum/contract
-    name: VoucherERC1155
-    network: mainnet
-    source:
       abi: Voucher
       address: "0x8A791620dd6260079BF849Dc5567aDC3F2FdC318"
       startBlock: 1
@@ -259,12 +214,19 @@ dataSources:
       apiVersion: 0.0.6
       language: wasm/assemblyscript
       entities:
+        - UserAmountLimitSet
+        - GenerateVoucher
         - TransferBatch
         - TransferSingle
       abis:
         - name: Voucher
           file: ../artifacts/contracts/Voucher.sol/Voucher.json
       eventHandlers:
+        - event: UserAmountLimitSet(uint256,uint256)
+          handler: handleUserAmountLimitSet
+        - event: GenerateVoucher(indexed uint256,indexed
+            uint256,address[],uint256[],string[],uint256[])
+          handler: handleGenerateVoucher
         - event: TransferBatch(indexed address,indexed address,indexed
             address,uint256[],uint256[])
           handler: handleTransferBatch

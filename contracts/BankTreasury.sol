@@ -13,6 +13,7 @@ import "@openzeppelin/contracts-upgradeable/security/ReentrancyGuardUpgradeable.
 import "@openzeppelin/contracts/utils/Address.sol";
 import "@openzeppelin/contracts/utils/math/Math.sol";
 import {IERC20Upgradeable} from "@openzeppelin/contracts-upgradeable/token/ERC20/IERC20Upgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/token/ERC1155/IERC1155Upgradeable.sol";
 import {SafeERC20Upgradeable} from "@openzeppelin/contracts-upgradeable/token/ERC20/utils/SafeERC20Upgradeable.sol";
 import {SafeMathUpgradeable} from "@openzeppelin/contracts-upgradeable/utils/math/SafeMathUpgradeable.sol";
 import {Errors} from "./libraries/Errors.sol";
@@ -21,12 +22,12 @@ import './libraries/Constants.sol';
 import {DataTypes} from './libraries/DataTypes.sol';
 import {IBankTreasury} from './interfaces/IBankTreasury.sol';
 import {IManager} from "./interfaces/IManager.sol";
-import {IVoucher} from "./interfaces/IVoucher.sol";
 import "./storage/BankTreasuryStorage.sol";
 import {INFTDerivativeProtocolTokenV1} from "./interfaces/INFTDerivativeProtocolTokenV1.sol";
 import {IModuleGlobals} from "./interfaces/IModuleGlobals.sol";
 import {AdminRoleEnumerable} from "./treasury/AdminRoleEnumerable.sol";
 import {FeeModuleRoleEnumerable} from "./treasury/FeeModuleRoleEnumerable.sol";
+import {IERC1155CreatorCore} from "./creatorCore/IERC1155CreatorCore.sol";
 
 import "./libraries/LockedBalance.sol";
 // import "hardhat/console.sol";
@@ -747,20 +748,34 @@ contract BankTreasury is
         _validateCallerIsSoulBoundTokenOwner(soulBoundTokenId);
 
         address _sbt = IModuleGlobals(MODULE_GLOBALS).getSBT();
+
         address _voucher = IModuleGlobals(MODULE_GLOBALS).getVoucher();
    
-        DataTypes.VoucherData memory voucherData = IVoucher(_voucher).getVoucherData(tokenId);
-        if (voucherData.tokenId == 0) revert Errors.VoucherNotExists();
-        if (voucherData.isUsed) revert Errors.VoucherIsUsed();
+        uint256 sbtValue = IERC1155Upgradeable(_voucher).balanceOf(msg.sender, tokenId);
+        if ( sbtValue == 0) {
+            revert Errors.VoucherIsZeroAmount();
+        }
 
         INFTDerivativeProtocolTokenV1(_sbt).transferValue(
             soulBoundTokenIdBankTreasury, 
             soulBoundTokenId, 
-            voucherData.sbtValue
+            sbtValue
         );
-        IVoucher(_voucher).depositFromVoucher(msg.sender, tokenId, soulBoundTokenId);
+
+        uint256[] memory tokenIds = new uint256[](1);
+        uint256[] memory amounts = new uint256[](1);
+        tokenIds[0] = tokenId;
+        amounts[0] = sbtValue;
+
+        //need approved first
+        IERC1155CreatorCore(_voucher).burn(msg.sender, tokenIds, amounts);
  
-        emit Events.VoucherDeposited(soulBoundTokenId, msg.sender, tokenId, voucherData.sbtValue, block.timestamp);
+        emit Events.VoucherDeposited(
+            soulBoundTokenId, 
+            msg.sender, 
+            tokenId, 
+            sbtValue
+        );
     }
 
     /// @notice 1 SBT =  1e18 wei, 1 ether = 1 SBT 

@@ -5,6 +5,7 @@ pragma solidity ^0.8.13;
 /**
  * From https://github.com/OpenZeppelin/openzeppelin-contracts
  * Copying the method below which is currently unreleased.
+ * We don't use this library because OZ has upgraded.
  */
 
 import "@openzeppelin/contracts/utils/introspection/IERC165.sol";

@@ -42,9 +42,12 @@ import {
     Template__factory,
     MarketPlace__factory,
     TimeLock__factory,
+    FETHNode,
+    FETH__factory,
+    VoucherMarket__factory,
 
 } from "../typechain";
-import { TimeLock, metadataDescriptors } from "../typechain/contracts";
+import { FETH, TimeLock, VoucherMarket, metadataDescriptors } from "../typechain/contracts";
 
 export const DEFAULT_CONFIG_PATH = "./deployments/networks.json";
 export const DEFAULT_LOCALHOST_CONFIG_PATH =
@@ -59,6 +62,8 @@ export type ContractName =
   | "BankTreasury"
   | "MarketPlace"
   | "Voucher"
+  | "VoucherMarket"
+  | "FETH"
   | "FeeCollectModule"
   | "PublishModule"
   | "Template"
@@ -74,6 +79,8 @@ export type DAOContract =
   | GovernorContract
   | MarketPlace
   | Voucher
+  | VoucherMarket
+  | FETH
   | Template
   | DerivativeMetadataDescriptor
   | ERC3525ReceiverMock
@@ -144,7 +151,9 @@ type ContractFactory =
   | typeof GovernorContract__factory
   | typeof TimeLock__factory
   | typeof MarketPlace__factory
+  | typeof FETH__factory
   | typeof Voucher__factory
+  | typeof VoucherMarket__factory
   | typeof FeeCollectModule__factory
   | typeof PublishModule__factory
   | typeof Template__factory

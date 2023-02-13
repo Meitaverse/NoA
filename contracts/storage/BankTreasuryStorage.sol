@@ -37,8 +37,6 @@ contract BankTreasuryStorage  {
 
     mapping(address => uint256) internal _exchangePrice;
 
-    mapping(DataTypes.VoucherParValueType => uint256) internal _voucherParValues;
-
     /// @notice Stores per-account details.
     mapping(uint256 => mapping(address => DataTypes.AccountInfo)) internal accountToInfo;
 

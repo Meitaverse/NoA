@@ -13,9 +13,6 @@ import "../libraries/LockedBalance.sol";
 library DataTypes {
     enum PriceType {FIXED, DECLIINING_BY_TIME, AUCTION, BID}
 
-    //0.1eth, 0.2eth, 0.3eth, 0.4eth, 0.5 eth
-    enum VoucherParValueType {ZEROPOINT, ZEROPOINTONE, ZEROPOINTTWO, ZEROPOINTTHREE, ZEROPOINTFOUR, ZEROPOINTFIVE}
-
     enum FeeShareType {
         LEVEL_TWO,
         LEVEL_FIVE
@@ -295,19 +292,6 @@ library DataTypes {
     struct Position {
         uint256 x;
         uint256 y;
-    }
-
-    //voucher struct
-    struct VoucherData {
-        VoucherParValueType vouchType;
-        uint256 tokenId;
-        uint256 etherValue;
-        uint256 sbtValue;
-        uint256 generateTimestamp;
-        uint256 endTimestamp;
-        bool isUsed;
-        uint256 soulBoundTokenId;
-        uint256 usedTimestamp;
     }
 
     struct CollectFeeUsers {

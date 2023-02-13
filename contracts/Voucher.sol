@@ -1,431 +1,504 @@
 // SPDX-License-Identifier: MIT
 
-pragma solidity ^0.8.13;
+pragma solidity ^0.8.0;
+
+/// @author: manifold.xyz
 
 import "@openzeppelin/contracts-upgradeable/token/ERC1155/ERC1155Upgradeable.sol";
-import "@openzeppelin/contracts-upgradeable/token/ERC1155/extensions/ERC1155BurnableUpgradeable.sol";
-import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
-import "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol";
-import "@openzeppelin/contracts-upgradeable/access/AccessControlUpgradeable.sol";
-import "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
-import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
-import "@openzeppelin/contracts/utils/Counters.sol";
-import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
+import "@manifoldxyz/libraries-solidity/contracts/access/AdminControlUpgradeable.sol";
+import "@solvprotocol/erc-3525/contracts/IERC3525.sol";
+import "./creatorCore/ERC1155CreatorCore.sol";
+// import "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol";
 
-import {INFTDerivativeProtocolTokenV1} from "./interfaces/INFTDerivativeProtocolTokenV1.sol";
-import {IERC20Upgradeable} from "@openzeppelin/contracts-upgradeable/token/ERC20/IERC20Upgradeable.sol";
-import {SafeERC20Upgradeable} from "@openzeppelin/contracts-upgradeable/token/ERC20/utils/SafeERC20Upgradeable.sol";
-import {StringsUpgradeable} from "@openzeppelin/contracts-upgradeable/utils/StringsUpgradeable.sol";
-import {Base64Upgradeable} from "@openzeppelin/contracts-upgradeable/utils/Base64Upgradeable.sol";
-import {Errors} from "./libraries/Errors.sol";
 import './libraries/Constants.sol';
-import {IVoucher} from './interfaces/IVoucher.sol';
-import {Events} from "./libraries/Events.sol";
-import {DataTypes} from './libraries/DataTypes.sol';
-import "./storage/VoucherStorage.sol";
-import {IModuleGlobals} from "./interfaces/IModuleGlobals.sol";
-import {IManager} from "./interfaces/IManager.sol";
-import {IBankTreasury} from './interfaces/IBankTreasury.sol';
-import "hardhat/console.sol";
+import {Errors} from "./libraries/Errors.sol";
+import {INFTDerivativeProtocolTokenV1} from "./interfaces/INFTDerivativeProtocolTokenV1.sol";
 
 /**
- *  @title Voucher
- *  @author bitsoul Protocol
- * 
+ * @dev ERC1155Creator implementation (using transparent upgradeable proxy)
  */
-contract Voucher is
-    Initializable,
-    ReentrancyGuard,
-    VoucherStorage,
-    ERC1155Upgradeable,
-    PausableUpgradeable,
-    OwnableUpgradeable,
-    AccessControlUpgradeable,
-    UUPSUpgradeable
+contract Voucher is 
+    AdminControlUpgradeable, 
+    ERC1155Upgradeable, 
+    ERC1155CreatorCore
 {
-    using Counters for Counters.Counter;
 
-    uint256 private constant EXPIRED_SECONDS= 5184000;
+    /**
+     * @dev Emitted when a voucher is minted
+     *
+     * @param preUserAmountLimit  The pre userAmountLimit
+     * @param userAmountLimit The new userAmountLimit
+     */
+    event UserAmountLimitSet(
+        uint256 preUserAmountLimit,
+        uint256 userAmountLimit
+    );
 
-    bytes32 public constant PAUSER_ROLE = keccak256("PAUSER_ROLE");
-    bytes32 public constant UPGRADER_ROLE = keccak256("UPGRADER_ROLE");
+    /**
+     * @dev Emitted when a voucher is generated
+     *
+     * @param soulBoundTokenId The SBT id
+     * @param totalAmount The total value of SBT
+     * @param to The array of to
+     * @param amounts The array of amount
+     * @param uris The array of uri
+     * @param tokenIds The array of new tokenId
+     */
+    event GenerateVoucher(
+        uint256 indexed soulBoundTokenId,
+        uint256 indexed totalAmount,
+        address[] to,
+        uint256[] amounts,
+        string[] uris,
+        uint256[] tokenIds
+    );
 
-    string public name;
-    string public symbol;
+    mapping(uint256 => uint256) private _totalSupply;
+    uint256 private _userAmountLimit;
 
-    string private _uriBase; //"https://api.bitsoul/v1/metadata/"
+    address immutable internal sbt;
 
-    modifier onlyBankTreasury() {
-        _validateCallerIsBankTreasury();
-        _;
-    }
-
-    function initialize(
-        string memory uriBase
-    ) public initializer {
-        __ERC1155_init(string(abi.encodePacked(uriBase, "{id}.json")));
+    /// @custom:oz-upgrades-unsafe-allow constructor
+    constructor(
+        address _sbt
+    ) {
+        sbt = _sbt;
+    }    
+    /**
+     * Initializer
+     */
+    function initialize(string memory _name, string memory _symbol) public initializer {
+        __ERC1155_init("");
         __Ownable_init();
-        __Pausable_init();
-        __UUPSUpgradeable_init();
+        // __Pausable_init();
 
-        _setupRole(DEFAULT_ADMIN_ROLE, msg.sender);
-        _setupRole(PAUSER_ROLE, msg.sender);
-        _setupRole(UPGRADER_ROLE, msg.sender);
-
-        _setURIPrefix(uriBase);
-        name = "The Voucher of Bitsoul";
-        symbol = "VOB";
+        name = _name;
+        symbol = _symbol;
     }
 
-    function pause() public onlyRole(PAUSER_ROLE) {
-        _pause();
+    // function pause() public adminRequired {
+    //     _pause();
+    // }
+
+    // function unpause() public adminRequired {
+    //     _unpause();
+    // }
+
+    /**
+     * @dev See {IERC165-supportsInterface}.
+     */
+    function supportsInterface(bytes4 interfaceId) public view virtual override(ERC1155Upgradeable, ERC1155CreatorCore, AdminControlUpgradeable) returns (bool) {
+        return ERC1155CreatorCore.supportsInterface(interfaceId) || 
+               ERC1155Upgradeable.supportsInterface(interfaceId) || 
+               AdminControlUpgradeable.supportsInterface(interfaceId);
     }
 
-    function unpause() public onlyRole(PAUSER_ROLE) {
-        _unpause();
-    }
-
-    function supportsInterface(
-        bytes4 interfaceId
-    ) public view override(AccessControlUpgradeable, ERC1155Upgradeable) returns (bool) {
-        return super.supportsInterface(interfaceId);
+    function _beforeTokenTransfer(address, address from, address to, uint256[] memory ids, uint256[] memory amounts, bytes memory) internal virtual override {
+        _approveTransfer(from, to, ids, amounts);
     }
 
     function setUserAmountLimit(uint256 userAmountLimit) external onlyOwner {
         if (userAmountLimit == 0) revert Errors.InvalidParameter();
         uint256 preUserAmountLimit = _userAmountLimit;
         _userAmountLimit = userAmountLimit;
-        emit Events.UserAmountLimitSet(preUserAmountLimit, _userAmountLimit, block.timestamp);
+        emit UserAmountLimitSet(preUserAmountLimit, _userAmountLimit);
     }
     
     function getUserAmountLimit() external view returns(uint256) {
         return _userAmountLimit;
     }
     
-    function mintNFT(
-        uint256 soulBoundTokenId,
-        uint256 amountSBT,
-        address account
-    ) 
-        external 
-        returns(uint256)
-    {
-        // only called by owner of soulBoundTokenId
-        address _manager = IModuleGlobals(MODULE_GLOBALS).getManager();
+    /**
+     * @dev See {ICreatorCore-registerExtension}.
+     */
+    function registerExtension(address extension, string calldata baseURI) external override adminRequired {
+        requireNonBlacklist(extension);
+        _registerExtension(extension, baseURI, false);
+    }
 
-        if (msg.sender != IManager(_manager).getWalletBySoulBoundTokenId(soulBoundTokenId) ) {
-            revert Errors.Unauthorized();
+    /**
+     * @dev See {ICreatorCore-registerExtension}.
+     */
+    function registerExtension(address extension, string calldata baseURI, bool baseURIIdentical) external override adminRequired {
+        requireNonBlacklist(extension);
+        _registerExtension(extension, baseURI, baseURIIdentical);
+    }
+
+    /**
+     * @dev See {ICreatorCore-unregisterExtension}.
+     */
+    function unregisterExtension(address extension) external override adminRequired {
+        _unregisterExtension(extension);
+    }
+
+    /**
+     * @dev See {ICreatorCore-blacklistExtension}.
+     */
+    function blacklistExtension(address extension) external override adminRequired {
+        _blacklistExtension(extension);
+    }
+
+    /**
+     * @dev See {ICreatorCore-setBaseTokenURIExtension}.
+     */
+    function setBaseTokenURIExtension(string calldata uri_) external override {
+        requireExtension();
+        _setBaseTokenURIExtension(uri_, false);
+    }
+
+    /**
+     * @dev See {ICreatorCore-setBaseTokenURIExtension}.
+     */
+    function setBaseTokenURIExtension(string calldata uri_, bool identical) external override {
+        requireExtension();
+        _setBaseTokenURIExtension(uri_, identical);
+    }
+
+    /**
+     * @dev See {ICreatorCore-setTokenURIPrefixExtension}.
+     */
+    function setTokenURIPrefixExtension(string calldata prefix) external override {
+        requireExtension();
+        _setTokenURIPrefixExtension(prefix);
+    }
+
+    /**
+     * @dev See {ICreatorCore-setTokenURIExtension}.
+     */
+    function setTokenURIExtension(uint256 tokenId, string calldata uri_) external override {
+        requireExtension();
+        _setTokenURIExtension(tokenId, uri_);
+    }
+
+    /**
+     * @dev See {ICreatorCore-setTokenURIExtension}.
+     */
+    function setTokenURIExtension(uint256[] memory tokenIds, string[] calldata uris) external override {
+        requireExtension();
+        require(tokenIds.length == uris.length, "Invalid input");
+        for (uint i; i < tokenIds.length;) {
+            _setTokenURIExtension(tokenIds[i], uris[i]);
+            unchecked { ++i; }
         }
+    }
 
-        if (amountSBT == 0)  {
-            revert Errors.AmountSBTIsZero();
+    /**
+     * @dev See {ICreatorCore-setBaseTokenURI}.
+     */
+    function setBaseTokenURI(string calldata uri_) external override adminRequired {
+        _setBaseTokenURI(uri_);
+    }
+
+    /**
+     * @dev See {ICreatorCore-setTokenURIPrefix}.
+     */
+    function setTokenURIPrefix(string calldata prefix) external override adminRequired {
+        _setTokenURIPrefix(prefix);
+    }
+
+    /**
+     * @dev See {ICreatorCore-setTokenURI}.
+     */
+    function setTokenURI(uint256 tokenId, string calldata uri_) external override adminRequired {
+        _setTokenURI(tokenId, uri_);
+    }
+
+    /**
+     * @dev See {ICreatorCore-setTokenURI}.
+     */
+    function setTokenURI(uint256[] memory tokenIds, string[] calldata uris) external override adminRequired {
+        require(tokenIds.length == uris.length, "Invalid input");
+        for (uint i; i < tokenIds.length;) {
+            _setTokenURI(tokenIds[i], uris[i]);
+            unchecked { ++i; }
+        }
+    }
+
+    /**
+     * @dev See {ICreatorCore-setMintPermissions}.
+     */
+    function setMintPermissions(address extension, address permissions) external override adminRequired {
+        _setMintPermissions(extension, permissions);
+    }
+
+    /**
+     * @dev See {IERC1155CreatorCore-mintBaseNew}.
+     */
+    function mintBaseNew(uint256 soulBoundTokenId, address[] calldata to, uint256[] calldata amounts, string[] calldata uris) 
+        public 
+        virtual 
+        override 
+        nonReentrant 
+        // whenNotPaused 
+        returns(uint256[] memory) 
+    {
+
+        uint256 totalAmount;
+        for (uint i; i < to.length;) {
+            if (_userAmountLimit > 0 ){
+                if (amounts[i] < _userAmountLimit) {
+                    revert Errors.AmountSBTIsZero();
+                }
+            }              
+            totalAmount += amounts[i];
+            unchecked { ++i; }
+        }        
+        
+        //owner of soulBoundTokenId need to approve this contract first
+        IERC3525(sbt).transferFrom(
+            soulBoundTokenId, 
+            BANK_TREASURY_SOUL_BOUND_TOKENID, 
+            totalAmount
+        );
+
+        uint256[] memory tokenIds = _mintNew(address(0), to, amounts, uris);
+
+        emit GenerateVoucher(
+             soulBoundTokenId,
+             totalAmount,
+             to,
+             amounts,
+             uris,
+             tokenIds 
+        );
+        return tokenIds; 
+    }
+
+    /**
+     * @dev See {IERC1155CreatorCore-mintExtensionNew}.
+     */
+    function mintExtensionNew(uint256 soulBoundTokenId, address[] calldata to, uint256[] calldata amounts, string[] calldata uris) 
+        public 
+        virtual 
+        override 
+        nonReentrant 
+        // whenNotPaused 
+        returns(uint256[] memory tokenIds) 
+    {
+        requireExtension();
+
+        uint256 totalAmount;
+        for (uint i; i < to.length;) {
+            if (_userAmountLimit > 0 ){
+                if (amounts[i] < _userAmountLimit) {
+                    revert Errors.AmountSBTIsZero();
+                }
+            }              
+            totalAmount += amounts[i];
+            unchecked { ++i; }
         }
         
-        if (_userAmountLimit > 0 ){
-            if (amountSBT < _userAmountLimit) {
-                revert Errors.AmountLimit();
+        //need to approve this contract first by owner of soulBoundTokenId
+        IERC3525(sbt).transferFrom(
+            soulBoundTokenId, 
+            BANK_TREASURY_SOUL_BOUND_TOKENID, 
+            totalAmount
+        );
+
+        tokenIds = _mintNew(msg.sender, to, amounts, uris);
+
+        emit GenerateVoucher(
+             soulBoundTokenId,
+             totalAmount,
+             to,
+             amounts,
+             uris,
+             tokenIds 
+        );
+    }
+
+    /**
+     * @dev Mint new tokens
+     */
+    function _mintNew(address extension, address[] memory to, uint256[] memory amounts, string[] memory uris) internal returns(uint256[] memory tokenIds) {
+        if (to.length > 1) {
+            // Multiple receiver.  Give every receiver the same new token
+            tokenIds = new uint256[](1);
+            require(uris.length <= 1 && (amounts.length == 1 || to.length == amounts.length), "Invalid input");
+        } else {
+            // Single receiver.  Generating multiple tokens
+            tokenIds = new uint256[](amounts.length);
+            require(uris.length == 0 || amounts.length == uris.length, "Invalid input");
+        }
+
+        // Assign tokenIds
+        for (uint i; i < tokenIds.length;) {
+            ++_tokenCount;
+            tokenIds[i] = _tokenCount;
+            // Track the extension that minted the token
+            _tokensExtension[_tokenCount] = extension;
+            unchecked { ++i; }
+        }
+
+        if (extension != address(0)) {
+            _checkMintPermissions(to, tokenIds, amounts);
+        }
+
+        if (to.length == 1 && tokenIds.length == 1) {
+            // Single mint
+            _mint(to[0], tokenIds[0], amounts[0], new bytes(0));
+        } else if (to.length > 1) {
+            // Multiple receivers.  Receiving the same token
+            if (amounts.length == 1) {
+                // Everyone receiving the same amount
+                for (uint i; i < to.length;) {
+                    _mint(to[i], tokenIds[0], amounts[0], new bytes(0));
+                    unchecked { ++i; }
+                }
             } else {
-            uint256 _tokenId = _generateNextVoucherId();
-
-            address _sbt =  IModuleGlobals(MODULE_GLOBALS).getSBT();
-
-            //not need to approve this contract first 
-            INFTDerivativeProtocolTokenV1(_sbt).transferValue(
-                soulBoundTokenId, 
-                BANK_TREASURY_SOUL_BOUND_TOKENID, 
-                amountSBT
-            );
-
-            _mint(account, _tokenId, amountSBT, "");
-
-            _vouchers[_tokenId] = DataTypes.VoucherData({
-                vouchType: DataTypes.VoucherParValueType.ZEROPOINT,
-                tokenId: _tokenId,
-                etherValue: 0,
-                sbtValue: amountSBT,
-                generateTimestamp: block.timestamp,
-                endTimestamp: 0, 
-                isUsed: false,
-                soulBoundTokenId: soulBoundTokenId,
-                usedTimestamp: 0
-            });
-            
-            emit Events.MintNFTVoucher(
-                soulBoundTokenId,
-                account,
-                DataTypes.VoucherParValueType.ZEROPOINT,
-                _tokenId,
-                amountSBT,
-                block.timestamp
-            );
-
-           // Signals frozen metadata to OpenSea; emitted in minting functions
-            emit Events.PermanentURI(string(abi.encodePacked(_uriBase, StringsUpgradeable.toString(_tokenId), ".json")), _tokenId);
-            
-            //owner can use setTokenUri to set token uri 
-            return _tokenId;
-          }
-        }  else {
-            revert Errors.AmountLimitNotSet(); 
-        }
-    }
-
-    function generateVoucher(
-        DataTypes.VoucherParValueType voucherType,
-        address account
-    ) 
-        external
-        nonReentrant
-        whenNotPaused
-        onlyOwner
-    {
-        uint256 _tokenId = _generateNextVoucherId();
-        _generateVoucher(
-            _tokenId,
-            voucherType,
-            account
-        ); 
-    }
-
-    function _generateVoucher(
-        uint256 _tokenId,
-        DataTypes.VoucherParValueType voucherType,
-        address account
-    ) 
-        internal
-    {
-        uint256 etherValue;
-        uint256 amount;
-
-        if (voucherType == DataTypes.VoucherParValueType.ZEROPOINTONE){ //1
-            etherValue = 0.1 ether;
-            amount = 100;
-        } 
-        else if (voucherType == DataTypes.VoucherParValueType.ZEROPOINTTWO){ //2
-            etherValue = 0.2 ether;
-            amount = 200;
-        } 
-        else if (voucherType == DataTypes.VoucherParValueType.ZEROPOINTTHREE){//3
-            etherValue = 0.3 ether;
-            amount = 300;
-        } 
-        else if (voucherType == DataTypes.VoucherParValueType.ZEROPOINTFOUR){//4
-            etherValue = 0.4 ether;
-            amount = 400;
-        } 
-        else if (voucherType == DataTypes.VoucherParValueType.ZEROPOINTFIVE) {//5
-            etherValue = 0.5 ether;
-            amount = 500;
-        }  else {
-            revert Errors.NotAllowed();
-        }
-
-        if (amount == 0) revert Errors.InvidVoucherParValueType();
-
-        _mint(account, _tokenId, amount, "");
-
-        _vouchers[_tokenId] = DataTypes.VoucherData({
-            vouchType: voucherType,
-            tokenId: _tokenId,
-            etherValue: etherValue,
-            sbtValue: amount,
-            generateTimestamp: block.timestamp,
-            endTimestamp: block.timestamp + EXPIRED_SECONDS, 
-            isUsed: false,
-            soulBoundTokenId: 0,
-            usedTimestamp: 0
-        });
-         
-        emit Events.GenerateVoucher(
-             voucherType,
-             _tokenId,
-             etherValue,
-             amount,
-             block.timestamp,
-             block.timestamp + EXPIRED_SECONDS
-        );
-
-        // Signals frozen metadata to OpenSea; emitted in minting functions
-        emit Events.PermanentURI(string(abi.encodePacked(_uriBase, StringsUpgradeable.toString(_tokenId), ".json")), _tokenId);
-
-    }
-
-    function generateVoucherBatch(
-        DataTypes.VoucherParValueType[] memory voucherTypes,
-        address account
-    ) 
-        external
-        nonReentrant
-        whenNotPaused  
-        onlyOwner
-    {
-        uint256[] memory _ids = new uint256[](voucherTypes.length);
-        uint256[] memory amounts = new uint256[](voucherTypes.length);
-        for (uint256 i = 0; i < voucherTypes.length; ) {
-            _ids[i] =  _generateNextVoucherId();
-            unchecked {
-                ++i;
+                // Everyone receiving different amounts
+                for (uint i; i < to.length;) {                  
+                    _mint(to[i], tokenIds[0], amounts[i], new bytes(0));
+                    unchecked { ++i; }
+                }
             }
-            _generateVoucher(
-                _ids[i],
-                voucherTypes[i],
-                account
-            ); 
+        } else {
+            _mintBatch(to[0], tokenIds, amounts, new bytes(0));
         }
 
-        _mintBatch(account, _ids, amounts, "");
-    }
-
-    function getVoucherData(uint256 tokenId) external view returns(DataTypes.VoucherData memory) {
-        return _vouchers[tokenId];
-    }
-
-    function depositFromVoucher(address account, uint256 tokenId, uint256 soulBoundTokenId) 
-        external 
-        nonReentrant
-        whenNotPaused  
-        onlyBankTreasury 
-    {
-        if (balanceOf(account, tokenId) == 0) {
-            revert Errors.NotOwnerVoucher();
-        }
-         DataTypes.VoucherData storage voucherData = _vouchers[tokenId];
-         if (voucherData.isUsed) revert Errors.VoucherIsUsed();
-         if (voucherData.endTimestamp !=0 && voucherData.endTimestamp < block.timestamp) revert Errors.VoucherExpired();
-         voucherData.isUsed = true;
-         voucherData.soulBoundTokenId = soulBoundTokenId;
-         voucherData.usedTimestamp = block.timestamp;
-    }
-    
-    function burn(
-        address owner,
-        uint256 id,
-        uint256 value
-    ) 
-        external 
-        nonReentrant
-        whenNotPaused  
-        onlyOwner 
-    {
-        _burn(owner, id, value);
-        _vouchers[id].isUsed = true;
-    }
-
-    function burnBatch(
-        address owner,
-        uint256[] memory ids,
-        uint256[] memory values
-    ) 
-        external
-        nonReentrant
-        whenNotPaused  
-        onlyOwner 
-    {
-        _burnBatch(owner, ids, values);
-        for (uint256 i = 0; i < ids.length; i++) {
-            _vouchers[ids[i]].isUsed = true;
+        for (uint i; i < tokenIds.length;) {
+            if (i < uris.length && bytes(uris[i]).length > 0) {
+                _tokenURIs[tokenIds[i]] = uris[i];
+            }
+            unchecked { ++i; }
         }
     }
 
-    //-- orverride -- //
-    function _authorizeUpgrade(address /*newImplementation*/) internal virtual override {
-        if (!hasRole(UPGRADER_ROLE, _msgSender())) revert Errors.Unauthorized();
+
+    /**
+     * @dev See {IERC1155CreatorCore-tokenExtension}.
+     */
+    function tokenExtension(uint256 tokenId) public view virtual override returns (address) {
+        return _tokenExtension(tokenId);
     }
 
-    function _beforeTokenTransfer(address operator, address from, address to, uint256[] memory ids, uint256[] memory amounts, bytes memory data)
-        internal
-        whenNotPaused
-        override
-    {
-        super._beforeTokenTransfer(operator, from, to, ids, amounts, data);
-    }
-
-    /** @dev URI override for OpenSea traits compatibility. */
-    function uri(uint tokenId) override public view returns (string memory) {
-            
-        if(bytes(_uris[tokenId]).length > 0){
-            return _uris[tokenId];
+    /**
+     * @dev See {IERC1155CreatorCore-burn}.
+     */
+    function burn(address account, uint256[] memory tokenIds, uint256[] memory amounts) public virtual override nonReentrant {
+        require(account == msg.sender || isApprovedForAll(account, msg.sender), "Caller is not owner nor approved");
+        require(tokenIds.length == amounts.length, "burn: Invalid input");
+        if (tokenIds.length == 1) {
+            _burn(account, tokenIds[0], amounts[0]);
+        } else {
+            _burnBatch(account, tokenIds, amounts);
         }
-
-        return string(
-            abi.encodePacked(
-                _uriBase,      
-                StringsUpgradeable.toString(tokenId),        
-                ".json"
-            )
-        );
+        _postBurn(account, tokenIds, amounts);
     }
 
-    /** @dev Contract-level metadata for OpenSea. */
-    // Update for collection-specific metadata.
-    function contractURI() public view returns (string memory) {
-        return 
-            string(
-                abi.encodePacked(
-                "data:application/json;base64,",
-                Base64Upgradeable.encode(
-                    abi.encodePacked(
-                    '{"name":"',
-                    name,
-                    '","symbol":"',
-                    symbol,              
-                    '","description":"',
-                    'Bitsoul protocol voucher NFT base ERC1155',
-                    '"}'
-                    )
-                )
-                )
-            );
+    /**
+     * @dev See {ICreatorCore-setRoyalties}.
+     */
+    function setRoyalties(address payable[] calldata receivers, uint256[] calldata basisPoints) external override adminRequired {
+        _setRoyaltiesExtension(address(0), receivers, basisPoints);
+    }
+
+    /**
+     * @dev See {ICreatorCore-setRoyalties}.
+     */
+    function setRoyalties(uint256 tokenId, address payable[] calldata receivers, uint256[] calldata basisPoints) external override adminRequired {
+        _setRoyalties(tokenId, receivers, basisPoints);
+    }
+
+    /**
+     * @dev See {ICreatorCore-setRoyaltiesExtension}.
+     */
+    function setRoyaltiesExtension(address extension, address payable[] calldata receivers, uint256[] calldata basisPoints) external override adminRequired {
+        _setRoyaltiesExtension(extension, receivers, basisPoints);
+    }
+
+    /**
+     * @dev See {ICreatorCore-getRoyalties}.
+     */
+    function getRoyalties(uint256 tokenId) external view virtual override returns (address payable[] memory, uint256[] memory) {
+        return _getRoyalties(tokenId);
+    }
+
+    /**
+     * @dev See {ICreatorCore-getFees}.
+     */
+    function getFees(uint256 tokenId) external view virtual override returns (address payable[] memory, uint256[] memory) {
+        return _getRoyalties(tokenId);
+    }
+
+    /**
+     * @dev See {ICreatorCore-getFeeRecipients}.
+     */
+    function getFeeRecipients(uint256 tokenId) external view virtual override returns (address payable[] memory) {
+        return _getRoyaltyReceivers(tokenId);
+    }
+
+    /**
+     * @dev See {ICreatorCore-getFeeBps}.
+     */
+    function getFeeBps(uint256 tokenId) external view virtual override returns (uint[] memory) {
+        return _getRoyaltyBPS(tokenId);
     }
     
     /**
-    * @dev Will update the base URL of token's URI
-    * @param _newBaseMetadataURI New base URL of token's URI
-    */
-    function setURIPrefix(string memory _newBaseMetadataURI) 
-        public 
-        nonReentrant
-        whenNotPaused  
-        onlyOwner
-    {
-        _setURIPrefix(_newBaseMetadataURI);
+     * @dev See {ICreatorCore-royaltyInfo}.
+     */
+    function royaltyInfo(uint256 tokenId, uint256 value) external view virtual override returns (address, uint256) {
+        return _getRoyaltyInfo(tokenId, value);
+    } 
+
+    /**
+     * @dev See {IERC1155-uri}.
+     */
+    function uri(uint256 tokenId) public view virtual override returns (string memory) {
+        return _tokenURI(tokenId);
+    }
+    
+    /**
+     * @dev Total amount of tokens in with a given id.
+     */
+    function totalSupply(uint256 tokenId) external view virtual override returns (uint256) {
+        return _totalSupply[tokenId];
     }
 
-    function setGlobalModules(address moduleGlobals) 
-        external 
-        nonReentrant
-        whenNotPaused  
-        onlyOwner 
-    {
-        if (moduleGlobals == address(0)) revert Errors.InitParamsInvalid();
-        MODULE_GLOBALS = moduleGlobals;
+    /**
+     * @dev See {ERC1155-_mint}.
+     */
+    function _mint(address account, uint256 id, uint256 amount, bytes memory data) internal virtual override {
+
+        super._mint(account, id, amount, data);
+        _totalSupply[id] += amount;
     }
 
-    function getGlobalModule() external view returns(address) {
-        return MODULE_GLOBALS;
+    /**
+     * @dev See {ERC1155-_mintBatch}.
+     */
+    function _mintBatch(address to, uint256[] memory ids, uint256[] memory amounts, bytes memory data) internal virtual override {
+        super._mintBatch(to, ids, amounts, data);
+        for (uint i; i < ids.length;) {               
+            _totalSupply[ids[i]] += amounts[i];
+            unchecked { ++i; }
+        }
     }
 
-    function _setURIPrefix(string memory _newBaseMetadataURI) internal {
-        _uriBase = _newBaseMetadataURI;
+    /**
+     * @dev See {ERC1155-_burn}.
+     */
+    function _burn(address account, uint256 id, uint256 amount) internal virtual override {
+        super._burn(account, id, amount);
+        _totalSupply[id] -= amount;
     }
 
-    function setTokenUri(uint256 tokenId_, string memory uri_) 
-        external 
-        nonReentrant
-        whenNotPaused  
-        onlyOwner 
-    {
-        if(bytes(_uris[tokenId_]).length > 0)  revert Errors.UpdateURITwice();
-        _uris[tokenId_] = uri_;
+    /**
+     * @dev See {ERC1155-_burnBatch}.
+     */
+    function _burnBatch(address account, uint256[] memory ids, uint256[] memory amounts) internal virtual override {
+        super._burnBatch(account, ids, amounts);
+        for (uint i; i < ids.length;) {
+            _totalSupply[ids[i]] -= amounts[i];
+            unchecked { ++i; }
+        }
     }
 
-    function _generateNextVoucherId() internal returns (uint256) {
-        _nextVoucherId.increment();
-        return uint256(_nextVoucherId.current());
-    }
-
-    function _validateCallerIsBankTreasury() internal view {
-        address _bankTreasury = IModuleGlobals(MODULE_GLOBALS).getTreasury();
-        if (msg.sender != _bankTreasury) revert Errors.NotBankTreasury();
+    /**
+     * @dev See {ICreatorCore-setApproveTransfer}.
+     */
+    function setApproveTransfer(address extension) external override adminRequired {
+        _setApproveTransferBase(extension);
     }
 }
