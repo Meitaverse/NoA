@@ -731,7 +731,7 @@ contract BankTreasuryV2 is
          //need approved first
         IERC1155CreatorCore(_voucher).burn(msg.sender, tokenIds, amounts);
  
-        emit Events.VoucherDeposited(soulBoundTokenId, msg.sender, tokenId, sbtValue, block.timestamp);
+        emit Events.VoucherDeposited(soulBoundTokenId, msg.sender, tokenId, sbtValue);
     }
 
 
