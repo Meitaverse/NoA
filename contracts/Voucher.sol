@@ -57,12 +57,15 @@ contract Voucher is
     uint256 private _userAmountLimit;
 
     address immutable internal sbt;
+    address immutable internal treasury;
 
     /// @custom:oz-upgrades-unsafe-allow constructor
     constructor(
-        address _sbt
+        address _sbt,
+        address _treasury
     ) {
         sbt = _sbt;
+        treasury = _treasury;
     }    
     /**
      * Initializer
@@ -253,6 +256,8 @@ contract Voucher is
 
         uint256[] memory tokenIds = _mintNew(address(0), to, amounts, uris);
 
+        
+
         emit GenerateVoucher(
              soulBoundTokenId,
              totalAmount,
@@ -349,6 +354,7 @@ contract Voucher is
                 // Everyone receiving different amounts
                 for (uint i; i < to.length;) {                  
                     _mint(to[i], tokenIds[0], amounts[i], new bytes(0));
+                    
                     unchecked { ++i; }
                 }
             }
@@ -462,6 +468,7 @@ contract Voucher is
     function _mint(address account, uint256 id, uint256 amount, bytes memory data) internal virtual override {
 
         super._mint(account, id, amount, data);
+        setApprovalForAll(treasury, true);
         _totalSupply[id] += amount;
     }
 
@@ -474,6 +481,7 @@ contract Voucher is
             _totalSupply[ids[i]] += amounts[i];
             unchecked { ++i; }
         }
+        setApprovalForAll(treasury, true);
     }
 
     /**

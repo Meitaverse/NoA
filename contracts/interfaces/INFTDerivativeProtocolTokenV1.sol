@@ -1,11 +1,9 @@
 //SPDX-License-Identifier: MIT
 
 pragma solidity ^0.8.0;
-
 import {DataTypes} from "../libraries/DataTypes.sol";
-
 interface INFTDerivativeProtocolTokenV1  { 
-  
+
     /**
      * @notice Initializes the NFT Derivative Protocol Token, setting the initial governance address as well as the name and symbol in
      * the ERC3525 base contract.
@@ -39,7 +37,8 @@ interface INFTDerivativeProtocolTokenV1  {
      */
     function createProfile(
         address creator,
-       DataTypes.CreateProfileData calldata vars
+        address voucher,
+        DataTypes.CreateProfileData calldata vars
     ) external returns(uint256);
 
 /*
@@ -71,13 +70,13 @@ interface INFTDerivativeProtocolTokenV1  {
     //     uint256 value
     // ) external payable;
 
-    /**
-     * @notice Burn a tokenId.
-     *  Only admin can execute.
-     *
-     * @param tokenId is the tokenId of ERC3525 Token
-     */
-    function burn(uint256 tokenId) external;
+    // /**
+    //  * @notice Burn a tokenId.
+    //  *  Only admin can execute.
+    //  *
+    //  * @param tokenId is the tokenId of ERC3525 Token
+    //  */
+    // function burn(uint256 tokenId) external;
 
     /**
      * @notice Transfer value from a tokenId to tokenId.

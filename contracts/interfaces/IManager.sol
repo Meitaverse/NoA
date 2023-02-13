@@ -89,14 +89,6 @@ interface IManager {
        address metadataDescriptor
     ) external;
 
-    // function mintSBTValue(
-    //     uint256 soulBoundTokenId, 
-    //     uint256 value
-    // ) external;
-
-    function burnSBT(
-        uint256 soulBoundTokenId
-    )external;
 
     /**
      * @notice Creates a profile with the specified parameters, minting a profile NFT to the given recipient. This

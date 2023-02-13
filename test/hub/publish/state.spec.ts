@@ -76,9 +76,6 @@ makeSuiteCleanRoom('Multi state', function () {
                 
             await manager.connect(governance).setState(ProtocolState.Paused);
 
-            await expect( 
-                manager.connect(governance).burnSBT(SECOND_PROFILE_ID)
-            ).to.be.revertedWith(ERRORS.PAUSED);
         });
 
         it('User should fail to create profile when state is set to pause', async function () {

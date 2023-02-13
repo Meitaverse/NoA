@@ -61,12 +61,14 @@ import {
     FETH__factory,
     RoyaltyRegistry__factory,
     VoucherMarket__factory,
+    SBTLogic__factory,
   } from '../typechain';
   import { deployContract, waitForTx , ProtocolState, Error, ZERO_ADDRESS} from './helpers/utils';
   import { ManagerLibraryAddresses } from '../typechain/factories/contracts/Manager__factory';
   
   import { DataTypes } from '../typechain/contracts/modules/template/Template';
   import { MarketPlaceLibraryAddresses } from '../typechain/factories/contracts/MarketPlace__factory';
+import { NFTDerivativeProtocolTokenV1LibraryAddresses } from '../typechain/factories/contracts/NFTDerivativeProtocolTokenV1__factory';
   
   const TREASURY_FEE_BPS = 500;
   const RECEIVER_MAGIC_VALUE = '0x009ce20b';
@@ -88,6 +90,8 @@ import {
   const PublishRoyaltySBT = 100;
   
   let managerLibs: ManagerLibraryAddresses;
+  export let sbtLibs: NFTDerivativeProtocolTokenV1LibraryAddresses;
+
 
   // yarn full-deploy-local
 
@@ -249,9 +253,13 @@ import {
                 manager.address,
                 { nonce: deployerNonce++ }
         );
-     
+
+        const sbtLogic = await new SBTLogic__factory(deployer).deploy();
+        sbtLibs = {
+          'contracts/libraries/SBTLogic.sol:SBTLogic': sbtLogic.address,
+        };
         const sbtImpl = await deployContract(
-            new NFTDerivativeProtocolTokenV1__factory(deployer).deploy(
+            new NFTDerivativeProtocolTokenV1__factory(sbtLibs, deployer).deploy(
                 { nonce: deployerNonce++ }
             )
         );
@@ -268,30 +276,12 @@ import {
             initializeSBTData,
             { nonce: deployerNonce++ }
         );
-        const sbtContract = new NFTDerivativeProtocolTokenV1__factory(deployer).attach(sbtProxy.address);
+        const sbtContract = new NFTDerivativeProtocolTokenV1__factory(sbtLibs, deployer).attach(sbtProxy.address);
         console.log('\t-- sbtContract: ', sbtContract.address);
         await exportAddress(hre, sbtContract, 'SBT');
         await exportSubgraphNetworksJson(hre, sbtContract, 'SBT');
 
 
-        console.log('\n\t-- Deploying voucher --');
-        const voucherImpl = await deployContract(
-            new Voucher__factory(deployer).deploy(sbtContract.address, { nonce: deployerNonce++ })
-        );
-
-        let initializeVoucherData = voucherImpl.interface.encodeFunctionData("initialize", [
-            "Voucher Bitsoul",
-            "Voucher",
-        ]);
-        const voucherProxy = await new ERC1967Proxy__factory(deployer).deploy(
-            voucherImpl.address,
-            initializeVoucherData,
-            { nonce: deployerNonce++ }
-        );
-        const voucherContract = new Voucher__factory(deployer).attach(voucherProxy.address);
-        console.log('\t-- voucherContract: ', voucherContract.address);
-        await exportAddress(hre, voucherContract, 'Voucher');
-        await exportSubgraphNetworksJson(hre, voucherContract, 'Voucher');
 
         const governorImpl = await new GovernorContract__factory(deployer).deploy({ nonce: deployerNonce++ });
         let initializeDataGovrnor = governorImpl.interface.encodeFunctionData("initialize", [
@@ -339,6 +329,29 @@ import {
         await exportSubgraphNetworksJson(hre, bankTreasuryContract, 'BankTreasury');
 
         
+        console.log('\n\t-- Deploying voucher --');
+        const voucherImpl = await deployContract(
+            new Voucher__factory(deployer).deploy(
+                sbtContract.address, 
+                bankTreasuryContract.address, 
+                { nonce: deployerNonce++ }
+            )
+        );
+
+        let initializeVoucherData = voucherImpl.interface.encodeFunctionData("initialize", [
+            "Voucher Bitsoul",
+            "Voucher",
+        ]);
+        const voucherProxy = await new ERC1967Proxy__factory(deployer).deploy(
+            voucherImpl.address,
+            initializeVoucherData,
+            { nonce: deployerNonce++ }
+        );
+        const voucherContract = new Voucher__factory(deployer).attach(voucherProxy.address);
+        console.log('\t-- voucherContract: ', voucherContract.address);
+        await exportAddress(hre, voucherContract, 'Voucher');
+        await exportSubgraphNetworksJson(hre, voucherContract, 'Voucher');
+
         console.log('\n\t-- Deploying market place --');
         let marketLibs:MarketPlaceLibraryAddresses
         const marketLogic = await new MarketLogic__factory(deployer).deploy({ nonce: deployerNonce++ });
@@ -484,6 +497,7 @@ import {
         
         console.log('\n\t-- Whitelisting sbtContract Contract address --');
         const transferValueRole = await sbtContract.TRANSFER_VALUE_ROLE();
+        await waitForTx( sbtContract.connect(deployer).grantRole(transferValueRole, sbtContract.address));
         await waitForTx( sbtContract.connect(deployer).grantRole(transferValueRole, manager.address));
         await waitForTx( sbtContract.connect(deployer).grantRole(transferValueRole, publishModule.address));
         await waitForTx( sbtContract.connect(deployer).grantRole(transferValueRole, feeCollectModule.address));

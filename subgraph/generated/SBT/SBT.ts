@@ -128,36 +128,6 @@ export class BeaconUpgraded__Params {
   }
 }
 
-export class BurnSBT extends ethereum.Event {
-  get params(): BurnSBT__Params {
-    return new BurnSBT__Params(this);
-  }
-}
-
-export class BurnSBT__Params {
-  _event: BurnSBT;
-
-  constructor(event: BurnSBT) {
-    this._event = event;
-  }
-
-  get caller(): Address {
-    return this._event.parameters[0].value.toAddress();
-  }
-
-  get soulBoundTokenId(): BigInt {
-    return this._event.parameters[1].value.toBigInt();
-  }
-
-  get balance(): BigInt {
-    return this._event.parameters[2].value.toBigInt();
-  }
-
-  get timestamp(): BigInt {
-    return this._event.parameters[3].value.toBigInt();
-  }
-}
-
 export class Initialized extends ethereum.Event {
   get params(): Initialized__Params {
     return new Initialized__Params(this);
@@ -698,12 +668,17 @@ export class SBT extends ethereum.SmartContract {
 
   createProfile(
     creator: Address,
+    voucher: Address,
     vars: SBT__createProfileInputVarsStruct
   ): BigInt {
     let result = super.call(
       "createProfile",
-      "createProfile(address,(address,string,string)):(uint256)",
-      [ethereum.Value.fromAddress(creator), ethereum.Value.fromTuple(vars)]
+      "createProfile(address,address,(address,string,string)):(uint256)",
+      [
+        ethereum.Value.fromAddress(creator),
+        ethereum.Value.fromAddress(voucher),
+        ethereum.Value.fromTuple(vars)
+      ]
     );
 
     return result[0].toBigInt();
@@ -711,12 +686,17 @@ export class SBT extends ethereum.SmartContract {
 
   try_createProfile(
     creator: Address,
+    voucher: Address,
     vars: SBT__createProfileInputVarsStruct
   ): ethereum.CallResult<BigInt> {
     let result = super.tryCall(
       "createProfile",
-      "createProfile(address,(address,string,string)):(uint256)",
-      [ethereum.Value.fromAddress(creator), ethereum.Value.fromTuple(vars)]
+      "createProfile(address,address,(address,string,string)):(uint256)",
+      [
+        ethereum.Value.fromAddress(creator),
+        ethereum.Value.fromAddress(voucher),
+        ethereum.Value.fromTuple(vars)
+      ]
     );
     if (result.reverted) {
       return new ethereum.CallResult();
@@ -1405,9 +1385,13 @@ export class CreateProfileCall__Inputs {
     return this._call.inputValues[0].value.toAddress();
   }
 
+  get voucher(): Address {
+    return this._call.inputValues[1].value.toAddress();
+  }
+
   get vars(): CreateProfileCallVarsStruct {
     return changetype<CreateProfileCallVarsStruct>(
-      this._call.inputValues[1].value.toTuple()
+      this._call.inputValues[2].value.toTuple()
     );
   }
 }

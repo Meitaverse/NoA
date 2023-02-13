@@ -65,24 +65,12 @@ contract ManagerV2_BadRevision is
         return _RECEIVER;
     }
 
-
-    // function mintSBTValue(uint256 soulBoundTokenId, uint256 value) external whenNotPaused onlyGov {
-    //     INFTDerivativeProtocolTokenV1(SBT).mintValue(soulBoundTokenId, value);
-    // }
-
-    function burnSBT(uint256 tokenId) external whenNotPaused onlyGov {
-        INFTDerivativeProtocolTokenV1(SBT).burn(tokenId);
-    }
-
-    // function burnSBTValue(uint256 tokenId, uint256 value) external whenNotPaused onlyGov {
-    //     INFTDerivativeProtocolTokenV1(SBT).burnValue(tokenId, value);
-    // }
-
     function createProfile(
         DataTypes.CreateProfileData calldata vars
     ) external returns (uint256) {
+        address _voucher = IModuleGlobals(MODULE_GLOBALS).getVoucher();
         if (!IModuleGlobals(MODULE_GLOBALS).isWhitelistProfileCreator(vars.wallet)) revert Errors.ProfileCreatorNotWhitelisted();
-        uint256 soulBoundTokenId = INFTDerivativeProtocolTokenV1(SBT).createProfile(msg.sender, vars);
+        uint256 soulBoundTokenId = INFTDerivativeProtocolTokenV1(SBT).createProfile(msg.sender, _voucher, vars);
         return soulBoundTokenId;
     }
 

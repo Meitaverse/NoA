@@ -234,27 +234,7 @@ type SBTSlotChangedHistory @entity {
 
   "The date/time the event emit in seconds since Unix epoch"
   timestamp: BigInt!
-} 
-
-# Burn SBT history    
-type BurnSBTHistory @entity {
-  "TransactionHash-logsIndex"
-  id: ID!
-
-  sbtAsset: SBTAsset!
-
-  "Caller address"
-  caller: Bytes!
-
-  "The account to be burned"
-  account: Account!
-
-  "The balance amount of SBT value and will be transfer to bank treasury"
-  balance: BigInt!
-
-  "The date/time the event emit in seconds since Unix epoch"
-  timestamp: BigInt!
-}    
+}   
   
 # SBT ApprovalForAll
 type SBTAccountApproval @entity {

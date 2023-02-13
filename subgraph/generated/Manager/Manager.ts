@@ -1297,36 +1297,6 @@ export class AirdropCallAirdropDataStruct extends ethereum.Tuple {
   }
 }
 
-export class BurnSBTCall extends ethereum.Call {
-  get inputs(): BurnSBTCall__Inputs {
-    return new BurnSBTCall__Inputs(this);
-  }
-
-  get outputs(): BurnSBTCall__Outputs {
-    return new BurnSBTCall__Outputs(this);
-  }
-}
-
-export class BurnSBTCall__Inputs {
-  _call: BurnSBTCall;
-
-  constructor(call: BurnSBTCall) {
-    this._call = call;
-  }
-
-  get tokenId(): BigInt {
-    return this._call.inputValues[0].value.toBigInt();
-  }
-}
-
-export class BurnSBTCall__Outputs {
-  _call: BurnSBTCall;
-
-  constructor(call: BurnSBTCall) {
-    this._call = call;
-  }
-}
-
 export class CollectCall extends ethereum.Call {
   get inputs(): CollectCall__Inputs {
     return new CollectCall__Inputs(this);

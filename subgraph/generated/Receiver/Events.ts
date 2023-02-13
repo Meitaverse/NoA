@@ -1190,40 +1190,6 @@ export class MarketPlaceERC3525Received__Params {
   }
 }
 
-export class MintNFTVoucher extends ethereum.Event {
-  get params(): MintNFTVoucher__Params {
-    return new MintNFTVoucher__Params(this);
-  }
-}
-
-export class MintNFTVoucher__Params {
-  _event: MintNFTVoucher;
-
-  constructor(event: MintNFTVoucher) {
-    this._event = event;
-  }
-
-  get soulBoundTokenId(): BigInt {
-    return this._event.parameters[0].value.toBigInt();
-  }
-
-  get account(): Address {
-    return this._event.parameters[1].value.toAddress();
-  }
-
-  get tokenId(): BigInt {
-    return this._event.parameters[2].value.toBigInt();
-  }
-
-  get sbtValue(): BigInt {
-    return this._event.parameters[3].value.toBigInt();
-  }
-
-  get generateTimestamp(): BigInt {
-    return this._event.parameters[4].value.toBigInt();
-  }
-}
-
 export class ModuleBaseConstructed extends ethereum.Event {
   get params(): ModuleBaseConstructed__Params {
     return new ModuleBaseConstructed__Params(this);
@@ -2363,10 +2329,6 @@ export class VoucherDeposited__Params {
 
   get sbtValue(): BigInt {
     return this._event.parameters[3].value.toBigInt();
-  }
-
-  get timestamp(): BigInt {
-    return this._event.parameters[4].value.toBigInt();
   }
 }
 

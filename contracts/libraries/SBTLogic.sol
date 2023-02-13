@@ -2,13 +2,12 @@
 
 pragma solidity ^0.8.13;
 
+import "@solvprotocol/erc-3525/contracts/IERC3525.sol";
+import "../interfaces/INFTDerivativeProtocolTokenV1.sol";
 import {DataTypes} from './DataTypes.sol';
 import {Errors} from './Errors.sol';
-import {Events} from './Events.sol';
 import './Constants.sol';
-import {IDerivativeNFT} from "../interfaces/IDerivativeNFT.sol";
-import {ICollectModule} from '../interfaces/ICollectModule.sol';
-import {IPublishModule} from '../interfaces/IPublishModule.sol';
+
 /**
  * @title SBTLogic
  * @author bitsoul Protocol
@@ -18,10 +17,13 @@ import {IPublishModule} from '../interfaces/IPublishModule.sol';
  * @dev The functions are external, so they are called from the hub via `delegateCall` under the hood.
  */
 library SBTLogic {
+
     function createProfile(
+        address sbt,
+        address voucher,
         uint256 tokenId_,
-        address creator,
-        address wallet,
+        // address creator,
+        // address wallet,
         string memory nickName,
         string memory imageURI,
         mapping(uint256 => DataTypes.SoulBoundTokenDetail) storage _sbtDetails
@@ -34,13 +36,9 @@ library SBTLogic {
             locked: true
         });
 
-        emit Events.ProfileCreated(
-            tokenId_,
-            creator,
-            wallet,    
-            nickName,
-            imageURI
-        );
+        if (voucher != address(0)) {
+            IERC3525(sbt).setApprovalForAll(voucher, true);
+        }
     }
 
     function updateProfile(
@@ -57,22 +55,22 @@ library SBTLogic {
             locked: true
         });
 
-        emit Events.ProfileUpdated(
-            soulBoundTokenId,
-            nickName,
-            imageURI
-        );
     }
 
+    function burnProcess(
+        address sbt,
+        uint256 soulBoundTokenId,
+        mapping(uint256 => DataTypes.SoulBoundTokenDetail) storage _sbtDetails
+    ) external {
+        uint256 balance = IERC3525(sbt).balanceOf(soulBoundTokenId);
 
-    // function burnProcess(
-    //     address caller,
-    //     uint256 balance,
-    //     uint256 soulBoundTokenId,
-    //     mapping(uint256 => DataTypes.SoulBoundTokenDetail) storage _sbtDetails
-    // ) external {
-    //     delete _sbtDetails[soulBoundTokenId];
-    //     emit Events.BurnSBT(caller, soulBoundTokenId, balance, block.timestamp);
-    // }
+        if (balance > 0 ) {
+            INFTDerivativeProtocolTokenV1(sbt).transferValue(soulBoundTokenId, BANK_TREASURY_SOUL_BOUND_TOKENID, balance);
+        }
+        
+        delete _sbtDetails[soulBoundTokenId];
+        
+    }
+
 
 }    

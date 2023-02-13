@@ -1,16 +1,9 @@
 import { log, Address, BigInt, Bytes, store, TypedMap } from "@graphprotocol/graph-ts";
 
-// import {
-//     ProfileCreated,
-//     ProfileUpdated,
-//     BurnSBT,
-// } from "../generated/SBT/Events"
-
 import {
     SBT,
     ProfileCreated,
     ProfileUpdated,
-    BurnSBT,
     Transfer,
     TransferValue,
     SlotChanged,
@@ -20,8 +13,6 @@ import {
 } from "../generated/SBT/SBT"
 
 import {
-    // MintSBTValueHistory,
-    BurnSBTHistory,
     SBTTransferHistory,
     SBTAsset,
     SBTTransferValueHistory,
@@ -73,31 +64,6 @@ export function handleProfileUpdated(event: ProfileUpdated): void {
     } 
 }
 
-
-export function handleBurnSBT(event: BurnSBT): void {
-    log.info("handleBurnSBT, event.address: {}", [event.address.toHexString()])
-
-    const sbt = loadOrCreateSoulBoundToken(event.params.soulBoundTokenId)
-    if (sbt) {        
-        let wallet = Address.fromBytes(sbt.wallet)
-        const account = loadOrCreateAccount(wallet)
-        if (account) {
-
-            let _idString = getLogId(event)
-            const history = BurnSBTHistory.load(_idString) || new BurnSBTHistory(_idString)
-            if (history) {
-                history.sbtAsset = loadOrCreateSBTAsset(wallet).id
-                history.caller = event.params.caller
-                history.account = account.id
-                history.balance = event.params.balance
-                history.timestamp = event.params.timestamp
-                history.save()
-            } 
-        }
-        
-        
-    }
-}
 
 export function handleSBTTransfer(event: Transfer): void {
     log.info("handleSBTTransfer, event.address: {}, _from: {}, _to: {}", [

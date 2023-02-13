@@ -11,7 +11,8 @@ interface INFTDerivativeProtocolTokenV2  {
 
 
     function createProfile(
-        address creator,
+       address creator,
+       address voucher,
        DataTypes.CreateProfileData calldata vars
     ) external returns(uint256);
 
@@ -28,20 +29,19 @@ interface INFTDerivativeProtocolTokenV2  {
     //     uint256 value
     // ) external payable;
 
-    /**
-     * @notice Burn a tokenId.
-     *  Only admin can execute.
-     *
-     * @param tokenId is the tokenId of ERC3525 Token
-     */
-    function burn(uint256 tokenId) external;
+    // /**
+    //  * @notice Burn a tokenId.
+    //  *  Only admin can execute.
+    //  *
+    //  * @param tokenId is the tokenId of ERC3525 Token
+    //  */
+    // function burn(uint256 tokenId) external;
 
     function transferValue(
         uint256 fromTokenId_,
         uint256 toTokenId_,
         uint256 value_
     ) external;
-
 
     //V2 
     function setSigner(address signer)  external;

@@ -35,21 +35,6 @@ interface IManagerV2 {
    */
    function setState(DataTypes.ProtocolState newState) external;
 
-    // function mintSBTValue(
-    //     uint256 soulBoundTokenId, 
-    //     uint256 value
-    // ) external;
-
-   function burnSBT(
-        uint256 soulBoundTokenId
-   )external;
-
-    // function burnSBTValue(
-    //     uint256 soulBoundTokenId,
-    //     uint256 value
-    // ) external;
-
-
     /**
      * @notice Creates a profile with the specified parameters, minting a profile NFT to the given recipient. This
      * function must be called by a whitelisted profile creator.

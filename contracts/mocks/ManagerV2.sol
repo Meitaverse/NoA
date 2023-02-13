@@ -55,21 +55,12 @@ contract ManagerV2 is IManagerV2, NFTDerivativeProtocolMultiState, MockManagerV2
         return _RECEIVER;
     }
 
-
-    // function mintSBTValue(uint256 soulBoundTokenId, uint256 value) external whenNotPaused onlyGov {
-    //     INFTDerivativeProtocolTokenV1(SBT).mintValue(soulBoundTokenId, value);
-    // }
-
-
-    function burnSBT(uint256 tokenId) external whenNotPaused onlyGov {
-        INFTDerivativeProtocolTokenV1(SBT).burn(tokenId);
-    }
-
     function createProfile(
         DataTypes.CreateProfileData calldata vars
     ) external returns (uint256) {
+         address _voucher = IModuleGlobals(MODULE_GLOBALS).getVoucher();
         if (!IModuleGlobals(MODULE_GLOBALS).isWhitelistProfileCreator(vars.wallet)) revert Errors.ProfileCreatorNotWhitelisted();
-        uint256 soulBoundTokenId = INFTDerivativeProtocolTokenV1(SBT).createProfile(msg.sender, vars);
+        uint256 soulBoundTokenId = INFTDerivativeProtocolTokenV1(SBT).createProfile(msg.sender, _voucher, vars);
 
         return soulBoundTokenId;
     }
@@ -97,7 +88,7 @@ contract ManagerV2 is IManagerV2, NFTDerivativeProtocolMultiState, MockManagerV2
 
         uint256 projectId = _generateNextProjectId();
         _projectNameHashByEventId[keccak256(bytes(project.name))] = projectId;
-        address derivativeNFT = InteractionLogic.createProject(
+        InteractionLogic.createProject(
              msg.sender,
             _DNFT_IMPL,
             SBT,

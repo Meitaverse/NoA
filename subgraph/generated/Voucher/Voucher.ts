@@ -1144,6 +1144,10 @@ export class ConstructorCall__Inputs {
   get _sbt(): Address {
     return this._call.inputValues[0].value.toAddress();
   }
+
+  get _treasury(): Address {
+    return this._call.inputValues[1].value.toAddress();
+  }
 }
 
 export class ConstructorCall__Outputs {

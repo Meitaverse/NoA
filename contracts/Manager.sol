@@ -95,15 +95,6 @@ contract Manager is
     }
 */
 
-    function burnSBT(uint256 tokenId) 
-        external 
-        whenNotPaused 
-        nonReentrant
-        onlyGov 
-    {
-        address _sbt = IModuleGlobals(MODULE_GLOBALS).getSBT();
-        INFTDerivativeProtocolTokenV1(_sbt).burn(tokenId);
-    }
 
     function createProfile(
         DataTypes.CreateProfileData calldata vars
@@ -114,12 +105,17 @@ contract Manager is
         returns (uint256) 
     {
         address _sbt = IModuleGlobals(MODULE_GLOBALS).getSBT();
+        address _voucher = IModuleGlobals(MODULE_GLOBALS).getVoucher();
         if (!IModuleGlobals(MODULE_GLOBALS).isWhitelistProfileCreator(vars.wallet)) 
            revert Errors.ProfileCreatorNotWhitelisted();
         if (_sbt == address(0)) revert Errors.SBTNotSet();
         _validateNickName(vars.nickName);
 
-        uint256 soulBoundTokenId = INFTDerivativeProtocolTokenV1(_sbt).createProfile(msg.sender, vars);
+        uint256 soulBoundTokenId = INFTDerivativeProtocolTokenV1(_sbt).createProfile(
+            msg.sender, 
+            _voucher,
+            vars
+        );
 
         _soulBoundTokenIdToWallet[soulBoundTokenId] = vars.wallet;
         _walletToSoulBoundTokenId[vars.wallet] = soulBoundTokenId;
