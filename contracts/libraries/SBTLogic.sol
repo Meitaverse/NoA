@@ -19,11 +19,7 @@ import './Constants.sol';
 library SBTLogic {
 
     function createProfile(
-        address sbt,
-        address voucher,
         uint256 tokenId_,
-        // address creator,
-        // address wallet,
         string memory nickName,
         string memory imageURI,
         mapping(uint256 => DataTypes.SoulBoundTokenDetail) storage _sbtDetails
@@ -35,10 +31,6 @@ library SBTLogic {
             imageURI: imageURI,
             locked: true
         });
-
-        if (voucher != address(0)) {
-            IERC3525(sbt).setApprovalForAll(voucher, true);
-        }
     }
 
     function updateProfile(

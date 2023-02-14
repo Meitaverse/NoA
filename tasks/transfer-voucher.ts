@@ -30,12 +30,13 @@ import { ContractTransaction } from "@ethersproject/contracts";
 
 export let runtimeHRE: HardhatRuntimeEnvironment;
 
-// yarn hardhat --network local deposit-voucher --sbtid 2 --voucherid 10
+// yarn hardhat --network local transfer-voucher --fromsbtid 2 --tosbtid 3--voucherid 1
 
-task("deposit-voucher", "deposit-voucher function")
-.addParam("sbtid", "account id to collect ,from 2 to 4")
+task("transfer-voucher", "transfer-voucher function")
+.addParam("fromsbtid", "account id to tranfrer ,from 2 to 4")
+.addParam("tosbtid", "account id to receive ,from 2 to 4")
 .addParam("voucherid", "the voucher id")
-.setAction(async ({sbtid, voucherid}: {sbtid : number, voucherid : number}, hre) =>  {
+.setAction(async ({fromsbtid, tosbtid, voucherid}: {fromsbtid : number, tosbtid : number, voucherid : number}, hre) =>  {
   runtimeHRE = hre;
   const ethers = hre.ethers;
   const accounts = await ethers.getSigners();
@@ -62,11 +63,10 @@ task("deposit-voucher", "deposit-voucher function")
   // console.log('\t-- userThree: ', userThree.address);
   // console.log('\t-- userFour: ', userFour.address);
 
-  let operator = accounts[sbtid];
-  let balance = await sbt['balanceOf(uint256)'](sbtid);
-  console.log('\n\t-- balance: ', balance);
+  let from = accounts[fromsbtid];
+  let to = accounts[tosbtid];
 
-  let voucherAmount = await voucher.connect(operator)['balanceOf(address,uint256)'](await operator.getAddress(), voucherid);
+  let voucherAmount = await voucher.connect(from)['balanceOf(address,uint256)'](await from.getAddress(), voucherid);
 
   if (voucherAmount.eq(0)) {
     console.log('\n\t-- voucherAmount is zero or not owner ');
@@ -75,31 +75,19 @@ task("deposit-voucher", "deposit-voucher function")
 
   console.log('\n\t-- voucherAmount: ', voucherAmount);
 
-  //TODO
-  if (await voucher.isApprovedForAll(bankTreasury.address, await operator.getAddress())) {
-    console.log('\n\t--  operator set approved for ', bankTreasury.address);
-  } else {
-    await voucher.connect(operator).setApprovalForAll(bankTreasury.address, true);
-  }
+
   
   const receipt = await waitForTx(
-      bankTreasury.connect(operator).depositFromVoucher(voucherid, sbtid)
+      voucher.connect(from).safeTransferFrom(await from.getAddress(), await to.getAddress(), voucherid, voucherAmount, "")
   );
 
-  const event = findEvent(receipt, 'VoucherDeposited', voucher);
+  const event = findEvent(receipt, 'TransferSingle', voucher);
 
-  let sbtValue = event.args.sbtValue;
-  console.log('\n\t-- sbtValue: ', sbtValue);
+  let newOwner = event.args.wallet;
+  console.log('\n\t-- newOwner: ', newOwner);
 
-  balance = await sbt['balanceOf(uint256)'](sbtid);
-  console.log('\n\t-- new balance: ', balance);
+  voucherAmount = await await voucher['balanceOf(address,uint256)'](await newOwner.getAddress(), voucherid);
+  console.log('\n\t-- new voucherAmount of newOwner: ', voucherAmount);
 
-
-          
-  voucherAmount = await voucher.connect(operator)['balanceOf(address,uint256)'](await operator.getAddress(), voucherid);
-  if (voucherAmount.eq(0)) {
-    console.log('\n\t-- voucher is used');
-
-  }
 
 });

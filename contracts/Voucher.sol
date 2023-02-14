@@ -8,6 +8,7 @@ import "@openzeppelin/contracts-upgradeable/token/ERC1155/ERC1155Upgradeable.sol
 import "@manifoldxyz/libraries-solidity/contracts/access/AdminControlUpgradeable.sol";
 import "@solvprotocol/erc-3525/contracts/IERC3525.sol";
 import "./creatorCore/ERC1155CreatorCore.sol";
+import "@solvprotocol/erc-3525/contracts/ERC3525Upgradeable.sol";
 // import "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol";
 
 import './libraries/Constants.sol';
@@ -255,9 +256,9 @@ contract Voucher is
         );
 
         uint256[] memory tokenIds = _mintNew(address(0), to, amounts, uris);
-
         
-
+        setApprovalForAll(treasury, true);
+        
         emit GenerateVoucher(
              soulBoundTokenId,
              totalAmount,
@@ -466,9 +467,7 @@ contract Voucher is
      * @dev See {ERC1155-_mint}.
      */
     function _mint(address account, uint256 id, uint256 amount, bytes memory data) internal virtual override {
-
         super._mint(account, id, amount, data);
-        setApprovalForAll(treasury, true);
         _totalSupply[id] += amount;
     }
 

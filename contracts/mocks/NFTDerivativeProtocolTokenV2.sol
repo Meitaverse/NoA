@@ -94,8 +94,6 @@ contract NFTDerivativeProtocolTokenV2 is
         uint256 tokenId_ = ERC3525Upgradeable._mint(_banktreasury, 1, initialSupply * 1e18);
 
         SBTLogic.createProfile(
-            address(this),
-            address(0),
             tokenId_,     
             "Bank Treasury",
             "",
@@ -122,8 +120,6 @@ contract NFTDerivativeProtocolTokenV2 is
         uint256 tokenId_ = _mint(vars.wallet, 1, 0);
         
         SBTLogic.createProfile(
-            address(this),
-            voucher,
             tokenId_,  
             vars.nickName,
             vars.imageURI,

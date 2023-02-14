@@ -110,6 +110,7 @@ makeSuiteCleanRoom('Bank Treasury', function () {
       expect(await manager.getWalletBySoulBoundTokenId(SECOND_PROFILE_ID)).to.eq(userAddress);
       expect(await manager.getWalletBySoulBoundTokenId(THIRD_PROFILE_ID)).to.eq(userTwoAddress);
 
+      
 
   });
 
@@ -118,9 +119,7 @@ makeSuiteCleanRoom('Bank Treasury', function () {
       beforeEach(async () => {
         //mint some Values to user
         await bankTreasuryContract.connect(user).buySBT(SECOND_PROFILE_ID, {value: original_balance});
-        await sbtContract.connect(user).setApprovalForAll(voucherContract.address, true);
-        await voucherContract.connect(user).setApprovalForAll(bankTreasuryContract.address, true);
-        
+
       });
 
       it('User should success mint a voucher and transfer SBT to bank treasury', async function () {
@@ -130,12 +129,9 @@ makeSuiteCleanRoom('Bank Treasury', function () {
         expect((await sbtContract['balanceOf(uint256)'](SECOND_PROFILE_ID)).toNumber()).to.eq(0);
        
       });
-
-    
-
     });
     
-    
+  
     context('Withdraw all avaliable earnest funds', function () {
       beforeEach(async () => {
         //mint some Values to user
@@ -184,6 +180,11 @@ makeSuiteCleanRoom('Bank Treasury', function () {
       });
 
       it("Cannot withdraw again", async () => {
+        // await bankTreasuryContract.connect(user).withdraw(
+        //   SECOND_PROFILE_ID, 
+        //   sbtContract.address,
+        //   balance
+        // );
         await expect(bankTreasuryContract.connect(user).withdraw(
           SECOND_PROFILE_ID, 
           sbtContract.address,
@@ -256,8 +257,6 @@ makeSuiteCleanRoom('Bank Treasury', function () {
       beforeEach(async () => {
         //mint some Values to user
         await bankTreasuryContract.connect(user).buySBT(SECOND_PROFILE_ID, {value: original_balance});
-        await sbtContract.connect(user).setApprovalForAll(voucherContract.address, true);
-        await voucherContract.connect(user).setApprovalForAll(bankTreasuryContract.address, true);
         
       });
 
@@ -324,12 +323,11 @@ makeSuiteCleanRoom('Bank Treasury', function () {
 
     });
 
-
-
     context('deposit', function () {
         beforeEach(async () => {
           //mint some Values to user
           await bankTreasuryContract.connect(user).buySBT(SECOND_PROFILE_ID, {value: original_balance});
+                    
         });
         
         it('User should deposited after user call tranferFrom to treasury', async function () {
@@ -356,7 +354,6 @@ makeSuiteCleanRoom('Bank Treasury', function () {
 
         it('User should use SBT Value to mint Voucher', async function () {
 
-          
           await expect(
             voucherContract.connect(user).mintBaseNew(SECOND_PROFILE_ID, [userAddress], [100], [''])
           ).to.not.be.reverted;
@@ -393,6 +390,8 @@ makeSuiteCleanRoom('Bank Treasury', function () {
           expect(await voucherContract.balanceOf(userAddress, FIRST_VOUCHER_TOKEN_ID)).to.eq(0);  
           expect(await voucherContract.balanceOf(userTwoAddress, FIRST_VOUCHER_TOKEN_ID)).to.eq(100);  
 
+          await voucherContract.connect(userTwo).setApprovalForAll(bankTreasuryContract.address, true);
+          
           await expect(
             bankTreasuryContract.connect(userTwo).depositFromVoucher(FIRST_VOUCHER_TOKEN_ID, THIRD_PROFILE_ID)
           ).to.not.be.reverted;

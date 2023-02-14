@@ -27,7 +27,7 @@ contract NFTDerivativeProtocolTokenV1 is
     UUPSUpgradeable
 {
     uint256 internal constant VERSION = 1;
-    uint256 public constant MAX_SUPPLY = 10000000000 * 1e18;
+    uint256 internal constant MAX_SUPPLY = 10000000000 * 1e18;
     bytes32 public constant TRANSFER_VALUE_ROLE = keccak256("TRANSFER_VALUE_ROLE");
     bytes32 public constant UPGRADER_ROLE = keccak256("UPGRADER_ROLE");
 
@@ -121,11 +121,7 @@ contract NFTDerivativeProtocolTokenV1 is
         uint256 tokenId_ = ERC3525Upgradeable._mint(_banktreasury, 1, initialSupply * 1e18);
         
         SBTLogic.createProfile(
-            address(this),
-            address(0),
             tokenId_,   
-            // _msgSender(),
-            // _banktreasury,    
             "Bank Treasury",
             "",
             _sbtDetails
@@ -156,12 +152,12 @@ contract NFTDerivativeProtocolTokenV1 is
         if (balanceOf(vars.wallet) > 0) revert Errors.TokenIsClaimed(); 
         
         uint256 tokenId_ = _mint(vars.wallet, 1, 0);
+
+        ERC3525Upgradeable._setApprovalForAll(vars.wallet, voucher, true);
+       
+
         SBTLogic.createProfile(
-            address(this),
-            voucher,
             tokenId_,
-            // creator,
-            // vars.wallet,    
             vars.nickName,
             vars.imageURI,
             _sbtDetails
