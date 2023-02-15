@@ -11,6 +11,7 @@ import {
   MockERC1155CreatorExtensionOverride__factory,
   MockERC1155CreatorExtensionBurnable,
   MockERC1155CreatorExtensionBurnable__factory,
+  MockERC1155CreatorMintPermissions__factory,
  } from '../../typechain';
 import { MAX_UINT256, ZERO_ADDRESS } from '../helpers/constants';
 import { ERRORS } from '../helpers/errors';
@@ -120,6 +121,10 @@ makeSuiteCleanRoom('Voucher Creator', function () {
       beforeEach(async () => {
         //user buy some SBT Values 
         await bankTreasuryContract.connect(user).buySBT(SECOND_PROFILE_ID, {value: original_balance});
+
+        //user two buy some SBT Values 
+        await bankTreasuryContract.connect(userTwo).buySBT(THIRD_PROFILE_ID, {value: original_balance});
+
       });
 
       it('User should success mint a voucher and transfer SBT Value to bank treasury', async function () {
@@ -160,6 +165,9 @@ makeSuiteCleanRoom('Voucher Creator', function () {
             //user buy some SBT Values 
             await bankTreasuryContract.connect(user).buySBT(SECOND_PROFILE_ID, {value: original_balance});
 
+            //user two buy some SBT Values 
+            await bankTreasuryContract.connect(userTwo).buySBT(THIRD_PROFILE_ID, {value: original_balance});
+            
             //mock voucher extension override
             baseApprover = await new MockERC1155CreatorExtensionOverride__factory(deployer).deploy(
                 voucherContract.address
@@ -537,49 +545,6 @@ makeSuiteCleanRoom('Voucher Creator', function () {
                 await voucherContract.tokenExtension(newTokenId1)
             ).eq(extension1.address);
 
-
-            // await extension1.testMintNew([another], [200], [""]);
-            // let newTokenId2 = 2;
-
-            // await extension2.testMintNew([anyone], [300], [""]);
-            // let newTokenId3 = 3;
-
-            // await extension1.testMintNew([anyone], [400], [""]);
-            // let newTokenId4 = 4;
-
-            // await extension1.testMintNew([anyone], [500], ["extension5"]);
-            // let newTokenId5 = 5;
-
-            // await creator.methods['mintBaseNew(address[],uint256[],string[])']([anyone], [600], [""], {from:owner});
-            // let newTokenId6 = 6;
-            // await truffleAssert.reverts(creator.tokenExtension(newTokenId6), "No extension for token");
-
-            // await creator.methods['mintBaseNew(address[],uint256[],string[])']([anyone], [700], ["base7"], {from:owner});
-            // let newTokenId7 = 7;
-            // await truffleAssert.reverts(creator.tokenExtension(newTokenId7), "No extension for token");
-
-            // await creator.methods['mintBaseNew(address[],uint256[],string[])']([anyone], [800], [""], {from:owner});
-            // let newTokenId8 = 8;
-            // await truffleAssert.reverts(creator.tokenExtension(newTokenId8), "No extension for token");
-
-            // await creator.methods['mintBaseNew(address[],uint256[],string[])']([anyone], [900], [""], {from:owner});
-            // let newTokenId9 = 9;
-            // await truffleAssert.reverts(creator.tokenExtension(newTokenId9), "No extension for token");
-
-            // // Check URI's
-            // assert.equal(await creator.uri(newTokenId1), 'http://extension1/'+newTokenId1);
-            expect(await voucherContract.uri(newTokenId1)).eq('http://extension1/'+newTokenId1);
-            
-            // assert.equal(await creator.uri(newTokenId2), 'http://extension1/'+newTokenId2);
-            // assert.equal(await creator.uri(newTokenId3), 'http://extension2/'+newTokenId3);
-            // assert.equal(await creator.uri(newTokenId4), 'http://extension1/'+newTokenId4);
-            // assert.equal(await creator.uri(newTokenId5), 'extension5');
-            // assert.equal(await creator.uri(newTokenId6), 'http://base/'+newTokenId6);
-            // assert.equal(await creator.uri(newTokenId7), 'base7');
-            // assert.equal(await creator.uri(newTokenId8), 'http://base/'+newTokenId8);
-            // assert.equal(await creator.uri(newTokenId9), 'http://base/'+newTokenId9);
-
-
         });
 
         it('voucher batch mint test', async function () {
@@ -630,15 +595,227 @@ makeSuiteCleanRoom('Voucher Creator', function () {
             ).eq(extension.address);
 
 
+            // Check balances
+            expect(
+                await voucherContract.balanceOf(userAddress, newTokenId1)
+            ).eq(100);
+            expect(
+                await voucherContract.balanceOf(userAddress, newTokenId2)
+            ).eq(200);
+            expect(
+                await voucherContract.balanceOf(userAddress, newTokenId3)
+            ).eq(300);
+            expect(
+                await voucherContract.balanceOf(userAddress, newTokenId4)
+            ).eq(400);
+            expect(
+                await voucherContract.balanceOf(userAddress, newTokenId5)
+            ).eq(500);
+            expect(
+                await voucherContract.balanceOf(userAddress, newTokenId6)
+            ).eq(600);
+            expect(
+                await voucherContract.balanceOf(userTwoAddress, newTokenId6)
+            ).eq(601);
+
+
         });
 
         it('voucher permissions functionality test', async function () {
+            const extension1 = await new MockERC1155CreatorExtensionBurnable__factory(deployer).deploy(
+                voucherContract.address
+            );
 
+            await voucherContract.connect(deployer)['registerExtension(address,string)'](extension1.address, 'http://extension1/');
+        
+            
+            const extension2 = await new MockERC1155CreatorExtensionBurnable__factory(deployer).deploy(
+                voucherContract.address
+            );
+
+            await voucherContract.connect(deployer)['registerExtension(address,string)'](extension2.address, 'http://extension2/');
+
+            await expect(
+                new MockERC1155CreatorMintPermissions__factory(deployer).deploy(
+                    userTwoAddress
+                )
+            ).to.be.revertedWith("Must implement IERC1155CreatorCore");
+
+            const permissions = await new MockERC1155CreatorMintPermissions__factory(deployer).deploy(
+                voucherContract.address
+            );
+
+            await expect(
+                permissions.approveMint(userTwoAddress, [userTwoAddress], [1], [100])
+            ).to.be.revertedWith("Can only be called by token creator");
+            
+            await expect(
+                voucherContract.connect(deployer).setMintPermissions(extension1.address, userTwoAddress)
+            ).to.be.revertedWith("Invalid address");
+            
+
+            await voucherContract.connect(deployer).setMintPermissions(extension1.address, permissions.address);
+
+            await extension1.connect(user).testMintNew(SECOND_PROFILE_ID, [userAddress], [100], [''])
+            await extension2.connect(userTwo).testMintNew(THIRD_PROFILE_ID, [userTwoAddress], [100], [''])
+
+            await permissions.setApproveEnabled(false);
+
+            await expect(
+                extension1.testMintNew(THIRD_PROFILE_ID, [userTwoAddress], [100], [''])
+            ).to.be.revertedWith("MockERC1155CreatorMintPermissions: Disabled");
+
+            await extension2.testMintNew(THIRD_PROFILE_ID, [userTwoAddress], [100], ['']);
+
+            await voucherContract.connect(deployer).setMintPermissions(extension1.address, '0x0000000000000000000000000000000000000000');
+
+            await extension1.testMintNew(THIRD_PROFILE_ID, [userTwoAddress], [100], ['']);
+            
+            await extension2.testMintNew(THIRD_PROFILE_ID, [userTwoAddress], [100], ['']);
         });
 
         it('voucher royalites update test', async function () {
+            await voucherContract.connect(user).mintBaseNew(SECOND_PROFILE_ID, [userAddress], [100], ['']);
+            let tokenId1 = 1;
+
+            // No royalties
+            let results = await voucherContract.getRoyalties(tokenId1);
+            expect(results[0].length).eq(0);
+            expect(results[1].length).eq(0);
+            
+            await expect( 
+                voucherContract.connect(deployer)['setRoyalties(uint256,address[],uint256[])'](tokenId1, [userTwoAddress, userThreeAddress], [9999,1])
+            ).to.be.revertedWith("Invalid total royalties");
+              
+            await expect( 
+                voucherContract.connect(deployer)['setRoyalties(uint256,address[],uint256[])'](tokenId1, [userThreeAddress], [1,2])
+            ).to.be.revertedWith("Invalid input");
+              
+            
+            await expect( 
+                voucherContract.connect(deployer)['setRoyalties(uint256,address[],uint256[])'](tokenId1, [userTwoAddress, userThreeAddress], [1])
+            ).to.be.revertedWith("Invalid input");
+              
+             // Set token royalties
+            await voucherContract.connect(deployer)['setRoyalties(uint256,address[],uint256[])'](tokenId1, [userTwoAddress, userThreeAddress], [123, 456]);
+
+            results = await voucherContract.getRoyalties(tokenId1);
+            expect(results[0].length).eq(2);
+            expect(results[1].length).eq(2);
+
+            results = await voucherContract.getFees(tokenId1);
+            expect(results[0].length).eq(2);
+            expect(results[1].length).eq(2);
+
+            let results2 = await voucherContract.getFeeRecipients(tokenId1);
+            expect(results2.length).eq(2);
+
+            let results3 = await voucherContract.getFeeBps(tokenId1);
+            expect(results3.length).eq(2);
+
+            await expect (
+                voucherContract.royaltyInfo(tokenId1, 10000)
+            ).to.be.revertedWith("More than 1 royalty receiver");
 
 
+            const extension = await new MockERC1155CreatorExtensionBurnable__factory(deployer).deploy(
+                voucherContract.address
+            );
+
+            await voucherContract.connect(deployer)['registerExtension(address,string)'](extension.address, 'http://extension/');
+
+            await extension.connect(userTwo).testMintNew(THIRD_PROFILE_ID, [userTwoAddress], [200], [''])
+
+            var tokenId2 = 2;
+
+            // No royalties
+            results = await voucherContract.getRoyalties(tokenId2);
+            expect(results[0].length).eq(0);
+            expect(results[1].length).eq(0);
+
+            await expect( 
+                voucherContract.connect(deployer)['setRoyaltiesExtension(address,address[],uint256[])'](extension.address, [userAddress, userTwoAddress], [9999,1])
+            ).to.be.revertedWith("Invalid total royalties");
+
+            await expect( 
+                voucherContract.connect(deployer)['setRoyaltiesExtension(address,address[],uint256[])'](extension.address, [userAddress], [1,2])
+            ).to.be.revertedWith("Invalid input");
+
+            await expect( 
+                voucherContract.connect(deployer)['setRoyaltiesExtension(address,address[],uint256[])'](extension.address, [userAddress, userTwoAddress], [1])
+            ).to.be.revertedWith("Invalid input");
+
+            // Set royalties
+            await voucherContract.connect(deployer)['setRoyaltiesExtension(address,address[],uint256[])'](extension.address, [userAddress], [123]);
+
+            results = await voucherContract.getRoyalties(tokenId2);
+            expect(results[0].length).eq(1);
+            expect(results[1].length).eq(1);
+
+            let results4 = await voucherContract.royaltyInfo(tokenId2, 10000);
+            expect(results4[1]).eq(10000*123/10000);
+
+            await voucherContract.connect(user).mintBaseNew(SECOND_PROFILE_ID, [userAddress], [300], ['']);
+            
+            let tokenId3 = 3;
+            await voucherContract.connect(user).mintBaseNew(SECOND_PROFILE_ID, [userAddress], [400], ['']);
+           let tokenId4 = 4;
+
+            results = await voucherContract.getRoyalties(tokenId3);
+            expect(results[0].length).eq(0);
+            expect(results[1].length).eq(0);
+
+            results = await voucherContract.getRoyalties(tokenId4);
+            expect(results[0].length).eq(0);
+            expect(results[1].length).eq(0);     
+            
+             // Set default royalties
+            await expect( 
+                voucherContract.connect(deployer)['setRoyalties(address[],uint256[])']([userTwoAddress, userThreeAddress], [9999,1])
+            ).to.be.revertedWith("Invalid total royalties");
+
+            await expect( 
+                voucherContract.connect(deployer)['setRoyalties(address[],uint256[])']([userTwoAddress], [1,2])
+            ).to.be.revertedWith("Invalid input");
+
+            await expect( 
+                voucherContract.connect(deployer)['setRoyalties(address[],uint256[])']([userTwoAddress, userThreeAddress], [1])
+            ).to.be.revertedWith("Invalid input");
+
+            await voucherContract.connect(deployer)['setRoyalties(address[],uint256[])']([userTwoAddress], [456]);
+
+            results = await voucherContract.getRoyalties(tokenId1);
+            expect(results[0].length).eq(2);
+            expect(results[1].length).eq(2);
+
+            results = await voucherContract.getRoyalties(tokenId2);
+            expect(results[0].length).eq(1);
+            expect(results[1].length).eq(1);
+            
+            results = await voucherContract.getRoyalties(tokenId3);
+            expect(results[0].length).eq(1);
+            expect(results[1].length).eq(1);
+            expect(results[0][0]).eq(userTwoAddress);
+
+             results = await voucherContract.getRoyalties(tokenId4);
+            expect(results[0].length).eq(1);
+            expect(results[1].length).eq(1);
+            expect(results[0][0]).eq(userTwoAddress);
+
+            // Unset royalties
+            await voucherContract.connect(deployer)['setRoyalties(address[],uint256[])']([], []);
+            results = await voucherContract.getRoyalties(tokenId3);
+            expect(results[0].length).eq(0);
+            expect(results[1].length).eq(0);
+
+            results = await voucherContract.getRoyalties(tokenId4);
+            expect(results[0].length).eq(0);
+            expect(results[1].length).eq(0);
+
+            await voucherContract.connect(deployer)['setRoyaltiesExtension(address,address[],uint256[])'](extension.address, [], []);
+            results = await voucherContract.getRoyalties(tokenId4);
+            expect(results[0].length).eq(0);
+            expect(results[1].length).eq(0);
         });
 
 
