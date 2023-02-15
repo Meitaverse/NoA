@@ -60,6 +60,13 @@ contract Voucher is
     address immutable internal sbt;
     address immutable internal treasury;
 
+
+    modifier onlySBTUser(uint256 soulBoundTokenId_) {
+        _validateCallerIsSoulBoundTokenOwner(soulBoundTokenId_);
+        _;
+    }
+
+
     /// @custom:oz-upgrades-unsafe-allow constructor
     constructor(
         address _sbt,
@@ -233,10 +240,9 @@ contract Voucher is
         virtual 
         override 
         nonReentrant 
-        // whenNotPaused 
+        onlySBTUser(soulBoundTokenId)
         returns(uint256[] memory) 
     {
-        //TODO validated caller is owner of soulBoundTokenId
         uint256 totalAmount;
         for (uint i; i < to.length;) {
             if (_userAmountLimit > 0 ){
@@ -507,5 +513,15 @@ contract Voucher is
      */
     function setApproveTransfer(address extension) external override adminRequired {
         _setApproveTransferBase(extension);
+    }
+
+        
+    function _validateCallerIsSoulBoundTokenOwner(uint256 soulBoundTokenId_) internal view {
+        
+         if (IERC3525(sbt).ownerOf(soulBoundTokenId_) == msg.sender) {
+            return;
+         }
+
+         revert Errors.NotProfileOwner();
     }
 }
