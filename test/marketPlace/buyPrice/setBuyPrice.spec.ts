@@ -92,7 +92,7 @@ makeSuiteCleanRoom('Market Place', function () {
       ).to.eq(SECOND_PROFILE_ID);
             
      
-      //mint some Values to user
+      //user buy some SBT Values 
       await bankTreasuryContract.connect(user).buySBT(SECOND_PROFILE_ID, {value: INITIAL_EARNESTFUNDS * 10});
       await bankTreasuryContract.connect(user).deposit(
         SECOND_PROFILE_ID,

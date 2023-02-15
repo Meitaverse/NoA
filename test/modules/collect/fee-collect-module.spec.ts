@@ -83,7 +83,7 @@ makeSuiteCleanRoom('Fee Collect Module', function () {
 
       expect(await manager.getWalletBySoulBoundTokenId(SECOND_PROFILE_ID)).to.eq(userAddress);
        
-      //mint some Values to user
+      //user buy some SBT Values 
       await bankTreasuryContract.connect(user).buySBT(SECOND_PROFILE_ID, {value: 10000});
 
       const tokenId = await manager.connect(userTwo).callStatic.createProfile({ 

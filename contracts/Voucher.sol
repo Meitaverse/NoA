@@ -236,7 +236,7 @@ contract Voucher is
         // whenNotPaused 
         returns(uint256[] memory) 
     {
-
+        //TODO validated caller is owner of soulBoundTokenId
         uint256 totalAmount;
         for (uint i; i < to.length;) {
             if (_userAmountLimit > 0 ){

@@ -67,6 +67,8 @@ import {
   SBTLogic__factory,
   RoyaltyRegistry,
   RoyaltyRegistry__factory,
+  MockERC1155CreatorExtensionOverride,
+  MockERC1155CreatorExtensionOverride__factory,
 } from '../typechain';
 
 import { ManagerLibraryAddresses } from '../typechain/factories/contracts/Manager__factory';
@@ -80,9 +82,6 @@ import {
   takeSnapshot,
 } from './helpers/utils';
 
-// import {
-//   CanvasDataStruct, PositionStruct
-// } from '../typechain/Template';
 
 import { DataTypes } from '../typechain/contracts/modules/template/Template';
 import { MarketPlaceLibraryAddresses } from '../typechain/factories/contracts/MarketPlace__factory';
@@ -227,6 +226,8 @@ before(async function () {
 
   // Deployment
   helper = await new Helper__factory(deployer).deploy();
+
+
 
   //Template
  let canvas: DataTypes.CanvasDataStruct = {width:800, height:600};
@@ -373,6 +374,7 @@ before(async function () {
   voucherContract = new Voucher__factory(deployer).attach(voucherProxy.address);
   console.log("voucherContract.address: ", voucherContract.address);
 
+
   //market place
 
   const marketLogic = await new MarketLogic__factory(deployer).deploy();
@@ -466,7 +468,6 @@ before(async function () {
   );
   feth = new FETH__factory(deployer).attach(fethProxy.address);
   console.log("feth.address: ", feth.address);
-
 
   expect(bankTreasuryContract).to.not.be.undefined;
   expect(marketPlaceContract).to.not.be.undefined;

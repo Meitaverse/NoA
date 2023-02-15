@@ -2,8 +2,6 @@ import { BigNumber } from '@ethersproject/bignumber';
 import { parseEther } from '@ethersproject/units';
 import '@nomiclabs/hardhat-ethers';
 import { expect } from 'chai';
-// import { solidity } from "ethereum-waffle";
-// use(solidity);
 
 import { 
   ERC20__factory,
@@ -66,13 +64,10 @@ import {
   
 } from '../__setup.spec';
 
-
 import { 
   createProfileReturningTokenId,
 } from '../helpers/utils';
 import { ContractTransaction, ethers } from 'ethers';
-
-// import { ContractTransaction } from 'ethers';
 
 let derivativeNFT: DerivativeNFT;
 const FIRST_VOUCHER_TOKEN_ID = 1;
@@ -110,31 +105,14 @@ makeSuiteCleanRoom('Bank Treasury', function () {
       expect(await manager.getWalletBySoulBoundTokenId(SECOND_PROFILE_ID)).to.eq(userAddress);
       expect(await manager.getWalletBySoulBoundTokenId(THIRD_PROFILE_ID)).to.eq(userTwoAddress);
 
-      
-
   });
 
   context('BankTreasury', function () {
-    context('Voucher generate', function () {
-      beforeEach(async () => {
-        //mint some Values to user
-        await bankTreasuryContract.connect(user).buySBT(SECOND_PROFILE_ID, {value: original_balance});
-
-      });
-
-      it('User should success mint a voucher and transfer SBT to bank treasury', async function () {
-
-        await voucherContract.connect(user).mintBaseNew(SECOND_PROFILE_ID, [userAddress], [original_balance], [''])
-
-        expect((await sbtContract['balanceOf(uint256)'](SECOND_PROFILE_ID)).toNumber()).to.eq(0);
-       
-      });
-    });
     
   
     context('Withdraw all avaliable earnest funds', function () {
       beforeEach(async () => {
-        //mint some Values to user
+        //user buy some SBT Values 
         await bankTreasuryContract.connect(user).buySBT(SECOND_PROFILE_ID, {value: original_balance});
 
         expect((await sbtContract['balanceOf(uint256)'](SECOND_PROFILE_ID)).toNumber()).to.eq(original_balance);
@@ -196,7 +174,7 @@ makeSuiteCleanRoom('Bank Treasury', function () {
     
     context('Withdraw a part of earnest funds', function () {
       beforeEach(async () => {
-        //mint some Values to user
+        //user buy some SBT Values 
         await bankTreasuryContract.connect(user).buySBT(SECOND_PROFILE_ID, {value: original_balance});
 
         expect((await sbtContract['balanceOf(uint256)'](SECOND_PROFILE_ID)).toNumber()).to.eq(original_balance);
@@ -255,33 +233,11 @@ makeSuiteCleanRoom('Bank Treasury', function () {
 
     context('Negatives', function () {
       beforeEach(async () => {
-        //mint some Values to user
+        //user buy some SBT Values 
         await bankTreasuryContract.connect(user).buySBT(SECOND_PROFILE_ID, {value: original_balance});
         
       });
 
-      it('Should faild to mint a voucher when have insufficient balance', async function () {
-        
-        await expect(
-          voucherContract.connect(user).mintBaseNew(SECOND_PROFILE_ID, [userAddress], [original_balance * 2], [''])
-        ).to.be.reverted;
-
-        expect((await sbtContract['balanceOf(uint256)'](SECOND_PROFILE_ID)).toNumber()).to.eq(original_balance);
-       
-
-      });
-
-      it('Should faild to mint a voucher when amount is zero', async function () {
-
-        await expect(
-          voucherContract.connect(user).mintBaseNew(
-            SECOND_PROFILE_ID, [userAddress], [0], ['']
-          )
-        ).to.be.revertedWith(ERRORS.AmountSBT_Is_Zero);
-
-        expect((await sbtContract['balanceOf(uint256)'](SECOND_PROFILE_ID)).toNumber()).to.eq(original_balance);
-       
-      });
 
 
       it('User should fail to exchange Voucher SBT using none exists Voucher card', async function () {
@@ -325,7 +281,7 @@ makeSuiteCleanRoom('Bank Treasury', function () {
 
     context('deposit', function () {
         beforeEach(async () => {
-          //mint some Values to user
+          //user buy some SBT Values 
           await bankTreasuryContract.connect(user).buySBT(SECOND_PROFILE_ID, {value: original_balance});
                     
         });
