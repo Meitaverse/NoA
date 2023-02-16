@@ -75,7 +75,6 @@ task("deposit-voucher", "deposit-voucher function")
 
   console.log('\n\t-- voucherAmount: ', voucherAmount);
 
-  //TODO
   if (await voucher.isApprovedForAll(bankTreasury.address, await operator.getAddress())) {
     console.log('\n\t--  operator set approved for ', bankTreasury.address);
   } else {

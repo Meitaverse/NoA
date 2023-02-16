@@ -70,8 +70,6 @@ abstract contract VoucherMarketCore is Initializable, MarketSharedCore {
    * @dev This should be used when it does not make sense to keep the original offer around,
    * e.g. if a collector accepts a Buy Price then keeping the offer around is not necessary.
    */
-
-  //TODO
   function _cancelSendersOffer(address voucherNFT, uint256 tokenId) internal virtual;
 
   /**
@@ -89,7 +87,7 @@ abstract contract VoucherMarketCore is Initializable, MarketSharedCore {
     if (authorizeSeller != address(0)) {
       revert VoucherMarketCore_Seller_Not_Found();
     }
-    //TODO
+
     uint256 amountOfToken = IERC1155Upgradeable(voucherNFT).balanceOf(address(this), tokenId);
     IERC1155Upgradeable(voucherNFT).safeTransferFrom(address(this), recipient, tokenId, amountOfToken, bytes('0'));
   }
@@ -111,7 +109,6 @@ abstract contract VoucherMarketCore is Initializable, MarketSharedCore {
    */
   function _transferToEscrow(address voucherNFT, uint256 tokenId) internal virtual {
 
-     //TODO
     uint256 amountOfToken = IERC1155Upgradeable(voucherNFT).balanceOf(msg.sender, tokenId);
 
     IERC1155Upgradeable(voucherNFT).safeTransferFrom(msg.sender, address(this), tokenId, amountOfToken, bytes('0'));

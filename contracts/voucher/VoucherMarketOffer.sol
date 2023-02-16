@@ -234,8 +234,6 @@ abstract contract VoucherMarketOffer is
     // Withdraw ETH from the buyer's account in the FETH token contract.
     feth.marketWithdrawLocked(offer.buyer, offer.expiration, offer.amount);
       
-      
-    //TODO
     uint256 amountOfToken = IERC1155Upgradeable(voucherNFT).balanceOf(msg.sender, tokenId);
 
     // Transfer the NFT to the buyer.

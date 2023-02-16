@@ -88,6 +88,32 @@ export class ApprovalValue__Params {
   }
 }
 
+export class DefaultRoyaltiesUpdated extends ethereum.Event {
+  get params(): DefaultRoyaltiesUpdated__Params {
+    return new DefaultRoyaltiesUpdated__Params(this);
+  }
+}
+
+export class DefaultRoyaltiesUpdated__Params {
+  _event: DefaultRoyaltiesUpdated;
+
+  constructor(event: DefaultRoyaltiesUpdated) {
+    this._event = event;
+  }
+
+  get projectId(): BigInt {
+    return this._event.parameters[0].value.toBigInt();
+  }
+
+  get receiver(): Address {
+    return this._event.parameters[1].value.toAddress();
+  }
+
+  get basisPoint(): i32 {
+    return this._event.parameters[2].value.toI32();
+  }
+}
+
 export class DerivativeNFTImageURISet extends ethereum.Event {
   get params(): DerivativeNFTImageURISet__Params {
     return new DerivativeNFTImageURISet__Params(this);
@@ -145,16 +171,20 @@ export class RoyaltiesUpdated__Params {
     this._event = event;
   }
 
-  get tokenId(): BigInt {
+  get publishId(): BigInt {
     return this._event.parameters[0].value.toBigInt();
   }
 
-  get receivers(): Array<Address> {
-    return this._event.parameters[1].value.toAddressArray();
+  get tokenId(): BigInt {
+    return this._event.parameters[1].value.toBigInt();
   }
 
-  get basisPoints(): Array<BigInt> {
-    return this._event.parameters[2].value.toBigIntArray();
+  get receiver(): Address {
+    return this._event.parameters[2].value.toAddress();
+  }
+
+  get basisPoint(): i32 {
+    return this._event.parameters[3].value.toI32();
   }
 }
 
@@ -1420,6 +1450,10 @@ export class InitializeCall__Inputs {
   get receiver_(): Address {
     return this._call.inputValues[8].value.toAddress();
   }
+
+  get defaultRoyaltyBPS_(): BigInt {
+    return this._call.inputValues[9].value.toBigInt();
+  }
 }
 
 export class InitializeCall__Outputs {
@@ -1950,6 +1984,36 @@ export class TransferValueCall__Outputs {
   _call: TransferValueCall;
 
   constructor(call: TransferValueCall) {
+    this._call = call;
+  }
+}
+
+export class UpdateDefaultRoyaltyBPSCall extends ethereum.Call {
+  get inputs(): UpdateDefaultRoyaltyBPSCall__Inputs {
+    return new UpdateDefaultRoyaltyBPSCall__Inputs(this);
+  }
+
+  get outputs(): UpdateDefaultRoyaltyBPSCall__Outputs {
+    return new UpdateDefaultRoyaltyBPSCall__Outputs(this);
+  }
+}
+
+export class UpdateDefaultRoyaltyBPSCall__Inputs {
+  _call: UpdateDefaultRoyaltyBPSCall;
+
+  constructor(call: UpdateDefaultRoyaltyBPSCall) {
+    this._call = call;
+  }
+
+  get defaultRoyaltyBPS_(): i32 {
+    return this._call.inputValues[0].value.toI32();
+  }
+}
+
+export class UpdateDefaultRoyaltyBPSCall__Outputs {
+  _call: UpdateDefaultRoyaltyBPSCall;
+
+  constructor(call: UpdateDefaultRoyaltyBPSCall) {
     this._call = call;
   }
 }

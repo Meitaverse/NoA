@@ -10,6 +10,31 @@ import {
   BigInt
 } from "@graphprotocol/graph-ts";
 
+export class ModuleGlobals__getGenesisAndPreviousPublishIdResult {
+  value0: BigInt;
+  value1: BigInt;
+
+  constructor(value0: BigInt, value1: BigInt) {
+    this.value0 = value0;
+    this.value1 = value1;
+  }
+
+  toMap(): TypedMap<string, ethereum.Value> {
+    let map = new TypedMap<string, ethereum.Value>();
+    map.set("value0", ethereum.Value.fromUnsignedBigInt(this.value0));
+    map.set("value1", ethereum.Value.fromUnsignedBigInt(this.value1));
+    return map;
+  }
+
+  getGenesisPublishId(): BigInt {
+    return this.value0;
+  }
+
+  getPreviousPublishId(): BigInt {
+    return this.value1;
+  }
+}
+
 export class ModuleGlobals__getHubInfoResultValue0Struct extends ethereum.Tuple {
   get soulBoundTokenId(): BigInt {
     return this[0].toBigInt();
@@ -29,6 +54,44 @@ export class ModuleGlobals__getHubInfoResultValue0Struct extends ethereum.Tuple 
 
   get imageURI(): string {
     return this[4].toString();
+  }
+}
+
+export class ModuleGlobals__getProjectInfoResultValue0Struct extends ethereum.Tuple {
+  get hubId(): BigInt {
+    return this[0].toBigInt();
+  }
+
+  get soulBoundTokenId(): BigInt {
+    return this[1].toBigInt();
+  }
+
+  get name(): string {
+    return this[2].toString();
+  }
+
+  get description(): string {
+    return this[3].toString();
+  }
+
+  get image(): string {
+    return this[4].toString();
+  }
+
+  get metadataURI(): string {
+    return this[5].toString();
+  }
+
+  get descriptor(): Address {
+    return this[6].toAddress();
+  }
+
+  get defaultRoyaltyPoints(): i32 {
+    return this[7].toI32();
+  }
+
+  get permitByHubOwner(): boolean {
+    return this[8].toBoolean();
   }
 }
 
@@ -131,6 +194,41 @@ export class ModuleGlobals extends ethereum.SmartContract {
     return new ModuleGlobals("ModuleGlobals", address);
   }
 
+  getGenesisAndPreviousPublishId(
+    publishId: BigInt
+  ): ModuleGlobals__getGenesisAndPreviousPublishIdResult {
+    let result = super.call(
+      "getGenesisAndPreviousPublishId",
+      "getGenesisAndPreviousPublishId(uint256):(uint256,uint256)",
+      [ethereum.Value.fromUnsignedBigInt(publishId)]
+    );
+
+    return new ModuleGlobals__getGenesisAndPreviousPublishIdResult(
+      result[0].toBigInt(),
+      result[1].toBigInt()
+    );
+  }
+
+  try_getGenesisAndPreviousPublishId(
+    publishId: BigInt
+  ): ethereum.CallResult<ModuleGlobals__getGenesisAndPreviousPublishIdResult> {
+    let result = super.tryCall(
+      "getGenesisAndPreviousPublishId",
+      "getGenesisAndPreviousPublishId(uint256):(uint256,uint256)",
+      [ethereum.Value.fromUnsignedBigInt(publishId)]
+    );
+    if (result.reverted) {
+      return new ethereum.CallResult();
+    }
+    let value = result.value;
+    return ethereum.CallResult.fromValue(
+      new ModuleGlobals__getGenesisAndPreviousPublishIdResult(
+        value[0].toBigInt(),
+        value[1].toBigInt()
+      )
+    );
+  }
+
   getGovernance(): Address {
     let result = super.call("getGovernance", "getGovernance():(address)", []);
 
@@ -213,6 +311,39 @@ export class ModuleGlobals extends ethereum.SmartContract {
     }
     let value = result.value;
     return ethereum.CallResult.fromValue(value[0].toAddress());
+  }
+
+  getProjectInfo(
+    projectId_: BigInt
+  ): ModuleGlobals__getProjectInfoResultValue0Struct {
+    let result = super.call(
+      "getProjectInfo",
+      "getProjectInfo(uint256):((uint256,uint256,string,string,string,string,address,uint16,bool))",
+      [ethereum.Value.fromUnsignedBigInt(projectId_)]
+    );
+
+    return changetype<ModuleGlobals__getProjectInfoResultValue0Struct>(
+      result[0].toTuple()
+    );
+  }
+
+  try_getProjectInfo(
+    projectId_: BigInt
+  ): ethereum.CallResult<ModuleGlobals__getProjectInfoResultValue0Struct> {
+    let result = super.tryCall(
+      "getProjectInfo",
+      "getProjectInfo(uint256):((uint256,uint256,string,string,string,string,address,uint16,bool))",
+      [ethereum.Value.fromUnsignedBigInt(projectId_)]
+    );
+    if (result.reverted) {
+      return new ethereum.CallResult();
+    }
+    let value = result.value;
+    return ethereum.CallResult.fromValue(
+      changetype<ModuleGlobals__getProjectInfoResultValue0Struct>(
+        value[0].toTuple()
+      )
+    );
   }
 
   getPublication(

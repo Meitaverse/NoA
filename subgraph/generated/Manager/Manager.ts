@@ -89,8 +89,12 @@ export class Manager__createProjectInputProjectStruct extends ethereum.Tuple {
     return this[6].toAddress();
   }
 
+  get defaultRoyaltyPoints(): i32 {
+    return this[7].toI32();
+  }
+
   get permitByHubOwner(): boolean {
-    return this[7].toBoolean();
+    return this[8].toBoolean();
   }
 }
 
@@ -130,6 +134,31 @@ export class Manager__getGenesisAndPreviousInfoResult {
 
   getValue3(): BigInt {
     return this.value3;
+  }
+}
+
+export class Manager__getGenesisAndPreviousPublishIdResult {
+  value0: BigInt;
+  value1: BigInt;
+
+  constructor(value0: BigInt, value1: BigInt) {
+    this.value0 = value0;
+    this.value1 = value1;
+  }
+
+  toMap(): TypedMap<string, ethereum.Value> {
+    let map = new TypedMap<string, ethereum.Value>();
+    map.set("value0", ethereum.Value.fromUnsignedBigInt(this.value0));
+    map.set("value1", ethereum.Value.fromUnsignedBigInt(this.value1));
+    return map;
+  }
+
+  getGenesisPublishId(): BigInt {
+    return this.value0;
+  }
+
+  getPreviousPublishId(): BigInt {
+    return this.value1;
   }
 }
 
@@ -184,8 +213,12 @@ export class Manager__getProjectInfoResultValue0Struct extends ethereum.Tuple {
     return this[6].toAddress();
   }
 
+  get defaultRoyaltyPoints(): i32 {
+    return this[7].toI32();
+  }
+
   get permitByHubOwner(): boolean {
-    return this[7].toBoolean();
+    return this[8].toBoolean();
   }
 }
 
@@ -607,7 +640,7 @@ export class Manager extends ethereum.SmartContract {
   createProject(project: Manager__createProjectInputProjectStruct): BigInt {
     let result = super.call(
       "createProject",
-      "createProject((uint256,uint256,string,string,string,string,address,bool)):(uint256)",
+      "createProject((uint256,uint256,string,string,string,string,address,uint16,bool)):(uint256)",
       [ethereum.Value.fromTuple(project)]
     );
 
@@ -619,7 +652,7 @@ export class Manager extends ethereum.SmartContract {
   ): ethereum.CallResult<BigInt> {
     let result = super.tryCall(
       "createProject",
-      "createProject((uint256,uint256,string,string,string,string,address,bool)):(uint256)",
+      "createProject((uint256,uint256,string,string,string,string,address,uint16,bool)):(uint256)",
       [ethereum.Value.fromTuple(project)]
     );
     if (result.reverted) {
@@ -741,6 +774,41 @@ export class Manager extends ethereum.SmartContract {
         value[1].toBigInt(),
         value[2].toBigInt(),
         value[3].toBigInt()
+      )
+    );
+  }
+
+  getGenesisAndPreviousPublishId(
+    publishId: BigInt
+  ): Manager__getGenesisAndPreviousPublishIdResult {
+    let result = super.call(
+      "getGenesisAndPreviousPublishId",
+      "getGenesisAndPreviousPublishId(uint256):(uint256,uint256)",
+      [ethereum.Value.fromUnsignedBigInt(publishId)]
+    );
+
+    return new Manager__getGenesisAndPreviousPublishIdResult(
+      result[0].toBigInt(),
+      result[1].toBigInt()
+    );
+  }
+
+  try_getGenesisAndPreviousPublishId(
+    publishId: BigInt
+  ): ethereum.CallResult<Manager__getGenesisAndPreviousPublishIdResult> {
+    let result = super.tryCall(
+      "getGenesisAndPreviousPublishId",
+      "getGenesisAndPreviousPublishId(uint256):(uint256,uint256)",
+      [ethereum.Value.fromUnsignedBigInt(publishId)]
+    );
+    if (result.reverted) {
+      return new ethereum.CallResult();
+    }
+    let value = result.value;
+    return ethereum.CallResult.fromValue(
+      new Manager__getGenesisAndPreviousPublishIdResult(
+        value[0].toBigInt(),
+        value[1].toBigInt()
       )
     );
   }
@@ -869,7 +937,7 @@ export class Manager extends ethereum.SmartContract {
   ): Manager__getProjectInfoResultValue0Struct {
     let result = super.call(
       "getProjectInfo",
-      "getProjectInfo(uint256):((uint256,uint256,string,string,string,string,address,bool))",
+      "getProjectInfo(uint256):((uint256,uint256,string,string,string,string,address,uint16,bool))",
       [ethereum.Value.fromUnsignedBigInt(projectId_)]
     );
 
@@ -883,7 +951,7 @@ export class Manager extends ethereum.SmartContract {
   ): ethereum.CallResult<Manager__getProjectInfoResultValue0Struct> {
     let result = super.tryCall(
       "getProjectInfo",
-      "getProjectInfo(uint256):((uint256,uint256,string,string,string,string,address,bool))",
+      "getProjectInfo(uint256):((uint256,uint256,string,string,string,string,address,uint16,bool))",
       [ethereum.Value.fromUnsignedBigInt(projectId_)]
     );
     if (result.reverted) {
@@ -1504,8 +1572,12 @@ export class CreateProjectCallProjectStruct extends ethereum.Tuple {
     return this[6].toAddress();
   }
 
+  get defaultRoyaltyPoints(): i32 {
+    return this[7].toI32();
+  }
+
   get permitByHubOwner(): boolean {
-    return this[7].toBoolean();
+    return this[8].toBoolean();
   }
 }
 

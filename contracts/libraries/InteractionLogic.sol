@@ -47,12 +47,8 @@ library InteractionLogic {
         });
 
         emit Events.HubCreated(
-            // hub.soulBoundTokenId, 
             hubOwner, 
             hubId
-            // hub.name,
-            // hub.description,
-            // hub.imageURI,
         );
 
     }
@@ -73,11 +69,6 @@ library InteractionLogic {
  
         emit Events.HubUpdated(
             hubId
-            // hubInfoData.hubOwner
-            // name,
-            // description,
-            // imageURI,
-            // uint32(block.timestamp)
         );
     }
 
@@ -116,6 +107,7 @@ library InteractionLogic {
             image: project.image,
             metadataURI: project.metadataURI,
             descriptor: project.descriptor,
+            defaultRoyaltyPoints: project.defaultRoyaltyPoints, 
             permitByHubOwner: project.permitByHubOwner
         });
 
@@ -146,7 +138,8 @@ library InteractionLogic {
             projectId,
             project.soulBoundTokenId,
             project.descriptor,
-            receiver_
+            receiver_,
+            project.defaultRoyaltyPoints
         );
 
         emit Events.DerivativeNFTDeployed(
@@ -154,8 +147,7 @@ library InteractionLogic {
             project.hubId,
             projectId, 
             project.soulBoundTokenId,
-            derivativeNFT, 
-            block.timestamp
+            derivativeNFT
         );
         
         return derivativeNFT;

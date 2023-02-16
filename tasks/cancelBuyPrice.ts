@@ -111,7 +111,6 @@ task("cancelBuyPrice", "cancelBuyPrice a dNFT to market place function")
       "\t--- buyPrice.amount: ", buyPrice.amount
     );
 
-  //TODO 
   const receipt = await waitForTx(
       market.connect(seller).cancelBuyPrice(
         derivativeNFT.address, 

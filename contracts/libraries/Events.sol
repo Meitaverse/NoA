@@ -345,15 +345,13 @@ library Events {
      * @param projectId The project ID.
      * @param soulBoundTokenId The user's SoulBound token ID.
      * @param derivativeNFT The address of the newly deployed DerivativeNFT clone.
-     * @param timestamp The current block timestamp.
      */
     event DerivativeNFTDeployed(
         address creator,
         uint256 indexed hubId,
         uint256 indexed projectId,
         uint256 indexed soulBoundTokenId,
-        address derivativeNFT,
-        uint256 timestamp
+        address derivativeNFT
     );
 
     /**

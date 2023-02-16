@@ -18,6 +18,7 @@ interface IDerivativeNFT {
      * @param  soulBoundTokenId_ The token id of the SoulBoundToken.
      * @param metadataDescriptor_ The Descriptor address to set.
      * @param receiver_ The receiver address to set.
+     * @param defaultRoyaltyBPS_ The default royalty BPS
      */
     function initialize( 
         address sbt, 
@@ -28,7 +29,8 @@ interface IDerivativeNFT {
         uint256 projectId_,
         uint256 soulBoundTokenId_,
         address metadataDescriptor_,
-        address receiver_
+        address receiver_,
+         uint256 defaultRoyaltyBPS_
     ) external;
 
 

@@ -280,4 +280,13 @@ contract ModuleGlobals is IModuleGlobals, GlobalStorage {
         return IManager(_manager).getPublication(publishId_);
     }
 
+    /// @notice Just avoid Manager proxy by admin
+    function getProjectInfo(uint256 projectId_) external view returns (DataTypes.ProjectData memory) {
+      return IManager(_manager).getProjectInfo(projectId_);
+    }
+
+    function getGenesisAndPreviousPublishId(uint256 publishId) external view returns(uint256 genesisPublishId, uint256 previousPublishId)  {
+         return IManager(_manager).getGenesisAndPreviousPublishId(publishId);
+         
+    }
 }

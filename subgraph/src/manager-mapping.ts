@@ -271,7 +271,7 @@ export function handlePublishUpdated(event: PublishUpdated): void {
                     publication.genesisPublish = publicationFrom.genesisPublish
                 }
             } else {
-                //TODO get dnft 
+
                 const publish = loadOrCreatePublish(event.params.publishId);
                 if (publish) {
                     let fromDNFTs: Array<string> = [];
@@ -304,17 +304,32 @@ export function handlePublishUpdated(event: PublishUpdated): void {
 export function handleDerivativeNFTDeployed(event: DerivativeNFTDeployed): void {
     log.info("handleDerivativeNFTDeployed, event.address: {}", [event.address.toHexString()])
     
-    const projectCreator = loadOrCreateAccount(event.params.creator) 
-  
     const hub = loadHub(event.params.hubId)
     if (hub) {
-        const project = new Project(event.params.projectId.toString());
-        project.projectId = event.params.projectId;
-        project.projectCreator = projectCreator.id;
-        project.hub = hub.id
-        project.derivativeNFT = loadOrCreateDNFTContract(event.params.derivativeNFT).id;
-        project.timestamp = event.block.timestamp;
-        project.save();
+        let _id = "GlobalModules"
+        const protocolContract = ProtocolContract.load(_id) || new ProtocolContract(_id)
+        if (protocolContract) {
+            const moduleGlobals = ModuleGlobals.bind(Address.fromBytes(protocolContract.contract))
+            const result = moduleGlobals.try_getProjectInfo(event.params.projectId)
+            if (result.reverted) {
+                log.info("try_getProjectInfo, result.reverted", [])
+                return 
+            }
+            const project = new Project(event.params.projectId.toString());
+            project.projectId = event.params.projectId;
+            project.projectCreator = loadOrCreateAccount(event.params.creator).id;
+            project.hub = hub.id
+            project.name = result.value.name
+            project.description = result.value.description
+            project.image = result.value.image
+            project.metadataURI = result.value.metadataURI
+            project.descriptor = result.value.descriptor
+            project.defaultRoyaltyBPS = result.value.defaultRoyaltyPoints
+            project.permitByHubOwner = result.value.permitByHubOwner
+            project.derivativeNFT = loadOrCreateDNFTContract(event.params.derivativeNFT).id;
+            project.timestamp = event.block.timestamp;
+            project.save();
+        }    
     }
 }
 

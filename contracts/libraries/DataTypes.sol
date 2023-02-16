@@ -78,6 +78,7 @@ library DataTypes {
      * @param image Image of project, ipfs or arweave url
      * @param metadataURI metadata 
      * @param descriptor descriptor for SVG 
+     * @param defaultRoyaltyPoints the default Royalty Points
      * @param permitByHubOwner True: User prePublish will permit by hub owner, default false
      */
     struct ProjectData {
@@ -88,6 +89,7 @@ library DataTypes {
         string image;
         string metadataURI;
         address descriptor;
+        uint16 defaultRoyaltyPoints;
         bool permitByHubOwner;
     }
     

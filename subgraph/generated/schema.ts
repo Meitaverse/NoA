@@ -1506,6 +1506,93 @@ export class Project extends Entity {
     this.set("hub", Value.fromString(value));
   }
 
+  get name(): string {
+    let value = this.get("name");
+    return value!.toString();
+  }
+
+  set name(value: string) {
+    this.set("name", Value.fromString(value));
+  }
+
+  get description(): string {
+    let value = this.get("description");
+    return value!.toString();
+  }
+
+  set description(value: string) {
+    this.set("description", Value.fromString(value));
+  }
+
+  get image(): string | null {
+    let value = this.get("image");
+    if (!value || value.kind == ValueKind.NULL) {
+      return null;
+    } else {
+      return value.toString();
+    }
+  }
+
+  set image(value: string | null) {
+    if (!value) {
+      this.unset("image");
+    } else {
+      this.set("image", Value.fromString(<string>value));
+    }
+  }
+
+  get metadataURI(): string | null {
+    let value = this.get("metadataURI");
+    if (!value || value.kind == ValueKind.NULL) {
+      return null;
+    } else {
+      return value.toString();
+    }
+  }
+
+  set metadataURI(value: string | null) {
+    if (!value) {
+      this.unset("metadataURI");
+    } else {
+      this.set("metadataURI", Value.fromString(<string>value));
+    }
+  }
+
+  get descriptor(): Bytes | null {
+    let value = this.get("descriptor");
+    if (!value || value.kind == ValueKind.NULL) {
+      return null;
+    } else {
+      return value.toBytes();
+    }
+  }
+
+  set descriptor(value: Bytes | null) {
+    if (!value) {
+      this.unset("descriptor");
+    } else {
+      this.set("descriptor", Value.fromBytes(<Bytes>value));
+    }
+  }
+
+  get defaultRoyaltyBPS(): i32 {
+    let value = this.get("defaultRoyaltyBPS");
+    return value!.toI32();
+  }
+
+  set defaultRoyaltyBPS(value: i32) {
+    this.set("defaultRoyaltyBPS", Value.fromI32(value));
+  }
+
+  get permitByHubOwner(): boolean {
+    let value = this.get("permitByHubOwner");
+    return value!.toBoolean();
+  }
+
+  set permitByHubOwner(value: boolean) {
+    this.set("permitByHubOwner", Value.fromBoolean(value));
+  }
+
   get publications(): Array<string> {
     let value = this.get("publications");
     return value!.toStringArray();
@@ -7056,6 +7143,40 @@ export class DNFT extends Entity {
       this.unset("creator");
     } else {
       this.set("creator", Value.fromString(<string>value));
+    }
+  }
+
+  get genesisPublish(): string | null {
+    let value = this.get("genesisPublish");
+    if (!value || value.kind == ValueKind.NULL) {
+      return null;
+    } else {
+      return value.toString();
+    }
+  }
+
+  set genesisPublish(value: string | null) {
+    if (!value) {
+      this.unset("genesisPublish");
+    } else {
+      this.set("genesisPublish", Value.fromString(<string>value));
+    }
+  }
+
+  get previousPublish(): string | null {
+    let value = this.get("previousPublish");
+    if (!value || value.kind == ValueKind.NULL) {
+      return null;
+    } else {
+      return value.toString();
+    }
+  }
+
+  set previousPublish(value: string | null) {
+    if (!value) {
+      this.unset("previousPublish");
+    } else {
+      this.set("previousPublish", Value.fromString(<string>value));
     }
   }
 

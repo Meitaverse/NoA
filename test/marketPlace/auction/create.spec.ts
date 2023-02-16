@@ -147,6 +147,7 @@ makeSuiteCleanRoom('Market Place', function () {
             image: "image",
             metadataURI: "metadataURI",
             descriptor: metadataDescriptor.address,
+            defaultRoyaltyPoints: 0,
             permitByHubOwner: false
           },
         })

@@ -356,36 +356,6 @@ export class ConfirmTransaction__Params {
   }
 }
 
-export class DefaultRoyaltySet extends ethereum.Event {
-  get params(): DefaultRoyaltySet__Params {
-    return new DefaultRoyaltySet__Params(this);
-  }
-}
-
-export class DefaultRoyaltySet__Params {
-  _event: DefaultRoyaltySet;
-
-  constructor(event: DefaultRoyaltySet) {
-    this._event = event;
-  }
-
-  get soulBoundTokenId(): BigInt {
-    return this._event.parameters[0].value.toBigInt();
-  }
-
-  get projectId(): BigInt {
-    return this._event.parameters[1].value.toBigInt();
-  }
-
-  get receiver(): Address {
-    return this._event.parameters[2].value.toAddress();
-  }
-
-  get feeNumerator(): BigInt {
-    return this._event.parameters[3].value.toBigInt();
-  }
-}
-
 export class DelegateChanged extends ethereum.Event {
   get params(): DelegateChanged__Params {
     return new DelegateChanged__Params(this);
@@ -659,10 +629,6 @@ export class DerivativeNFTDeployed__Params {
 
   get derivativeNFT(): Address {
     return this._event.parameters[4].value.toAddress();
-  }
-
-  get timestamp(): BigInt {
-    return this._event.parameters[5].value.toBigInt();
   }
 }
 
@@ -1606,28 +1572,6 @@ export class OfferTransfered__Params {
   }
 }
 
-export class PermanentURI extends ethereum.Event {
-  get params(): PermanentURI__Params {
-    return new PermanentURI__Params(this);
-  }
-}
-
-export class PermanentURI__Params {
-  _event: PermanentURI;
-
-  constructor(event: PermanentURI) {
-    this._event = event;
-  }
-
-  get _value(): string {
-    return this._event.parameters[0].value.toString();
-  }
-
-  get _id(): BigInt {
-    return this._event.parameters[1].value.toBigInt();
-  }
-}
-
 export class ProfileCreatorWhitelisted extends ethereum.Event {
   get params(): ProfileCreatorWhitelisted__Params {
     return new ProfileCreatorWhitelisted__Params(this);
@@ -2069,32 +2013,6 @@ export class RevokeConfirmation__Params {
 
   get txIndex(): BigInt {
     return this._event.parameters[1].value.toBigInt();
-  }
-}
-
-export class RoyaltySet extends ethereum.Event {
-  get params(): RoyaltySet__Params {
-    return new RoyaltySet__Params(this);
-  }
-}
-
-export class RoyaltySet__Params {
-  _event: RoyaltySet;
-
-  constructor(event: RoyaltySet) {
-    this._event = event;
-  }
-
-  get soulBoundTokenId(): BigInt {
-    return this._event.parameters[0].value.toBigInt();
-  }
-
-  get projectId(): BigInt {
-    return this._event.parameters[1].value.toBigInt();
-  }
-
-  get royaltyBasisPoints(): BigInt {
-    return this._event.parameters[2].value.toBigInt();
   }
 }
 

@@ -41,15 +41,6 @@ interface INFTDerivativeProtocolTokenV1  {
         DataTypes.CreateProfileData calldata vars
     ) external returns(uint256);
 
-/*
-//TODO
-    function updateProfile(
-        uint256 soulBoundTokenId,
-        string calldata nickName,
-        string calldata imageURI
-    ) external;
-*/    
-
     /**
      * @notice get a profile detail
      *
@@ -57,26 +48,6 @@ interface INFTDerivativeProtocolTokenV1  {
      * @return soulBoundTokenDetail detail of SoulBoundTokenDetail
      */
     function getProfileDetail(uint256 soulBoundTokenId) external view returns (DataTypes.SoulBoundTokenDetail memory);
-
-    // /**
-    //  * @notice Mint value to a soulBoundTokenId.
-    //  *  Only admin can execute.
-    //  *
-    //  * @param soulBoundTokenId is the soulBoundTokenId of ERC3525 Token
-    //  * @param value is the value of tokenId
-    //  */
-    // function mintValue(
-    //     uint256 soulBoundTokenId,
-    //     uint256 value
-    // ) external payable;
-
-    // /**
-    //  * @notice Burn a tokenId.
-    //  *  Only admin can execute.
-    //  *
-    //  * @param tokenId is the tokenId of ERC3525 Token
-    //  */
-    // function burn(uint256 tokenId) external;
 
     /**
      * @notice Transfer value from a tokenId to tokenId.

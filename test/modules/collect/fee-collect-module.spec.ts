@@ -127,6 +127,7 @@ makeSuiteCleanRoom('Fee Collect Module', function () {
             image: "image",
             metadataURI: "metadataURI",
             descriptor: metadataDescriptor.address,
+            defaultRoyaltyPoints: 0,
             permitByHubOwner: false
           },
         })

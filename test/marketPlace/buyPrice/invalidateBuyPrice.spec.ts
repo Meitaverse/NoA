@@ -78,14 +78,14 @@ let auctionId = 0;
 makeSuiteCleanRoom('Market Place', function () {
 
   beforeEach(async function () {
-    expect(
-      await createProfileReturningTokenId({
-          sender: user,
-          vars: {
-          wallet: userAddress,
-          nickName: NickName,
-          imageURI: MOCK_PROFILE_URI,
-          },
+      expect(
+        await createProfileReturningTokenId({
+            sender: user,
+            vars: {
+              wallet: userAddress,
+              nickName: NickName,
+              imageURI: MOCK_PROFILE_URI,
+            },
          }) 
       ).to.eq(SECOND_PROFILE_ID);
              
@@ -101,9 +101,9 @@ makeSuiteCleanRoom('Market Place', function () {
       await createProfileReturningTokenId({
             sender: userTwo,
             vars: {
-            wallet: userTwoAddress,
-            nickName: NickName3,
-            imageURI: MOCK_PROFILE_URI,
+              wallet: userTwoAddress,
+              nickName: NickName3,
+              imageURI: MOCK_PROFILE_URI,
             },
           }) 
         ).to.eq(THIRD_PROFILE_ID);
@@ -144,6 +144,7 @@ makeSuiteCleanRoom('Market Place', function () {
             image: "image",
             metadataURI: "metadataURI",
             descriptor: metadataDescriptor.address,
+            defaultRoyaltyPoints: 0,
             permitByHubOwner: false
           },
         })
@@ -219,10 +220,6 @@ makeSuiteCleanRoom('Market Place', function () {
 
       await derivativeNFT.connect(user).setApprovalForAll(marketPlaceContract.address, true);
      
-      //approve market contract
-    //  await derivativeNFT.connect(user)['approve(address,uint256)'](marketPlaceContract.address, FIRST_DNFT_TOKEN_ID);
-        
-
       await waitForTx(
         marketPlaceContract.connect(user).setBuyPrice({
           soulBoundTokenId: SECOND_PROFILE_ID,

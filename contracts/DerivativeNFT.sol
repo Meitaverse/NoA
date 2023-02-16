@@ -36,10 +36,17 @@ contract DerivativeNFT is
         uint256 timestamp
     );
 
+    event DefaultRoyaltiesUpdated(
+        uint256  projectId,
+        address  receiver, 
+        uint16  basisPoint
+    );
+
     event RoyaltiesUpdated(
+        uint256 indexed publishId, 
         uint256 indexed tokenId, 
-        address payable[] receivers, 
-        uint256[] basisPoints
+        address indexed receiver, 
+        uint16  basisPoint
     );
     
     // Royalty configurations
@@ -65,6 +72,7 @@ contract DerivativeNFT is
     address internal _SBT;
     address internal _banktreasury;
     address internal _marketPlace;
+    uint256 internal _defaultRoyaltyBPS;
 
     //tokenId => publishId
     mapping(uint256 => uint256) internal _tokenIdByPublishId;
@@ -113,7 +121,8 @@ contract DerivativeNFT is
         uint256 projectId_,
         uint256 soulBoundTokenId_,
         address metadataDescriptor_,
-        address receiver_
+        address receiver_,
+        uint256 defaultRoyaltyBPS_
     ) public virtual initializer {
         if (_initialized) revert Errors.Initialized();
         _initialized = true;
@@ -138,6 +147,9 @@ contract DerivativeNFT is
         _soulBoundTokenId = soulBoundTokenId_;
 
         _receiver = receiver_;
+
+        _defaultRoyaltyBPS = defaultRoyaltyBPS_;
+        
 
     }
 
@@ -236,12 +248,21 @@ contract DerivativeNFT is
 
         _mint(publisher, newTokenId, slot, publication.amount);
 
-        //set royalty
-        _setTokenRoyalty(
-            newTokenId,
-            _banktreasury,
-            bps
-        );
+        if (_defaultRoyaltyBPS == 0) {
+            //set royalty
+            _setTokenRoyalty(
+                newTokenId,
+                _banktreasury,
+                bps
+            );
+
+            emit RoyaltiesUpdated(
+                publishId,
+                newTokenId,
+                _banktreasury,
+                bps
+            );
+        }
 
         return newTokenId;
     }
@@ -275,13 +296,20 @@ contract DerivativeNFT is
 
         RoyaltyConfig[] storage royalties_from = _tokenRoyalty[fromTokenId_];
 
-        //set royalty
-        _setTokenRoyalty(
-            newTokenId,
-            _banktreasury,
-            royalties_from[0].bps
-        );
-
+        if (_defaultRoyaltyBPS == 0) {
+            //set royalty
+            _setTokenRoyalty(
+                newTokenId,
+                _banktreasury,
+                royalties_from[0].bps
+            );
+            emit RoyaltiesUpdated(
+                publishId_,
+                newTokenId,
+                _banktreasury,
+                royalties_from[0].bps
+            );
+        }
         return newTokenId;
     }
 
@@ -359,12 +387,21 @@ contract DerivativeNFT is
 
         RoyaltyConfig[] storage royalties_from = _tokenRoyalty[fromTokenId_];
 
-        //set royalty
-        _setTokenRoyalty(
-            newTokenId,
-            _banktreasury,
-            royalties_from[0].bps
-        );
+        if (_defaultRoyaltyBPS == 0) {
+            //set royalty
+            _setTokenRoyalty(
+                newTokenId,
+                _banktreasury,
+                royalties_from[0].bps
+            );
+
+            emit RoyaltiesUpdated(
+                publishId,
+                newTokenId,
+                _banktreasury,
+                royalties_from[0].bps
+            );
+        }
 
         return newTokenId;
     }
@@ -414,6 +451,22 @@ contract DerivativeNFT is
     function royaltyInfo(uint256 tokenId, uint256 value) external view returns (address, uint256) {
 
         return _getRoyaltyInfo(tokenId, value);
+    }
+
+    function updateDefaultRoyaltyBPS(uint16 defaultRoyaltyBPS_) external {
+         if (msg.sender == IERC3525(_SBT).ownerOf(_soulBoundTokenId)) {
+             _defaultRoyaltyBPS = defaultRoyaltyBPS_;
+            emit DefaultRoyaltiesUpdated(
+                _projectId,
+                address(this),
+                defaultRoyaltyBPS_
+            );
+        
+        } else {
+            revert Errors.NotHubOwner();
+        } 
+
+       
     }
 
     /// ****************************
@@ -483,18 +536,25 @@ contract DerivativeNFT is
      * Helper to get royalties for a token
      */
     function _getRoyalties(uint256 tokenId) view internal returns (address payable[] memory receivers, uint256[] memory bps) {
-
-        // Get token level royalties
-        RoyaltyConfig[] memory royalties = _tokenRoyalty[tokenId];
-        
-        if (royalties.length > 0) {
-            receivers = new address payable[](royalties.length);
-            bps = new uint256[](royalties.length);
-            for (uint i; i < royalties.length;) {
-                receivers[i] = royalties[i].receiver;
-                bps[i] = royalties[i].bps;
-                unchecked { ++i; }
+        if (_defaultRoyaltyBPS == 0) {
+            // Get token level royalties
+            RoyaltyConfig[] memory royalties = _tokenRoyalty[tokenId];
+            
+            if (royalties.length > 0) {
+                receivers = new address payable[](royalties.length);
+                bps = new uint256[](royalties.length);
+                for (uint i; i < royalties.length;) {
+                    receivers[i] = royalties[i].receiver;
+                    bps[i] = royalties[i].bps;
+                    unchecked { ++i; }
+                }
             }
+
+        } else {
+            receivers = new address payable[](1);
+            bps = new uint256[](1);
+            receivers[0] = payable(address(this));
+            bps[0] = _defaultRoyaltyBPS;
         }
     }
 
@@ -513,13 +573,18 @@ contract DerivativeNFT is
     }
 
     function _getRoyaltyInfo(uint256 tokenId, uint256 value) view internal returns (address receiver, uint256 amount){
-        (address payable[] memory receivers, uint256[] memory bps) = _getRoyalties(tokenId);
-        require(receivers.length <= 1, "More than 1 royalty receiver");
-        
-        if (receivers.length == 0) {
-            return (address(this), 0);
+        if (_defaultRoyaltyBPS == 0) {
+
+            (address payable[] memory receivers, uint256[] memory bps) = _getRoyalties(tokenId);
+            require(receivers.length <= 1, "More than 1 royalty receiver");
+            
+            if (receivers.length == 0) {
+                return (address(this), 0);
+            }
+            return (receivers[0], bps[0] * value / 10000);
+        } else {
+            return (address(this), _defaultRoyaltyBPS * value / 10000);
         }
-        return (receivers[0], bps[0] * value / 10000);
     }
 
 

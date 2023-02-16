@@ -104,7 +104,7 @@ dataSources:
         - event: PublishMinted(indexed uint256,indexed uint256)
           handler: handlePublishMinted
         - event: DerivativeNFTDeployed(address,indexed uint256,indexed uint256,indexed
-            uint256,address,uint256)
+            uint256,address)
           handler: handleDerivativeNFTDeployed
         - event: DerivativeNFTCollected(uint256,address,indexed uint256,indexed
             uint256,indexed uint256,uint256,uint256)
@@ -412,6 +412,8 @@ dataSources:
         - TransferValue
         - SlotChanged
         - DerivativeNFTImageURISet
+        - DefaultRoyaltiesUpdated
+        - RoyaltiesUpdated
       abis:
         - name: DerivativeNFT
           file: ../artifacts/contracts/DerivativeNFT.sol/DerivativeNFT.json
@@ -430,6 +432,10 @@ dataSources:
           handler: handleDNFTSlotChanged
         - event: DerivativeNFTImageURISet(indexed uint256,string,uint256)
           handler: handleDNFTImageURISet
+        - event: DefaultRoyaltiesUpdated(uint256,address,uint16)
+          handler: handleDefaultRoyaltiesUpdated
+        - event: RoyaltiesUpdated(indexed uint256,indexed uint256,indexed address,uint16)
+          handler: handleRoyaltiesUpdated
       file: ./src/dnft/derivativeNFT-mapping.ts
   - kind: ethereum/contract
     name: DerivativeNFT-2
@@ -450,6 +456,8 @@ dataSources:
         - TransferValue
         - SlotChanged
         - DerivativeNFTImageURISet
+        - DefaultRoyaltiesUpdated
+        - RoyaltiesUpdated
       abis:
         - name: DerivativeNFT
           file: ../artifacts/contracts/DerivativeNFT.sol/DerivativeNFT.json
@@ -468,4 +476,8 @@ dataSources:
           handler: handleDNFTSlotChanged
         - event: DerivativeNFTImageURISet(indexed uint256,string,uint256)
           handler: handleDNFTImageURISet
+        - event: DefaultRoyaltiesUpdated(uint256,address,uint16)
+          handler: handleDefaultRoyaltiesUpdated
+        - event: RoyaltiesUpdated(indexed uint256,indexed uint256,indexed address,uint16)
+          handler: handleRoyaltiesUpdated
       file: ./src/dnft/derivativeNFT-mapping.ts

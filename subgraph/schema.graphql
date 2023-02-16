@@ -365,6 +365,20 @@ type Project @entity {
   "The project In hub"
   hub: Hub!
 
+  name: String!
+  
+  description:  String!
+  
+  image:  String
+  
+  metadataURI:  String
+          
+  descriptor: Bytes
+
+  defaultRoyaltyBPS: Int!
+  
+  permitByHubOwner: Boolean
+
   "All publications in this project"
   publications: [Publication!]! @derivedFrom(field: "project")
   
@@ -1448,6 +1462,10 @@ type DNFT @entity {
 
   "The creator of this dNFT"
   creator: Creator
+
+  genesisPublish: Publish
+
+  previousPublish: Publish
 
   "The date/time when this dNFT was minted in seconds since Unix epoch"
   dateMinted: BigInt!

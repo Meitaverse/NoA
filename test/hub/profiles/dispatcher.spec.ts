@@ -130,6 +130,7 @@ makeSuiteCleanRoom('Dispatcher Functionality', function () {
               image: "image",
               metadataURI: "metadataURI",
               descriptor: metadataDescriptor.address,
+              defaultRoyaltyPoints: 0,
               permitByHubOwner: false
             },
           );
@@ -229,7 +230,6 @@ makeSuiteCleanRoom('Dispatcher Functionality', function () {
       
     });
 
-//TODO
     context('Negatives', function () {
       it('TestWallet should fail to set dispatcher with sig with signature deadline mismatch', async function () {
         const nonce = (await manager.sigNonces(testWallet.address)).toNumber();
@@ -346,6 +346,7 @@ makeSuiteCleanRoom('Dispatcher Functionality', function () {
               image: "image",
               metadataURI: "metadataURI",
               descriptor: metadataDescriptor.address,
+              defaultRoyaltyPoints: 0,
               permitByHubOwner: false
             },
           )

@@ -174,6 +174,7 @@ makeSuiteCleanRoom('Multi state', function () {
                     image: "image",
                     metadataURI: "metadataURI",
                     descriptor: metadataDescriptor.address,
+                    defaultRoyaltyPoints: 0,
                     permitByHubOwner: false
                   },
                 })
@@ -203,6 +204,7 @@ makeSuiteCleanRoom('Multi state', function () {
                     image: "image",
                     metadataURI: "metadataURI",
                     descriptor: metadataDescriptor.address,
+                    defaultRoyaltyPoints: 0,
                     permitByHubOwner: false
                   },
                 )
@@ -492,6 +494,7 @@ makeSuiteCleanRoom('Multi state', function () {
                     image: "image",
                     metadataURI: "metadataURI",
                     descriptor: metadataDescriptor.address,
+                    defaultRoyaltyPoints: 0,
                     permitByHubOwner: false
                   },
                 })

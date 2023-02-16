@@ -82,20 +82,6 @@ contract Manager is
         deverivateNFTInstance = Clones.predictDeterministicAddress(_DNFT_IMPL, salt);
     }
 
-/*
-    function mintSBTValue(uint256 soulBoundTokenId, uint256 value) 
-        external 
-        whenNotPaused 
-        nonReentrant
-        onlyGov 
-    {
-        address _sbt = IModuleGlobals(MODULE_GLOBALS).getSBT();
-        
-        INFTDerivativeProtocolTokenV1(_sbt).mintValue(soulBoundTokenId, value);
-    }
-*/
-
-
     function createProfile(
         DataTypes.CreateProfileData calldata vars
     ) 
@@ -122,27 +108,6 @@ contract Manager is
 
         return soulBoundTokenId;
     }
-
-    // function updateProfile(
-    //     uint256 soulBoundTokenId,
-    //     string calldata nickName,
-    //     string calldata imageURI
-    // ) 
-    //     external 
-    //     whenNotPaused 
-    //     nonReentrant
-    // {
-    //     _validateCallerIsSoulBoundTokenOwnerOrDispathcher(soulBoundTokenId);
-    //     _validateNickName(nickName);
-
-    //     address _sbt = IModuleGlobals(MODULE_GLOBALS).getSBT();
-    //     INFTDerivativeProtocolTokenV1(_sbt).updateProfile(
-    //         soulBoundTokenId, 
-    //         nickName, 
-    //         imageURI
-    //     );
-
-    // }
 
     function createHub(
         DataTypes.HubData calldata hub
@@ -264,6 +229,14 @@ contract Manager is
         return fraction;
     }
  
+    function getGenesisAndPreviousPublishId(uint256 publishId) external view returns(uint256 genesisPublishId, uint256 previousPublishId) {
+        uint256 projectid = _projectDataByPublishId[publishId].publication.projectId;
+        return (
+            _genesisPublishIdByProjectId[projectid],
+            _projectDataByPublishId[publishId].previousPublishId
+        );
+    }
+
     /// @notice prepare publish, and transfer from SBT value to bank treasury while amount >1
     function prePublish(
         DataTypes.Publication calldata publication
@@ -428,8 +401,7 @@ contract Manager is
             
             if (!IModuleGlobals(MODULE_GLOBALS).isWhitelistCollectModule(_projectDataByPublishId[publishId].publication.collectModule))
                 revert Errors.CollectModuleNotWhitelisted();
-
-            //TODO
+                
             uint16 _bps = _calculateRoyalty(publishId);
 
             uint256 newTokenId = PublishLogic.createPublish(

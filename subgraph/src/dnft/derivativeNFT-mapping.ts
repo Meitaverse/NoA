@@ -9,6 +9,8 @@ import {
     ApprovalForAll,
     ApprovalValue,
     DerivativeNFTImageURISet,
+    DefaultRoyaltiesUpdated,
+    RoyaltiesUpdated
 } from "../../generated/DerivativeNFT/DerivativeNFT"
 
 import {
@@ -24,6 +26,8 @@ import {
     Publish,
     SoulBoundToken,
     Account,
+    Project,
+    ProtocolContract,
 } from "../../generated/schema"
 import { loadOrCreateDNFTContract, loadOrCreateDNFT } from "../dnft";
 import { ZERO_ADDRESS_STRING, ZERO_BIG_DECIMAL, ZERO_BIG_INT } from "../shared/constants";
@@ -34,6 +38,7 @@ import { loadProject } from "../shared/project";
 import { loadOrCreateDnftImageURI } from "../shared/dnftImageURI";
 import { loadOrCreatePublish } from "../shared/publish";
 import { loadOrCreateCreator } from "../shared/creators";
+import { ModuleGlobals } from "../../generated/Manager/ModuleGlobals";
 
 function getDNFTId(address: Address, id: BigInt): string {
     return address.toHex() + "-" + id.toString();
@@ -91,8 +96,6 @@ export function handleDNFTTransfer(event: Transfer): void {
             dnft.netRevenuePending = ZERO_BIG_INT;
             dnft.isFirstSale = true;
             dnft.save();
-
-
 
             let creatorAccount = loadOrCreateAccount(event.params._to);
             recordDnftEvent(
@@ -437,7 +440,7 @@ export function handleDNFTApprovalValue(event: ApprovalValue): void {
     }
 }
 
-export function handleDFTImageURISet(event: DerivativeNFTImageURISet): void {
+export function handleDNFTImageURISet(event: DerivativeNFTImageURISet): void {
     log.info("handleDNFTImageURISet, event.address: {}", [event.address.toHexString()])
 
     let dnftContract = loadOrCreateDNFTContract(event.address);
@@ -453,4 +456,43 @@ export function handleDFTImageURISet(event: DerivativeNFTImageURISet): void {
     }
 
 }
+
+export function handleDefaultRoyaltiesUpdated(event: DefaultRoyaltiesUpdated): void {
+    log.info("handleDefaultRoyaltiesUpdated, event.address: {}", [event.address.toHexString()])
+
+    const project = Project.load(event.params.projectId.toString());
+    if (project) {
+        
+        project.defaultRoyaltyBPS = event.params.basisPoint
+        project.save();
+
+    }
+
+}
+
+export function handleRoyaltiesUpdated(event: RoyaltiesUpdated): void {
+    log.info("handleRoyaltiesUpdated, event.address: {}", [event.address.toHexString()])
+    let publish = loadOrCreatePublish(event.params.publishId)
+    if (publish) {
+        let _id = "GlobalModules"
+        const protocolContract = ProtocolContract.load(_id) || new ProtocolContract(_id)
+        if (protocolContract) {
+            const moduleGlobals = ModuleGlobals.bind(Address.fromBytes(protocolContract.contract))
+            const result = moduleGlobals.try_getGenesisAndPreviousPublishId(event.params.publishId)
+            if (result.reverted) {
+                log.info("try_getGenesisAndPreviousPublishId, result.reverted", [])
+                return 
+            }
+            //TODO
+            let dnft = loadOrCreateDNFT(event.address, event.params.tokenId, event);
+            if (dnft) {
+                dnft.genesisPublish = loadOrCreatePublish(result.value.value0).id;
+                dnft.previousPublish = loadOrCreatePublish(result.value.value1).id;
+                dnft.save();
+            }
+        }
+    }
+}
+
+
 
