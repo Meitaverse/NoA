@@ -79,10 +79,10 @@ task("create-profile", "create-profile function")
   );
 
 
-  let eventsLib = await new Events__factory(deployer).deploy();
+  // let eventsLib = await new Events__factory(deployer).deploy();
   // console.log('\n\t--- eventsLib address: ', eventsLib.address);
 
-  const event = findEvent(receipt, 'ProfileCreated', eventsLib);
+  const event = findEvent(receipt, 'ProfileCreated', sbt);
   console.log(
     "\n\t--- CreateProfile success! Event ProfileCreated emited ..."
   );

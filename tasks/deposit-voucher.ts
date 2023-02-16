@@ -86,7 +86,8 @@ task("deposit-voucher", "deposit-voucher function")
       bankTreasury.connect(operator).depositFromVoucher(voucherid, sbtid)
   );
 
-  const event = findEvent(receipt, 'VoucherDeposited', voucher);
+  let eventsLib = await new Events__factory(deployer).deploy();
+  const event = findEvent(receipt, 'VoucherDeposited', eventsLib);
 
   let sbtValue = event.args.sbtValue;
   console.log('\n\t-- sbtValue: ', sbtValue);

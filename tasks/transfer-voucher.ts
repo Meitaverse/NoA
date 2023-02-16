@@ -30,7 +30,7 @@ import { ContractTransaction } from "@ethersproject/contracts";
 
 export let runtimeHRE: HardhatRuntimeEnvironment;
 
-// yarn hardhat --network local transfer-voucher --fromsbtid 2 --tosbtid 3--voucherid 1
+// yarn hardhat --network local transfer-voucher --fromsbtid 2 --tosbtid 3 --voucherid 1
 
 task("transfer-voucher", "transfer-voucher function")
 .addParam("fromsbtid", "account id to tranfrer ,from 2 to 4")
@@ -66,7 +66,7 @@ task("transfer-voucher", "transfer-voucher function")
   let from = accounts[fromsbtid];
   let to = accounts[tosbtid];
 
-  let voucherAmount = await voucher.connect(from)['balanceOf(address,uint256)'](await from.getAddress(), voucherid);
+  let voucherAmount = await voucher.connect(from)['balanceOf(address,uint256)'](from.address, voucherid);
 
   if (voucherAmount.eq(0)) {
     console.log('\n\t-- voucherAmount is zero or not owner ');
@@ -76,18 +76,17 @@ task("transfer-voucher", "transfer-voucher function")
   console.log('\n\t-- voucherAmount: ', voucherAmount);
 
 
-  
   const receipt = await waitForTx(
-      voucher.connect(from).safeTransferFrom(await from.getAddress(), await to.getAddress(), voucherid, voucherAmount, "")
+      voucher.connect(from).safeTransferFrom(from.address, to.address, voucherid, voucherAmount, [])
   );
 
-  const event = findEvent(receipt, 'TransferSingle', voucher);
+  // const event = findEvent(receipt, 'TransferSingle', voucher);
 
-  let newOwner = event.args.wallet;
-  console.log('\n\t-- newOwner: ', newOwner);
+  // let newOwner = event.args.wallet;
+  // console.log('\n\t-- newOwner: ', newOwner.address);
 
-  voucherAmount = await await voucher['balanceOf(address,uint256)'](await newOwner.getAddress(), voucherid);
-  console.log('\n\t-- new voucherAmount of newOwner: ', voucherAmount);
+  // voucherAmount = await voucher['balanceOf(address,uint256)'](newOwner.address, voucherid);
+  // console.log('\n\t-- new voucherAmount of newOwner: ', voucherAmount);
 
 
 });

@@ -97,10 +97,10 @@ task("publish", "publish function")
 
  
     let balance =(await sbt["balanceOf(uint256)"](SECOND_PROFILE_ID)).toNumber();
-    // if (balance == 0) {
-    //   //mint 10000000 Value to user
-    //   await bankTreasury.connect(user).buySBT(SECOND_PROFILE_ID, {value: 10000000});
-    // }
+    if (balance == 0) {
+      //mint 10000000 Value to user
+      await bankTreasury.connect(user).buySBT(SECOND_PROFILE_ID, {value: 100000000});
+    }
     console.log('\t--- balance of user: ', (await sbt["balanceOf(uint256)"](SECOND_PROFILE_ID)).toNumber());
 
     const receipt = await waitForTx(
