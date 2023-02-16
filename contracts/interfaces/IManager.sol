@@ -266,10 +266,11 @@ interface IManager {
     /**
      * @notice calculate royalty for ERC2981 market place
      *
+     * @dev totalRoyalty = treasuryFee + genesisCreator + previousCreator
      * @param publishId The publish Id
      *
      * @return The royalty taxes
      */
-    function calculateRoyalty(uint256 publishId) external view returns(uint96);
+    function calculateRoyalty(uint256 publishId) external view returns(uint16);
 
 }

@@ -89,16 +89,8 @@ export class Manager__createProjectInputProjectStruct extends ethereum.Tuple {
     return this[6].toAddress();
   }
 
-  get defaultRoyaltyPoints(): BigInt {
-    return this[7].toBigInt();
-  }
-
-  get feeShareType(): i32 {
-    return this[8].toI32();
-  }
-
   get permitByHubOwner(): boolean {
-    return this[9].toBoolean();
+    return this[7].toBoolean();
   }
 }
 
@@ -192,16 +184,8 @@ export class Manager__getProjectInfoResultValue0Struct extends ethereum.Tuple {
     return this[6].toAddress();
   }
 
-  get defaultRoyaltyPoints(): BigInt {
-    return this[7].toBigInt();
-  }
-
-  get feeShareType(): i32 {
-    return this[8].toI32();
-  }
-
   get permitByHubOwner(): boolean {
-    return this[9].toBoolean();
+    return this[7].toBoolean();
   }
 }
 
@@ -522,27 +506,27 @@ export class Manager extends ethereum.SmartContract {
     return new Manager("Manager", address);
   }
 
-  calculateRoyalty(publishId: BigInt): BigInt {
+  calculateRoyalty(publishId: BigInt): i32 {
     let result = super.call(
       "calculateRoyalty",
-      "calculateRoyalty(uint256):(uint96)",
+      "calculateRoyalty(uint256):(uint16)",
       [ethereum.Value.fromUnsignedBigInt(publishId)]
     );
 
-    return result[0].toBigInt();
+    return result[0].toI32();
   }
 
-  try_calculateRoyalty(publishId: BigInt): ethereum.CallResult<BigInt> {
+  try_calculateRoyalty(publishId: BigInt): ethereum.CallResult<i32> {
     let result = super.tryCall(
       "calculateRoyalty",
-      "calculateRoyalty(uint256):(uint96)",
+      "calculateRoyalty(uint256):(uint16)",
       [ethereum.Value.fromUnsignedBigInt(publishId)]
     );
     if (result.reverted) {
       return new ethereum.CallResult();
     }
     let value = result.value;
-    return ethereum.CallResult.fromValue(value[0].toBigInt());
+    return ethereum.CallResult.fromValue(value[0].toI32());
   }
 
   collect(collectData: Manager__collectInputCollectDataStruct): BigInt {
@@ -623,7 +607,7 @@ export class Manager extends ethereum.SmartContract {
   createProject(project: Manager__createProjectInputProjectStruct): BigInt {
     let result = super.call(
       "createProject",
-      "createProject((uint256,uint256,string,string,string,string,address,uint96,uint8,bool)):(uint256)",
+      "createProject((uint256,uint256,string,string,string,string,address,bool)):(uint256)",
       [ethereum.Value.fromTuple(project)]
     );
 
@@ -635,7 +619,7 @@ export class Manager extends ethereum.SmartContract {
   ): ethereum.CallResult<BigInt> {
     let result = super.tryCall(
       "createProject",
-      "createProject((uint256,uint256,string,string,string,string,address,uint96,uint8,bool)):(uint256)",
+      "createProject((uint256,uint256,string,string,string,string,address,bool)):(uint256)",
       [ethereum.Value.fromTuple(project)]
     );
     if (result.reverted) {
@@ -885,7 +869,7 @@ export class Manager extends ethereum.SmartContract {
   ): Manager__getProjectInfoResultValue0Struct {
     let result = super.call(
       "getProjectInfo",
-      "getProjectInfo(uint256):((uint256,uint256,string,string,string,string,address,uint96,uint8,bool))",
+      "getProjectInfo(uint256):((uint256,uint256,string,string,string,string,address,bool))",
       [ethereum.Value.fromUnsignedBigInt(projectId_)]
     );
 
@@ -899,7 +883,7 @@ export class Manager extends ethereum.SmartContract {
   ): ethereum.CallResult<Manager__getProjectInfoResultValue0Struct> {
     let result = super.tryCall(
       "getProjectInfo",
-      "getProjectInfo(uint256):((uint256,uint256,string,string,string,string,address,uint96,uint8,bool))",
+      "getProjectInfo(uint256):((uint256,uint256,string,string,string,string,address,bool))",
       [ethereum.Value.fromUnsignedBigInt(projectId_)]
     );
     if (result.reverted) {
@@ -1520,46 +1504,8 @@ export class CreateProjectCallProjectStruct extends ethereum.Tuple {
     return this[6].toAddress();
   }
 
-  get defaultRoyaltyPoints(): BigInt {
-    return this[7].toBigInt();
-  }
-
-  get feeShareType(): i32 {
-    return this[8].toI32();
-  }
-
   get permitByHubOwner(): boolean {
-    return this[9].toBoolean();
-  }
-}
-
-export class DeleteDefaultRoyaltyCall extends ethereum.Call {
-  get inputs(): DeleteDefaultRoyaltyCall__Inputs {
-    return new DeleteDefaultRoyaltyCall__Inputs(this);
-  }
-
-  get outputs(): DeleteDefaultRoyaltyCall__Outputs {
-    return new DeleteDefaultRoyaltyCall__Outputs(this);
-  }
-}
-
-export class DeleteDefaultRoyaltyCall__Inputs {
-  _call: DeleteDefaultRoyaltyCall;
-
-  constructor(call: DeleteDefaultRoyaltyCall) {
-    this._call = call;
-  }
-
-  get projectId(): BigInt {
-    return this._call.inputValues[0].value.toBigInt();
-  }
-}
-
-export class DeleteDefaultRoyaltyCall__Outputs {
-  _call: DeleteDefaultRoyaltyCall;
-
-  constructor(call: DeleteDefaultRoyaltyCall) {
-    this._call = call;
+    return this[7].toBoolean();
   }
 }
 
@@ -1793,44 +1739,6 @@ export class PublisherSetCanCollectCall__Outputs {
   _call: PublisherSetCanCollectCall;
 
   constructor(call: PublisherSetCanCollectCall) {
-    this._call = call;
-  }
-}
-
-export class SetDefaultRoyaltyCall extends ethereum.Call {
-  get inputs(): SetDefaultRoyaltyCall__Inputs {
-    return new SetDefaultRoyaltyCall__Inputs(this);
-  }
-
-  get outputs(): SetDefaultRoyaltyCall__Outputs {
-    return new SetDefaultRoyaltyCall__Outputs(this);
-  }
-}
-
-export class SetDefaultRoyaltyCall__Inputs {
-  _call: SetDefaultRoyaltyCall;
-
-  constructor(call: SetDefaultRoyaltyCall) {
-    this._call = call;
-  }
-
-  get projectId(): BigInt {
-    return this._call.inputValues[0].value.toBigInt();
-  }
-
-  get recipient(): Address {
-    return this._call.inputValues[1].value.toAddress();
-  }
-
-  get fraction(): BigInt {
-    return this._call.inputValues[2].value.toBigInt();
-  }
-}
-
-export class SetDefaultRoyaltyCall__Outputs {
-  _call: SetDefaultRoyaltyCall;
-
-  constructor(call: SetDefaultRoyaltyCall) {
     this._call = call;
   }
 }

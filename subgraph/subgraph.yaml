@@ -9,7 +9,7 @@ dataSources:
     network: mainnet
     source:
       abi: SBT
-      address: "0x610178dA211FEF7D417bC0e6FeD39F05609AD788"
+      address: "0xB7f8BC63BbcaD18155201308C8f3540b07f84F5e"
       startBlock: 1
     mapping:
       kind: ethereum/events
@@ -121,7 +121,7 @@ dataSources:
     network: mainnet
     source:
       abi: Events
-      address: "0x959922bE3CAee4b8Cd9a407cc3ac1C251C2007B1"
+      address: "0x0B306BF915C4d645ff596e518fAf3F9669b97016"
       startBlock: 1
     mapping:
       kind: ethereum/events
@@ -134,6 +134,8 @@ dataSources:
         - Deposit
         - BuySBTByEth
         - BuySBTByERC20
+        - ExchangeERC20BySBT
+        - ExchangePriceSet
         - SubmitTransaction
         - ConfirmTransaction
         - ExecuteTransaction
@@ -162,12 +164,16 @@ dataSources:
           handler: handleSBTValueReceived
         - event: Deposit(indexed address,indexed uint256,indexed address,uint256)
           handler: handleDeposit
-        - event: BuySBTByEth(indexed uint256,indexed address,indexed
-            uint256,uint256,uint256)
+        - event: BuySBTByEth(indexed uint256,indexed address,indexed uint256,uint256)
           handler: handleBuySBTByEth
         - event: BuySBTByERC20(indexed uint256,indexed address,indexed
-            address,uint256,uint256,uint256)
+            address,uint256,uint256)
           handler: handleBuySBTByERC20
+        - event: ExchangeERC20BySBT(indexed uint256,indexed address,indexed
+            uint256,uint256)
+          handler: handleExchangeERC20BySBT
+        - event: ExchangePriceSet(indexed address,indexed uint256,indexed uint256)
+          handler: handleExchangePriceSet
         - event: SubmitTransaction(indexed address,indexed uint256,indexed
             address,address,uint256,bytes)
           handler: handleSubmitTransaction
@@ -203,7 +209,7 @@ dataSources:
     network: mainnet
     source:
       abi: Voucher
-      address: "0xA51c1fc2f0D1a1b8494Ed1FE312d7C3a78Ed91C0"
+      address: "0x9A9f2CCfdE556A7E9Ff0848998Aa4a0CFD8863AE"
       startBlock: 1
     mapping:
       kind: ethereum/events
@@ -235,7 +241,7 @@ dataSources:
     network: mainnet
     source:
       abi: Events
-      address: "0xc6e7DF5E7b4f2A278906862b61205850344D4e7d"
+      address: "0x59b670e9fA9D0A427751Af201D676719a970857b"
       startBlock: 1
     mapping:
       kind: ethereum/events
@@ -315,7 +321,7 @@ dataSources:
     network: mainnet
     source:
       abi: Events
-      address: "0x3Aa5ebB10DC797CAC828524e59A333d0A371443c"
+      address: "0xc6e7DF5E7b4f2A278906862b61205850344D4e7d"
       startBlock: 1
     mapping:
       kind: ethereum/events
@@ -405,7 +411,6 @@ dataSources:
         - Transfer
         - TransferValue
         - SlotChanged
-        - BurnToken
         - DerivativeNFTImageURISet
       abis:
         - name: DerivativeNFT
@@ -423,8 +428,6 @@ dataSources:
           handler: handleDNFTTransferValue
         - event: SlotChanged(indexed uint256,indexed uint256,indexed uint256)
           handler: handleDNFTSlotChanged
-        - event: BurnToken(uint256,uint256,address,uint256)
-          handler: handleDNFTBurnToken
         - event: DerivativeNFTImageURISet(indexed uint256,string,uint256)
           handler: handleDNFTImageURISet
       file: ./src/dnft/derivativeNFT-mapping.ts
@@ -446,7 +449,6 @@ dataSources:
         - Transfer
         - TransferValue
         - SlotChanged
-        - BurnToken
         - DerivativeNFTImageURISet
       abis:
         - name: DerivativeNFT
@@ -464,8 +466,6 @@ dataSources:
           handler: handleDNFTTransferValue
         - event: SlotChanged(indexed uint256,indexed uint256,indexed uint256)
           handler: handleDNFTSlotChanged
-        - event: BurnToken(uint256,uint256,address,uint256)
-          handler: handleDNFTBurnToken
         - event: DerivativeNFTImageURISet(indexed uint256,string,uint256)
           handler: handleDNFTImageURISet
       file: ./src/dnft/derivativeNFT-mapping.ts

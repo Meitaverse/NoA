@@ -549,14 +549,9 @@ contract BankTreasuryV2 is
         );
     }
 
-    function calculateAmountCurrency(address currency, uint256 ethAmount) external view returns (uint256) {
-        if (_exchangePrice[currency] == 0) revert Errors.ExchangePriceIsZero();
-        return ethAmount.div(_exchangePrice[currency]);
-    } 
-
-    function calculateAmountSBT(address currency, uint256 amountOfSBT) external view returns (uint256) {
-        if (_exchangePrice[currency] == 0) revert Errors.ExchangePriceIsZero();
-        return amountOfSBT.mul(_exchangePrice[currency]);
+   function calculateAmountSBT(address currency, uint256 amountOfSBT) external view returns (uint256) {
+        if (_exchangePrice[currency].sbtAmount == 0) revert Errors.ExchangePriceIsZero();
+        return amountOfSBT.mul(_exchangePrice[currency].currencyAmount).div(_exchangePrice[currency].sbtAmount);
     }
 
     function buySBT(
@@ -567,12 +562,12 @@ contract BankTreasuryV2 is
 
         address currency = IModuleGlobals(MODULE_GLOBALS).getSBT();
 
-        if (_exchangePrice[currency] == 0) revert Errors.ExchangePriceIsZero();
+        if (_exchangePrice[currency].currencyAmount == 0) revert Errors.ExchangePriceIsZero();
         if (msg.value == 0) revert Errors.PaymentError();
         
         address exchangeWallet = payable(msg.sender);
        
-        uint256 sbtValue = _exchangePrice[currency].mul(msg.value);
+        uint256 sbtValue = _exchangePrice[currency].sbtAmount.mul(msg.value).div(_exchangePrice[currency].currencyAmount);
 
         address _sbt = IModuleGlobals(MODULE_GLOBALS).getSBT();
         INFTDerivativeProtocolTokenV1(_sbt).transferValue(
@@ -585,7 +580,6 @@ contract BankTreasuryV2 is
             soulBoundTokenId, 
             exchangeWallet, 
             msg.value, 
-            _exchangePrice[currency],
             sbtValue
         );
     }
@@ -601,11 +595,11 @@ contract BankTreasuryV2 is
         if (!IModuleGlobals(MODULE_GLOBALS).isCurrencyWhitelisted(currency))
             revert Errors.CurrencyNotInWhitelisted(currency);
 
-        if (_exchangePrice[currency] == 0) revert Errors.ExchangePriceIsZero();
+        if (_exchangePrice[currency].currencyAmount == 0) revert Errors.ExchangePriceIsZero();
         if (amount == 0) revert Errors.AmountIsZero();
 
         address exchangeWallet = msg.sender;
-        uint256 sbtValue = _exchangePrice[currency].mul(amount);
+        uint256 sbtValue = _exchangePrice[currency].sbtAmount.mul(amount).div(_exchangePrice[currency].currencyAmount);
         
         IERC20Upgradeable(currency).safeTransferFrom(exchangeWallet, address(this), amount);
 
@@ -621,47 +615,9 @@ contract BankTreasuryV2 is
             exchangeWallet, 
             currency,
             amount, 
-            _exchangePrice[currency],
             sbtValue
         );
     }
-    
-    /*
-    /// @notice NOT provide in mainnet!!!
-    function exchangeEthBySBT(
-        uint256 soulBoundTokenId,
-        uint256 amountOfSBT
-    ) external payable whenNotPaused nonReentrant {
-        // only called by owner of soulBoundTokenId
-        _validateCallerIsSoulBoundTokenOwner(soulBoundTokenId);
-        address _sbt = IModuleGlobals(MODULE_GLOBALS).getSBT();
-        if (_exchangePrice[_sbt] == 0) revert Errors.ExchangePriceIsZero();
-        if (amountOfSBT == 0) revert Errors.AmountIsZero();
-        if (soulBoundTokenId == 0) revert Errors.SoulBoundTokenIdNotExists();
-
-        address payable _to = payable(msg.sender);
-
-        INFTDerivativeProtocolTokenV1(_sbt).transferValue(
-            soulBoundTokenId, 
-            soulBoundTokenIdBankTreasury, 
-            amountOfSBT
-        );
-
-        //transfer eth to msg.sender
-        uint256 ethAmount = amountOfSBT.mul(_exchangePrice[_sbt]);
-
-        (bool success, ) = _to.call{value: ethAmount}("");
-        if (!success) revert Errors.TxFailed();
-
-        emit Events.ExchangeEthBySBT(
-            soulBoundTokenId, 
-            _to, 
-            amountOfSBT, 
-            _exchangePrice[_sbt], 
-            ethAmount
-        );
-    }
-    */
 
     function exchangeERC20BySBT(
         uint256 soulBoundTokenId,
@@ -670,7 +626,7 @@ contract BankTreasuryV2 is
     ) external payable whenNotPaused nonReentrant {
         // only called by owner of soulBoundTokenId
         _validateCallerIsSoulBoundTokenOwner(soulBoundTokenId);
-        if (_exchangePrice[currency] == 0) revert Errors.ExchangePriceIsZero();
+        if (_exchangePrice[currency].sbtAmount == 0) revert Errors.ExchangePriceIsZero();
         if (amountOfSBT == 0) revert Errors.AmountIsZero();
         if (soulBoundTokenId == 0) revert Errors.SoulBoundTokenIdNotExists();
         if (!IModuleGlobals(MODULE_GLOBALS).isCurrencyWhitelisted(currency))
@@ -685,7 +641,7 @@ contract BankTreasuryV2 is
         );
 
         //transfer ERC20 to msg.sender
-        uint256 erc20Amount = amountOfSBT.div(_exchangePrice[currency]);
+        uint256 erc20Amount = amountOfSBT.mul(_exchangePrice[currency].currencyAmount).div(_exchangePrice[currency].sbtAmount);
 
         if (erc20Amount > 0 ) {
             IERC20Upgradeable(currency).safeTransfer(_to, erc20Amount);
@@ -693,10 +649,9 @@ contract BankTreasuryV2 is
 
         emit Events.ExchangeERC20BySBT(
             soulBoundTokenId, 
-            _to, 
-            amountOfSBT, 
-            _exchangePrice[currency], 
-            erc20Amount
+            currency, 
+            erc20Amount,
+            amountOfSBT
         );
     }
        
@@ -737,31 +692,42 @@ contract BankTreasuryV2 is
 
     function setExchangePrice(
         address currency,
-         uint256 exchangePrice
+        uint256 currencyAmount,
+        uint256 sbtAmount
     ) 
         external 
         nonReentrant
         onlyGov
     {
-        if (!IModuleGlobals(MODULE_GLOBALS).isCurrencyWhitelisted(currency))
+       if (!IModuleGlobals(MODULE_GLOBALS).isCurrencyWhitelisted(currency))
             revert Errors.CurrencyNotInWhitelisted(currency);
-        _exchangePrice[currency] = exchangePrice;
+        if (currencyAmount == 0 || sbtAmount == 0) {
+            delete _exchangePrice[currency];
+        }else {
 
-        //TODO emit 
+            _exchangePrice[currency] = DataTypes.ExchangePrice(
+                currencyAmount, 
+                sbtAmount
+            );
+        }
+        
+        //Emits
+        emit Events.ExchangePriceSet(
+            currency, 
+            currencyAmount, 
+            sbtAmount
+        );
     }
 
-    function removeERC20(
+    function getExchangePrice(
         address currency
     ) 
         external 
-        nonReentrant
-        onlyGov
+        view
+        returns(uint256, uint256)
     {
-        if (!IModuleGlobals(MODULE_GLOBALS).isCurrencyWhitelisted(currency))
-            revert Errors.CurrencyNotInWhitelisted(currency);
-
-        delete _exchangePrice[currency];
-        //TODO emit 
+        return  (_exchangePrice[currency].currencyAmount, _exchangePrice[currency].sbtAmount);
+    
     }
 
     function distributeFundsToUserRevenue(

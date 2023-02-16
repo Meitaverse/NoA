@@ -83,8 +83,6 @@ task("create-project", "create-project function")
           image: "image",
           metadataURI: "metadataURI",
           descriptor: metadataDescriptor.address,
-          defaultRoyaltyPoints: 0,
-          feeShareType: 0,  //LEVEL_TWO
           permitByHubOwner: false
         })
     );
@@ -123,12 +121,6 @@ task("create-project", "create-project function")
     );
     console.log(
       "\t--- projectInfo info - descriptor: ", projectInfo.descriptor
-    );
-    console.log(
-      "\t--- projectInfo info - defaultRoyaltyPoints: ", projectInfo.defaultRoyaltyPoints.toNumber()
-    );
-    console.log(
-      "\t--- projectInfo info - feeShareType: ", projectInfo.feeShareType
     );
 
     let derivativeNFT: DerivativeNFT;

@@ -244,8 +244,7 @@ makeSuiteCleanRoom('Voucher Creator', function () {
             // mint 3 tokens, one base, one on approval extension, one on anon extension
             await voucherContract.connect(user).mintBaseNew(SECOND_PROFILE_ID, [userAddress], [1000], [''])     
             await extApprover.connect(user).testMintNew(SECOND_PROFILE_ID, [userAddress], [1000], [''])
-            //TODO ??
-            await extAnon.connect(userTwo).testMintNew(SECOND_PROFILE_ID, [userAddress], [1000], [''])
+            await extAnon.connect(user).testMintNew(SECOND_PROFILE_ID, [userAddress], [1000], [''])
 
             await voucherContract.connect(user).safeTransferFrom(
                 userAddress, 
@@ -414,8 +413,6 @@ makeSuiteCleanRoom('Voucher Creator', function () {
         });
 
         it('voucher permission test', async function () {
-
-
             await expect( 
                 voucherContract.connect(userTwo)['registerExtension(address,string)'](userTwoAddress, 'http://extension')
             ).to.be.revertedWith("AdminControl: Must be owner or admin");
@@ -471,10 +468,13 @@ makeSuiteCleanRoom('Voucher Creator', function () {
             await expect( 
                 voucherContract.connect(userTwo)['mintBaseNew(uint256,address[],uint256[],string[])'](SECOND_PROFILE_ID, [userAddress], [100], [''])
             ).to.be.revertedWith("NotProfileOwner");
-
-            // await truffleAssert.reverts(creator.methods['mintExtensionNew(address[],uint256[],string[])']([anyone], [1], [""], {from:anyone}), "Must be registered extension");
+            
             await expect( 
-                voucherContract.connect(userTwo)['mintExtensionNew(uint256,address[],uint256[],string[])'](SECOND_PROFILE_ID, [userAddress], [100], [''])
+                voucherContract.connect(userThree).mintBaseNew(SECOND_PROFILE_ID, [userAddress], [200], [''])
+            ).to.be.revertedWith("NotProfileOwner");
+
+            await expect( 
+                voucherContract.connect(user)['mintExtensionNew(uint256,address[],uint256[],string[])'](SECOND_PROFILE_ID, [userAddress], [100], [''])
             ).to.be.revertedWith("Must be registered extension");
 
             await expect( 
@@ -533,12 +533,12 @@ makeSuiteCleanRoom('Voucher Creator', function () {
             // Minting cost
             const mintBase = await voucherContract.connect(user).estimateGas.mintBaseNew(SECOND_PROFILE_ID, [userAddress], [100], [''])
             console.log("No Extension mint gas estimate: %s", mintBase);
-            const mintGasEstimate = await extension1.connect(deployer).estimateGas.testMintNew(SECOND_PROFILE_ID, [userAddress], [100], [''])
+            const mintGasEstimate = await extension1.connect(user).estimateGas.testMintNew(SECOND_PROFILE_ID, [userAddress], [100], [''])
             console.log("Extension mint gas estimate: %s", mintGasEstimate);
 
 
             // Test minting
-            await extension1.connect(userTwo).testMintNew(SECOND_PROFILE_ID, [userAddress], [100], [''])
+            await extension1.connect(user).testMintNew(SECOND_PROFILE_ID, [userAddress], [100], [''])
 
             let newTokenId1 = 1;
             expect(
@@ -564,7 +564,7 @@ makeSuiteCleanRoom('Voucher Creator', function () {
             await extension.connect(user)['testMintNew(uint256,address[],uint256[],string[])'](SECOND_PROFILE_ID, [userAddress,userTwoAddress], [600,601], ["t6"]);
 
             await expect(
-                    extension.connect(userTwo).testMintNew(SECOND_PROFILE_ID, [userAddress, userTwoAddress], [600,700,800], [])
+                    extension.connect(user).testMintNew(SECOND_PROFILE_ID, [userAddress, userTwoAddress], [600,700,800], [])
             ).to.be.revertedWith("Invalid input");   
             
    
@@ -662,16 +662,16 @@ makeSuiteCleanRoom('Voucher Creator', function () {
             await permissions.setApproveEnabled(false);
 
             await expect(
-                extension1.testMintNew(THIRD_PROFILE_ID, [userTwoAddress], [100], [''])
+                extension1.connect(userTwo).testMintNew(THIRD_PROFILE_ID, [userTwoAddress], [100], [''])
             ).to.be.revertedWith("MockERC1155CreatorMintPermissions: Disabled");
 
-            await extension2.testMintNew(THIRD_PROFILE_ID, [userTwoAddress], [100], ['']);
+            await extension2.connect(userTwo).testMintNew(THIRD_PROFILE_ID, [userTwoAddress], [100], ['']);
 
             await voucherContract.connect(deployer).setMintPermissions(extension1.address, '0x0000000000000000000000000000000000000000');
 
-            await extension1.testMintNew(THIRD_PROFILE_ID, [userTwoAddress], [100], ['']);
+            await extension1.connect(userTwo).testMintNew(THIRD_PROFILE_ID, [userTwoAddress], [100], ['']);
             
-            await extension2.testMintNew(THIRD_PROFILE_ID, [userTwoAddress], [100], ['']);
+            await extension2.connect(userTwo).testMintNew(THIRD_PROFILE_ID, [userTwoAddress], [100], ['']);
         });
 
         it('voucher royalites update test', async function () {

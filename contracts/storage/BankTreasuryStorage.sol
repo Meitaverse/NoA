@@ -35,7 +35,7 @@ contract BankTreasuryStorage  {
 
     DataTypes.Transaction[] internal _transactions;
 
-    mapping(address => uint256) internal _exchangePrice;
+    mapping(address => DataTypes.ExchangePrice) internal _exchangePrice;
 
     /// @notice Stores per-account details.
     mapping(uint256 => mapping(address => DataTypes.AccountInfo)) internal accountToInfo;

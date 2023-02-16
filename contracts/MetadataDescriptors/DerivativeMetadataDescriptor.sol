@@ -275,10 +275,6 @@ contract DerivativeMetadataDescriptor is IERC3525MetadataDescriptor {
                 projectData_.hubId.toString(), 
             '"metadataURI":"',
                 projectData_.metadataURI, 
-            '"defaultRoyaltyPoints":"',
-                uint256(projectData_.defaultRoyaltyPoints).toString(), 
-            '"feeShareType":"',
-                uint256(projectData_.feeShareType).toString(), 
             '"}'
             /* solhint-enable */
           )

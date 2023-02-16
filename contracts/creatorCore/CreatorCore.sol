@@ -2,7 +2,7 @@
 
 pragma solidity ^0.8.0;
 
-/// @author: manifold.xyz
+/// @author:Bitsoul Protocol
 
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import "@openzeppelin/contracts/utils/Strings.sol";
@@ -219,7 +219,6 @@ abstract contract CreatorCore is ReentrancyGuard, ICreatorCore, ERC165 {
     function _setTokenURIPrefix(string calldata prefix) internal {
         _extensionURIPrefix[address(0)] = prefix;
     }
-
 
     /**
      * @dev Set token uri for a token with no extension

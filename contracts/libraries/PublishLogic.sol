@@ -86,6 +86,7 @@ library PublishLogic {
         uint256 publishId,
         address publisher,
         address derivativeNFT,
+        uint16 bps,
         mapping(uint256 => mapping(uint256 => DataTypes.PublicationStruct))
             storage _pubByIdByProfile
     ) external returns(uint256) {
@@ -105,7 +106,8 @@ library PublishLogic {
         uint256 newTokenId =  IDerivativeNFT(derivativeNFT).publish(
             publishId,
             publication,
-            publisher
+            publisher,
+            bps
         );
         
         //Avoids stack too deep

@@ -166,11 +166,6 @@ abstract contract BaseFeeCollectModule is
             (MultirecipientProcessCollectData)
         );
 
-        //address derivativeNFT = IManager(MANAGER).getDerivativeNFT(projectId);
-        //uint96 fraction = IDerivativeNFT(derivativeNFT).getDefaultRoyalty();
-         
-        // uint256 payFees = collectUnits * fraction;
-
         (, uint16 treasuryFee) = _treasuryData();
         uint256 treasuryAmount = (payFees * treasuryFee) / BASIS_POINTS;
   

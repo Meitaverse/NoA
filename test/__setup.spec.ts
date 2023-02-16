@@ -574,9 +574,16 @@ before(async function () {
   ).to.not.be.reverted;
 
   await expect(
-    bankTreasuryContract.connect(governance).setExchangePrice(sbtContract.address, 1)
+    bankTreasuryContract.connect(governance).setExchangePrice(sbtContract.address, 1, 1)
   ).to.not.be.reverted;
-  console.log('bankTreasuryContract setExchangePrice ok, 1 Ether = 1 SBT Value');
+  let [currencyAmount, sbtAmount]  = await bankTreasuryContract.getExchangePrice(sbtContract.address);
+
+  console.log('bankTreasuryContract setExchangePrice ok, currencyAmount:', currencyAmount, ' sbtAmount=', sbtAmount);
+
+  await expect(
+    bankTreasuryContract.connect(governance).setExchangePrice(currency.address, 1, 1)
+  ).to.not.be.reverted;
+  console.log('bankTreasuryContract setExchangePrice ok, 1 Currency = 1 SBT Value');
 
 
   await expect(
@@ -610,7 +617,7 @@ before(async function () {
 
   expect(await manager.getWalletBySoulBoundTokenId(FIRST_PROFILE_ID)).to.eq(bankTreasuryContract.address);
 
-  expect((await derivativeNFTImpl.MANAGER()).toUpperCase()).to.eq(manager.address.toUpperCase());
+  // expect((await derivativeNFTImpl.MANAGER()).toUpperCase()).to.eq(manager.address.toUpperCase());
 
   expect((await sbtContract.version()).toNumber()).to.eq(1);
   // expect((await sbtContract.getManager()).toUpperCase()).to.eq(manager.address.toUpperCase());

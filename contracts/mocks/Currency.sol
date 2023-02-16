@@ -22,7 +22,7 @@ contract Currency is ERC20, Ownable, Pausable {
     }
 
     constructor() 
-        ERC20('Currency', 'SBTCoin') 
+        ERC20('Currency', 'CCoin') 
    {
         _decimals = 18;
         _mint(address(this), TOTAL_SUPPLY * 1e18);

@@ -135,9 +135,9 @@ contract MultirecipientFeeCollectModule is BaseFeeCollectModule {
                 ++i;
             }
         }
-        address derivativeNFT = IManager(MANAGER).getDerivativeNFT(projectId);
-        uint96 fraction = IDerivativeNFT(derivativeNFT).getDefaultRoyalty();
-        if (totalSplits != fraction) revert Errors.InvalidRecipientSplits();
+        // address derivativeNFT = IManager(MANAGER).getDerivativeNFT(projectId);
+        // uint96 fraction = IDerivativeNFT(derivativeNFT).getDefaultRoyalty();
+        // if (totalSplits != fraction) revert Errors.InvalidRecipientSplits();
     }
  
     /**
@@ -213,6 +213,7 @@ contract MultirecipientFeeCollectModule is BaseFeeCollectModule {
     ) external view returns (
         RoyaltyInfoData memory
     ) {
+        /*
         uint96 fraction = IDerivativeNFT(IManager(MANAGER).getDerivativeNFT(projectId)).getDefaultRoyalty();
          
         uint256 payFees = collectUnits.mul(_dataByPublicationByProfile[projectId].salePrice) * fraction;
@@ -237,6 +238,7 @@ contract MultirecipientFeeCollectModule is BaseFeeCollectModule {
             fraction: fraction,
             royalties: royalties
         });
+        */
     }
 
     /**
@@ -266,7 +268,7 @@ contract MultirecipientFeeCollectModule is BaseFeeCollectModule {
                 ++i;
             }
         }
-
+/*
         address derivativeNFT = IManager(MANAGER).getDerivativeNFT(projectId);
         uint96 fraction = IDerivativeNFT(derivativeNFT).getDefaultRoyalty();
         if (totalSplits != fraction) revert Errors.InvalidRecipientSplits();
@@ -276,6 +278,6 @@ contract MultirecipientFeeCollectModule is BaseFeeCollectModule {
             newRoyaltyPoints,
             block.timestamp
         );
-    
+*/
     }   
 }

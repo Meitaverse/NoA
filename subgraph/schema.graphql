@@ -64,6 +64,9 @@ type Account @entity {
   "All distributed history by this account"
   distributeHistories: [DistributeHistory!]! @derivedFrom(field: "collector")
 
+  "All Exchange ERC20 history by SBT Value by this account"
+  exchangeERC20Histories: [ExchangeERC20BySBTHistory!]! @derivedFrom(field: "account")
+
   "All fee history that is genesis creator by this account"
   genesisCreatorFeeHistories: [DistributeHistory!]! @derivedFrom(field: "genesisCreator")
 
@@ -725,15 +728,24 @@ type BuySBTByERC20History @entity {
 }
 
 # Bank treasury ExchangeEthBySBT history
-type ExchangeEthBySBTHistory @entity {
+type ExchangeERC20BySBTHistory @entity {
   id: ID!
   account: Account!
-  toWallet: Bytes!
-  sbtValue: BigInt!
-  exchangePrice: BigInt!
-  ethAmount: BigInt!
+  currency: Bytes!
+  amount: BigInt!
+  sbtAmount: BigInt!
   timestamp: BigInt!
 }
+
+# Price Set
+type ExchangePrice @entity {
+  id: ID!
+  currency: Bytes!
+  currencyAmount: BigInt!
+  sbtAmount: BigInt!
+  timestamp: BigInt!
+}
+
 
 # Market Place
 type Market @entity {

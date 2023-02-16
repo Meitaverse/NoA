@@ -78,8 +78,6 @@ library DataTypes {
      * @param image Image of project, ipfs or arweave url
      * @param metadataURI metadata 
      * @param descriptor descriptor for SVG 
-     * @param defaultRoyaltyPoints default royalty points
-     * @param feeShareType fee share type, level two or five
      * @param permitByHubOwner True: User prePublish will permit by hub owner, default false
      */
     struct ProjectData {
@@ -90,8 +88,6 @@ library DataTypes {
         string image;
         string metadataURI;
         address descriptor;
-        uint96 defaultRoyaltyPoints;
-        FeeShareType feeShareType;
         bool permitByHubOwner;
     }
     
@@ -257,6 +253,10 @@ library DataTypes {
     }
 
     //BankTreasury
+    struct ExchangePrice {
+         uint256 currencyAmount;
+         uint256 sbtAmount;
+    }
     
     struct Transaction {
         address currency;

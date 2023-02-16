@@ -88,36 +88,6 @@ export class ApprovalValue__Params {
   }
 }
 
-export class BurnToken extends ethereum.Event {
-  get params(): BurnToken__Params {
-    return new BurnToken__Params(this);
-  }
-}
-
-export class BurnToken__Params {
-  _event: BurnToken;
-
-  constructor(event: BurnToken) {
-    this._event = event;
-  }
-
-  get projectId(): BigInt {
-    return this._event.parameters[0].value.toBigInt();
-  }
-
-  get tokenId(): BigInt {
-    return this._event.parameters[1].value.toBigInt();
-  }
-
-  get owner(): Address {
-    return this._event.parameters[2].value.toAddress();
-  }
-
-  get timestamp(): BigInt {
-    return this._event.parameters[3].value.toBigInt();
-  }
-}
-
 export class DerivativeNFTImageURISet extends ethereum.Event {
   get params(): DerivativeNFTImageURISet__Params {
     return new DerivativeNFTImageURISet__Params(this);
@@ -159,6 +129,32 @@ export class Initialized__Params {
 
   get version(): i32 {
     return this._event.parameters[0].value.toI32();
+  }
+}
+
+export class RoyaltiesUpdated extends ethereum.Event {
+  get params(): RoyaltiesUpdated__Params {
+    return new RoyaltiesUpdated__Params(this);
+  }
+}
+
+export class RoyaltiesUpdated__Params {
+  _event: RoyaltiesUpdated;
+
+  constructor(event: RoyaltiesUpdated) {
+    this._event = event;
+  }
+
+  get tokenId(): BigInt {
+    return this._event.parameters[0].value.toBigInt();
+  }
+
+  get receivers(): Array<Address> {
+    return this._event.parameters[1].value.toAddressArray();
+  }
+
+  get basisPoints(): Array<BigInt> {
+    return this._event.parameters[2].value.toBigIntArray();
   }
 }
 
@@ -255,6 +251,56 @@ export class TransferValue__Params {
 
   get _value(): BigInt {
     return this._event.parameters[2].value.toBigInt();
+  }
+}
+
+export class DerivativeNFT__getFeesResult {
+  value0: Array<Address>;
+  value1: Array<BigInt>;
+
+  constructor(value0: Array<Address>, value1: Array<BigInt>) {
+    this.value0 = value0;
+    this.value1 = value1;
+  }
+
+  toMap(): TypedMap<string, ethereum.Value> {
+    let map = new TypedMap<string, ethereum.Value>();
+    map.set("value0", ethereum.Value.fromAddressArray(this.value0));
+    map.set("value1", ethereum.Value.fromUnsignedBigIntArray(this.value1));
+    return map;
+  }
+
+  getValue0(): Array<Address> {
+    return this.value0;
+  }
+
+  getValue1(): Array<BigInt> {
+    return this.value1;
+  }
+}
+
+export class DerivativeNFT__getRoyaltiesResult {
+  value0: Array<Address>;
+  value1: Array<BigInt>;
+
+  constructor(value0: Array<Address>, value1: Array<BigInt>) {
+    this.value0 = value0;
+    this.value1 = value1;
+  }
+
+  toMap(): TypedMap<string, ethereum.Value> {
+    let map = new TypedMap<string, ethereum.Value>();
+    map.set("value0", ethereum.Value.fromAddressArray(this.value0));
+    map.set("value1", ethereum.Value.fromUnsignedBigIntArray(this.value1));
+    return map;
+  }
+
+  getValue0(): Array<Address> {
+    return this.value0;
+  }
+
+  getValue1(): Array<BigInt> {
+    return this.value1;
   }
 }
 
@@ -436,21 +482,6 @@ export class DerivativeNFT extends ethereum.SmartContract {
     return new DerivativeNFT("DerivativeNFT", address);
   }
 
-  MANAGER(): Address {
-    let result = super.call("MANAGER", "MANAGER():(address)", []);
-
-    return result[0].toAddress();
-  }
-
-  try_MANAGER(): ethereum.CallResult<Address> {
-    let result = super.tryCall("MANAGER", "MANAGER():(address)", []);
-    if (result.reverted) {
-      return new ethereum.CallResult();
-    }
-    let value = result.value;
-    return ethereum.CallResult.fromValue(value[0].toAddress());
-  }
-
   allowance(tokenId_: BigInt, operator_: Address): BigInt {
     let result = super.call(
       "allowance",
@@ -572,27 +603,79 @@ export class DerivativeNFT extends ethereum.SmartContract {
     return ethereum.CallResult.fromValue(value[0].toAddress());
   }
 
-  getDefaultRoyalty(): BigInt {
-    let result = super.call(
-      "getDefaultRoyalty",
-      "getDefaultRoyalty():(uint96)",
-      []
-    );
+  getFeeBps(tokenId: BigInt): Array<BigInt> {
+    let result = super.call("getFeeBps", "getFeeBps(uint256):(uint256[])", [
+      ethereum.Value.fromUnsignedBigInt(tokenId)
+    ]);
 
-    return result[0].toBigInt();
+    return result[0].toBigIntArray();
   }
 
-  try_getDefaultRoyalty(): ethereum.CallResult<BigInt> {
+  try_getFeeBps(tokenId: BigInt): ethereum.CallResult<Array<BigInt>> {
+    let result = super.tryCall("getFeeBps", "getFeeBps(uint256):(uint256[])", [
+      ethereum.Value.fromUnsignedBigInt(tokenId)
+    ]);
+    if (result.reverted) {
+      return new ethereum.CallResult();
+    }
+    let value = result.value;
+    return ethereum.CallResult.fromValue(value[0].toBigIntArray());
+  }
+
+  getFeeRecipients(tokenId: BigInt): Array<Address> {
+    let result = super.call(
+      "getFeeRecipients",
+      "getFeeRecipients(uint256):(address[])",
+      [ethereum.Value.fromUnsignedBigInt(tokenId)]
+    );
+
+    return result[0].toAddressArray();
+  }
+
+  try_getFeeRecipients(tokenId: BigInt): ethereum.CallResult<Array<Address>> {
     let result = super.tryCall(
-      "getDefaultRoyalty",
-      "getDefaultRoyalty():(uint96)",
-      []
+      "getFeeRecipients",
+      "getFeeRecipients(uint256):(address[])",
+      [ethereum.Value.fromUnsignedBigInt(tokenId)]
     );
     if (result.reverted) {
       return new ethereum.CallResult();
     }
     let value = result.value;
-    return ethereum.CallResult.fromValue(value[0].toBigInt());
+    return ethereum.CallResult.fromValue(value[0].toAddressArray());
+  }
+
+  getFees(tokenId: BigInt): DerivativeNFT__getFeesResult {
+    let result = super.call(
+      "getFees",
+      "getFees(uint256):(address[],uint256[])",
+      [ethereum.Value.fromUnsignedBigInt(tokenId)]
+    );
+
+    return new DerivativeNFT__getFeesResult(
+      result[0].toAddressArray(),
+      result[1].toBigIntArray()
+    );
+  }
+
+  try_getFees(
+    tokenId: BigInt
+  ): ethereum.CallResult<DerivativeNFT__getFeesResult> {
+    let result = super.tryCall(
+      "getFees",
+      "getFees(uint256):(address[],uint256[])",
+      [ethereum.Value.fromUnsignedBigInt(tokenId)]
+    );
+    if (result.reverted) {
+      return new ethereum.CallResult();
+    }
+    let value = result.value;
+    return ethereum.CallResult.fromValue(
+      new DerivativeNFT__getFeesResult(
+        value[0].toAddressArray(),
+        value[1].toBigIntArray()
+      )
+    );
   }
 
   getPublishIdByTokenId(tokenId: BigInt): BigInt {
@@ -616,6 +699,39 @@ export class DerivativeNFT extends ethereum.SmartContract {
     }
     let value = result.value;
     return ethereum.CallResult.fromValue(value[0].toBigInt());
+  }
+
+  getRoyalties(tokenId: BigInt): DerivativeNFT__getRoyaltiesResult {
+    let result = super.call(
+      "getRoyalties",
+      "getRoyalties(uint256):(address[],uint256[])",
+      [ethereum.Value.fromUnsignedBigInt(tokenId)]
+    );
+
+    return new DerivativeNFT__getRoyaltiesResult(
+      result[0].toAddressArray(),
+      result[1].toBigIntArray()
+    );
+  }
+
+  try_getRoyalties(
+    tokenId: BigInt
+  ): ethereum.CallResult<DerivativeNFT__getRoyaltiesResult> {
+    let result = super.tryCall(
+      "getRoyalties",
+      "getRoyalties(uint256):(address[],uint256[])",
+      [ethereum.Value.fromUnsignedBigInt(tokenId)]
+    );
+    if (result.reverted) {
+      return new ethereum.CallResult();
+    }
+    let value = result.value;
+    return ethereum.CallResult.fromValue(
+      new DerivativeNFT__getRoyaltiesResult(
+        value[0].toAddressArray(),
+        value[1].toBigIntArray()
+      )
+    );
   }
 
   getSlot(publishId: BigInt): BigInt {
@@ -715,45 +831,6 @@ export class DerivativeNFT extends ethereum.SmartContract {
     return ethereum.CallResult.fromValue(value[0].toBoolean());
   }
 
-  isApprovedForSlot(
-    owner_: Address,
-    slot_: BigInt,
-    operator_: Address
-  ): boolean {
-    let result = super.call(
-      "isApprovedForSlot",
-      "isApprovedForSlot(address,uint256,address):(bool)",
-      [
-        ethereum.Value.fromAddress(owner_),
-        ethereum.Value.fromUnsignedBigInt(slot_),
-        ethereum.Value.fromAddress(operator_)
-      ]
-    );
-
-    return result[0].toBoolean();
-  }
-
-  try_isApprovedForSlot(
-    owner_: Address,
-    slot_: BigInt,
-    operator_: Address
-  ): ethereum.CallResult<boolean> {
-    let result = super.tryCall(
-      "isApprovedForSlot",
-      "isApprovedForSlot(address,uint256,address):(bool)",
-      [
-        ethereum.Value.fromAddress(owner_),
-        ethereum.Value.fromUnsignedBigInt(slot_),
-        ethereum.Value.fromAddress(operator_)
-      ]
-    );
-    if (result.reverted) {
-      return new ethereum.CallResult();
-    }
-    let value = result.value;
-    return ethereum.CallResult.fromValue(value[0].toBoolean());
-  }
-
   metadataDescriptor(): Address {
     let result = super.call(
       "metadataDescriptor",
@@ -814,15 +891,17 @@ export class DerivativeNFT extends ethereum.SmartContract {
   publish(
     publishId: BigInt,
     publication: DerivativeNFT__publishInputPublicationStruct,
-    publisher: Address
+    publisher: Address,
+    bps: i32
   ): BigInt {
     let result = super.call(
       "publish",
-      "publish(uint256,(uint256,uint256,uint256,uint256,uint256,address,uint256,string,string,bool,string[],uint256[],address,bytes,address,bytes),address):(uint256)",
+      "publish(uint256,(uint256,uint256,uint256,uint256,uint256,address,uint256,string,string,bool,string[],uint256[],address,bytes,address,bytes),address,uint16):(uint256)",
       [
         ethereum.Value.fromUnsignedBigInt(publishId),
         ethereum.Value.fromTuple(publication),
-        ethereum.Value.fromAddress(publisher)
+        ethereum.Value.fromAddress(publisher),
+        ethereum.Value.fromUnsignedBigInt(BigInt.fromI32(bps))
       ]
     );
 
@@ -832,15 +911,17 @@ export class DerivativeNFT extends ethereum.SmartContract {
   try_publish(
     publishId: BigInt,
     publication: DerivativeNFT__publishInputPublicationStruct,
-    publisher: Address
+    publisher: Address,
+    bps: i32
   ): ethereum.CallResult<BigInt> {
     let result = super.tryCall(
       "publish",
-      "publish(uint256,(uint256,uint256,uint256,uint256,uint256,address,uint256,string,string,bool,string[],uint256[],address,bytes,address,bytes),address):(uint256)",
+      "publish(uint256,(uint256,uint256,uint256,uint256,uint256,address,uint256,string,string,bool,string[],uint256[],address,bytes,address,bytes),address,uint16):(uint256)",
       [
         ethereum.Value.fromUnsignedBigInt(publishId),
         ethereum.Value.fromTuple(publication),
-        ethereum.Value.fromAddress(publisher)
+        ethereum.Value.fromAddress(publisher),
+        ethereum.Value.fromUnsignedBigInt(BigInt.fromI32(bps))
       ]
     );
     if (result.reverted) {
@@ -851,15 +932,15 @@ export class DerivativeNFT extends ethereum.SmartContract {
   }
 
   royaltyInfo(
-    _tokenId: BigInt,
-    _salePrice: BigInt
+    tokenId: BigInt,
+    value: BigInt
   ): DerivativeNFT__royaltyInfoResult {
     let result = super.call(
       "royaltyInfo",
       "royaltyInfo(uint256,uint256):(address,uint256)",
       [
-        ethereum.Value.fromUnsignedBigInt(_tokenId),
-        ethereum.Value.fromUnsignedBigInt(_salePrice)
+        ethereum.Value.fromUnsignedBigInt(tokenId),
+        ethereum.Value.fromUnsignedBigInt(value)
       ]
     );
 
@@ -870,15 +951,15 @@ export class DerivativeNFT extends ethereum.SmartContract {
   }
 
   try_royaltyInfo(
-    _tokenId: BigInt,
-    _salePrice: BigInt
+    tokenId: BigInt,
+    value: BigInt
   ): ethereum.CallResult<DerivativeNFT__royaltyInfoResult> {
     let result = super.tryCall(
       "royaltyInfo",
       "royaltyInfo(uint256,uint256):(address,uint256)",
       [
-        ethereum.Value.fromUnsignedBigInt(_tokenId),
-        ethereum.Value.fromUnsignedBigInt(_salePrice)
+        ethereum.Value.fromUnsignedBigInt(tokenId),
+        ethereum.Value.fromUnsignedBigInt(value)
       ]
     );
     if (result.reverted) {
@@ -1287,32 +1368,6 @@ export class BurnCall__Outputs {
   }
 }
 
-export class DeleteDefaultRoyaltyCall extends ethereum.Call {
-  get inputs(): DeleteDefaultRoyaltyCall__Inputs {
-    return new DeleteDefaultRoyaltyCall__Inputs(this);
-  }
-
-  get outputs(): DeleteDefaultRoyaltyCall__Outputs {
-    return new DeleteDefaultRoyaltyCall__Outputs(this);
-  }
-}
-
-export class DeleteDefaultRoyaltyCall__Inputs {
-  _call: DeleteDefaultRoyaltyCall;
-
-  constructor(call: DeleteDefaultRoyaltyCall) {
-    this._call = call;
-  }
-}
-
-export class DeleteDefaultRoyaltyCall__Outputs {
-  _call: DeleteDefaultRoyaltyCall;
-
-  constructor(call: DeleteDefaultRoyaltyCall) {
-    this._call = call;
-  }
-}
-
 export class InitializeCall extends ethereum.Call {
   get inputs(): InitializeCall__Inputs {
     return new InitializeCall__Inputs(this);
@@ -1365,14 +1420,6 @@ export class InitializeCall__Inputs {
   get receiver_(): Address {
     return this._call.inputValues[8].value.toAddress();
   }
-
-  get defaultRoyaltyPoints_(): BigInt {
-    return this._call.inputValues[9].value.toBigInt();
-  }
-
-  get feeShareType_(): i32 {
-    return this._call.inputValues[10].value.toI32();
-  }
 }
 
 export class InitializeCall__Outputs {
@@ -1412,6 +1459,10 @@ export class PublishCall__Inputs {
 
   get publisher(): Address {
     return this._call.inputValues[2].value.toAddress();
+  }
+
+  get bps(): i32 {
+    return this._call.inputValues[3].value.toI32();
   }
 }
 
@@ -1607,82 +1658,6 @@ export class SetApprovalForAllCall__Outputs {
   }
 }
 
-export class SetApprovalForSlotCall extends ethereum.Call {
-  get inputs(): SetApprovalForSlotCall__Inputs {
-    return new SetApprovalForSlotCall__Inputs(this);
-  }
-
-  get outputs(): SetApprovalForSlotCall__Outputs {
-    return new SetApprovalForSlotCall__Outputs(this);
-  }
-}
-
-export class SetApprovalForSlotCall__Inputs {
-  _call: SetApprovalForSlotCall;
-
-  constructor(call: SetApprovalForSlotCall) {
-    this._call = call;
-  }
-
-  get owner_(): Address {
-    return this._call.inputValues[0].value.toAddress();
-  }
-
-  get slot_(): BigInt {
-    return this._call.inputValues[1].value.toBigInt();
-  }
-
-  get operator_(): Address {
-    return this._call.inputValues[2].value.toAddress();
-  }
-
-  get approved_(): boolean {
-    return this._call.inputValues[3].value.toBoolean();
-  }
-}
-
-export class SetApprovalForSlotCall__Outputs {
-  _call: SetApprovalForSlotCall;
-
-  constructor(call: SetApprovalForSlotCall) {
-    this._call = call;
-  }
-}
-
-export class SetDefaultRoyaltyCall extends ethereum.Call {
-  get inputs(): SetDefaultRoyaltyCall__Inputs {
-    return new SetDefaultRoyaltyCall__Inputs(this);
-  }
-
-  get outputs(): SetDefaultRoyaltyCall__Outputs {
-    return new SetDefaultRoyaltyCall__Outputs(this);
-  }
-}
-
-export class SetDefaultRoyaltyCall__Inputs {
-  _call: SetDefaultRoyaltyCall;
-
-  constructor(call: SetDefaultRoyaltyCall) {
-    this._call = call;
-  }
-
-  get recipient(): Address {
-    return this._call.inputValues[0].value.toAddress();
-  }
-
-  get fraction(): BigInt {
-    return this._call.inputValues[1].value.toBigInt();
-  }
-}
-
-export class SetDefaultRoyaltyCall__Outputs {
-  _call: SetDefaultRoyaltyCall;
-
-  constructor(call: SetDefaultRoyaltyCall) {
-    this._call = call;
-  }
-}
-
 export class SetMetadataDescriptorCall extends ethereum.Call {
   get inputs(): SetMetadataDescriptorCall__Inputs {
     return new SetMetadataDescriptorCall__Inputs(this);
@@ -1709,36 +1684,6 @@ export class SetMetadataDescriptorCall__Outputs {
   _call: SetMetadataDescriptorCall;
 
   constructor(call: SetMetadataDescriptorCall) {
-    this._call = call;
-  }
-}
-
-export class SetRoyaltyCall extends ethereum.Call {
-  get inputs(): SetRoyaltyCall__Inputs {
-    return new SetRoyaltyCall__Inputs(this);
-  }
-
-  get outputs(): SetRoyaltyCall__Outputs {
-    return new SetRoyaltyCall__Outputs(this);
-  }
-}
-
-export class SetRoyaltyCall__Inputs {
-  _call: SetRoyaltyCall;
-
-  constructor(call: SetRoyaltyCall) {
-    this._call = call;
-  }
-
-  get royaltyBasisPoints(): BigInt {
-    return this._call.inputValues[0].value.toBigInt();
-  }
-}
-
-export class SetRoyaltyCall__Outputs {
-  _call: SetRoyaltyCall;
-
-  constructor(call: SetRoyaltyCall) {
     this._call = call;
   }
 }

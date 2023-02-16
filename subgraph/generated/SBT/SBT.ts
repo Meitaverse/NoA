@@ -487,21 +487,6 @@ export class SBT extends ethereum.SmartContract {
     return ethereum.CallResult.fromValue(value[0].toBytes());
   }
 
-  MAX_SUPPLY(): BigInt {
-    let result = super.call("MAX_SUPPLY", "MAX_SUPPLY():(uint256)", []);
-
-    return result[0].toBigInt();
-  }
-
-  try_MAX_SUPPLY(): ethereum.CallResult<BigInt> {
-    let result = super.tryCall("MAX_SUPPLY", "MAX_SUPPLY():(uint256)", []);
-    if (result.reverted) {
-      return new ethereum.CallResult();
-    }
-    let value = result.value;
-    return ethereum.CallResult.fromValue(value[0].toBigInt());
-  }
-
   TRANSFER_VALUE_ROLE(): Bytes {
     let result = super.call(
       "TRANSFER_VALUE_ROLE",

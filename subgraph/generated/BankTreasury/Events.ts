@@ -273,12 +273,8 @@ export class BuySBTByERC20__Params {
     return this._event.parameters[3].value.toBigInt();
   }
 
-  get exchangePrice(): BigInt {
-    return this._event.parameters[4].value.toBigInt();
-  }
-
   get sbtValue(): BigInt {
-    return this._event.parameters[5].value.toBigInt();
+    return this._event.parameters[4].value.toBigInt();
   }
 }
 
@@ -307,12 +303,8 @@ export class BuySBTByEth__Params {
     return this._event.parameters[2].value.toBigInt();
   }
 
-  get exchangePrice(): BigInt {
-    return this._event.parameters[3].value.toBigInt();
-  }
-
   get sbtValue(): BigInt {
-    return this._event.parameters[4].value.toBigInt();
+    return this._event.parameters[3].value.toBigInt();
   }
 }
 
@@ -859,20 +851,42 @@ export class ExchangeERC20BySBT__Params {
     return this._event.parameters[0].value.toBigInt();
   }
 
-  get toWallet(): Address {
+  get currency(): Address {
     return this._event.parameters[1].value.toAddress();
   }
 
-  get sbtValue(): BigInt {
+  get amount(): BigInt {
     return this._event.parameters[2].value.toBigInt();
   }
 
-  get exchangePrice(): BigInt {
+  get sbtAmount(): BigInt {
     return this._event.parameters[3].value.toBigInt();
   }
+}
 
-  get erc20Amount(): BigInt {
-    return this._event.parameters[4].value.toBigInt();
+export class ExchangePriceSet extends ethereum.Event {
+  get params(): ExchangePriceSet__Params {
+    return new ExchangePriceSet__Params(this);
+  }
+}
+
+export class ExchangePriceSet__Params {
+  _event: ExchangePriceSet;
+
+  constructor(event: ExchangePriceSet) {
+    this._event = event;
+  }
+
+  get currency(): Address {
+    return this._event.parameters[0].value.toAddress();
+  }
+
+  get currencyAmount(): BigInt {
+    return this._event.parameters[1].value.toBigInt();
+  }
+
+  get sbtAmount(): BigInt {
+    return this._event.parameters[2].value.toBigInt();
   }
 }
 

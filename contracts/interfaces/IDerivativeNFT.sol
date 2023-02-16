@@ -18,8 +18,6 @@ interface IDerivativeNFT {
      * @param  soulBoundTokenId_ The token id of the SoulBoundToken.
      * @param metadataDescriptor_ The Descriptor address to set.
      * @param receiver_ The receiver address to set.
-     * @param defaultRoyaltyPoints_ The default royalty points
-     * @param feeShareType_ Fee share type
      */
     function initialize( 
         address sbt, 
@@ -30,46 +28,9 @@ interface IDerivativeNFT {
         uint256 projectId_,
         uint256 soulBoundTokenId_,
         address metadataDescriptor_,
-        address receiver_,
-        uint96 defaultRoyaltyPoints_,
-        DataTypes.FeeShareType feeShareType_
+        address receiver_
     ) external;
 
-
-    /**
-     * @notice Approve or disapprove an operator to manage all of `_owner`'s tokens with the
-     *  specified slot.
-     * 
-     * @dev Caller SHOULD be `_owner` or an operator who has been authorized through
-     *  `setApprovalForAll`.
-     *  MUST emit ApprovalSlot event.
-     * @param _owner The address that owns the ERC3525 tokens
-     * @param _slot The slot of tokens being queried approval of
-     * @param _operator The address for whom to query approval
-     * @param _approved Identify if `_operator` would be approved or disapproved
-     */
-    function setApprovalForSlot(
-        address _owner,
-        uint256 _slot,
-        address _operator,
-        bool _approved
-    ) external payable;
-
-    /**
-     * @notice Query if `_operator` is authorized to manage all of `_owner`'s tokens with the
-     *  specified slot.
-     * 
-     * @param _owner The address that owns the ERC3525 tokens
-     * @param _slot The slot of tokens being queried approval of
-     * @param _operator The address for whom to query approval
-     * @return True if `_operator` is authorized to manage all of `_owner`'s tokens with `_slot`,
-     *  false otherwise.
-     */
-    function isApprovedForSlot(
-        address _owner,
-        uint256 _slot,
-        address _operator
-    ) external view returns (bool);
 
     /**
      * @notice get slot detail.
@@ -109,25 +70,17 @@ interface IDerivativeNFT {
      * @param newState The state to set, as a member of the DerivativeNFTState enum.
      */
     function setState(DataTypes.DerivativeNFTState newState) external;
- 
-    /**
-    * @dev Sets the royalty information that all ids in this contract will default to.
-    *
-    * @param recipient The recipient of royalty to receive.
-    * @param fraction The default royalty points.
-    *
-    */
-    function setDefaultRoyalty(address recipient, uint96 fraction) external;
 
     /**
-     * @notice get the default royalty points of derivativeNFT contract
+     * @dev Get royalites of a token.  Returns list of receivers and basisPoints
      */
-    function getDefaultRoyalty() external view returns(uint96);
+    function getRoyalties(uint256 tokenId) external view returns (address payable[] memory, uint256[] memory);
     
-    /**
-     * @notice delete the default royalty setting
-     */
-    function deleteDefaultRoyalty() external;
+    // Royalty support for various other standards
+    function getFeeRecipients(uint256 tokenId) external view returns (address payable[] memory);
+    function getFeeBps(uint256 tokenId) external view returns (uint[] memory);
+    function getFees(uint256 tokenId) external view returns (address payable[] memory, uint256[] memory);
+    function royaltyInfo(uint256 tokenId, uint256 value) external view returns (address, uint256);
 
     /**
      * @notice get the publishId by tokenId 
@@ -140,12 +93,15 @@ interface IDerivativeNFT {
      * @param publishId The publishId
      * @param publication The publication
      * @param publisher The publisher 
+     * @param bps The total royalties bps 
+     * 
      * @return uint256 The new tokenId.
      */
     function publish(
         uint256 publishId,
         DataTypes.Publication memory publication,
-        address publisher
+        address publisher,
+        uint16 bps
     ) external returns(uint256);
 
     /**

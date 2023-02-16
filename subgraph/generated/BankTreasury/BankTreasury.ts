@@ -200,6 +200,31 @@ export class Upgraded__Params {
   }
 }
 
+export class BankTreasury__getExchangePriceResult {
+  value0: BigInt;
+  value1: BigInt;
+
+  constructor(value0: BigInt, value1: BigInt) {
+    this.value0 = value0;
+    this.value1 = value1;
+  }
+
+  toMap(): TypedMap<string, ethereum.Value> {
+    let map = new TypedMap<string, ethereum.Value>();
+    map.set("value0", ethereum.Value.fromUnsignedBigInt(this.value0));
+    map.set("value1", ethereum.Value.fromUnsignedBigInt(this.value1));
+    return map;
+  }
+
+  getValue0(): BigInt {
+    return this.value0;
+  }
+
+  getValue1(): BigInt {
+    return this.value1;
+  }
+}
+
 export class BankTreasury__getLockupsResult {
   value0: Array<BigInt>;
   value1: Array<BigInt>;
@@ -349,38 +374,6 @@ export class BankTreasury extends ethereum.SmartContract {
     return ethereum.CallResult.fromValue(value[0].toBigInt());
   }
 
-  calculateAmountCurrency(currency: Address, ethAmount: BigInt): BigInt {
-    let result = super.call(
-      "calculateAmountCurrency",
-      "calculateAmountCurrency(address,uint256):(uint256)",
-      [
-        ethereum.Value.fromAddress(currency),
-        ethereum.Value.fromUnsignedBigInt(ethAmount)
-      ]
-    );
-
-    return result[0].toBigInt();
-  }
-
-  try_calculateAmountCurrency(
-    currency: Address,
-    ethAmount: BigInt
-  ): ethereum.CallResult<BigInt> {
-    let result = super.tryCall(
-      "calculateAmountCurrency",
-      "calculateAmountCurrency(address,uint256):(uint256)",
-      [
-        ethereum.Value.fromAddress(currency),
-        ethereum.Value.fromUnsignedBigInt(ethAmount)
-      ]
-    );
-    if (result.reverted) {
-      return new ethereum.CallResult();
-    }
-    let value = result.value;
-    return ethereum.CallResult.fromValue(value[0].toBigInt());
-  }
-
   calculateAmountSBT(currency: Address, amountOfSBT: BigInt): BigInt {
     let result = super.call(
       "calculateAmountSBT",
@@ -489,6 +482,39 @@ export class BankTreasury extends ethereum.SmartContract {
     }
     let value = result.value;
     return ethereum.CallResult.fromValue(value[0].toBigInt());
+  }
+
+  getExchangePrice(currency: Address): BankTreasury__getExchangePriceResult {
+    let result = super.call(
+      "getExchangePrice",
+      "getExchangePrice(address):(uint256,uint256)",
+      [ethereum.Value.fromAddress(currency)]
+    );
+
+    return new BankTreasury__getExchangePriceResult(
+      result[0].toBigInt(),
+      result[1].toBigInt()
+    );
+  }
+
+  try_getExchangePrice(
+    currency: Address
+  ): ethereum.CallResult<BankTreasury__getExchangePriceResult> {
+    let result = super.tryCall(
+      "getExchangePrice",
+      "getExchangePrice(address):(uint256,uint256)",
+      [ethereum.Value.fromAddress(currency)]
+    );
+    if (result.reverted) {
+      return new ethereum.CallResult();
+    }
+    let value = result.value;
+    return ethereum.CallResult.fromValue(
+      new BankTreasury__getExchangePriceResult(
+        value[0].toBigInt(),
+        value[1].toBigInt()
+      )
+    );
   }
 
   getFeeModuleMember(index: BigInt): Address {
@@ -1958,36 +1984,6 @@ export class RefundEarnestFundsCall__Outputs {
   }
 }
 
-export class RemoveERC20Call extends ethereum.Call {
-  get inputs(): RemoveERC20Call__Inputs {
-    return new RemoveERC20Call__Inputs(this);
-  }
-
-  get outputs(): RemoveERC20Call__Outputs {
-    return new RemoveERC20Call__Outputs(this);
-  }
-}
-
-export class RemoveERC20Call__Inputs {
-  _call: RemoveERC20Call;
-
-  constructor(call: RemoveERC20Call) {
-    this._call = call;
-  }
-
-  get currency(): Address {
-    return this._call.inputValues[0].value.toAddress();
-  }
-}
-
-export class RemoveERC20Call__Outputs {
-  _call: RemoveERC20Call;
-
-  constructor(call: RemoveERC20Call) {
-    this._call = call;
-  }
-}
-
 export class RevokeAdminCall extends ethereum.Call {
   get inputs(): RevokeAdminCall__Inputs {
     return new RevokeAdminCall__Inputs(this);
@@ -2099,8 +2095,12 @@ export class SetExchangePriceCall__Inputs {
     return this._call.inputValues[0].value.toAddress();
   }
 
-  get exchangePrice(): BigInt {
+  get currencyAmount(): BigInt {
     return this._call.inputValues[1].value.toBigInt();
+  }
+
+  get sbtAmount(): BigInt {
+    return this._call.inputValues[2].value.toBigInt();
   }
 }
 

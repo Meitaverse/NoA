@@ -229,8 +229,6 @@ makeSuiteCleanRoom('Profile Creation', function () {
                     image: "image",
                     metadataURI: "metadataURI",
                     descriptor: metadataDescriptor.address,
-                    defaultRoyaltyPoints: 0,
-                    feeShareType: 0,  
                     permitByHubOwner: false
                   },
                 })

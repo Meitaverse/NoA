@@ -87,8 +87,6 @@ makeSuiteCleanRoom('Publishing', function () {
                     image: "image",
                     metadataURI: "metadataURI",
                     descriptor: metadataDescriptor.address,
-                    defaultRoyaltyPoints: 0,
-                    feeShareType: 0, //Level two
                     permitByHubOwner: false
                   },
                 })

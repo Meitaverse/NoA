@@ -295,6 +295,15 @@ export class Account extends Entity {
     this.set("distributeHistories", Value.fromStringArray(value));
   }
 
+  get exchangeERC20Histories(): Array<string> {
+    let value = this.get("exchangeERC20Histories");
+    return value!.toStringArray();
+  }
+
+  set exchangeERC20Histories(value: Array<string>) {
+    this.set("exchangeERC20Histories", Value.fromStringArray(value));
+  }
+
   get genesisCreatorFeeHistories(): Array<string> {
     let value = this.get("genesisCreatorFeeHistories");
     return value!.toStringArray();
@@ -4209,7 +4218,7 @@ export class BuySBTByERC20History extends Entity {
   }
 }
 
-export class ExchangeEthBySBTHistory extends Entity {
+export class ExchangeERC20BySBTHistory extends Entity {
   constructor(id: string) {
     super();
     this.set("id", Value.fromString(id));
@@ -4219,20 +4228,20 @@ export class ExchangeEthBySBTHistory extends Entity {
     let id = this.get("id");
     assert(
       id != null,
-      "Cannot save ExchangeEthBySBTHistory entity without an ID"
+      "Cannot save ExchangeERC20BySBTHistory entity without an ID"
     );
     if (id) {
       assert(
         id.kind == ValueKind.STRING,
-        `Entities of type ExchangeEthBySBTHistory must have an ID of type String but the id '${id.displayData()}' is of type ${id.displayKind()}`
+        `Entities of type ExchangeERC20BySBTHistory must have an ID of type String but the id '${id.displayData()}' is of type ${id.displayKind()}`
       );
-      store.set("ExchangeEthBySBTHistory", id.toString(), this);
+      store.set("ExchangeERC20BySBTHistory", id.toString(), this);
     }
   }
 
-  static load(id: string): ExchangeEthBySBTHistory | null {
-    return changetype<ExchangeEthBySBTHistory | null>(
-      store.get("ExchangeEthBySBTHistory", id)
+  static load(id: string): ExchangeERC20BySBTHistory | null {
+    return changetype<ExchangeERC20BySBTHistory | null>(
+      store.get("ExchangeERC20BySBTHistory", id)
     );
   }
 
@@ -4254,40 +4263,99 @@ export class ExchangeEthBySBTHistory extends Entity {
     this.set("account", Value.fromString(value));
   }
 
-  get toWallet(): Bytes {
-    let value = this.get("toWallet");
+  get currency(): Bytes {
+    let value = this.get("currency");
     return value!.toBytes();
   }
 
-  set toWallet(value: Bytes) {
-    this.set("toWallet", Value.fromBytes(value));
+  set currency(value: Bytes) {
+    this.set("currency", Value.fromBytes(value));
   }
 
-  get sbtValue(): BigInt {
-    let value = this.get("sbtValue");
+  get amount(): BigInt {
+    let value = this.get("amount");
     return value!.toBigInt();
   }
 
-  set sbtValue(value: BigInt) {
-    this.set("sbtValue", Value.fromBigInt(value));
+  set amount(value: BigInt) {
+    this.set("amount", Value.fromBigInt(value));
   }
 
-  get exchangePrice(): BigInt {
-    let value = this.get("exchangePrice");
+  get sbtAmount(): BigInt {
+    let value = this.get("sbtAmount");
     return value!.toBigInt();
   }
 
-  set exchangePrice(value: BigInt) {
-    this.set("exchangePrice", Value.fromBigInt(value));
+  set sbtAmount(value: BigInt) {
+    this.set("sbtAmount", Value.fromBigInt(value));
   }
 
-  get ethAmount(): BigInt {
-    let value = this.get("ethAmount");
+  get timestamp(): BigInt {
+    let value = this.get("timestamp");
     return value!.toBigInt();
   }
 
-  set ethAmount(value: BigInt) {
-    this.set("ethAmount", Value.fromBigInt(value));
+  set timestamp(value: BigInt) {
+    this.set("timestamp", Value.fromBigInt(value));
+  }
+}
+
+export class ExchangePrice extends Entity {
+  constructor(id: string) {
+    super();
+    this.set("id", Value.fromString(id));
+  }
+
+  save(): void {
+    let id = this.get("id");
+    assert(id != null, "Cannot save ExchangePrice entity without an ID");
+    if (id) {
+      assert(
+        id.kind == ValueKind.STRING,
+        `Entities of type ExchangePrice must have an ID of type String but the id '${id.displayData()}' is of type ${id.displayKind()}`
+      );
+      store.set("ExchangePrice", id.toString(), this);
+    }
+  }
+
+  static load(id: string): ExchangePrice | null {
+    return changetype<ExchangePrice | null>(store.get("ExchangePrice", id));
+  }
+
+  get id(): string {
+    let value = this.get("id");
+    return value!.toString();
+  }
+
+  set id(value: string) {
+    this.set("id", Value.fromString(value));
+  }
+
+  get currency(): Bytes {
+    let value = this.get("currency");
+    return value!.toBytes();
+  }
+
+  set currency(value: Bytes) {
+    this.set("currency", Value.fromBytes(value));
+  }
+
+  get currencyAmount(): BigInt {
+    let value = this.get("currencyAmount");
+    return value!.toBigInt();
+  }
+
+  set currencyAmount(value: BigInt) {
+    this.set("currencyAmount", Value.fromBigInt(value));
+  }
+
+  get sbtAmount(): BigInt {
+    let value = this.get("sbtAmount");
+    return value!.toBigInt();
+  }
+
+  set sbtAmount(value: BigInt) {
+    this.set("sbtAmount", Value.fromBigInt(value));
   }
 
   get timestamp(): BigInt {

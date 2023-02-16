@@ -100,12 +100,6 @@ task("add-market", "add-market function")
     // console.log(
     //   "\t--- projectInfo info - descriptor: ", projectInfo.descriptor
     // );
-    // console.log(
-    //   "\t--- projectInfo info - defaultRoyaltyPoints: ", projectInfo.defaultRoyaltyPoints.toNumber()
-    // );
-    // console.log(
-    //   "\t--- projectInfo info - feeShareType: ", projectInfo.feeShareType
-    // );
 
     let derivativeNFT: DerivativeNFT;
 

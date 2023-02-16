@@ -25,10 +25,12 @@ interface IBankTreasuryV2 {
 
     function balanceOf(address currency, uint256 soulBoundTokenId) external view returns (uint256 balance);
 
-    function calculateAmountCurrency(address currency, uint256 ethAmount) external view returns(uint256);
-
     function calculateAmountSBT(address currency, uint256 sbtValue) external view returns(uint256);
     
+    function getExchangePrice(
+        address currency
+    ) external view returns(uint256, uint256);
+
     /**
      * @notice Deposit a ERC20 or SBT value to earnest funds
      *         and the avaliable currency tokens will be added.
@@ -73,13 +75,6 @@ interface IBankTreasuryV2 {
     function buySBT(
         uint256 soulBoundTokenId
     ) external payable;
-/*
-    /// @notice NOT provide in mainnet!!!
-    function exchangeEthBySBT(
-        uint256 soulBoundTokenId,
-        uint256 sbtValue
-    ) external payable;
-*/
 
     /**
      * @notice Exchange ERC20 tokens by SBT Value

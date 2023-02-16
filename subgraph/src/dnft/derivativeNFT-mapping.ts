@@ -5,7 +5,6 @@ import {
     Transfer,
     TransferValue,
     SlotChanged,
-    BurnToken,
     Approval,
     ApprovalForAll,
     ApprovalValue,
@@ -375,27 +374,6 @@ export function handleDNFTSlotChanged(event: SlotChanged): void {
     } 
 }
 
-export function handleDNFTBurnToken(event: BurnToken): void {
-    log.info("handleDNFTBurnToken, event.address: {}", [event.address.toHexString()])
-
-    let dnftContract = loadOrCreateDNFTContract(event.address);
-
-    let project = loadProject(event.params.projectId);
-    if (project) {
-
-        let _idString = event.address.toHex() + "-" + event.params.tokenId.toString()
-        const history = DnftBurn.load(_idString) || new DnftBurn(_idString)
-    
-        if (history) {
-            history.derivativeNFT = dnftContract.id
-            history.project = project.id
-            history.tokenId = event.params.tokenId
-            history.owner = loadOrCreateAccount(event.params.owner).id
-            history.timestamp = event.block.timestamp
-            history.save()
-        } 
-    }
-}
 
 export function handleDNFTApproval(event: Approval): void {
     log.info("handleDNFTApproval, event.address: {}", [event.address.toHexString()])

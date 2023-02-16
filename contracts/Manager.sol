@@ -203,7 +203,6 @@ contract Manager is
         );
     }
 
- 
     /// @notice Only hub owner can creat projects
     function createProject(
         DataTypes.ProjectData calldata project
@@ -248,19 +247,19 @@ contract Manager is
         return _projectInfoByProjectId[projectId_];
     }
 
-    function calculateRoyalty(uint256 publishId) external view returns(uint96) {
+    function calculateRoyalty(uint256 publishId) external view returns(uint16) {
         return _calculateRoyalty(publishId);
     }
  
-    function _calculateRoyalty(uint256 publishId) internal view returns(uint96) {
+    function _calculateRoyalty(uint256 publishId) internal view returns(uint16) {
         uint256 projectid = _projectDataByPublishId[publishId].publication.projectId;
         uint256 previousPublishId = _projectDataByPublishId[publishId].previousPublishId;
         (, uint16 treasuryFee ) = IModuleGlobals(MODULE_GLOBALS).getTreasuryData();
 
-        uint96 fraction = 
-            uint96(treasuryFee) + 
-            uint96(_projectDataByPublishId[_genesisPublishIdByProjectId[projectid]].publication.royaltyBasisPoints) +
-            uint96(_projectDataByPublishId[previousPublishId].publication.royaltyBasisPoints);
+        uint16 fraction = 
+            uint16(treasuryFee) + 
+            uint16(_projectDataByPublishId[_genesisPublishIdByProjectId[projectid]].publication.royaltyBasisPoints) +
+            uint16(_projectDataByPublishId[previousPublishId].publication.royaltyBasisPoints);
 
         return fraction;
     }
@@ -429,12 +428,16 @@ contract Manager is
             
             if (!IModuleGlobals(MODULE_GLOBALS).isWhitelistCollectModule(_projectDataByPublishId[publishId].publication.collectModule))
                 revert Errors.CollectModuleNotWhitelisted();
-        
+
+            //TODO
+            uint16 _bps = _calculateRoyalty(publishId);
+
             uint256 newTokenId = PublishLogic.createPublish(
                 _projectDataByPublishId[publishId].publication,
                 publishId,
                 publisher,
                 derivativeNFT,
+                _bps,
                 _pubByIdByProfile
             );
 
@@ -612,29 +615,7 @@ contract Manager is
         address derivativeNFT = _derivativeNFTByProjectId[projectId];
         IDerivativeNFT(derivativeNFT).setMetadataDescriptor(metadataDescriptor);
     }
-
-    function setDefaultRoyalty(
-        uint256 projectId, 
-        address recipient, 
-        uint96 fraction
-    ) 
-        external 
-        whenNotPaused 
-        onlyGov 
-    {
-        address derivativeNFT = _derivativeNFTByProjectId[projectId];
-        IDerivativeNFT(derivativeNFT).setDefaultRoyalty(recipient, fraction);
-    }
-
-    function deleteDefaultRoyalty(uint256 projectId)  
-        external 
-        whenNotPaused 
-        onlyGov 
-    {
-        address derivativeNFT = _derivativeNFTByProjectId[projectId];
-        IDerivativeNFT(derivativeNFT).deleteDefaultRoyalty();
-    }
-
+    
     function setGovernance(address newGovernance) external nonReentrant onlyGov {
         _setGovernance(newGovernance);
     }

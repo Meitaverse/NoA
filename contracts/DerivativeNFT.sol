@@ -16,7 +16,6 @@ import "./base/DerivativeNFTMultiState.sol";
 /**
  *  @title Derivative NFT
  * 
- * , and includes built-in governance power and delegation mechanisms.
  */
 contract DerivativeNFT is 
     IDerivativeNFT, 
@@ -37,21 +36,17 @@ contract DerivativeNFT is
         uint256 timestamp
     );
 
-    /**
-     * @dev Emitted when a dNFT is burned.
-     *
-     * @param projectId The newly created profile's token ID.
-     * @param tokenId The profile creator, who created the token with the given profile ID.
-     * @param owner The image uri set for the profile.
-     * @param timestamp The current block timestamp.
-     */
-    event BurnToken(
-        uint256 projectId, 
-        uint256 tokenId, 
-        address owner,
-        uint256 timestamp
+    event RoyaltiesUpdated(
+        uint256 indexed tokenId, 
+        address payable[] receivers, 
+        uint256[] basisPoints
     );
-
+    
+    // Royalty configurations
+    struct RoyaltyConfig {
+        address payable receiver;
+        uint16 bps;
+    }
 
     using Counters for Counters.Counter;
     // using SafeMathUpgradeable for uint256;
@@ -64,32 +59,20 @@ contract DerivativeNFT is
     uint256 internal _soulBoundTokenId;
    
     address internal _receiver;
-    DataTypes.FeeShareType internal _feeShareType;
 
-    address public immutable MANAGER;
+    address internal immutable MANAGER;
 
     address internal _SBT;
     address internal _banktreasury;
     address internal _marketPlace;
 
-    uint96 internal _royaltyBasisPoints; 
-
     //tokenId => publishId
     mapping(uint256 => uint256) internal _tokenIdByPublishId;
 
+    mapping (uint256 => RoyaltyConfig[]) internal _tokenRoyalty;
+
     // bytes4(keccak256('royaltyInfo(uint256,uint256)')) == 0x2a55205a
     bytes4 internal constant _INTERFACE_ID_ERC2981 = 0x2a55205a;
-
-    struct RoyaltyInfo {
-        address receiver;
-        uint96 royaltyFraction;
-    }
-
-    RoyaltyInfo private _defaultRoyaltyInfo;
-    mapping(uint256 => RoyaltyInfo) private _tokenRoyaltyInfo;
-
-    // @dev owner => slot => operator => approved
-    mapping(address => mapping(uint256 => mapping(address => bool))) private _slotApprovals;
 
     // slot => slotDetail
     mapping(uint256 => DataTypes.SlotDetail) private _slotDetails;
@@ -130,9 +113,7 @@ contract DerivativeNFT is
         uint256 projectId_,
         uint256 soulBoundTokenId_,
         address metadataDescriptor_,
-        address receiver_,
-        uint96 defaultRoyaltyPoints_,
-        DataTypes.FeeShareType feeShareType_
+        address receiver_
     ) public virtual initializer {
         if (_initialized) revert Errors.Initialized();
         _initialized = true;
@@ -158,15 +139,18 @@ contract DerivativeNFT is
 
         _receiver = receiver_;
 
-        _setDefaultRoyalty(_banktreasury, defaultRoyaltyPoints_);
-
-        _feeShareType = feeShareType_;
     }
 
     /**
      * @notice Can only be called by manager
      */    
-    function setMetadataDescriptor(address metadataDescriptor_) external whenNotPaused onlyManager {
+    function setMetadataDescriptor(
+        address metadataDescriptor_
+    ) 
+        external 
+        whenNotPaused 
+        onlyManager 
+    {
         _setMetadataDescriptor(metadataDescriptor_);
     }
 
@@ -181,31 +165,20 @@ contract DerivativeNFT is
         } 
     }
 
-    /**
-     * @notice Can only be called by manager or hub owner
-     */ 
-    function setDefaultRoyalty(address recipient, uint96 fraction) public whenNotPaused {
-       
-        if (msg.sender == MANAGER || msg.sender == IERC3525(_SBT).ownerOf(_soulBoundTokenId)) {
-             _setDefaultRoyalty(recipient, fraction);
-        } else {
-            revert Errors.NotManagerNorHubOwner();
-        } 
+    function getRoyalties(uint256 tokenId) external view virtual override returns (address payable[] memory, uint256[] memory) {
+        return _getRoyalties(tokenId);
     }
 
-    function getDefaultRoyalty() external view returns(uint96) {
-        return _defaultRoyaltyInfo.royaltyFraction;
+    function getFeeRecipients(uint256 tokenId) external view virtual override returns (address payable[] memory) {
+        return _getRoyaltyReceivers(tokenId);
     }
 
-    /**
-     * @notice Can only be called by manager or hub owner
-     */ 
-    function deleteDefaultRoyalty() public whenNotPaused {
-        if (msg.sender == MANAGER || msg.sender == IERC3525(_SBT).ownerOf(_soulBoundTokenId)) {
-             _deleteDefaultRoyalty();
-        } else {
-            revert Errors.NotManagerNorHubOwner();
-        } 
+    function getFeeBps(uint256 tokenId) external view virtual override returns (uint[] memory) {
+        return _getRoyaltyBPS(tokenId);
+    }
+
+    function getFees(uint256 tokenId) external view virtual override returns (address payable[] memory, uint256[] memory) {
+        return _getRoyalties(tokenId);
     }
 
     function getPublishIdByTokenId(uint256 tokenId) external view returns (uint256) {
@@ -231,7 +204,8 @@ contract DerivativeNFT is
     function publish(
         uint256 publishId,
         DataTypes.Publication memory publication,
-        address publisher
+        address publisher,
+        uint16 bps
     ) external whenPublishingEnabled onlyManager returns (uint256) { 
         
         if (_publicationNameHashBySlot[keccak256(bytes(publication.name))] > 0) revert Errors.PublicationIsExisted();
@@ -262,6 +236,13 @@ contract DerivativeNFT is
 
         _mint(publisher, newTokenId, slot, publication.amount);
 
+        //set royalty
+        _setTokenRoyalty(
+            newTokenId,
+            _banktreasury,
+            bps
+        );
+
         return newTokenId;
     }
 
@@ -291,6 +272,15 @@ contract DerivativeNFT is
         _mint(to_, newTokenId, ERC3525Upgradeable.slotOf(fromTokenId_), 0);
 
         ERC3525Upgradeable._transferValue(fromTokenId_, newTokenId, value_);
+
+        RoyaltyConfig[] storage royalties_from = _tokenRoyalty[fromTokenId_];
+
+        //set royalty
+        _setTokenRoyalty(
+            newTokenId,
+            _banktreasury,
+            royalties_from[0].bps
+        );
 
         return newTokenId;
     }
@@ -333,13 +323,13 @@ contract DerivativeNFT is
             revert Errors.NotManagerNorHubOwner();
         } 
 
-        uint256 slot = slotOf(tokenId_);
         if (!_isApprovedOrOwner(msg.sender, tokenId_)) {
             revert Errors.NotAllowed();
         }
+
         ERC3525Upgradeable._burn(tokenId_);
+
         _resetTokenRoyalty(tokenId_);
-        emit BurnToken(slot, tokenId_, msg.sender, block.timestamp);
     }
 
     function getSlotDetail(uint256 slot_) external view returns (DataTypes.SlotDetail memory) {
@@ -367,21 +357,16 @@ contract DerivativeNFT is
         uint256 publishId = _tokenIdByPublishId[fromTokenId_];
         _tokenIdByPublishId[newTokenId] = publishId;
 
-        uint96 _fraction;
-        if (_feeShareType == DataTypes.FeeShareType.LEVEL_TWO) {
-            _fraction = IManager(MANAGER).calculateRoyalty(publishId);
-        } else {
-             _fraction = _royaltyBasisPoints;
-        }
+        RoyaltyConfig[] storage royalties_from = _tokenRoyalty[fromTokenId_];
 
-        //set royaltiespa
+        //set royalty
         _setTokenRoyalty(
             newTokenId,
             _banktreasury,
-            _fraction
+            royalties_from[0].bps
         );
 
-       return newTokenId;
+        return newTokenId;
     }
 
     function transferFrom(
@@ -417,92 +402,18 @@ contract DerivativeNFT is
        super.safeTransferFrom(from_, to_, tokenId_, "");
     }
 
-    function _mint(address to_, uint256 tokenId_, uint256 slot_, uint256 value_) internal virtual override {
-        super._mint(to_, tokenId_, slot_, value_);
-
-        uint256 publishId = _tokenIdByPublishId[tokenId_];
-        uint96 _fraction;
-        if (_feeShareType == DataTypes.FeeShareType.LEVEL_TWO) {
-            _fraction = IManager(MANAGER).calculateRoyalty(publishId);
-        } else {
-             _fraction = _royaltyBasisPoints;
-        }
-
-        //set royalties
-        _setTokenRoyalty(
-            tokenId_,
-            _banktreasury,
-            _fraction
-        );
-    }
-
-    function setApprovalForSlot(
-        address owner_,
-        uint256 slot_,
-        address operator_,
-        bool approved_
-    ) external payable virtual whenNotPaused {
-        if (!(_msgSender() == owner_ || isApprovedForAll(owner_, _msgSender()))) {
-            revert Errors.NotAllowed();
-        }
-        _setApprovalForSlot(owner_, slot_, operator_, approved_);
-    }
-
-    function isApprovedForSlot(address owner_, uint256 slot_, address operator_) external view virtual returns (bool) {
-        return _slotApprovals[owner_][slot_][operator_];
-    }
-
-    function _setApprovalForSlot(address owner_, uint256 slot_, address operator_, bool approved_) internal virtual {
-        if (owner_ == operator_) {
-            revert Errors.ApproveToOwner();
-        }
-        _slotApprovals[owner_][slot_][operator_] = approved_;
-    }
-
-    /**
-     * @notice Changes the royalty percentage for secondary sales. Can only be called publication's
-     *         soulBoundToken owner.
-     *
-     * @param royaltyBasisPoints The royalty percentage meassured in basis points. Each basis point
-     *                           represents 0.01%.
-     */
-    function setRoyalty(uint96 royaltyBasisPoints) external whenNotPaused {
-        if (IERC3525(_SBT).ownerOf(_soulBoundTokenId) == msg.sender) {
-            if (royaltyBasisPoints > BASIS_POINTS) {
-                revert Errors.InvalidParameter();
-            } else {
-                _royaltyBasisPoints = royaltyBasisPoints;
-            }
-        } else {
-            revert Errors.NotSoulBoundTokenOwner();
-        }
-        emit Events.RoyaltySet(
-            _soulBoundTokenId,
-            _projectId,
-            royaltyBasisPoints
-        );
-    }
-
     /**
      * @notice Called with the sale price to determine how much royalty
      *         is owed and to whom.
      *
-     * @param _tokenId The token ID of the derivativeNFT queried for royalty information.
-     * @param _salePrice The sale price of the derivativeNFT specified.
+     * @param tokenId The token ID of the derivativeNFT queried for royalty information.
+     * @param value The sale price of the derivativeNFT specified.
      * @return A tuple with the address who should receive the royalties and the royalty
      * payment amount for the given sale price.
      */
-    function royaltyInfo(uint256 _tokenId, uint256 _salePrice) external view returns (address, uint256) {
-        RoyaltyInfo storage royalty = _tokenRoyaltyInfo[_tokenId];
+    function royaltyInfo(uint256 tokenId, uint256 value) external view returns (address, uint256) {
 
-        if (royalty.receiver == address(0)) {
-            royalty = _defaultRoyaltyInfo;
-        }
-
-        uint256 royaltyAmount = (_salePrice * royalty.royaltyFraction) / _feeDenominator();
-
-        return (royalty.receiver, royaltyAmount);
-
+        return _getRoyaltyInfo(tokenId, value);
     }
 
     /// ****************************
@@ -510,67 +421,37 @@ contract DerivativeNFT is
     /// ****************************
 
     /**
-     * @dev The denominator with which to interpret the fee set in {_setTokenRoyalty} and {_setDefaultRoyalty} as a
-     * fraction of the sale price. Defaults to 10000 so fees are expressed in basis points, but may be customized by an
-     * override.
-     */
-    function _feeDenominator() internal pure virtual returns (uint96) {
-        return uint96(BASIS_POINTS);
-    }
-
-    /**
-     * @dev Sets the royalty information that all ids in this contract will default to.
-     *
-     * Requirements:
-     *
-     * - `receiver` cannot be the zero address.
-     * - `feeNumerator` cannot be greater than the fee denominator.
-     */
-    function _setDefaultRoyalty(address receiver, uint96 feeNumerator) internal virtual {
-        require(feeNumerator <= _feeDenominator(), "ERC2981: royalty fee will exceed salePrice");
-        require(receiver != address(0), "ERC2981: invalid receiver");
-
-        _defaultRoyaltyInfo = RoyaltyInfo(receiver, feeNumerator);
-
-       emit Events.DefaultRoyaltySet(
-            _soulBoundTokenId,
-            _projectId,
-            receiver,
-            feeNumerator
-        );
-    }
-
-    /**
-     * @dev Removes default royalty information.
-     */
-    function _deleteDefaultRoyalty() internal virtual {
-        delete _defaultRoyaltyInfo;
-    }
-
-    /**
      * @dev Sets the royalty information for a specific token id, overriding the global default.
      *
      * Requirements:
      *
+     * - `tokenId` cannot be the zero .
      * - `receiver` cannot be the zero address.
-     * - `feeNumerator` cannot be greater than the fee denominator.
+     * - `basisPoints` cannot be greater than the fee denominator.
      */
     function _setTokenRoyalty(
         uint256 tokenId,
         address receiver,
-        uint96 feeNumerator
+        uint16 basisPoints
     ) internal virtual {
-        require(feeNumerator <= _feeDenominator(), "ERC2981: royalty fee will exceed salePrice");
+        require(basisPoints <= uint16(BASIS_POINTS), "ERC2981: royalty fee will exceed salePrice");
         require(receiver != address(0), "ERC2981: Invalid parameters");
-
-        _tokenRoyaltyInfo[tokenId] = RoyaltyInfo(receiver, feeNumerator);
+        RoyaltyConfig[] storage royalties = _tokenRoyalty[tokenId];
+        royalties.push(
+                RoyaltyConfig(
+                    {
+                        receiver: payable(receiver),
+                        bps: uint16(basisPoints)
+                    }
+                )
+            );
     }
 
     /**
      * @dev Resets royalty information for the token id back to the global default.
      */
     function _resetTokenRoyalty(uint256 tokenId) internal virtual {
-        delete _tokenRoyaltyInfo[tokenId];
+        delete _tokenRoyalty[tokenId];
     }
 
     function _validateCallerIsManager() internal view {
@@ -597,5 +478,49 @@ contract DerivativeNFT is
 
         emit DerivativeNFTImageURISet(tokenId, imageURI, block.timestamp);
     }
+
+    /**
+     * Helper to get royalties for a token
+     */
+    function _getRoyalties(uint256 tokenId) view internal returns (address payable[] memory receivers, uint256[] memory bps) {
+
+        // Get token level royalties
+        RoyaltyConfig[] memory royalties = _tokenRoyalty[tokenId];
+        
+        if (royalties.length > 0) {
+            receivers = new address payable[](royalties.length);
+            bps = new uint256[](royalties.length);
+            for (uint i; i < royalties.length;) {
+                receivers[i] = royalties[i].receiver;
+                bps[i] = royalties[i].bps;
+                unchecked { ++i; }
+            }
+        }
+    }
+
+    /**
+     * Helper to get royalty receivers for a token
+     */
+    function _getRoyaltyReceivers(uint256 tokenId) view internal returns (address payable[] memory recievers) {
+        (recievers, ) = _getRoyalties(tokenId);
+    }
+
+    /**
+     * Helper to get royalty basis points for a token
+     */
+    function _getRoyaltyBPS(uint256 tokenId) view internal returns (uint256[] memory bps) {
+        (, bps) = _getRoyalties(tokenId);
+    }
+
+    function _getRoyaltyInfo(uint256 tokenId, uint256 value) view internal returns (address receiver, uint256 amount){
+        (address payable[] memory receivers, uint256[] memory bps) = _getRoyalties(tokenId);
+        require(receivers.length <= 1, "More than 1 royalty receiver");
+        
+        if (receivers.length == 0) {
+            return (address(this), 0);
+        }
+        return (receivers[0], bps[0] * value / 10000);
+    }
+
 
 }

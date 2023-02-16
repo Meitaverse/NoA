@@ -116,8 +116,6 @@ library InteractionLogic {
             image: project.image,
             metadataURI: project.metadataURI,
             descriptor: project.descriptor,
-            defaultRoyaltyPoints: project.defaultRoyaltyPoints,
-            feeShareType: project.feeShareType,
             permitByHubOwner: project.permitByHubOwner
         });
 
@@ -148,9 +146,7 @@ library InteractionLogic {
             projectId,
             project.soulBoundTokenId,
             project.descriptor,
-            receiver_,
-            project.defaultRoyaltyPoints,
-            project.feeShareType
+            receiver_
         );
 
         emit Events.DerivativeNFTDeployed(

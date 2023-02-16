@@ -7,7 +7,8 @@ import {
     Deposit,
     BuySBTByEth,
     BuySBTByERC20,
-    // ExchangeEthBySBT,
+    ExchangeERC20BySBT,
+    ExchangePriceSet,
     VoucherDeposited,
     SubmitTransaction,
     ConfirmTransaction,
@@ -35,7 +36,8 @@ import {
     DepositHistory,
     BuySBTByEthHistory,
     BuySBTByERC20History,
-    ExchangeEthBySBTHistory,
+    ExchangeERC20BySBTHistory,
+    ExchangePrice,
     Transaction,
     ExecuteTransactionHistory,
     ExecuteTransactionERC3525History,
@@ -182,28 +184,45 @@ export function handleBuySBTByERC20(event: BuySBTByERC20): void {
     } 
 }
 
-/*
-export function handleExchangeEthBySBT(event: ExchangeEthBySBT): void {
-    log.info("handleExchangeEthBySBT, event.address: {}", [event.address.toHexString()])
+
+export function handleExchangeERC20BySBT(event: ExchangeERC20BySBT): void {
+    log.info("handleExchangeERC20BySBT, event.address: {}", [event.address.toHexString()])
 
     let _idString = getLogId(event)
-    const history = ExchangeEthBySBTHistory.load(_idString) || new ExchangeEthBySBTHistory(_idString)
+    const history = ExchangeERC20BySBTHistory.load(_idString) || new ExchangeERC20BySBTHistory(_idString)
     if (history) {
 
         const sbtAccount = loadOrCreateSoulBoundToken(event.params.soulBoundTokenId)
 
         if (sbtAccount.wallet.toHex() != ZERO_ADDRESS ) {
             history.account =  loadOrCreateAccount(Address.fromBytes(sbtAccount.wallet)).id
-            history.toWallet = event.params.toWallet
-            history.sbtValue = event.params.sbtValue
-            history.exchangePrice = event.params.exchangePrice
-            history.ethAmount = event.params.ethAmount
-            history.timestamp = event.params.timestamp
+            history.currency = event.params.currency
+            history.amount = event.params.amount
+            history.sbtAmount = event.params.sbtAmount
+            history.timestamp = event.block.timestamp
             history.save()
         }
     } 
 }
-*/
+
+export function handleExchangePriceSet(event: ExchangePriceSet): void {
+    log.info("handleExchangePriceSet, event.address: {}", [event.address.toHexString()])
+
+    let _idString = event.params.currency.toHexString()
+    const exchangePrice = ExchangePrice.load(_idString) || new ExchangePrice(_idString)
+    if (exchangePrice) {
+        if (event.params.currencyAmount.equals(ZERO_BIG_INT) || event.params.sbtAmount.equals(ZERO_BIG_INT)) {
+            store.remove("ExchangePrice", event.params.currency.toHex());
+        } else {
+            exchangePrice.currency = event.params.currency
+            exchangePrice.currencyAmount = event.params.currencyAmount
+            exchangePrice.sbtAmount = event.params.sbtAmount
+            exchangePrice.timestamp = event.block.timestamp
+            exchangePrice.save()
+        }
+    } 
+}
+
 
 export function handleVoucherDeposited(event: VoucherDeposited): void {
     log.info("handleVoucherDeposited, event.address: {}", [event.address.toHexString()])

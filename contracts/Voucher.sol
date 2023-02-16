@@ -2,7 +2,7 @@
 
 pragma solidity ^0.8.0;
 
-/// @author: manifold.xyz
+/// @author:Bitsoul Protocol
 
 import "@openzeppelin/contracts-upgradeable/token/ERC1155/ERC1155Upgradeable.sol";
 import "@manifoldxyz/libraries-solidity/contracts/access/AdminControlUpgradeable.sol";
@@ -38,7 +38,7 @@ contract Voucher is
     /**
      * @dev Emitted when a voucher is generated
      *
-     * @param soulBoundTokenId The SBT id
+     * @param soulBoundTokenId The SBT id of tx.origin
      * @param totalAmount The total value of SBT
      * @param to The array of to
      * @param amounts The array of amount
@@ -285,6 +285,7 @@ contract Voucher is
         override 
         nonReentrant 
         // whenNotPaused 
+        onlySBTUser(soulBoundTokenId)
         returns(uint256[] memory tokenIds) 
     {
         requireExtension();
@@ -518,7 +519,7 @@ contract Voucher is
         
     function _validateCallerIsSoulBoundTokenOwner(uint256 soulBoundTokenId_) internal view {
         
-         if (IERC3525(sbt).ownerOf(soulBoundTokenId_) == msg.sender) {
+         if (IERC3525(sbt).ownerOf(soulBoundTokenId_) == tx.origin) {
             return;
          }
 

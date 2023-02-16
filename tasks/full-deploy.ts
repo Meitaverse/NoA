@@ -156,7 +156,6 @@ import { NFTDerivativeProtocolTokenV1LibraryAddresses } from '../typechain/facto
         console.log('\t-- timeLock: ', timeLock.address);
         await exportAddress(hre, timeLock, 'TimeLock');
 
-      
         console.log('\n\t-- Deploying receiver  --');
         const receiverMock = await deployContract(
             new ERC3525ReceiverMock__factory(deployer).deploy(
@@ -216,7 +215,10 @@ import { NFTDerivativeProtocolTokenV1LibraryAddresses } from '../typechain/facto
 
         console.log('\n\t-- Deploying derivativeNFT Implementations --');
         await deployContract(
-          new DerivativeNFT__factory(deployer).deploy(managerProxyAddress, { nonce: deployerNonce++ })
+          new DerivativeNFT__factory(deployer).deploy(
+            managerProxyAddress, 
+            { nonce: deployerNonce++ }
+          )
         );
 
         console.log('\n\t-- Deploying Manager --');
@@ -238,7 +240,6 @@ import { NFTDerivativeProtocolTokenV1LibraryAddresses } from '../typechain/facto
         await exportAddress(hre, proxy, 'Manager');
         
 
-
         // Connect the manager proxy to the Manager factory and the governance for ease of use.
         const manager = Manager__factory.connect(proxy.address, governance);
 
@@ -254,7 +255,7 @@ import { NFTDerivativeProtocolTokenV1LibraryAddresses } from '../typechain/facto
                 { nonce: deployerNonce++ }
         );
 
-        const sbtLogic = await new SBTLogic__factory(deployer).deploy();
+        const sbtLogic = await new SBTLogic__factory(deployer).deploy({ nonce: deployerNonce++ });
         sbtLibs = {
           'contracts/libraries/SBTLogic.sol:SBTLogic': sbtLogic.address,
         };
@@ -281,8 +282,6 @@ import { NFTDerivativeProtocolTokenV1LibraryAddresses } from '../typechain/facto
         await exportAddress(hre, sbtContract, 'SBT');
         await exportSubgraphNetworksJson(hre, sbtContract, 'SBT');
 
-
-
         const governorImpl = await new GovernorContract__factory(deployer).deploy({ nonce: deployerNonce++ });
         let initializeDataGovrnor = governorImpl.interface.encodeFunctionData("initialize", [
             sbtContract.address,
@@ -296,7 +295,7 @@ import { NFTDerivativeProtocolTokenV1LibraryAddresses } from '../typechain/facto
             governorImpl.address,
             initializeDataGovrnor,
             { nonce: deployerNonce++ }
-            );
+        );
         const governorContract = new GovernorContract__factory(deployer).attach(gonvernorProxy.address);
         console.log("\t-- governorContract address: ", governorContract.address);
         await exportAddress(hre, governorContract, 'GovernorContract');
@@ -372,7 +371,7 @@ import { NFTDerivativeProtocolTokenV1LibraryAddresses } from '../typechain/facto
         const marketPlaceProxy = await new ERC1967Proxy__factory(deployer).deploy(
             marketPlaceImpl.address,
             initializeDataMarket,
-          { nonce: deployerNonce++ }
+            { nonce: deployerNonce++ }
         );
         const marketPlaceContract = new MarketPlace__factory(marketLibs, deployer).attach(marketPlaceProxy.address);
         console.log('\t-- marketPlaceContract: ', marketPlaceContract.address);
@@ -418,7 +417,6 @@ import { NFTDerivativeProtocolTokenV1LibraryAddresses } from '../typechain/facto
         );
         console.log('\t-- feeCollectModule: ', feeCollectModule.address);
         await exportAddress(hre, feeCollectModule, 'FeeCollectModule');
-        await exportSubgraphNetworksJson(hre, feeCollectModule, 'FeeCollectModule');
 
         console.log('\n\t-- Deploying publishModule --');
         const publishModule = await deployContract(
@@ -442,15 +440,17 @@ import { NFTDerivativeProtocolTokenV1LibraryAddresses } from '../typechain/facto
 
 
         const fethImpl = await new FETH__factory(deployer).deploy(
-            LOCKUP_DURATION
+            LOCKUP_DURATION,
+            { nonce: deployerNonce++ }
           )
         
-         const royaltyRegistry = await new RoyaltyRegistry__factory(deployer).deploy();
+         const royaltyRegistry = await new RoyaltyRegistry__factory(deployer).deploy({ nonce: deployerNonce++ });
         
          const voucherMarketImpl = await new VoucherMarket__factory(deployer).deploy(
             bankTreasuryContract.address,
             fethImpl.address,
-            royaltyRegistry.address
+            royaltyRegistry.address,
+            { nonce: deployerNonce++ }
           );
         
           let voucherMarketData= voucherMarketImpl.interface.encodeFunctionData("initialize", [
@@ -459,7 +459,8 @@ import { NFTDerivativeProtocolTokenV1LibraryAddresses } from '../typechain/facto
         
           const voucherMarketProxy = await new ERC1967Proxy__factory(deployer).deploy(
             voucherMarketImpl.address,
-            voucherMarketData
+            voucherMarketData,
+            { nonce: deployerNonce++ }
           );
           const voucherMarketContract = new VoucherMarket__factory(deployer).attach(voucherMarketProxy.address);
           console.log("voucherMarketContract.address: ", voucherMarketContract.address);
@@ -475,7 +476,8 @@ import { NFTDerivativeProtocolTokenV1LibraryAddresses } from '../typechain/facto
         
           const fethProxy = await new ERC1967Proxy__factory(deployer).deploy(
             fethImpl.address,
-            fethData
+            fethData,
+            { nonce: deployerNonce++ }
           );
           const feth = new FETH__factory(deployer).attach(fethProxy.address);
           console.log("feth.address: ", feth.address);   
@@ -554,11 +556,9 @@ import { NFTDerivativeProtocolTokenV1LibraryAddresses } from '../typechain/facto
             .whitelistCurrency(currency.address, true)
         );
     
-        console.log('\n\t-- bankTreasuryContract setExchangePrice, 1 Ether = 1 SBT Value');
-        await waitForTx( bankTreasuryContract.connect(governance).setExchangePrice(sbtContract.address, 1));
+        console.log('\n\t-- bankTreasuryContract setExchangePrice, 1 Ether = 1000 SBT Value');
+        await waitForTx( bankTreasuryContract.connect(governance).setExchangePrice(sbtContract.address, 1, 1000));
         
-        //TODO ether 
-
         if (await manager.connect(governance).getGlobalModule() == ZERO_ADDRESS) {
             console.log('\n\t ==== error: manager not set ModuleGlobas ====');
         }

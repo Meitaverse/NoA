@@ -20,40 +20,17 @@ library Events {
         uint256 publishTaxAmount
     );
 
-    // /**
-    //  * @dev Emitted when update a publish while not publish on chain
-    //  *
-    //  * @param hubId The hub Id
-    //  * @param publishId The publish Id
-    //  * @param soulBoundTokenId The soulBoundToken Id
-    //  * @param salePrice The sale price while collet 
-    //  * @param royaltyBasisPoints The royalty basis points
-    //  * @param amount The amount of publish
-    //  * @param name The name of publish
-    //  * @param description The description of publish
-    //  * @param materialURIs Array of materialURI 
-    //  * @param fromTokenIds Array of fromTokenId 
-    //  * @param addedPublishTaxes The added publish taxes while taxed increased
-    //  * @param timestamp The current block timestamp.
-    //  */
+    /**
+     * @dev Emitted when update a publish while not publish on chain
+     *
+     * @param publishId The publish Id
+     * @param addedPublishTaxes The added publish taxes while taxed increased
+     */
     event PublishUpdated(
-        // uint256 hubId,
-        // uint256 projectId,
         uint256 publishId,
-        // uint256 soulBoundTokenId,
-        // uint256 salePrice,
-        // uint256 royaltyBasisPoints,
-        // uint256 amount,
-        // string name,
-        // string description,
-        // string[] materialURIs,
-        // uint256[] fromTokenIds,
         uint256 addedPublishTaxes
     );
 
-    // Signals frozen metadata to OpenSea; emitted in minting functions
-    event PermanentURI(string _value, uint256 indexed _id);    
-    
     /**
      * @dev Emitted when a publish is created.
      *
@@ -77,51 +54,31 @@ library Events {
      * @dev Emitted when a publish is minted .
      *
      * @param publishId The newly created project's ID.
-    //  * @param newTokenId The new token id .
+     * @param newTokenId The new token id .
      */
     event PublishMinted(
         uint256 indexed publishId,
         uint256 indexed newTokenId
     );
 
-    // /**
-    //  * @dev Emitted when a hub is created.
-    //  *
-    //  * @param soulBoundTokenId The newly created profile's token ID.
-    //  * @param hubOwner The profile creator, who created the token with the given profile ID.
-    //  * @param hubId The hub ID.
-    //  * @param name The name set for the hub.
-    //  * @param description The description set for the hub.
-    //  * @param imageURI The image uri set for the profile.
-    //  * @param timestamp The current block timestamp.
-    //  */
+    /**
+     * @dev Emitted when a hub is created.
+     *
+     * @param hubOwner The profile creator, who created the token with the given profile ID.
+     * @param hubId The hub ID.
+     */
     event HubCreated(
-        // uint256 indexed soulBoundTokenId,
         address indexed hubOwner,
         uint256 indexed hubId
-        // string name,
-        // string description,
-        // string imageURI,
-        // uint256 timestamp
     );
 
-    // /**
-    //  * @dev Emitted when a hub is updated.
-    //  *
-    //  * @param hubId The hub id.
-    //  * @param hubOwner The hub creator.
-    //  * @param name The name set for the hub.
-    //  * @param description The description set for the hub.
-    //  * @param imageURI The image uri set for the profile.
-    //  * @param timestamp The current block timestamp.
-    //  */
+    /**
+     * @dev Emitted when a hub is updated.
+     *
+     * @param hubId The hub id.
+     */
     event HubUpdated(
         uint256 indexed hubId
-        // address indexed hubOwner
-        // string name,
-        // string description,
-        // string imageURI,
-        // uint256 timestamp
     );
 
     /**
@@ -1008,14 +965,12 @@ library Events {
      * @param soulBoundTokenId  The contract address
      * @param exchangeWallet The exchangeWallet
      * @param etherValue  The ether value
-     * @param exchangePrice  The exchange price
      * @param sbtValue  The sbtValue
      */
     event BuySBTByEth(
         uint256 indexed soulBoundTokenId,
         address indexed exchangeWallet,
         uint256 indexed etherValue,
-        uint256 exchangePrice,
         uint256 sbtValue
     );
 
@@ -1026,7 +981,6 @@ library Events {
      * @param exchangeWallet The exchangeWallet
      * @param currency  The ERC20 currency
      * @param amount  The amount to buy
-     * @param exchangePrice  The exchange price
      * @param sbtValue  The sbtValue will get
      */
     event BuySBTByERC20(
@@ -1034,42 +988,28 @@ library Events {
         address indexed exchangeWallet,
         address indexed currency,
         uint256 amount,
-        uint256 exchangePrice,
         uint256 sbtValue
     );
-
-    // /**
-    //  * @dev Emitted when exchange ether by SBT value
-    //  *
-    //  * @param soulBoundTokenId  The contract address
-    //  * @param toWallet The to Wallet
-    //  * @param sbtValue  The sbtValue
-    //  * @param exchangePrice  The exchange price set with admin
-    //  * @param ethAmount  The exchange ether amount
-    //  */
-    // event ExchangeEthBySBT(
-    //      uint256 indexed soulBoundTokenId,
-    //      address indexed toWallet,
-    //      uint256 indexed sbtValue,
-    //      uint256 exchangePrice,
-    //      uint256 ethAmount
-    // );
 
     /**
      * @dev Emitted when exchange ERC20 by SBT value
      *
      * @param soulBoundTokenId  The contract address
-     * @param toWallet The to Wallet
-     * @param sbtValue  The sbtValue
-     * @param exchangePrice  The exchange price set with admin
-     * @param erc20Amount  The exchange amount of ERC20
+     * @param currency The currency
+     * @param amount  The exchange amount of ERC20
+     * @param sbtAmount  The sbt amount
      */
     event ExchangeERC20BySBT(
          uint256 indexed soulBoundTokenId,
-         address indexed toWallet,
-         uint256 indexed sbtValue,
-         uint256 exchangePrice,
-         uint256 erc20Amount
+         address indexed currency,
+         uint256 indexed amount,
+         uint256 sbtAmount
+    );
+
+    event ExchangePriceSet(
+        address indexed currency,
+        uint256 indexed currencyAmount,
+        uint256 indexed sbtAmount
     );
 
     /**
@@ -1115,20 +1055,6 @@ library Events {
         uint256 previousBalance, 
         uint256 newBalance
     );
-
-    event RoyaltySet(
-        uint256 indexed soulBoundTokenId,
-        uint256 indexed projectId,
-        uint256 indexed royaltyBasisPoints
-    );
-
-    event DefaultRoyaltySet(
-        uint256 indexed soulBoundTokenId,
-        uint256 indexed projectId,
-        address indexed receiver,
-        uint96 feeNumerator
-    );
-
 
     /**
      * @notice Emitted when a currency is added to or removed from the ModuleGlobals whitelist.

@@ -17,6 +17,8 @@ import {INFTDerivativeProtocolTokenV1} from "./interfaces/INFTDerivativeProtocol
 
 /**
  *  @title NFT Derivative Protocol Token
+ * 
+ * includes built-in governance power and delegation mechanisms.
  */
 contract NFTDerivativeProtocolTokenV1 is
     Initializable,

@@ -2,7 +2,7 @@
 
 pragma solidity ^0.8.0;
 
-/// @author: manifold.xyz
+/// @author:Bitsoul Protocol
 
 import "@openzeppelin/contracts/utils/introspection/ERC165.sol";
 
