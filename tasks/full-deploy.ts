@@ -15,49 +15,26 @@ import {
 
 import {
     ERC1967Proxy__factory,
-    Events,
-    Events__factory,
-    PublishModule,
     PublishModule__factory,
-    FeeCollectModule,
     FeeCollectModule__factory,
-    Helper,
-    Helper__factory,
-    Box,
-    Box__factory,
-    TimeLock,
     TimeLock__factory,
     InteractionLogic__factory,
     PublishLogic__factory,
-    ModuleGlobals,
     ModuleGlobals__factory,
     TransparentUpgradeableProxy__factory,
-    ERC3525ReceiverMock,
     ERC3525ReceiverMock__factory,
-    GovernorContract,
     GovernorContract__factory,
-    BankTreasury,
     BankTreasury__factory,
-    DerivativeNFT,
     DerivativeNFT__factory,
-    NFTDerivativeProtocolTokenV1,
-    NFTDerivativeProtocolTokenV2,
     NFTDerivativeProtocolTokenV1__factory,
-    NFTDerivativeProtocolTokenV2__factory,
-    Manager,
     Manager__factory,
-    Voucher,
     Voucher__factory,
-    DerivativeMetadataDescriptor,
     DerivativeMetadataDescriptor__factory,
-    Template,
     Template__factory,
-    MarketPlace,
     MarketPlace__factory,
     SBTMetadataDescriptor__factory,
     MarketLogic__factory,
     Currency__factory,
-    FETH,
     FETH__factory,
     RoyaltyRegistry__factory,
     VoucherMarket__factory,
@@ -75,17 +52,11 @@ import { NFTDerivativeProtocolTokenV1LibraryAddresses } from '../typechain/facto
   const FIRST_PROFILE_ID = 1; 
   const INITIAL_SUPPLY =  1000000;
   const VOUCHER_AMOUNT_LIMIT = 100;  
-  
-
-  const SBT_NAME = 'NFT Derivative Protocol';
-  const SBT_SYMBOL = 'SBT';
+  const SBT_NAME = 'Bitsoul Protocol';
+  const SBT_SYMBOL = 'SOUL';
   const SBT_DECIMALS = 18;
-  
-  //TODO
-  const MARKET_DURATION = 1200; // default: 1 days in seconds
-
+  const MARKET_DURATION = 1200; // default: 24h in seconds
   const LOCKUP_DURATION = 86400; //24h in seconds
-  
   const NUM_CONFIRMATIONS_REQUIRED = 3;
   const PublishRoyaltySBT = 100;
   
@@ -105,11 +76,13 @@ import { NFTDerivativeProtocolTokenV1LibraryAddresses } from '../typechain/facto
         const user = accounts[2];
         const userTwo = accounts[3];
         const userThree = accounts[4];
+        const deployer2 = accounts[5];
 
         const proxyAdminAddress = deployer.address;
 
         // Nonce management in case of deployment issues
         let deployerNonce = await ethers.provider.getTransactionCount(deployer.address);
+        // let deployerNonce = await ethers.provider.getTransactionCount(deployer2.address);
 
         //Template
         let canvas: DataTypes.CanvasDataStruct = {width:800, height:600};
@@ -121,6 +94,7 @@ import { NFTDerivativeProtocolTokenV1LibraryAddresses } from '../typechain/facto
         console.log('\t-- user: ', user.address);
         console.log('\t-- userTwo: ', userTwo.address);
         console.log('\t-- userThree: ', userThree.address);
+        console.log('\t-- deployer2: ', deployer2.address);
 
         console.log('\n\t-- Deploying template  --');
         const template = await deployContract(
@@ -434,6 +408,8 @@ import { NFTDerivativeProtocolTokenV1LibraryAddresses } from '../typechain/facto
         const currency = await deployContract(
             new Currency__factory(deployer).deploy({ nonce: deployerNonce++ })
         );
+        console.log('\t-- currency: ', currency.address);
+        await exportAddress(hre, publishModule, 'Currency');
 
         // FETH
         console.log('\n\t-- Deploying FETH --');

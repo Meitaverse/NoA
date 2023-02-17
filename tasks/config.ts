@@ -64,6 +64,7 @@ export type ContractName =
   | "Voucher"
   | "VoucherMarket"
   | "FETH"
+  | "Currency"
   | "FeeCollectModule"
   | "PublishModule"
   | "Template"
@@ -81,6 +82,7 @@ export type DAOContract =
   | Voucher
   | VoucherMarket
   | FETH
+  | Currency
   | Template
   | DerivativeMetadataDescriptor
   | ERC3525ReceiverMock
@@ -159,7 +161,8 @@ type ContractFactory =
   | typeof Template__factory
   | typeof DerivativeMetadataDescriptor__factory
   | typeof ERC3525ReceiverMock__factory
-  | typeof ModuleGlobals__factory;
+  | typeof ModuleGlobals__factory
+  | typeof Currency__factory;
 
 export async function loadContract<T extends ContractFactory>(
   hre: HardhatRuntimeEnvironment,

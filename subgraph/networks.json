@@ -1,31 +1,31 @@
 {
   "mainnet": {
     "Receiver": {
-      "address": "0x9fE46736679d2D9a65F0992F2272dE9f3c7fa6e0",
+      "address": "0xEFA2C2779F75A440C822831941E26ADfF506A53A",
       "startBlock": 1
     },
     "Manager": {
-      "address": "0xa513E6E4b8f2a923D98304ec87F64353C4D5C853",
+      "address": "0x682ad5b484D12800c874930967390002902f71E2",
       "startBlock": 1
     },
     "Voucher": {
-      "address": "0x9A9f2CCfdE556A7E9Ff0848998Aa4a0CFD8863AE",
+      "address": "0xdb094b01A641Eb92daBA21b529d298529845Bc68",
       "startBlock": 1
     },
     "SBT": {
-      "address": "0xB7f8BC63BbcaD18155201308C8f3540b07f84F5e",
+      "address": "0x864b843f573E792bdd8f1BB25fE8740d1E253745",
       "startBlock": 1
     },
     "BankTreasury": {
-      "address": "0x0B306BF915C4d645ff596e518fAf3F9669b97016",
+      "address": "0x4ea120c4B2bC3500e7dcec7E0fe352d51D133989",
       "startBlock": 1
     },
     "MarketPlace": {
-      "address": "0xc6e7DF5E7b4f2A278906862b61205850344D4e7d",
+      "address": "0x64C93DAD5309D19274482C634eeA4e1e2819a427",
       "startBlock": 1
     },
     "ModuleGlobals": {
-      "address": "0x59b670e9fA9D0A427751Af201D676719a970857b",
+      "address": "0xE6e5328FE9C590245D2901A420383e0D2003C53C",
       "startBlock": 1
     },
     "DerivativeNFT": {
