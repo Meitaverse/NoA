@@ -56,7 +56,6 @@ contract DerivativeNFT is
     }
 
     using Counters for Counters.Counter;
-    // using SafeMathUpgradeable for uint256;
 
     bool private _initialized;
 
@@ -140,41 +139,34 @@ contract DerivativeNFT is
 
         _setMetadataDescriptor(metadataDescriptor_);
 
-        //default Unpaused
-        _setState(DataTypes.DerivativeNFTState.Unpaused);
 
         _projectId = projectId_;
         _soulBoundTokenId = soulBoundTokenId_;
 
         _receiver = receiver_;
 
-        _defaultRoyaltyBPS = defaultRoyaltyBPS_;
-        
+        if (defaultRoyaltyBPS_ ==0 ) {
+            //default Unpaused
+            _setState(DataTypes.DerivativeNFTState.Unpaused);
 
-    }
-
-    /**
-     * @notice Can only be called by manager
-     */    
-    function setMetadataDescriptor(
-        address metadataDescriptor_
-    ) 
-        external 
-        whenNotPaused 
-        onlyManager 
-    {
-        _setMetadataDescriptor(metadataDescriptor_);
-    }
-
-    /**
-     * @notice Can only be called by manager or hub owner
-     */    
-    function setState(DataTypes.DerivativeNFTState newState) external override {
-        if (msg.sender == MANAGER || msg.sender == IERC3525(_SBT).ownerOf(_soulBoundTokenId)) {
-             _setState(newState);
         } else {
-            revert Errors.NotManagerNorHubOwner();
-        } 
+            //set paused
+            _setState(DataTypes.DerivativeNFTState.Paused);
+            _defaultRoyaltyBPS = defaultRoyaltyBPS_;
+        }
+    }
+    /**
+     * @notice Called with the sale price to determine how much royalty
+     *         is owed and to whom.
+     *
+     * @param tokenId The token ID of the derivativeNFT queried for royalty information.
+     * @param value The sale price of the derivativeNFT specified.
+     * @return A tuple with the address who should receive the royalties and the royalty
+     * payment amount for the given sale price.
+     */
+    function royaltyInfo(uint256 tokenId, uint256 value) external view returns (address, uint256) {
+
+        return _getRoyaltyInfo(tokenId, value);
     }
 
     function getRoyalties(uint256 tokenId) external view virtual override returns (address payable[] memory, uint256[] memory) {
@@ -208,6 +200,31 @@ contract DerivativeNFT is
         
        return IManager(MANAGER).getWalletBySoulBoundTokenId(soulBoundTokenIdOfCreator);
     }
+
+    /**
+     * @notice Can only be called by manager
+     */    
+    function setMetadataDescriptor(
+        address metadataDescriptor_
+    ) 
+        external 
+        whenNotPaused 
+        onlyManager 
+    {
+        _setMetadataDescriptor(metadataDescriptor_);
+    }
+
+    /**
+     * @notice Can only be called by manager
+     */    
+    function setState(DataTypes.DerivativeNFTState newState) external override {
+        if (msg.sender == MANAGER) {
+             _setState(newState);
+        } else {
+            revert Errors.NotManager();
+        } 
+    }
+
 
     /**
      * @notice Publication only can publish once.
@@ -439,20 +456,6 @@ contract DerivativeNFT is
        super.safeTransferFrom(from_, to_, tokenId_, "");
     }
 
-    /**
-     * @notice Called with the sale price to determine how much royalty
-     *         is owed and to whom.
-     *
-     * @param tokenId The token ID of the derivativeNFT queried for royalty information.
-     * @param value The sale price of the derivativeNFT specified.
-     * @return A tuple with the address who should receive the royalties and the royalty
-     * payment amount for the given sale price.
-     */
-    function royaltyInfo(uint256 tokenId, uint256 value) external view returns (address, uint256) {
-
-        return _getRoyaltyInfo(tokenId, value);
-    }
-
     function updateDefaultRoyaltyBPS(uint16 defaultRoyaltyBPS_) external {
          if (msg.sender == IERC3525(_SBT).ownerOf(_soulBoundTokenId)) {
              _defaultRoyaltyBPS = defaultRoyaltyBPS_;
@@ -465,7 +468,6 @@ contract DerivativeNFT is
         } else {
             revert Errors.NotHubOwner();
         } 
-
        
     }
 

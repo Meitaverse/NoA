@@ -1463,9 +1463,14 @@ type DNFT @entity {
   "The creator of this dNFT"
   creator: Creator
 
+  "The genesis publish of this dNFT"
   genesisPublish: Publish
 
+  "The previous publish of this dNFT"
   previousPublish: Publish
+
+  "The basisPoint royalty"
+  royaltyBasisPoints: Int
 
   "The date/time when this dNFT was minted in seconds since Unix epoch"
   dateMinted: BigInt!

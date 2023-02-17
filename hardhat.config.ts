@@ -30,8 +30,17 @@ const DEFAULT_BLOCK_GAS_LIMIT = 12450000;
 const MNEMONIC_PATH = "m/44'/60'/0'/0";
 const MNEMONIC = process.env.MNEMONIC || '';
 const MAINNET_FORK = process.env.MAINNET_FORK === 'true';
-const TRACK_GAS = process.env.TRACK_GAS === 'true';
-const BLOCK_EXPLORER_KEY = process.env.BLOCK_EXPLORER_KEY || '';
+const GASREPORT_FILE = process.env.GASREPORT_FILE || "";
+const NO_COLORS = process.env.NO_COLORS == "false" || GASREPORT_FILE != "";
+const ETHERSCAN_API_KEY = process.env.ETHERSCAN_API_KEY;
+const COINMARKETCAP_KEY = process.env.COINMARKETCAP_KEY || "";
+const CRONOSCAN_API_KEY = process.env.CRONOSCAN_API_KEY;
+const TOKEN = process.env.TOKEN || "MATIC";
+const GASPRICE_API = {
+  MATIC: "https://api.polygonscan.com/api?module=proxy&action=eth_gasPrice",
+  ETH: "https://api.etherscan.io/api?module=proxy&action=eth_gasPrice",
+  CRO: `https://api.cronoscan.com/api?module=proxy&action=eth_gasPrice&apiKey=${CRONOSCAN_API_KEY}`,
+}[TOKEN];
 
 const getCommonNetworkConfig = (networkName: eNetwork, networkId: number) => ({
   url: NETWORKS_RPC_URL[networkName] ?? '',
@@ -134,20 +143,29 @@ const config: HardhatUserConfig = {
       'GovernorContract$'],
   },
   gasReporter: {
-    enabled: false, // TRACK_GAS,
+    enabled: process.env.REPORT_GAS ? true : false, 
     currency: 'USD', //USD
     showTimeSpent: false,
     showMethodSig: true,
-    coinmarketcap: 'b7d62a59-7758-4be6-8438-1a5f7a705989',
-    gasPriceApi:
-      'https://api.polygonscan.com/api?module=proxy&action=eth_gasPrice',
+    coinmarketcap: COINMARKETCAP_KEY,
+    outputFile: GASREPORT_FILE,
+    noColors: NO_COLORS,
+    token: TOKEN,
+    excludeContracts: [
+      "MockERC1155CreatorExtensionBurnable",
+      "Currency",
+      "MockERC1155CreatorExtensionOverride",
+      "MockERC1155CreatorMintPermissions",
+      "VotingMock",
+    ],
+    gasPriceApi: GASPRICE_API,
   },
   spdxLicenseIdentifier: {
     overwrite: false,
     runOnCompile: false,
   },
   etherscan: {
-    apiKey: BLOCK_EXPLORER_KEY,
+    apiKey: ETHERSCAN_API_KEY,
   },
   mocha: {
     timeout: 100000000

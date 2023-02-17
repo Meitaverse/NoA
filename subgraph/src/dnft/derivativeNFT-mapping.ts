@@ -488,6 +488,7 @@ export function handleRoyaltiesUpdated(event: RoyaltiesUpdated): void {
             if (dnft) {
                 dnft.genesisPublish = loadOrCreatePublish(result.value.value0).id;
                 dnft.previousPublish = loadOrCreatePublish(result.value.value1).id;
+                dnft.royaltyBasisPoints = event.params.basisPoint;
                 dnft.save();
             }
         }

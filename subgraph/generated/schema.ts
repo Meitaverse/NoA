@@ -7180,6 +7180,15 @@ export class DNFT extends Entity {
     }
   }
 
+  get royaltyBasisPoints(): i32 {
+    let value = this.get("royaltyBasisPoints");
+    return value!.toI32();
+  }
+
+  set royaltyBasisPoints(value: i32) {
+    this.set("royaltyBasisPoints", Value.fromI32(value));
+  }
+
   get dateMinted(): BigInt {
     let value = this.get("dateMinted");
     return value!.toBigInt();
