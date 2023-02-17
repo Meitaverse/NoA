@@ -537,10 +537,6 @@ before(async function () {
   const transferValueRole = await sbtContract.TRANSFER_VALUE_ROLE();
 
   await expect(
-    sbtContract.connect(deployer).grantRole(transferValueRole, sbtContract.address)
-  ).to.not.be.reverted;
-
-  await expect(
     sbtContract.connect(deployer).grantRole(transferValueRole, manager.address)
   ).to.not.be.reverted;
   
@@ -617,10 +613,7 @@ before(async function () {
 
   expect(await manager.getWalletBySoulBoundTokenId(FIRST_PROFILE_ID)).to.eq(bankTreasuryContract.address);
 
-  // expect((await derivativeNFTImpl.MANAGER()).toUpperCase()).to.eq(manager.address.toUpperCase());
-
   expect((await sbtContract.version()).toNumber()).to.eq(1);
-  // expect((await sbtContract.getManager()).toUpperCase()).to.eq(manager.address.toUpperCase());
   console.log('sbtContract getManager ok ');
   
   expect((await bankTreasuryContract.getManager()).toUpperCase()).to.eq(manager.address.toUpperCase());

@@ -3,22 +3,12 @@ import { keccak256, toUtf8Bytes } from "ethers/lib/utils";
 import { readFile, writeFile } from "fs/promises";
 import { HardhatRuntimeEnvironment } from "hardhat/types";
 import {
-  ERC1967Proxy__factory,
     Currency,
     Currency__factory,
-    Events,
-    Events__factory,
-    PublishModule,
     PublishModule__factory,
-    FeeCollectModule,
     FeeCollectModule__factory,
-    Helper,
-    Helper__factory,
-    InteractionLogic__factory,
-    PublishLogic__factory,
     ModuleGlobals,
     ModuleGlobals__factory,
-    TransparentUpgradeableProxy__factory,
     ERC3525ReceiverMock,
     ERC3525ReceiverMock__factory,
     GovernorContract,
@@ -26,12 +16,8 @@ import {
     BankTreasury,
     BankTreasury__factory,
     MarketPlace,
-    DerivativeNFT,
-    DerivativeNFT__factory,
     NFTDerivativeProtocolTokenV1,
-    NFTDerivativeProtocolTokenV2,
     NFTDerivativeProtocolTokenV1__factory,
-    NFTDerivativeProtocolTokenV2__factory,
     Manager,
     Manager__factory,
     Voucher,
@@ -42,12 +28,11 @@ import {
     Template__factory,
     MarketPlace__factory,
     TimeLock__factory,
-    FETHNode,
     FETH__factory,
     VoucherMarket__factory,
 
 } from "../typechain";
-import { FETH, TimeLock, VoucherMarket, metadataDescriptors } from "../typechain/contracts";
+import { FETH, TimeLock, VoucherMarket } from "../typechain/contracts";
 
 export const DEFAULT_CONFIG_PATH = "./deployments/networks.json";
 export const DEFAULT_LOCALHOST_CONFIG_PATH =

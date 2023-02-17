@@ -1,6 +1,6 @@
 
 import '@nomiclabs/hardhat-ethers';
-import { hexlify, keccak256, parseEther, RLP } from 'ethers/lib/utils';
+import { hexlify, keccak256, RLP } from 'ethers/lib/utils';
 import { HardhatRuntimeEnvironment } from 'hardhat/types';
 import { task } from 'hardhat/config';
 import { exportAddress } from "./config";
@@ -92,7 +92,24 @@ import { NFTDerivativeProtocolTokenV1LibraryAddresses } from '../typechain/facto
         let position: DataTypes.PositionStruct = {x:400, y: 0};
 
         console.log('\t-- deployer: ', deployer.address);
+        
+        let deployerBalance  = await hre.ethers.provider.getBalance(deployer.address);
+        if (deployerBalance.eq(0)) {
+           console.log('\t\t Failed!!! Balance of deployer is 0');
+           return
+        } else {
+          console.log('\t-- Balance of deployer:', deployerBalance);
+        }
+
         console.log('\t-- governance: ', governance.address);
+        let governanceBalance  = await hre.ethers.provider.getBalance(governance.address)
+        if (governanceBalance.eq(0)) {
+           console.log('\t\t Failed!!! Balance of governance is 0');
+           return
+        }else {
+          console.log('\t-- Balance of governance:', governanceBalance);
+        }
+
         console.log('\t-- user: ', user.address);
         console.log('\t-- userTwo: ', userTwo.address);
         console.log('\t-- userThree: ', userThree.address);
@@ -291,7 +308,7 @@ import { NFTDerivativeProtocolTokenV1LibraryAddresses } from '../typechain/facto
         const governorContract = new GovernorContract__factory(deployer).attach(gonvernorProxy.address);
         console.log("\t-- governorContract address: ", governorContract.address);
         await exportAddress(hre, governorContract, 'GovernorContract');
-        // await exportSubgraphNetworksJson(hre, governorContract, 'GovernorContract');
+        await exportSubgraphNetworksJson(hre, governorContract, 'GovernorContract');
 
         console.log('\n\t-- Deploying bank treasury --');
         const soulBoundTokenIdOfBankTreaury = 1;
@@ -483,7 +500,6 @@ import { NFTDerivativeProtocolTokenV1LibraryAddresses } from '../typechain/facto
           await exportAddress(hre, voucherMarketContract, 'VoucherMarket');
           await exportSubgraphNetworksJson(hre, voucherMarketContract, 'VoucherMarket');
           
-          
           //feth init
         
           let fethData= fethImpl.interface.encodeFunctionData("initialize", [
@@ -495,6 +511,7 @@ import { NFTDerivativeProtocolTokenV1LibraryAddresses } from '../typechain/facto
             fethData,
             { nonce: deployerNonce++ }
           );
+
           const feth = new FETH__factory(deployer).attach(fethProxy.address);
           console.log("feth.address: ", feth.address);   
           await exportAddress(hre, feth, 'FETH');
@@ -515,7 +532,6 @@ import { NFTDerivativeProtocolTokenV1LibraryAddresses } from '../typechain/facto
         
         console.log('\n\t-- Whitelisting sbtContract Contract address --');
         const transferValueRole = await sbtContract.TRANSFER_VALUE_ROLE();
-        await waitForTx( sbtContract.connect(deployer).grantRole(transferValueRole, sbtContract.address));
         await waitForTx( sbtContract.connect(deployer).grantRole(transferValueRole, manager.address));
         await waitForTx( sbtContract.connect(deployer).grantRole(transferValueRole, publishModule.address));
         await waitForTx( sbtContract.connect(deployer).grantRole(transferValueRole, feeCollectModule.address));
@@ -552,11 +568,6 @@ import { NFTDerivativeProtocolTokenV1LibraryAddresses } from '../typechain/facto
         console.log('\n\t-- manager set Protocol state to unpaused --');
         await waitForTx( manager.connect(governance).setState(ProtocolState.Unpaused));
 
-        // console.log('\n\t-- moduleGlobals set whitelistProfileCreator --');
-        // await waitForTx( moduleGlobals.connect(governance).whitelistProfileCreator(user.address, true));
-        // await waitForTx( moduleGlobals.connect(governance).whitelistProfileCreator(userTwo.address, true));
-        // await waitForTx( moduleGlobals.connect(governance).whitelistProfileCreator(userThree.address, true));
-        
         // Whitelist the currency
         console.log('\n\t-- Whitelisting SBT in Module Globals --');
         await waitForTx(

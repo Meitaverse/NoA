@@ -7,22 +7,17 @@ import {
   NFTDerivativeProtocolTokenV1__factory,
   Manager__factory,
   Voucher__factory,
-  Events__factory,
 } from '../typechain';
 
 import { loadContract } from "./config";
 
-import { waitForTx, findEvent} from './helpers/utils';
-
 export let runtimeHRE: HardhatRuntimeEnvironment;
 
-// yarn hardhat --network local update-profile --accountid 2 --nickname bayc#8888 --imageuri https://images-development.hyy.pe/700xAUTO/631964f57938570016b9dfd8-1662608753516.gif
+// yarn hardhat --network mumbai balance --sbtid 2
 
-task("update-profile", "update-profile function")
-.addParam("accountid", "account id to collect ,from 2 to 4")
-.addParam("nickname", "new nickname")
-.addParam("imageuri", "new imageURI")
-.setAction(async ({accountid, nickname, imageuri}: {accountid : number, nickname: string, imageuri: string}, hre) =>  {
+task("balance", "balance function")
+.addParam("sbtid", "sbt id")
+.setAction(async ({sbtid}: {sbtid : number}, hre) =>  {
   runtimeHRE = hre;
   const ethers = hre.ethers;
   const accounts = await ethers.getSigners();
@@ -49,32 +44,9 @@ task("update-profile", "update-profile function")
   // console.log('\t-- userThree: ', userThree.address);
   // console.log('\t-- userFour: ', userFour.address);
 
-  let profileCreator = accounts[accountid];
-  console.log('\n\t-- profileCreator: ', profileCreator.address);
 
-      
-  const receipt = await waitForTx(
-      sbt.connect(profileCreator).updateProfile(
-        accountid,
-        nickname,
-        imageuri,
-      )
-  );
-
-  let eventsLib = await new Events__factory(deployer).deploy();
-
-  const event = findEvent(receipt, 'ProfileUpdated', eventsLib);
+  let balance = await sbt["balanceOf(uint256)"](sbtid);
   console.log(
-    "\n\t--- updateProfile success! Event ProfileUpdated emited ..."
+    "\n\t--- balance Of sbtid(", sbtid, " ) is ", balance
   );
-  console.log(
-    "\t\t--- soulBoundTokenId: ", event.args.soulBoundTokenId.toNumber()
-  );
-  console.log(
-    "\t\t--- nickName: ", event.args.nickName
-  );
-  console.log(
-    "\t\t--- imageURI: ", event.args.imageURI
-  );
-
 });

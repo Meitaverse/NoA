@@ -2,24 +2,12 @@ import { task } from "hardhat/config";
 import { HardhatRuntimeEnvironment } from 'hardhat/types';
 
 import {
-  FeeCollectModule,
-  FeeCollectModule__factory,
-  PublishLogic__factory,
-  ModuleGlobals,
   ModuleGlobals__factory,
-  TransparentUpgradeableProxy__factory,
-  BankTreasury,
   BankTreasury__factory,
-  NFTDerivativeProtocolTokenV1,
   NFTDerivativeProtocolTokenV1__factory,
-  Manager,
   Manager__factory,
-  Voucher,
   Voucher__factory,
-  DerivativeMetadataDescriptor,
   DerivativeMetadataDescriptor__factory,
-  Template,
-  Template__factory,
   MarketPlace__factory,
   DerivativeNFT,
   DerivativeNFT__factory,
@@ -27,7 +15,7 @@ import {
 
 import { loadContract } from "./config";
 
-import { deployContract, waitForTx , ProtocolState, Error} from './helpers/utils';
+import { waitForTx } from './helpers/utils';
 
 export let runtimeHRE: HardhatRuntimeEnvironment;
 

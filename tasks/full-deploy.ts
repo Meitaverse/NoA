@@ -1,8 +1,6 @@
 import '@nomiclabs/hardhat-ethers';
-import { hexlify, keccak256, parseEther, RLP } from 'ethers/lib/utils';
-import fs from 'fs';
+import { hexlify, keccak256, RLP } from 'ethers/lib/utils';
 import { task } from 'hardhat/config';
-// import { readFile, writeFile } from "fs/promises";
 import { exportAddress } from "./config";
 import { exportSubgraphNetworksJson } from "./subgraph";
 
@@ -45,7 +43,7 @@ import {
   
   import { DataTypes } from '../typechain/contracts/modules/template/Template';
   import { MarketPlaceLibraryAddresses } from '../typechain/factories/contracts/MarketPlace__factory';
-import { NFTDerivativeProtocolTokenV1LibraryAddresses } from '../typechain/factories/contracts/NFTDerivativeProtocolTokenV1__factory';
+  import { NFTDerivativeProtocolTokenV1LibraryAddresses } from '../typechain/factories/contracts/NFTDerivativeProtocolTokenV1__factory';
   
   const TREASURY_FEE_BPS = 500;
   const RECEIVER_MAGIC_VALUE = '0x009ce20b';
@@ -76,13 +74,11 @@ import { NFTDerivativeProtocolTokenV1LibraryAddresses } from '../typechain/facto
         const user = accounts[2];
         const userTwo = accounts[3];
         const userThree = accounts[4];
-        const deployer2 = accounts[5];
 
         const proxyAdminAddress = deployer.address;
 
         // Nonce management in case of deployment issues
         let deployerNonce = await ethers.provider.getTransactionCount(deployer.address);
-        // let deployerNonce = await ethers.provider.getTransactionCount(deployer2.address);
 
         //Template
         let canvas: DataTypes.CanvasDataStruct = {width:800, height:600};
@@ -90,11 +86,27 @@ import { NFTDerivativeProtocolTokenV1LibraryAddresses } from '../typechain/facto
         let position: DataTypes.PositionStruct = {x:400, y: 0};
 
         console.log('\t-- deployer: ', deployer.address);
+        
+        let deployerBalance  = await hre.ethers.provider.getBalance(deployer.address);
+        if (deployerBalance.eq(0)) {
+           console.log('\t\t Failed!!! Balance of deployer is 0');
+           return
+        } else {
+          console.log('\t-- Balance of deployer:', deployerBalance);
+        }
+
         console.log('\t-- governance: ', governance.address);
+        let governanceBalance  = await hre.ethers.provider.getBalance(governance.address)
+        if (governanceBalance.eq(0)) {
+           console.log('\t\t Failed!!! Balance of governance is 0');
+           return
+        }else {
+          console.log('\t-- Balance of governance:', governanceBalance);
+        }
+        
         console.log('\t-- user: ', user.address);
         console.log('\t-- userTwo: ', userTwo.address);
         console.log('\t-- userThree: ', userThree.address);
-        console.log('\t-- deployer2: ', deployer2.address);
 
         console.log('\n\t-- Deploying template  --');
         const template = await deployContract(
@@ -273,7 +285,7 @@ import { NFTDerivativeProtocolTokenV1LibraryAddresses } from '../typechain/facto
         const governorContract = new GovernorContract__factory(deployer).attach(gonvernorProxy.address);
         console.log("\t-- governorContract address: ", governorContract.address);
         await exportAddress(hre, governorContract, 'GovernorContract');
-        // await exportSubgraphNetworksJson(hre, governorContract, 'GovernorContract');
+        await exportSubgraphNetworksJson(hre, governorContract, 'GovernorContract');
 
         console.log('\n\t-- Deploying bank treasury --');
         const soulBoundTokenIdOfBankTreaury = 1;
@@ -475,7 +487,6 @@ import { NFTDerivativeProtocolTokenV1LibraryAddresses } from '../typechain/facto
         
         console.log('\n\t-- Whitelisting sbtContract Contract address --');
         const transferValueRole = await sbtContract.TRANSFER_VALUE_ROLE();
-        await waitForTx( sbtContract.connect(deployer).grantRole(transferValueRole, sbtContract.address));
         await waitForTx( sbtContract.connect(deployer).grantRole(transferValueRole, manager.address));
         await waitForTx( sbtContract.connect(deployer).grantRole(transferValueRole, publishModule.address));
         await waitForTx( sbtContract.connect(deployer).grantRole(transferValueRole, feeCollectModule.address));
@@ -512,11 +523,6 @@ import { NFTDerivativeProtocolTokenV1LibraryAddresses } from '../typechain/facto
         console.log('\n\t-- manager set Protocol state to unpaused --');
         await waitForTx( manager.connect(governance).setState(ProtocolState.Unpaused));
 
-        // console.log('\n\t-- moduleGlobals set whitelistProfileCreator --');
-        // await waitForTx( moduleGlobals.connect(governance).whitelistProfileCreator(user.address, true));
-        // await waitForTx( moduleGlobals.connect(governance).whitelistProfileCreator(userTwo.address, true));
-        // await waitForTx( moduleGlobals.connect(governance).whitelistProfileCreator(userThree.address, true));
-        
         // Whitelist the currency
         console.log('\n\t-- Whitelisting SBT in Module Globals --');
         await waitForTx(
@@ -547,5 +553,6 @@ import { NFTDerivativeProtocolTokenV1LibraryAddresses } from '../typechain/facto
             console.log('\n\t ==== error: marketPlace not set ModuleGlobas ====');
         }
 
+        console.log('\n\n\t-- All contracts success deployed!');
 
    });

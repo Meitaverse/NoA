@@ -34,7 +34,7 @@
     "create-local-subgraph-node": "cd ./subgraph &&  npm run create-local",
     "deploy-local-subgraph-node": "cd ./subgraph && npm run deploy-local",
     "remove-local-subgraph-node": "cd ./subgraph && npm run remove-local"
-    },
+  },
   "repository": {
     "type": "git",
     "url": "https://github.com/MeitaVerse/derivative-nft-protocol"

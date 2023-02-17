@@ -1,68 +1,25 @@
 import '@nomiclabs/hardhat-ethers';
-import { hexlify, keccak256, parseEther, RLP } from 'ethers/lib/utils';
-import fs from 'fs';
 import { task } from 'hardhat/config';
-// import { readFile, writeFile } from "fs/promises";
-import { exportAddress, loadContract } from "./config";
-import { exportSubgraphNetworksJson } from "./subgraph";
+import { loadContract } from "./config";
 
 import {
-    MIN_DELAY,
-    QUORUM_PERCENTAGE,
-    VOTING_PERIOD,
-    VOTING_DELAY,
-  } from "../helper-hardhat-config"
-
-import {
-    ERC1967Proxy__factory,
     PublishModule__factory,
     FeeCollectModule__factory,
-    TimeLock__factory,
-    InteractionLogic__factory,
-    PublishLogic__factory,
     ModuleGlobals__factory,
-    TransparentUpgradeableProxy__factory,
-    ERC3525ReceiverMock__factory,
-    GovernorContract__factory,
     BankTreasury__factory,
-    DerivativeNFT__factory,
     NFTDerivativeProtocolTokenV1__factory,
     Manager__factory,
     Voucher__factory,
-    DerivativeMetadataDescriptor__factory,
     Template__factory,
     MarketPlace__factory,
-    SBTMetadataDescriptor__factory,
-    MarketLogic__factory,
     Currency__factory,
-    FETH__factory,
-    RoyaltyRegistry__factory,
-    VoucherMarket__factory,
-    SBTLogic__factory,
   } from '../typechain';
-  import { deployContract, waitForTx , ProtocolState, Error, ZERO_ADDRESS} from './helpers/utils';
-  import { ManagerLibraryAddresses } from '../typechain/factories/contracts/Manager__factory';
+  import { waitForTx , ProtocolState, Error, ZERO_ADDRESS} from './helpers/utils';
   
-  import { DataTypes } from '../typechain/contracts/modules/template/Template';
-  import { MarketPlaceLibraryAddresses } from '../typechain/factories/contracts/MarketPlace__factory';
-import { NFTDerivativeProtocolTokenV1LibraryAddresses } from '../typechain/factories/contracts/NFTDerivativeProtocolTokenV1__factory';
   
-  const TREASURY_FEE_BPS = 500;
-  const RECEIVER_MAGIC_VALUE = '0x009ce20b';
   const FIRST_PROFILE_ID = 1; 
   const INITIAL_SUPPLY =  1000000;
   const VOUCHER_AMOUNT_LIMIT = 100;  
-  const SBT_NAME = 'Bitsoul Protocol';
-  const SBT_SYMBOL = 'SOUL';
-  const SBT_DECIMALS = 18;
-  const MARKET_DURATION = 1200; // default: 24h in seconds
-  const LOCKUP_DURATION = 86400; //24h in seconds
-  const NUM_CONFIRMATIONS_REQUIRED = 3;
-  const PublishRoyaltySBT = 100;
-  
-  let managerLibs: ManagerLibraryAddresses;
-  export let sbtLibs: NFTDerivativeProtocolTokenV1LibraryAddresses;
-
 
   // yarn setup-mumbai
 
@@ -90,7 +47,22 @@ import { NFTDerivativeProtocolTokenV1LibraryAddresses } from '../typechain/facto
         const template = await loadContract(hre, Template__factory, "Template");
         const currency = await loadContract(hre, Currency__factory, "Currency");
       
-        
+        let deployerBalance  = await hre.ethers.provider.getBalance(deployer.address);
+        if (deployerBalance.eq(0)) {
+           console.log('\t\t Failed!!! Balance of deployer is 0');
+           return
+        } else {
+          console.log('\t-- Balance of deployer:', deployerBalance);
+        }
+
+        let governanceBalance  = await hre.ethers.provider.getBalance(governance.address)
+        if (governanceBalance.eq(0)) {
+           console.log('\t\t Failed!!! Balance of governance is 0');
+           return
+        }else {
+          console.log('\t-- Balance of governance:', governanceBalance);
+        }
+
         await waitForTx(
             manager.connect(governance).setGlobalModules(moduleGlobals.address)
         );
@@ -142,11 +114,6 @@ import { NFTDerivativeProtocolTokenV1LibraryAddresses } from '../typechain/facto
         console.log('\n\t-- manager set Protocol state to unpaused --');
         await waitForTx( manager.connect(governance).setState(ProtocolState.Unpaused));
 
-        // console.log('\n\t-- moduleGlobals set whitelistProfileCreator --');
-        // await waitForTx( moduleGlobals.connect(governance).whitelistProfileCreator(user.address, true));
-        // await waitForTx( moduleGlobals.connect(governance).whitelistProfileCreator(userTwo.address, true));
-        // await waitForTx( moduleGlobals.connect(governance).whitelistProfileCreator(userThree.address, true));
-        
         // Whitelist the currency
         console.log('\n\t-- Whitelisting SBT in Module Globals --');
         await waitForTx(
@@ -176,6 +143,4 @@ import { NFTDerivativeProtocolTokenV1LibraryAddresses } from '../typechain/facto
         if (await market.getGlobalModule() == ZERO_ADDRESS) {
             console.log('\n\t ==== error: marketPlace not set ModuleGlobas ====');
         }
-
-
    });
