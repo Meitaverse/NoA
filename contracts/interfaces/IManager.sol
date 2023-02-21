@@ -17,7 +17,7 @@ interface IManager {
      * @param governance_ The address of Governance.
      */
     function initialize(    
-       address governance_
+        address governance_
     ) external;
     
     function getGlobalModule() external returns(address);
@@ -147,7 +147,7 @@ interface IManager {
 
     function getPublication(uint256 publishId_) external view returns (DataTypes.Publication memory);
 
-    function getPublicationByTokenId(uint256 projectId_, uint256 tokenId_) external view returns (uint256, DataTypes.Publication memory);
+    function getPublicationByProjectToken(uint256 projectId_, uint256 tokenId_) external view returns (uint256, DataTypes.Publication memory);
     
     function getWalletBySoulBoundTokenId(uint256 soulBoundTokenId) external view returns(address);
 

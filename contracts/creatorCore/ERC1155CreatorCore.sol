@@ -17,7 +17,7 @@ import "./CreatorCore.sol";
  */
 abstract contract ERC1155CreatorCore is CreatorCore, IERC1155CreatorCore {
 
-    uint256 constant public VERSION = 2;
+    uint256 constant public VERSION = 1;
 
     using EnumerableSet for EnumerableSet.AddressSet;
     string public name;

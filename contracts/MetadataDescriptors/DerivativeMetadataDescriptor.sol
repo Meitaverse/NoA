@@ -183,7 +183,7 @@ contract DerivativeMetadataDescriptor is IERC3525MetadataDescriptor {
     address _manager = IModuleGlobals(MODULE_GLOBALS).getManager();
     uint256 projectId = IManager(_manager).getProjectIdByContract(msg.sender);
     
-    (uint256 publishId, )  = IManager(_manager).getPublicationByTokenId(projectId, tokenId_);
+    (uint256 publishId, )  = IManager(_manager).getPublicationByProjectToken(projectId, tokenId_);
 
     //genesis publishId
     uint256 genesisPublishId = IManager(_manager).getGenesisPublishIdByProjectId(projectId);

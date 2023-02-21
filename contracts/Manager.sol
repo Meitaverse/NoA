@@ -42,7 +42,7 @@ contract Manager is
     address internal immutable  _DNFT_IMPL;
     address internal immutable  _RECEIVER;
 
-    string public name;
+    string private constant name = "Manager";
 
     /**
      * @dev This modifier reverts if the caller is not the configured governance address.
@@ -67,7 +67,7 @@ contract Manager is
         //default Paused
         _setState(DataTypes.ProtocolState.Paused);
         _owner = msg.sender;
-        name = "Manager";
+        // name = "Manager";
         if (governance == address(0)) revert Errors.InitParamsInvalid();
          _setGovernance(governance);
     }
@@ -75,11 +75,6 @@ contract Manager is
     //-- external -- //
     function getReceiver() external view returns (address) {
         return _RECEIVER;
-    }
-    
-    function getDeverivateNFTAddress(uint256 projectId) external view returns (address deverivateNFTInstance) {
-        bytes32 salt = keccak256(abi.encode(projectId));
-        deverivateNFTInstance = Clones.predictDeterministicAddress(_DNFT_IMPL, salt);
     }
 
     function createProfile(
@@ -498,7 +493,12 @@ contract Manager is
         return _derivativeNFTByProjectId[projectId];
     }
 
-    function getPublicationByTokenId(uint256 projectId_, uint256 tokenId_) external view returns (uint256, DataTypes.Publication memory) {
+    // function calculateDerivativeNFTAddress(uint256 projectId) external view returns (address deverivateNFTInstance) {
+    //     bytes32 salt = keccak256(abi.encode(projectId));
+    //     deverivateNFTInstance = Clones.predictDeterministicAddress(_DNFT_IMPL, salt);
+    // }
+
+    function getPublicationByProjectToken(uint256 projectId_, uint256 tokenId_) external view returns (uint256, DataTypes.Publication memory) {
         address derivativeNFT =  _derivativeNFTByProjectId[projectId_];
         uint256 publishId = IDerivativeNFT(derivativeNFT).getPublishIdByTokenId(tokenId_);
         return (publishId, _projectDataByPublishId[publishId].publication);
