@@ -159,16 +159,16 @@ contract MultirecipientFeeCollectModule is BaseFeeCollectModule {
         uint256 royaltyAmount;
         for (uint256 i = 0; i < len; ) {
             royaltyAmount = (saleprice * royaltyPoints[i]) / BASIS_POINTS;
-            if (royaltyAmount != 0 && royaltyPoints[i] !=0 )
-
-                //TODO
+            // if (royaltyAmount != 0 && royaltyPoints[i] !=0 )
+                //TODO approved
+                /*
                 INFTDerivativeProtocolTokenV1(_sbt()).transferValue(
                     collectorSoulBoundTokenId, 
                     recipients[i],
-                    royaltyAmount);
-
-  
-
+                    royaltyAmount
+                );
+                */
+               
             unchecked {
                 ++i;
             }

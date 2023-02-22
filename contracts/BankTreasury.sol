@@ -432,6 +432,7 @@ contract BankTreasury is
     /**
      * @notice Returns the balance of an account which is available to transfer or withdraw.
      * @dev This will automatically increase as soon as locked tokens reach their expiry date.
+     * @param currency The address of currency.
      * @param soulBoundTokenId The soulBoundTokenId to query the available balance of.
      * @return balance The available balance of the account.
      */

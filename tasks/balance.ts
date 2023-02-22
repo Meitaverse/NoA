@@ -13,6 +13,7 @@ import { loadContract } from "./config";
 
 export let runtimeHRE: HardhatRuntimeEnvironment;
 
+// yarn hardhat --network local balance --sbtid 2
 // yarn hardhat --network mumbai balance --sbtid 2
 
 task("balance", "balance function")

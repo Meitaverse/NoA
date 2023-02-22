@@ -156,8 +156,8 @@ contract NFTDerivativeProtocolTokenV1 is
         uint256 tokenId_ = _mint(vars.wallet, 1, 0);
 
         ERC3525Upgradeable._setApprovalForAll(vars.wallet, voucher, true);
+        ERC3525Upgradeable._setApprovalForAll(vars.wallet, _banktreasury, true);
        
-
         SBTLogic.createProfile(
             tokenId_,
             vars.nickName,
@@ -236,6 +236,14 @@ contract NFTDerivativeProtocolTokenV1 is
         isTransferAllowed(tokenId_)  //Soul bound token can not transfer
     {
         super.transferFrom(from_, to_, tokenId_);
+    }
+
+    function transferFrom(
+        uint256 fromTokenId_,
+        address to_,
+        uint256 value_
+    ) public payable virtual override isTransferAllowed(fromTokenId_) returns (uint256) {
+        return super.transferFrom(fromTokenId_, to_, value_);
     }
 
     function safeTransferFrom(
