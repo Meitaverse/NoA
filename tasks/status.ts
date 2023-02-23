@@ -55,15 +55,11 @@ import {
         console.log('\t-- INITIAL SUPPLY of the first soul bound token id:', balance);
         
         let [
-          currencyName,
-          currencySymbol,
-          currencyDecimals,
           currencyAmount, 
           sbtAmount
         ]  = await bankTreasury.getExchangePrice(sbt.address);
 
         console.log('\n\t--- bankTreasuryContract setExchangePrice ok');
-        console.log('\t\t---  currencyName:', currencyName, ' currencySymbol=', currencySymbol, ' currencyDecimals=', currencyDecimals);
         console.log('\t\t---  currencyAmount:', currencyAmount.toNumber(), ' sbtAmount=', sbtAmount.toNumber());
         
         const transferValueRole = await sbt.TRANSFER_VALUE_ROLE();

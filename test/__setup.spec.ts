@@ -573,15 +573,11 @@ before(async function () {
     bankTreasuryContract.connect(governance).setExchangePrice(sbtContract.address, 1, 1)
   ).to.not.be.reverted;
   let [
-    currencyName,
-    currencySymbol,
-    currencyDecimals,
     currencyAmount, 
     sbtAmount
   ] = await bankTreasuryContract.getExchangePrice(sbtContract.address);
 
   console.log('\n\t--- bankTreasuryContract setExchangePrice ok');
-  console.log('\t\t---  currencyName:', currencyName, ' currencySymbol=', currencySymbol, ' currencyDecimals=', currencyDecimals);
   console.log('\t\t---  currencyAmount:', currencyAmount.toNumber(), ' sbtAmount=', sbtAmount.toNumber());
   
   await expect(
