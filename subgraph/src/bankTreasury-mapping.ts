@@ -230,7 +230,7 @@ export function handleExchangePriceSet(event: ExchangePriceSet): void {
             } else {
                 
                 let name = result.value.currencyName;
-                let symbol = result.value.currencyName;
+                let symbol = result.value.currencySymbol;
                 let decimals = result.value.currencyDecimals;
                 exchangePrice.currencyName = name;
                 exchangePrice.currencySymbol = symbol;
