@@ -3,6 +3,7 @@
 pragma solidity ^0.8.13;
 
 import '../libraries/Constants.sol';
+import {IERC20MetadataUpgradeable} from "@openzeppelin/contracts-upgradeable/token/ERC20/extensions/IERC20MetadataUpgradeable.sol";
 import {Errors} from '../libraries/Errors.sol';
 import {DataTypes} from '../libraries/DataTypes.sol';
 import {Events} from '../libraries/Events.sol';
@@ -25,6 +26,8 @@ import {GlobalStorage} from "../storage/GlobalStorage.sol";
  */
 contract ModuleGlobals is IModuleGlobals, GlobalStorage {
 
+
+    mapping(address => DataTypes.CurrencyInfo) internal _currencyInfos;
 
     modifier onlyGov() {
         _validateCallerIsGovernance();
@@ -261,6 +264,27 @@ contract ModuleGlobals is IModuleGlobals, GlobalStorage {
         if (currency == address(0)) revert Errors.InitParamsInvalid();
         bool prevWhitelisted = _currencyWhitelisted[currency];
         _currencyWhitelisted[currency] = toWhitelist;
+         
+        string memory currencyName;
+        string memory currencySymbol;
+        uint8 currencyDecimals;
+
+        if (currency == _sbt) {
+            currencyName = "Ether";
+            currencySymbol = "ETH";
+            currencyDecimals = uint8(18);
+        } else {
+            currencyName = IERC20MetadataUpgradeable(currency).name();
+            currencySymbol = IERC20MetadataUpgradeable(currency).symbol();
+            currencyDecimals = IERC20MetadataUpgradeable(currency).decimals();
+        }
+
+        _currencyInfos[currency] = DataTypes.CurrencyInfo(
+            currencyName, 
+            currencySymbol,
+            currencyDecimals
+        );
+
         emit Events.ModuleGlobalsCurrencyWhitelisted(
             currency,
             prevWhitelisted,
@@ -268,6 +292,15 @@ contract ModuleGlobals is IModuleGlobals, GlobalStorage {
             block.timestamp
         );
     }
+
+    function getCurrencyInfo(address currency) 
+        external 
+        view
+        returns(DataTypes.CurrencyInfo memory)
+    {
+        return  _currencyInfos[currency];
+    }
+
 
     /// @notice Just avoid Manager proxy by admin
     function getHubInfo(uint256 hubId) external view returns(DataTypes.HubInfoData memory) {

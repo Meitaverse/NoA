@@ -572,10 +572,18 @@ before(async function () {
   await expect(
     bankTreasuryContract.connect(governance).setExchangePrice(sbtContract.address, 1, 1)
   ).to.not.be.reverted;
-  let [currencyAmount, sbtAmount]  = await bankTreasuryContract.getExchangePrice(sbtContract.address);
+  let [
+    currencyName,
+    currencySymbol,
+    currencyDecimals,
+    currencyAmount, 
+    sbtAmount
+  ] = await bankTreasuryContract.getExchangePrice(sbtContract.address);
 
-  console.log('bankTreasuryContract setExchangePrice ok, currencyAmount:', currencyAmount, ' sbtAmount=', sbtAmount);
-
+  console.log('\n\t--- bankTreasuryContract setExchangePrice ok');
+  console.log('\t\t---  currencyName:', currencyName, ' currencySymbol=', currencySymbol, ' currencyDecimals=', currencyDecimals);
+  console.log('\t\t---  currencyAmount:', currencyAmount.toNumber(), ' sbtAmount=', sbtAmount.toNumber());
+  
   await expect(
     bankTreasuryContract.connect(governance).setExchangePrice(currency.address, 1, 1)
   ).to.not.be.reverted;

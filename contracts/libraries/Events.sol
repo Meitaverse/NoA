@@ -1007,7 +1007,7 @@ library Events {
     event ExchangePriceSet(
         address indexed currency,
         uint256 indexed currencyAmount,
-        uint256 indexed sbtAmount
+        uint256 sbtAmount
     );
 
     /**

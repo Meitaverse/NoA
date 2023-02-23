@@ -45,7 +45,7 @@ interface IBankTreasury {
     
     function getExchangePrice(
         address currency
-    ) external view returns(uint256, uint256);
+    ) external view returns(DataTypes.ExchangePrice memory);
 
     /**
      * @notice Deposit a ERC20 or SBT value to earnest funds

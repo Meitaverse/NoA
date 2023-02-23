@@ -256,8 +256,14 @@ library DataTypes {
 
     //BankTreasury
     struct ExchangePrice {
-         uint256 currencyAmount;
-         uint256 sbtAmount;
+        uint256 currencyAmount;
+        uint256 sbtAmount;
+    }
+    
+    struct CurrencyInfo {
+        string currencyName;
+        string currencySymbol;
+        uint8 currencyDecimals;
     }
     
     struct Transaction {

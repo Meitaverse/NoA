@@ -26,6 +26,8 @@ import {
     SBT
 } from "../generated/BankTreasury/SBT"
 
+import { ModuleGlobals } from "../generated/Manager/ModuleGlobals";
+
 import {
     BankTreasury
 } from "../generated/BankTreasury/BankTreasury"
@@ -207,20 +209,42 @@ export function handleExchangeERC20BySBT(event: ExchangeERC20BySBT): void {
 
 export function handleExchangePriceSet(event: ExchangePriceSet): void {
     log.info("handleExchangePriceSet, event.address: {}", [event.address.toHexString()])
-
-    let _idString = event.params.currency.toHexString()
-    const exchangePrice = ExchangePrice.load(_idString) || new ExchangePrice(_idString)
-    if (exchangePrice) {
-        if (event.params.currencyAmount.equals(ZERO_BIG_INT) || event.params.sbtAmount.equals(ZERO_BIG_INT)) {
-            store.remove("ExchangePrice", event.params.currency.toHex());
-        } else {
-            exchangePrice.currency = event.params.currency
-            exchangePrice.currencyAmount = event.params.currencyAmount
-            exchangePrice.sbtAmount = event.params.sbtAmount
-            exchangePrice.timestamp = event.block.timestamp
-            exchangePrice.save()
+    
+    let _id = "GlobalModules"
+    const protocolContract = ProtocolContract.load(_id) || new ProtocolContract(_id)
+    if (protocolContract) {
+             
+        const moduleGlobals = ModuleGlobals.bind(Address.fromBytes(protocolContract.contract))
+        const result = moduleGlobals.try_getCurrencyInfo(event.params.currency)
+        if (result.reverted) {
+            log.info("try_getCurrencyInfo, result.reverted, currency:{}", [event.params.currency.toHex()])
+            return 
         }
-    } 
+
+
+        let _idString = event.params.currency.toHexString()
+        const exchangePrice = ExchangePrice.load(_idString) || new ExchangePrice(_idString)
+        if (exchangePrice) {
+            if (event.params.currencyAmount.equals(ZERO_BIG_INT) || event.params.sbtAmount.equals(ZERO_BIG_INT)) {
+                store.remove("ExchangePrice", event.params.currency.toHex());
+            } else {
+                
+                let name = result.value.currencyName;
+                let symbol = result.value.currencyName;
+                let decimals = result.value.currencyDecimals;
+                exchangePrice.currencyName = name;
+                exchangePrice.currencySymbol = symbol;
+                exchangePrice.currencyDecimals = decimals;
+                exchangePrice.currency = event.params.currency;
+                exchangePrice.currencyAmount = event.params.currencyAmount;
+                exchangePrice.sbtAmount = event.params.sbtAmount;
+                exchangePrice.timestamp = event.block.timestamp;
+                exchangePrice.save()
+            }
+        } 
+    } else {
+        log.info("handleExchangePriceSet faild to load ProtocolContract", [])
+    }
 }
 
 

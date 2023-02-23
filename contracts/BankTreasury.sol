@@ -13,6 +13,7 @@ import "@openzeppelin/contracts-upgradeable/security/ReentrancyGuardUpgradeable.
 import "@openzeppelin/contracts/utils/Address.sol";
 import "@openzeppelin/contracts/utils/math/Math.sol";
 import {IERC20Upgradeable} from "@openzeppelin/contracts-upgradeable/token/ERC20/IERC20Upgradeable.sol";
+
 import "@openzeppelin/contracts-upgradeable/token/ERC1155/IERC1155Upgradeable.sol";
 import {SafeERC20Upgradeable} from "@openzeppelin/contracts-upgradeable/token/ERC20/utils/SafeERC20Upgradeable.sol";
 import {SafeMathUpgradeable} from "@openzeppelin/contracts-upgradeable/utils/math/SafeMathUpgradeable.sol";
@@ -56,7 +57,7 @@ contract BankTreasury is
     using LockedBalance for LockedBalance.Lockups;
     using Math for uint256;
 
-    string public name;
+    string private name;
 
     /**
      * @dev This modifier reverts if the caller is not the configured governance address.
@@ -300,7 +301,7 @@ contract BankTreasury is
         uint256 _toTokenId,
         uint256 _value,
         bytes memory _data
-    ) public whenNotPaused nonReentrant onlySigner {
+    ) external whenNotPaused nonReentrant onlySigner {
         uint256 txIndex = _transactions.length;
 
         _transactions.push(
@@ -329,7 +330,7 @@ contract BankTreasury is
 
     function confirmTransaction(
         uint256 _txIndex
-    ) public whenNotPaused nonReentrant onlySigner txExists(_txIndex) notExecuted(_txIndex) notConfirmed(_txIndex) {
+    ) external whenNotPaused nonReentrant onlySigner txExists(_txIndex) notExecuted(_txIndex) notConfirmed(_txIndex) {
         DataTypes.Transaction storage transaction = _transactions[_txIndex];
         transaction.numConfirmations += 1;
         _isConfirmed[_txIndex][msg.sender] = true;
@@ -339,7 +340,7 @@ contract BankTreasury is
 
     function executeTransaction(
         uint256 _txIndex
-    ) public whenNotPaused nonReentrant onlySigner txExists(_txIndex) notExecuted(_txIndex) {
+    ) external whenNotPaused nonReentrant onlySigner txExists(_txIndex) notExecuted(_txIndex) {
         address _sbt = IModuleGlobals(MODULE_GLOBALS).getSBT();
         DataTypes.Transaction storage transaction = _transactions[_txIndex];
 
@@ -382,7 +383,7 @@ contract BankTreasury is
 
     function revokeConfirmation(
         uint256 _txIndex
-    ) public whenNotPaused nonReentrant onlySigner txExists(_txIndex) notExecuted(_txIndex) {
+    ) external whenNotPaused nonReentrant onlySigner txExists(_txIndex) notExecuted(_txIndex) {
         DataTypes.Transaction storage transaction = _transactions[_txIndex];
 
         if (!_isConfirmed[_txIndex][msg.sender]) revert Errors.TxNotConfirmed();
@@ -404,7 +405,7 @@ contract BankTreasury is
     function getTransaction(
         uint256 _txIndex
     )
-        public
+        external
         view
         returns (
             address currency,
@@ -752,11 +753,13 @@ contract BankTreasury is
         if (currencyAmount == 0 || sbtAmount == 0) {
             delete _exchangePrice[currency];
         }else {
+            
 
             _exchangePrice[currency] = DataTypes.ExchangePrice(
                 currencyAmount, 
                 sbtAmount
             );
+
         }
         
         //Emits
@@ -767,17 +770,13 @@ contract BankTreasury is
         );
     }
 
-    function getExchangePrice(
-        address currency
-    ) 
+    function getExchangePrice(address currency) 
         external 
         view
-        returns(uint256, uint256)
+        returns(DataTypes.ExchangePrice memory)
     {
-        return  (_exchangePrice[currency].currencyAmount, _exchangePrice[currency].sbtAmount);
-    
+        return  _exchangePrice[currency];
     }
-
 
     function distributeFundsToUserRevenue(
         uint256 publishId,

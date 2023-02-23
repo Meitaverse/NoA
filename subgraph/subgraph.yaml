@@ -154,6 +154,8 @@ dataSources:
           file: ../artifacts/contracts/BankTreasury.sol/BankTreasury.json
         - name: Events
           file: ../artifacts/contracts/libraries/Events.sol/Events.json
+        - name: ModuleGlobals
+          file: ../artifacts/contracts/modules/ModuleGlobals.sol/ModuleGlobals.json
       eventHandlers:
         - event: DepositEther(indexed address,indexed uint256,indexed address,uint256)
           handler: handleDepositEther
@@ -172,7 +174,7 @@ dataSources:
         - event: ExchangeERC20BySBT(indexed uint256,indexed address,indexed
             uint256,uint256)
           handler: handleExchangeERC20BySBT
-        - event: ExchangePriceSet(indexed address,indexed uint256,indexed uint256)
+        - event: ExchangePriceSet(indexed address,indexed uint256,uint256)
           handler: handleExchangePriceSet
         - event: SubmitTransaction(indexed address,indexed uint256,indexed
             address,address,uint256,bytes)

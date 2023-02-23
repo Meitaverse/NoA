@@ -704,13 +704,12 @@ contract BankTreasuryV2 is
         if (currencyAmount == 0 || sbtAmount == 0) {
             delete _exchangePrice[currency];
         }else {
-
             _exchangePrice[currency] = DataTypes.ExchangePrice(
                 currencyAmount, 
                 sbtAmount
             );
         }
-        
+
         //Emits
         emit Events.ExchangePriceSet(
             currency, 
@@ -724,9 +723,9 @@ contract BankTreasuryV2 is
     ) 
         external 
         view
-        returns(uint256, uint256)
+        returns(DataTypes.ExchangePrice memory)
     {
-        return  (_exchangePrice[currency].currencyAmount, _exchangePrice[currency].sbtAmount);
+        return  _exchangePrice[currency];
     
     }
 

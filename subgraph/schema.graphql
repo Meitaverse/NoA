@@ -754,6 +754,9 @@ type ExchangeERC20BySBTHistory @entity {
 # Price Set
 type ExchangePrice @entity {
   id: ID!
+  currencyName: String!
+  currencySymbol: String!
+  currencyDecimals: Int!
   currency: Bytes!
   currencyAmount: BigInt!
   sbtAmount: BigInt!

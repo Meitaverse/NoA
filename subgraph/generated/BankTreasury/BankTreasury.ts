@@ -200,28 +200,13 @@ export class Upgraded__Params {
   }
 }
 
-export class BankTreasury__getExchangePriceResult {
-  value0: BigInt;
-  value1: BigInt;
-
-  constructor(value0: BigInt, value1: BigInt) {
-    this.value0 = value0;
-    this.value1 = value1;
+export class BankTreasury__getExchangePriceResultValue0Struct extends ethereum.Tuple {
+  get currencyAmount(): BigInt {
+    return this[0].toBigInt();
   }
 
-  toMap(): TypedMap<string, ethereum.Value> {
-    let map = new TypedMap<string, ethereum.Value>();
-    map.set("value0", ethereum.Value.fromUnsignedBigInt(this.value0));
-    map.set("value1", ethereum.Value.fromUnsignedBigInt(this.value1));
-    return map;
-  }
-
-  getValue0(): BigInt {
-    return this.value0;
-  }
-
-  getValue1(): BigInt {
-    return this.value1;
+  get sbtAmount(): BigInt {
+    return this[1].toBigInt();
   }
 }
 
@@ -484,25 +469,26 @@ export class BankTreasury extends ethereum.SmartContract {
     return ethereum.CallResult.fromValue(value[0].toBigInt());
   }
 
-  getExchangePrice(currency: Address): BankTreasury__getExchangePriceResult {
+  getExchangePrice(
+    currency: Address
+  ): BankTreasury__getExchangePriceResultValue0Struct {
     let result = super.call(
       "getExchangePrice",
-      "getExchangePrice(address):(uint256,uint256)",
+      "getExchangePrice(address):((uint256,uint256))",
       [ethereum.Value.fromAddress(currency)]
     );
 
-    return new BankTreasury__getExchangePriceResult(
-      result[0].toBigInt(),
-      result[1].toBigInt()
+    return changetype<BankTreasury__getExchangePriceResultValue0Struct>(
+      result[0].toTuple()
     );
   }
 
   try_getExchangePrice(
     currency: Address
-  ): ethereum.CallResult<BankTreasury__getExchangePriceResult> {
+  ): ethereum.CallResult<BankTreasury__getExchangePriceResultValue0Struct> {
     let result = super.tryCall(
       "getExchangePrice",
-      "getExchangePrice(address):(uint256,uint256)",
+      "getExchangePrice(address):((uint256,uint256))",
       [ethereum.Value.fromAddress(currency)]
     );
     if (result.reverted) {
@@ -510,9 +496,8 @@ export class BankTreasury extends ethereum.SmartContract {
     }
     let value = result.value;
     return ethereum.CallResult.fromValue(
-      new BankTreasury__getExchangePriceResult(
-        value[0].toBigInt(),
-        value[1].toBigInt()
+      changetype<BankTreasury__getExchangePriceResultValue0Struct>(
+        value[0].toTuple()
       )
     );
   }
@@ -927,21 +912,6 @@ export class BankTreasury extends ethereum.SmartContract {
     }
     let value = result.value;
     return ethereum.CallResult.fromValue(value[0].toBigInt());
-  }
-
-  name(): string {
-    let result = super.call("name", "name():(string)", []);
-
-    return result[0].toString();
-  }
-
-  try_name(): ethereum.CallResult<string> {
-    let result = super.tryCall("name", "name():(string)", []);
-    if (result.reverted) {
-      return new ethereum.CallResult();
-    }
-    let value = result.value;
-    return ethereum.CallResult.fromValue(value[0].toString());
   }
 
   onERC3525Received(

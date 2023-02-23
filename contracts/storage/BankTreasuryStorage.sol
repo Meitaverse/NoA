@@ -39,6 +39,4 @@ contract BankTreasuryStorage  {
 
     /// @notice Stores per-account details.
     mapping(uint256 => mapping(address => DataTypes.AccountInfo)) internal accountToInfo;
-
-
 }

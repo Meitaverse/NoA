@@ -288,7 +288,7 @@ export class Manager__getPublicationResultValue0Struct extends ethereum.Tuple {
   }
 }
 
-export class Manager__getPublicationByTokenIdResultValue1Struct extends ethereum.Tuple {
+export class Manager__getPublicationByProjectTokenResultValue1Struct extends ethereum.Tuple {
   get soulBoundTokenId(): BigInt {
     return this[0].toBigInt();
   }
@@ -354,13 +354,13 @@ export class Manager__getPublicationByTokenIdResultValue1Struct extends ethereum
   }
 }
 
-export class Manager__getPublicationByTokenIdResult {
+export class Manager__getPublicationByProjectTokenResult {
   value0: BigInt;
-  value1: Manager__getPublicationByTokenIdResultValue1Struct;
+  value1: Manager__getPublicationByProjectTokenResultValue1Struct;
 
   constructor(
     value0: BigInt,
-    value1: Manager__getPublicationByTokenIdResultValue1Struct
+    value1: Manager__getPublicationByProjectTokenResultValue1Struct
   ) {
     this.value0 = value0;
     this.value1 = value1;
@@ -377,7 +377,7 @@ export class Manager__getPublicationByTokenIdResult {
     return this.value0;
   }
 
-  getValue1(): Manager__getPublicationByTokenIdResultValue1Struct {
+  getValue1(): Manager__getPublicationByProjectTokenResultValue1Struct {
     return this.value1;
   }
 }
@@ -685,29 +685,6 @@ export class Manager extends ethereum.SmartContract {
     return ethereum.CallResult.fromValue(value[0].toAddress());
   }
 
-  getDeverivateNFTAddress(projectId: BigInt): Address {
-    let result = super.call(
-      "getDeverivateNFTAddress",
-      "getDeverivateNFTAddress(uint256):(address)",
-      [ethereum.Value.fromUnsignedBigInt(projectId)]
-    );
-
-    return result[0].toAddress();
-  }
-
-  try_getDeverivateNFTAddress(projectId: BigInt): ethereum.CallResult<Address> {
-    let result = super.tryCall(
-      "getDeverivateNFTAddress",
-      "getDeverivateNFTAddress(uint256):(address)",
-      [ethereum.Value.fromUnsignedBigInt(projectId)]
-    );
-    if (result.reverted) {
-      return new ethereum.CallResult();
-    }
-    let value = result.value;
-    return ethereum.CallResult.fromValue(value[0].toAddress());
-  }
-
   getDispatcher(soulBoundToken: BigInt): Address {
     let result = super.call(
       "getDispatcher",
@@ -994,34 +971,34 @@ export class Manager extends ethereum.SmartContract {
     );
   }
 
-  getPublicationByTokenId(
+  getPublicationByProjectToken(
     projectId_: BigInt,
     tokenId_: BigInt
-  ): Manager__getPublicationByTokenIdResult {
+  ): Manager__getPublicationByProjectTokenResult {
     let result = super.call(
-      "getPublicationByTokenId",
-      "getPublicationByTokenId(uint256,uint256):(uint256,(uint256,uint256,uint256,uint256,uint256,address,uint256,string,string,bool,string[],uint256[],address,bytes,address,bytes))",
+      "getPublicationByProjectToken",
+      "getPublicationByProjectToken(uint256,uint256):(uint256,(uint256,uint256,uint256,uint256,uint256,address,uint256,string,string,bool,string[],uint256[],address,bytes,address,bytes))",
       [
         ethereum.Value.fromUnsignedBigInt(projectId_),
         ethereum.Value.fromUnsignedBigInt(tokenId_)
       ]
     );
 
-    return new Manager__getPublicationByTokenIdResult(
+    return new Manager__getPublicationByProjectTokenResult(
       result[0].toBigInt(),
-      changetype<Manager__getPublicationByTokenIdResultValue1Struct>(
+      changetype<Manager__getPublicationByProjectTokenResultValue1Struct>(
         result[1].toTuple()
       )
     );
   }
 
-  try_getPublicationByTokenId(
+  try_getPublicationByProjectToken(
     projectId_: BigInt,
     tokenId_: BigInt
-  ): ethereum.CallResult<Manager__getPublicationByTokenIdResult> {
+  ): ethereum.CallResult<Manager__getPublicationByProjectTokenResult> {
     let result = super.tryCall(
-      "getPublicationByTokenId",
-      "getPublicationByTokenId(uint256,uint256):(uint256,(uint256,uint256,uint256,uint256,uint256,address,uint256,string,string,bool,string[],uint256[],address,bytes,address,bytes))",
+      "getPublicationByProjectToken",
+      "getPublicationByProjectToken(uint256,uint256):(uint256,(uint256,uint256,uint256,uint256,uint256,address,uint256,string,string,bool,string[],uint256[],address,bytes,address,bytes))",
       [
         ethereum.Value.fromUnsignedBigInt(projectId_),
         ethereum.Value.fromUnsignedBigInt(tokenId_)
@@ -1032,9 +1009,9 @@ export class Manager extends ethereum.SmartContract {
     }
     let value = result.value;
     return ethereum.CallResult.fromValue(
-      new Manager__getPublicationByTokenIdResult(
+      new Manager__getPublicationByProjectTokenResult(
         value[0].toBigInt(),
-        changetype<Manager__getPublicationByTokenIdResultValue1Struct>(
+        changetype<Manager__getPublicationByProjectTokenResultValue1Struct>(
           value[1].toTuple()
         )
       )
@@ -1165,21 +1142,6 @@ export class Manager extends ethereum.SmartContract {
     }
     let value = result.value;
     return ethereum.CallResult.fromValue(value[0].toAddress());
-  }
-
-  name(): string {
-    let result = super.call("name", "name():(string)", []);
-
-    return result[0].toString();
-  }
-
-  try_name(): ethereum.CallResult<string> {
-    let result = super.tryCall("name", "name():(string)", []);
-    if (result.reverted) {
-      return new ethereum.CallResult();
-    }
-    let value = result.value;
-    return ethereum.CallResult.fromValue(value[0].toString());
   }
 
   prePublish(publication: Manager__prePublishInputPublicationStruct): BigInt {

@@ -10,6 +10,20 @@ import {
   BigInt
 } from "@graphprotocol/graph-ts";
 
+export class ModuleGlobals__getCurrencyInfoResultValue0Struct extends ethereum.Tuple {
+  get currencyName(): string {
+    return this[0].toString();
+  }
+
+  get currencySymbol(): string {
+    return this[1].toString();
+  }
+
+  get currencyDecimals(): i32 {
+    return this[2].toI32();
+  }
+}
+
 export class ModuleGlobals__getGenesisAndPreviousPublishIdResult {
   value0: BigInt;
   value1: BigInt;
@@ -192,6 +206,39 @@ export class ModuleGlobals__getTreasuryDataResult {
 export class ModuleGlobals extends ethereum.SmartContract {
   static bind(address: Address): ModuleGlobals {
     return new ModuleGlobals("ModuleGlobals", address);
+  }
+
+  getCurrencyInfo(
+    currency: Address
+  ): ModuleGlobals__getCurrencyInfoResultValue0Struct {
+    let result = super.call(
+      "getCurrencyInfo",
+      "getCurrencyInfo(address):((string,string,uint8))",
+      [ethereum.Value.fromAddress(currency)]
+    );
+
+    return changetype<ModuleGlobals__getCurrencyInfoResultValue0Struct>(
+      result[0].toTuple()
+    );
+  }
+
+  try_getCurrencyInfo(
+    currency: Address
+  ): ethereum.CallResult<ModuleGlobals__getCurrencyInfoResultValue0Struct> {
+    let result = super.tryCall(
+      "getCurrencyInfo",
+      "getCurrencyInfo(address):((string,string,uint8))",
+      [ethereum.Value.fromAddress(currency)]
+    );
+    if (result.reverted) {
+      return new ethereum.CallResult();
+    }
+    let value = result.value;
+    return ethereum.CallResult.fromValue(
+      changetype<ModuleGlobals__getCurrencyInfoResultValue0Struct>(
+        value[0].toTuple()
+      )
+    );
   }
 
   getGenesisAndPreviousPublishId(
