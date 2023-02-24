@@ -6,7 +6,7 @@ interface IGetRoyalties {
   /**
    * @notice Get the creator royalties to be sent.
    * @dev The data is the same as when calling `getFeeRecipients` and `getFeeBps` separately.
-   * @param tokenId The ID of the NFT to get royalties for.
+   * @param tokenId The ID of the dNFT to get royalties for.
    * @return recipients An array of addresses to which royalties should be sent.
    * @return royaltiesInBasisPoints The array of fees to be sent to each recipient, in basis points.
    */

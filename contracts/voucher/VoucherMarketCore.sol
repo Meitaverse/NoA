@@ -73,7 +73,7 @@ abstract contract VoucherMarketCore is Initializable, MarketSharedCore {
   function _cancelSendersOffer(address voucherNFT, uint256 tokenId) internal virtual;
 
   /**
-   * @notice Transfers the NFT from escrow and clears any state tracking this escrowed NFT.
+   * @notice Transfers the dNFT from escrow and clears any state tracking this escrowed dNFT.
    * @param authorizeSeller The address of the seller pending authorization.
    * Once it's been authorized by one of the escrow managers, it should be set to address(0)
    * indicated that it's no longer pending authorization.
@@ -93,7 +93,7 @@ abstract contract VoucherMarketCore is Initializable, MarketSharedCore {
   }
 
   /**
-   * @notice Transfers the NFT from escrow unless there is another reason for it to remain in escrow.
+   * @notice Transfers the dNFT from escrow unless there is another reason for it to remain in escrow.
    */
   function _transferFromEscrowIfAvailable(
     address voucherNFT,
@@ -104,8 +104,8 @@ abstract contract VoucherMarketCore is Initializable, MarketSharedCore {
   }
 
   /**
-   * @notice Transfers an NFT into escrow,
-   * if already there this requires the msg.sender is authorized to manage the sale of this NFT.
+   * @notice Transfers an dNFT into escrow,
+   * if already there this requires the msg.sender is authorized to manage the sale of this dNFT.
    */
   function _transferToEscrow(address voucherNFT, uint256 tokenId) internal virtual {
 
@@ -162,7 +162,7 @@ abstract contract VoucherMarketCore is Initializable, MarketSharedCore {
   }
 
   /**
-   * @notice Checks if an escrowed NFT is currently in active auction.
+   * @notice Checks if an escrowed dNFT is currently in active auction.
    * @return Returns false if the auction has ended, even if it has not yet been settled.
    */
   // function _isInActiveAuction(address voucherNFT, uint256 tokenId) internal view virtual returns (bool);

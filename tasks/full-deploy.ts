@@ -512,6 +512,9 @@ import {
 
         console.log('\n\t-- voucherContract set moduleGlobals address --');
         await waitForTx( voucherContract.connect(deployer).setUserAmountLimit(VOUCHER_AMOUNT_LIMIT));
+        
+        // Admins can register extensions
+        await waitForTx( voucherContract.connect(deployer).approveAdmin(governance.address) );
 
         console.log('\n\t-- bankTreasuryContract set moduleGlobals and  marketPlace--');
         await waitForTx( bankTreasuryContract.connect(governance).setGlobalModules(moduleGlobals.address));

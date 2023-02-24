@@ -191,7 +191,7 @@ library PublishLogic {
 
     /**
      * @notice Collects the given dNFT, executing the necessary logic and module call before minting the
-     * collect NFT to the toSoulBoundTokenId.
+     * collect dNFT to the toSoulBoundTokenId.
      * 
      * @param collectDataParam The collect Data parameters
      * @param _pubByIdByProfile The collect Data struct

@@ -19,13 +19,6 @@ interface IMarketPlace {
     function initialize(    
        address admin
     ) external;
-   
-    //function getGlobalModule() external view returns(address);
 
-    // function getMarketInfo(address derivativeNFT) external returns(DataTypes.Market memory);
-
-    // function removeMarket(
-    //     address derivativeNFT_
-    // ) external;
 
 }

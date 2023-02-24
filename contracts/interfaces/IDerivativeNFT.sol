@@ -12,8 +12,8 @@ interface IDerivativeNFT {
      *
      * @param sbt The SBT contract.
      * @param bankTreasury The BankTreasury contract.
-     * @param name_ The name to set for the derivative NFT.
-     * @param symbol_ The symbol to set for the derivative NFT.
+     * @param name_ The name to set for the derivative dNFT.
+     * @param symbol_ The symbol to set for the derivative dNFT.
      * @param  projectId_ The projectid.
      * @param  soulBoundTokenId_ The token id of the SoulBoundToken.
      * @param metadataDescriptor_ The Descriptor address to set.
@@ -135,8 +135,8 @@ interface IDerivativeNFT {
     ) external;
 
     /**
-     * @notice Burns an NFT, removing it from circulation and essentially destroying it. This function can only
-     * be called by the NFT to burn's owner.
+     * @notice Burns an dNFT, removing it from circulation and essentially destroying it. This function can only
+     * be called by the dNFT to burn's owner.
      *
      * @param tokenId The token ID of the token to burn.
      */

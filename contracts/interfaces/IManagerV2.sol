@@ -36,7 +36,7 @@ interface IManagerV2 {
    function setState(DataTypes.ProtocolState newState) external;
 
     /**
-     * @notice Creates a profile with the specified parameters, minting a profile NFT to the given recipient. This
+     * @notice Creates a profile with the specified parameters, minting a profile dNFT to the given recipient. This
      * function must be called by a whitelisted profile creator.
      *
      * @param vars A CreateProfileData struct containing the following params:

@@ -22,7 +22,7 @@ interface IKODAV2Override {
     /// @notice Emitted when the royalties fee changes
     event CreatorRoyaltiesFeeUpdated(uint256 _oldCreatorRoyaltiesFee, uint256 _newCreatorRoyaltiesFee);
 
-    /// @notice For the given KO NFT and token ID, return the addresses and the amounts to pay
+    /// @notice For the given KO dNFT and token ID, return the addresses and the amounts to pay
     function getKODAV2RoyaltyInfo(address _tokenAddress, uint256 _id, uint256 _amount)
         external
         view

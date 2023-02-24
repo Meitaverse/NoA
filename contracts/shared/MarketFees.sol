@@ -24,7 +24,7 @@ error NFTMarketFees_Address_Does_Not_Support_IRoyaltyRegistry();
 error NFTMarketFees_Invalid_Protocol_Fee();
 
 /**
- * @title A mixin to distribute funds when an NFT is sold.
+ * @title A mixin to distribute funds when an dNFT is sold.
  * @author batu-inal & HardlyDifficult
  */
 abstract contract MarketFees is 
@@ -66,9 +66,9 @@ abstract contract MarketFees is
   bool private immutable assumePrimarySale;
 
   /**
-   * @notice Emitted when an NFT sold with a referrer.
-   * @param voucherNFT The address of the NFT contract.
-   * @param tokenId The id of the NFT.
+   * @notice Emitted when an dNFT sold with a referrer.
+   * @param voucherNFT The address of the dNFT contract.
+   * @param tokenId The id of the dNFT.
    * @param buyReferrer The account which received the buy referral incentive.
    * @param buyReferrerFee The portion of the protocol fee collected by the buy referrer.
    * @param buyReferrerSellerFee The portion of the owner revenue collected by the buy referrer (not implemented).
@@ -116,7 +116,7 @@ abstract contract MarketFees is
   }
 
   /**
-   * @notice Distributes funds to foundation, creator recipients, and NFT owner after a sale.
+   * @notice Distributes funds to foundation, creator recipients, and dNFT owner after a sale.
    */
   function _distributeFunds(
     address voucherNFT,
@@ -182,8 +182,8 @@ abstract contract MarketFees is
 
   /**
    * @notice Returns how funds will be distributed for a sale at the given price point.
-   * @param voucherNFT The address of the NFT contract.
-   * @param tokenId The id of the NFT.
+   * @param voucherNFT The address of the dNFT contract.
+   * @param tokenId The id of the dNFT.
    * @param price The sale price to calculate the fees for.
    * @return totalFees How much will be sent to the Foundation treasury and/or referrals.
    * @return creatorRev How much will be sent across all the `creatorRecipients` defined.
@@ -191,9 +191,9 @@ abstract contract MarketFees is
    * @return creatorShares The percentage of the creator fee to be distributed to each `creatorRecipient`.
    * If there is only one `creatorRecipient`, this may be an empty array.
    * Otherwise `creatorShares.length` == `creatorRecipients.length`.
-   * @return sellerRev How much will be sent to the owner/seller of the NFT.
-   * If the NFT is being sold by the creator, this may be 0 and the full revenue will appear as `creatorRev`.
-   * @return seller The address of the owner of the NFT.
+   * @return sellerRev How much will be sent to the owner/seller of the dNFT.
+   * If the dNFT is being sold by the creator, this may be 0 and the full revenue will appear as `creatorRev`.
+   * @return seller The address of the owner of the dNFT.
    * If `sellerRev` is 0, this may be `address(0)`.
    */
   function getFeesAndRecipients(
@@ -256,7 +256,7 @@ abstract contract MarketFees is
   /**
    * @notice **For internal use only.**
    * @dev This function is external to allow using try/catch but is not intended for external use.
-   * If ERC2981 royalties (or getRoyalties) are defined by the NFT contract, allow this standard to define immutable
+   * If ERC2981 royalties (or getRoyalties) are defined by the dNFT contract, allow this standard to define immutable
    * royalties that cannot be later changed via the royalty registry.
    */
   function internalGetImmutableRoyalties(address voucherNFT, uint256 tokenId)
@@ -419,8 +419,8 @@ abstract contract MarketFees is
 
   /**
    * @notice Calculates how funds should be distributed for the given sale details.
-   * @dev When the NFT is being sold by the `tokenCreator`, all the seller revenue will
-   * be split with the royalty recipients defined for that NFT.
+   * @dev When the dNFT is being sold by the `tokenCreator`, all the seller revenue will
+   * be split with the royalty recipients defined for that dNFT.
    */
   // solhint-disable-next-line code-complexity
   function _getFees(

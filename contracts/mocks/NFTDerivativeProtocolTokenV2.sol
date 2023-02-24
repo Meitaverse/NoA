@@ -20,7 +20,7 @@ import "../storage/SBTStorage.sol";
 import {INFTDerivativeProtocolTokenV2} from "../interfaces/INFTDerivativeProtocolTokenV2.sol";
 
 /**
- *  @title NFT Derivative Protocol Token
+ *  @title dNFT Derivative Protocol Token
  */
 contract NFTDerivativeProtocolTokenV2 is
     Initializable,

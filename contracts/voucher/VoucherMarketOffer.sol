@@ -15,7 +15,7 @@ import "../shared/SendValueWithFallbackWithdraw.sol";
 import "./VoucherMarketCore.sol";
 
 error NFTMarketOffer_Cannot_Be_Made_While_In_Auction();
-/// @param currentOfferAmount The current highest offer available for this NFT.
+/// @param currentOfferAmount The current highest offer available for this dNFT.
 error NFTMarketOffer_Offer_Below_Min_Amount(uint256 currentOfferAmount);
 /// @param expiry The time at which the offer had expired.
 error NFTMarketOffer_Offer_Expired(uint256 expiry);
@@ -25,7 +25,7 @@ error NFTMarketOffer_Offer_From_Does_Not_Match(address currentOfferFrom);
 error NFTMarketOffer_Offer_Must_Be_At_Least_Min_Amount(uint256 minOfferAmount);
 
 /**
- * @title Allows collectors to make an offer for an NFT, valid for 24-25 hours.
+ * @title Allows collectors to make an offer for an dNFT, valid for 24-25 hours.
  * @notice Funds are escrowed in the FETH ERC-20 token contract.
  * @author batu-inal & HardlyDifficult
  */
@@ -40,7 +40,7 @@ abstract contract VoucherMarketOffer is
 {
   using AddressUpgradeable for address;
 
-  /// @notice Stores offer details for a specific NFT.
+  /// @notice Stores offer details for a specific dNFT.
   struct Offer {
     // Slot 1: When increasing an offer, only this slot is updated.
     /// @notice The expiration timestamp of when this offer expires.
@@ -59,15 +59,15 @@ abstract contract VoucherMarketOffer is
     // 96 bits (12B) are available in slot 1.
   }
 
-  /// @notice Stores the highest offer for each NFT.
+  /// @notice Stores the highest offer for each dNFT.
   mapping(address => mapping(uint256 => Offer)) private nftContractToIdToOffer;
 
   /**
    * @notice Emitted when an offer is accepted,
-   * indicating that the NFT has been transferred and revenue from the sale distributed.
+   * indicating that the dNFT has been transferred and revenue from the sale distributed.
    * @dev The accepted total offer amount is `totalFees` + `creatorRev` + `sellerRev`.
-   * @param voucherNFT The address of the NFT contract.
-   * @param tokenId The id of the NFT.
+   * @param voucherNFT The address of the dNFT contract.
+   * @param tokenId The id of the dNFT.
    * @param buyer The address of the collector that made the offer which was accepted.
    * @param seller The address of the seller which accepted the offer.
    * @param totalFees The amount of ETH that was sent to Foundation & referrals for this sale.
@@ -88,18 +88,18 @@ abstract contract VoucherMarketOffer is
    * When this occurs, the collector which made the offer has their FETH balance unlocked
    * and the funds are available to place other offers or to be withdrawn.
    * @dev This occurs when the offer is no longer eligible to be accepted,
-   * e.g. when a bid is placed in an auction for this NFT.
-   * @param voucherNFT The address of the NFT contract.
-   * @param tokenId The id of the NFT.
+   * e.g. when a bid is placed in an auction for this dNFT.
+   * @param voucherNFT The address of the dNFT contract.
+   * @param tokenId The id of the dNFT.
    */
   event VoucherOfferInvalidated(address indexed voucherNFT, uint256 indexed tokenId);
   /**
    * @notice Emitted when an offer is made.
    * @dev The `amount` of the offer is locked in the FETH ERC-20 contract, guaranteeing that the funds
    * remain available until the `expiration` date.
-   * @param voucherNFT The address of the NFT contract.
-   * @param tokenId The id of the NFT.
-   * @param buyer The address of the collector that made the offer to buy this NFT.
+   * @param voucherNFT The address of the dNFT contract.
+   * @param tokenId The id of the dNFT.
+   * @param buyer The address of the collector that made the offer to buy this dNFT.
    * @param amount The amount, in wei, of the offer.
    * @param expiration The expiration timestamp for the offer.
    */
@@ -112,11 +112,11 @@ abstract contract VoucherMarketOffer is
   );
 
   /**
-   * @notice Accept the highest offer for an NFT.
-   * @dev The offer must not be expired and the NFT owned + approved by the seller or
+   * @notice Accept the highest offer for an dNFT.
+   * @dev The offer must not be expired and the dNFT owned + approved by the seller or
    * available in the market contract's escrow.
-   * @param voucherNFT The address of the NFT contract.
-   * @param tokenId The id of the NFT.
+   * @param voucherNFT The address of the dNFT contract.
+   * @param tokenId The id of the dNFT.
    * @param offerFrom The address of the collector that you wish to sell to.
    * If the current highest offer is not from this user, the transaction will revert.
    * This could happen if a last minute offer was made by another collector,
@@ -146,14 +146,14 @@ abstract contract VoucherMarketOffer is
   }
 
   /**
-   * @notice Make an offer for any NFT which is valid for 24-25 hours.
+   * @notice Make an offer for any dNFT which is valid for 24-25 hours.
    * The funds will be locked in the FETH token contract and become available once the offer is outbid or has expired.
-   * @dev An offer may be made for an NFT before it is minted, although we generally not recommend you do that.
+   * @dev An offer may be made for an dNFT before it is minted, although we generally not recommend you do that.
    * If there is a buy price set at this price or lower, that will be accepted instead of making an offer.
    * `msg.value` must be <= `amount` and any delta will be taken from the account's available FETH balance.
-   * @param voucherNFT The address of the NFT contract.
-   * @param tokenId The id of the NFT.
-   * @param amount The amount to offer for this NFT.
+   * @param voucherNFT The address of the dNFT contract.
+   * @param tokenId The id of the dNFT.
+   * @param amount The amount to offer for this dNFT.
    * @param referrer The refrerrer address for the offer.
    * @return expiration The timestamp for when this offer will expire.
    * This is provided as a return value in case another contract would like to leverage this information,
@@ -180,7 +180,7 @@ abstract contract VoucherMarketOffer is
     Offer storage offer = nftContractToIdToOffer[voucherNFT][tokenId];
 
     if (offer.expiration < block.timestamp) {
-      // This is a new offer for the NFT (no other offer found or the previous offer expired)
+      // This is a new offer for the dNFT (no other offer found or the previous offer expired)
 
       // Lock the offer amount in FETH until the offer expires in 24-25 hours.
       expiration = feth.marketLockupFor{ value: msg.value }(msg.sender, amount);
@@ -221,8 +221,8 @@ abstract contract VoucherMarketOffer is
   }
 
   /**
-   * @notice Accept the highest offer for an NFT from the `msg.sender` account.
-   * The NFT will be transferred to the buyer and revenue from the sale will be distributed.
+   * @notice Accept the highest offer for an dNFT from the `msg.sender` account.
+   * The dNFT will be transferred to the buyer and revenue from the sale will be distributed.
    * @dev The caller must validate the expiry and amount before calling this helper.
    * This may invalidate other market tools, such as clearing the buy price if set.
    */
@@ -236,14 +236,14 @@ abstract contract VoucherMarketOffer is
       
     uint256 amountOfToken = IERC1155Upgradeable(voucherNFT).balanceOf(msg.sender, tokenId);
 
-    // Transfer the NFT to the buyer.
+    // Transfer the dNFT to the buyer.
     try
       IERC1155Upgradeable(voucherNFT).safeTransferFrom(msg.sender, offer.buyer, tokenId, amountOfToken, bytes('0')) // solhint-disable-next-line no-empty-blocks
     {
-      // NFT was in the seller's wallet so the transfer is complete.
+      // dNFT was in the seller's wallet so the transfer is complete.
     } catch {
       // If the transfer fails then attempt to transfer from escrow instead.
-      // This should revert if `msg.sender` is not the owner of this NFT.
+      // This should revert if `msg.sender` is not the owner of this dNFT.
       _transferFromEscrow(voucherNFT, tokenId, offer.buyer, msg.sender);
     }
 
@@ -298,9 +298,9 @@ abstract contract VoucherMarketOffer is
 
   /**
    * @notice Invalidates the offer and frees ETH from escrow, if the offer has not already expired.
-   * @dev Offers are not invalidated when the NFT is purchased by accepting the buy price unless it
+   * @dev Offers are not invalidated when the dNFT is purchased by accepting the buy price unless it
    * was purchased by the same user.
-   * The user which just purchased the NFT may have buyer's remorse and promptly decide they want a fast exit,
+   * The user which just purchased the dNFT may have buyer's remorse and promptly decide they want a fast exit,
    * accepting a small loss to limit their exposure.
    */
   function _invalidateOffer(address voucherNFT, uint256 tokenId) private {
@@ -319,12 +319,12 @@ abstract contract VoucherMarketOffer is
   }
 
   /**
-   * @notice Returns the minimum amount a collector must offer for this NFT in order for the offer to be valid.
-   * @dev Offers for this NFT which are less than this value will revert.
+   * @notice Returns the minimum amount a collector must offer for this dNFT in order for the offer to be valid.
+   * @dev Offers for this dNFT which are less than this value will revert.
    * Once the previous offer has expired smaller offers can be made.
-   * @param voucherNFT The address of the NFT contract.
-   * @param tokenId The id of the NFT.
-   * @return minimum The minimum amount that must be offered for this NFT.
+   * @param voucherNFT The address of the dNFT contract.
+   * @param tokenId The id of the dNFT.
+   * @return minimum The minimum amount that must be offered for this dNFT.
    */
   function getMinOfferAmount(address voucherNFT, uint256 tokenId) external view returns (uint256 minimum) {
     Offer storage offer = nftContractToIdToOffer[voucherNFT][tokenId];
@@ -336,15 +336,15 @@ abstract contract VoucherMarketOffer is
   }
 
   /**
-   * @notice Returns details about the current highest offer for an NFT.
+   * @notice Returns details about the current highest offer for an dNFT.
    * @dev Default values are returned if there is no offer or the offer has expired.
-   * @param voucherNFT The address of the NFT contract.
-   * @param tokenId The id of the NFT.
+   * @param voucherNFT The address of the dNFT contract.
+   * @param tokenId The id of the dNFT.
    * @return buyer The address of the buyer that made the current highest offer.
    * Returns `address(0)` if there is no offer or the most recent offer has expired.
    * @return expiration The timestamp that the current highest offer expires.
    * Returns `0` if there is no offer or the most recent offer has expired.
-   * @return amount The amount being offered for this NFT.
+   * @return amount The amount being offered for this dNFT.
    * Returns `0` if there is no offer or the most recent offer has expired.
    */
   function getOffer(address voucherNFT, uint256 tokenId)
@@ -367,11 +367,11 @@ abstract contract VoucherMarketOffer is
   }
 
   /**
-   * @notice Returns the current highest offer's referral for an NFT.
+   * @notice Returns the current highest offer's referral for an dNFT.
    * @dev Default value of `payable(0)` is returned if
    * there is no offer, the offer has expired or does not have a referral.
-   * @param voucherNFT The address of the NFT contract.
-   * @param tokenId The id of the NFT.
+   * @param voucherNFT The address of the dNFT contract.
+   * @param tokenId The id of the dNFT.
    * @return referrer The payable address of the referrer for the offer.
    */
   function getOfferReferrer(address voucherNFT, uint256 tokenId) external view returns (address payable referrer) {

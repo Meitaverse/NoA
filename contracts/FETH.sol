@@ -241,7 +241,7 @@ contract FETH is AdminControlUpgradeable, UUPSUpgradeable{
   /**
    * @notice Used by the market contract only:
    * Remove an account's lockup and then create a new lockup, potentially for a different account.
-   * @dev Used by the market when an offer for an NFT is increased.
+   * @dev Used by the market when an offer for an dNFT is increased.
    * This may be for a single account (increasing their offer)
    * or two different accounts (outbidding someone elses offer).
    * @param unlockFrom The account whose lockup is to be removed.
@@ -268,7 +268,7 @@ contract FETH is AdminControlUpgradeable, UUPSUpgradeable{
   /**
    * @notice Used by the market contract only:
    * Lockup an account's FETH tokens for 24-25 hours.
-   * @dev Used by the market when a new offer for an NFT is made.
+   * @dev Used by the market when a new offer for an dNFT is made.
    * @param account The account to which the funds are to be deposited for (via the `msg.value`) and tokens locked up.
    * @param amount The number of tokens to be locked up for the `lockupFor`'s account.
    * `msg.value` must be <= `amount` and any delta will be taken from the account's available FETH balance.
@@ -286,8 +286,8 @@ contract FETH is AdminControlUpgradeable, UUPSUpgradeable{
   /**
    * @notice Used by the market contract only:
    * Remove an account's lockup, making the FETH tokens available for transfer or withdrawal.
-   * @dev Used by the market when an offer is invalidated, which occurs when an auction for the same NFT
-   * receives its first bid or the buyer purchased the NFT another way, such as with `buy`.
+   * @dev Used by the market when an offer is invalidated, which occurs when an auction for the same dNFT
+   * receives its first bid or the buyer purchased the dNFT another way, such as with `buy`.
    * @param account The account whose lockup is to be unlocked.
    * @param expiration The original lockup expiration for the tokens to be unlocked unlocked.
    * This will revert if the lockup has already expired.

@@ -16,7 +16,7 @@ import {INFTDerivativeProtocolTokenV1} from "./interfaces/INFTDerivativeProtocol
 // import "hardhat/console.sol";
 
 /**
- *  @title NFT Derivative Protocol Token
+ *  @title dNFT Derivative Protocol Token
  * 
  * includes built-in governance power and delegation mechanisms.
  */

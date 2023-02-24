@@ -5,7 +5,7 @@ import {DataTypes} from "../libraries/DataTypes.sol";
 interface INFTDerivativeProtocolTokenV1  { 
 
     /**
-     * @notice Initializes the NFT Derivative Protocol Token, setting the initial governance address as well as the name and symbol in
+     * @notice Initializes the dNFT Derivative Protocol Token, setting the initial governance address as well as the name and symbol in
      * the ERC3525 base contract.
      *
      * @param name The name to set for the Token.

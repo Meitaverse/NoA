@@ -549,9 +549,9 @@ contract BankTreasuryV2 is
         );
     }
 
-   function calculateAmountSBT(address currency, uint256 amountOfSBT) external view returns (uint256) {
+   function calculateAmountSBT(address currency, uint256 amount) external view returns (uint256) {
         if (_exchangePrice[currency].sbtAmount == 0) revert Errors.ExchangePriceIsZero();
-        return amountOfSBT.mul(_exchangePrice[currency].currencyAmount).div(_exchangePrice[currency].sbtAmount);
+        return amount.mul(_exchangePrice[currency].currencyAmount).div(_exchangePrice[currency].sbtAmount);
     }
 
     function buySBT(

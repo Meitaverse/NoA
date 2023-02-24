@@ -25,7 +25,7 @@ interface IBankTreasuryV2 {
 
     function balanceOf(address currency, uint256 soulBoundTokenId) external view returns (uint256 balance);
 
-    function calculateAmountSBT(address currency, uint256 sbtValue) external view returns(uint256);
+    function calculateAmountSBT(address currency, uint256 amount) external view returns(uint256);
     
     function getExchangePrice(address currency) external view returns(DataTypes.ExchangePrice memory);
    
@@ -150,7 +150,7 @@ interface IBankTreasuryV2 {
     /**
      * @notice Used by the market contract only:
      * Remove an account's lockup and then create a new lockup, potentially for a different account.
-     * @dev Used by the market when an offer for an NFT is increased.
+     * @dev Used by the market when an offer for an dNFT is increased.
      * This may be for a single account (increasing their offer)
      * or two different accounts (outbidding someone elses offer).
      * @param unlockFromSoulBoundTokenId The SBT Id whose lockup is to be removed.
