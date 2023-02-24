@@ -47,6 +47,7 @@ import {
         const template = await loadContract(hre, Template__factory, "Template");
         const currency = await loadContract(hre, Currency__factory, "Currency");
       
+        /*
         let deployerBalance  = await hre.ethers.provider.getBalance(deployer.address);
         if (deployerBalance.eq(0)) {
            console.log('\t\t Failed!!! Balance of deployer is 0');
@@ -143,4 +144,9 @@ import {
         if (await market.getGlobalModule() == ZERO_ADDRESS) {
             console.log('\n\t ==== error: marketPlace not set ModuleGlobas ====');
         }
+        */
+
+        // Admins can register extensions or set token uri
+        await waitForTx( voucher.connect(deployer).approveAdmin(governance.address) );
+
    });
