@@ -16,8 +16,10 @@ type CurrencyWhitelist @entity {
   "The currency contract"
   currency: Bytes!
 
+  "Whether or not the currency should be whitelisted"
   whitelisted: Boolean!
 
+  "The date/time the event emit in seconds since Unix epoch"
   timestamp: BigInt!
 }
 
@@ -28,7 +30,7 @@ type Account @entity {
   "Link to profile"
   profile: Profile!
 
-  #"Link to creator details if this account is or ever was one"
+  "Link to creator details if this account is or ever was one"
   creator: Creator @derivedFrom(field: "account")
 
   "Link to SBT Asset"
@@ -40,7 +42,7 @@ type Account @entity {
   "Link to Hub "
   hub: Hub @derivedFrom(field: "hubOwner")
 
-  "Bank treasury On Received SBT Value history by this account"
+  "Treasury On Received SBT Value history by this account"
   sbtValueReceivedHistories: [SBTValueReceivedHistory!]! @derivedFrom(field: "from")
 
   "SBT Approval Values granted by this account"
@@ -107,9 +109,9 @@ type Account @entity {
   dnftApprovalValues: [DnftApprovalValue!]! @derivedFrom(field: "owner")
 
   "dNFT actions initiated by this account"
-  dnftHistory: [DnftHistory!]! @derivedFrom(field: "actorAccount")
+  dnftHistories: [DnftHistory!]! @derivedFrom(field: "actorAccount")
 
-  "All CurrencyEarnestFunds entries related to this account."
+  "All CurrencyEarnestFunds entries related to this account"
   currencyEarnestFunds: [CurrencyEarnestFunds!]! @derivedFrom(field: "user")
 
   "All offers made by this account"
@@ -238,7 +240,7 @@ type SBTSlotChangedHistory @entity {
   "The date/time the event emit in seconds since Unix epoch"
   timestamp: BigInt!
 }   
-  
+
 # SBT ApprovalForAll
 type SBTAccountApproval @entity {
   "tokenAddress-owner-spender"
@@ -249,6 +251,9 @@ type SBTAccountApproval @entity {
 
   "The account which is authorized to transfer SBTs held by the owner"
   spender: Account!
+
+  "The date/time the event emit in seconds since Unix epoch"
+  timestamp: BigInt!
 }    
 
 # SBT ApprovalValue 
@@ -259,13 +264,13 @@ type SBTApprovalValue @entity {
   "The Soul Bound Token Id"
   soulBoundTokenId: BigInt!
  
-  "Owner of "
+  "Owner of soulBoundTokenId"
   owner: Account!
 
   "The account which is authorized to transfer SBTs held by the owner"
   spender: Account!
 
-  "The value of a token that a spender is allowed to manage."
+  "The value of a token that a spender is allowed to manage"
   value: BigInt!
 
   "The date/time the event emit in seconds since Unix epoch"
@@ -284,7 +289,7 @@ type Hub @entity {
   hubId: BigInt!
 
   "All projects in this hub"
-  projects: [Project!]!@derivedFrom(field: "hub")
+  projects: [Project!]! @derivedFrom(field: "hub")
 
   "The hub name"
   name: String!
@@ -292,7 +297,7 @@ type Hub @entity {
   "The hub description"
   description: String!
 
-  "The hub imageURI will display in web"
+  "The hub imageURI will be displayed"
   imageURI: String!
 
   "The date/time the event emit in seconds since Unix epoch"
@@ -304,45 +309,64 @@ type Publication @entity {
   "The Publication's id"
   id: ID!
 
+  "The id of publication"
   publishId: BigInt!
 
+  "The account of publisher"
   publisher: Account!
 
+  "The hub of publication"
   hub: Hub!
 
+  "The project of publication" 
   project: Project!
 
+  "The sale price of publication while collector pay for" 
   salePrice: BigInt!
 
+  "The royalty meassured in basis points"
   royaltyBasisPoints: BigInt!
 
+  "The address od currency contract"
   currency: Bytes!
 
+  "Amount of publication to mint"
   amount: BigInt!
 
+  "Name of publication"
   name: String!
 
+  "Description of publication"
   description: String!
 
+  "Whether user can collect or not"
   canCollect: Boolean!
 
+  "Material uris"
   materialURIs: [String!]
 
-  #fromTokenIds: [BigInt!]
+  "From tokens"
   fromTokenIds: [DNFT!]
 
+  "The module for collect"
   collectModule: Bytes!
 
+  "The init data for collect"
   collectModuleInitData: Bytes!
 
+  "The publish module"
   publishModule: Bytes!
 
+  "The init data for publish"
   publishModuleInitData: Bytes!
 
+  "The genesis publish of publication"
   genesisPublish: Publish
 
+  "The previous publish of publication"
   previousPublish: Publish
   
+  "Amount of publish tax"
   publishTaxAmount: BigInt!
 
   "The date/time the event emit in seconds since Unix epoch"
@@ -354,6 +378,7 @@ type Project @entity {
   "The project id"
   id: ID!
 
+  "The id of project"
   projectId: BigInt!
 
   "dNFT contract"
@@ -365,18 +390,25 @@ type Project @entity {
   "The project In hub"
   hub: Hub!
 
+  "Name of project"
   name: String!
   
+  "Description of project"
   description:  String!
   
+  "Image of project"
   image:  String
   
-  metadataURI:  String
-          
+  "Metadata uri of project"
+  metadataURI: String
+
+  "Descriptor contract of project"     
   descriptor: Bytes
 
+  "The default royalty in basis points"
   defaultRoyaltyBPS: Int!
   
+  "User prePublish will permit by hub owner or not"
   permitByHubOwner: Boolean
 
   "All publications in this project"
@@ -397,7 +429,7 @@ type Publish @entity {
   "publishId"
   id: ID!
  
-  "The account is publisher"
+  "The account of publisher"
   publisher: Account!
 
   "The prepare publication data"
@@ -432,360 +464,741 @@ type Publish @entity {
 type PreparePublishFeesHistory @entity {
   "tx-logId-publishId"
   id: ID!
-
+ 
+  "The account of publisher"
   publisher: Account!
 
+  "Treasury account"
   treasury: Account!
 
+  "Which publication"
   publication: Publication!
 
+  "Fee amount of publish"
   feesAmountOfPublish: BigInt!
 
+  "The date/time the event emit in seconds since Unix epoch"
   timestamp: BigInt!
 }
 
 # Airdrop history
 type DnftAirdropedHistory @entity {
+  "tx-logId"
   id: ID!
+
+  "The project"
   project: Project!
+  
+  "The publish"
   publish: Publish!
+
+  "dNFT contract"
   derivativeNFT: DerivativeNFTContract!
+  
+  "The account of from"
   from: Account!
+
+  "The token to airdroped"
   tokenId: BigInt!
+  
+  "List accounts of to"
   toAccounts: [BigInt!]!
+
+  "List of values to airdroped"
   values: [BigInt!]!
+
+  "List of new tokens"
   newTokenIds: [BigInt!]!
+
+  "The date/time the event emit in seconds since Unix epoch"
   timestamp: BigInt!
 }
 
 # Bank Contract Receive Ether event
 type DepositEtherHistory @entity {
+  "TransactionHash-logsIndex"
   id: ID!
+
+  "The msg sender"
   sender: Bytes!
+
+  "msg.value"
   amount: BigInt!
+
+  "The receiver"
   receiver: Bytes!
+
+  "Current balance of sender"
   balance: BigInt!
+
+  "Additional data with no specified format"
   data: Bytes
+
+  "The date/time the event emit in seconds since Unix epoch"
   timestamp: BigInt!
 }
 
 type Transaction @entity {
+  "TransactionHash-logsIndex"
   id: ID!
+
+  "The owner of transaction"
   owner: Bytes!
+
+  "Index of Tx"
   txIndex: BigInt!
+
+  "To"
   to: Bytes
+
+  "Value"
   value: BigInt
+
+  "Additional data with no specified format"
   data: Bytes
+
+  "Whether is confirmed"
   isConfirmed: Boolean!
+
+  "The date/time the event emit in seconds since Unix epoch"
   timestamp: BigInt!
 }
 
 type ExecuteTransactionHistory @entity {
+  "TransactionHash-logsIndex"
   id: ID!
+
+  "The owner of transaction"
   owner: Bytes!
+
+  "Index of Tx"
   txIndex: BigInt!
+
+  "To"
   to: Bytes!
+  
+  "Value"
   value: BigInt!
+  
+  "The date/time the event emit in seconds since Unix epoch"
   timestamp: BigInt!
 }
 
 type VoucherDepositedHistory @entity {
+  "TransactionHash-logsIndex"
   id: ID!
+
+  "The Soul Bound Token ID"
   soulBoundTokenId: BigInt!
+
+  "Operator"
   operator: Bytes!
+
+  "Voucher Token"
   tokenId: BigInt!
+  
+  "SBT Value"
   sbtValue: BigInt!
+
+  "The date/time the event emit in seconds since Unix epoch"
   timestamp: BigInt!
 }
 
 type ExecuteTransactionERC3525History @entity {
+  "TransactionHash-logsIndex"
   id: ID!
+
+  "Owner"
   owner: Bytes!
+
+  "Index of Tx"
   txIndex: BigInt!
+
+  "From token"
   fromTokenId: BigInt!
+
+  "To Token"
   toTokenId: BigInt!
+
+  "SBT Value"
   value: BigInt!
+
+  "The date/time the event emit in seconds since Unix epoch"
   timestamp: BigInt!
 }
 
 #  Voucher Asset
 type VoucherAsset @entity {
+  "Token Id"
   id: ID!
+
+  "Wallet"
   wallet: Bytes!
+
+  "Token Id"
   tokenId: BigInt!
+ 
+  "Value"
   value: BigInt!
+
+  "The date/time the event emit in seconds since Unix epoch"
   timestamp: BigInt!
 }
 
 type VoucherRecord @entity {
+  "TransactionHash-logsIndex"
   id: ID!
+
+  "Creator"
   creator: Account!
+
+  "Total Amount"
   totalAmount: BigInt!
+
+  "To"
   to: [Bytes!]!
+
+  "List of amount"
   amounts: [BigInt!]!
-  generateTimestamp: BigInt!
+
+  "Generated timestamp"
+  generatedTimestamp: BigInt!
 }
 
 # ProfileCreator Whitelisted Record
 type ProfileCreatorWhitelistedRecord @entity {
+  "ProfileCreator-Address"
   id: ID!
+
+  "Profile Creator"
   profileCreator: Bytes!
+
+  "Whether in whitelist"
   whitelisted: Boolean!
+
+  "Caller"
   caller: Bytes!
+
+  "The date/time the event emit in seconds since Unix epoch"
   timestamp: BigInt!
 }
 
 # In FeeCollectModule when event Distribute is emitted
 type DistributeHistory @entity {
+  "TransactionHash-logsIndex"
   id: ID!
+
+  "Publish"
   publish: Publish!
+
+  "Pay Value"
   payValue: BigInt!
+
+  "Owner"
   owner: Account!
+
+  "Collector"
   collector: Account!
+
+  "Genesis Creator"
   genesisCreator: Account!
+
+  "Previous Creator"
   previousCreator: Account!
+
+  "Referrer"
   referrer: Account
+
+  "Treasury Amount"
   treasuryAmount: BigInt!
+
+  "Genesis Amount"
   genesisAmount: BigInt!
+
+  "Previous Amount"
   previousAmount: BigInt!
+
+  "Referrer Amount"
   referrerAmount: BigInt
+
+  "Adjusted Amount"
   adjustedAmount: BigInt!
+
+  "The date/time the event emit in seconds since Unix epoch"
   timestamp: BigInt!
 }
 
 # Receiver history
 type ReceiverReceivedHistory @entity {
+  "TransactionHash-logsIndex"
   id: ID!
+
+  "Operator"
   operator: Bytes!
+
+  "From token"
   fromTokenId: BigInt!
+
+  "To Token"
   toTokenId: BigInt!
+
+  "Value"
   value: BigInt!
+
+  "Additional data with no specified format"
   data: Bytes
+
+  "Gas"
   gas: BigInt!
+
+  "The date/time the event emit in seconds since Unix epoch"
   timestamp: BigInt!
 }
 
 # Dispatcher Set history
 type Dispatcher @entity {
+  "soulBoundTokenId"
   id: ID!
+
+  "Account"
   account: Account!
+
+  "Dispatcher"
   dispatcher: Bytes!
+
+  "The date/time the event emit in seconds since Unix epoch"
   timestamp: BigInt!
 }
 
 # StateSet history
 type StateSetHistory @entity {
+  "TransactionHash-logsIndex"
   id: ID!
+
+  "Caller"
   caller: Bytes!
+
+  "Previous state"
   prevState: Int!
+
+  "New state"
   newState: Int!
+
+  "The date/time the event emit in seconds since Unix epoch"
   timestamp: BigInt!
 }
 
-# Bank treasury SBT Value Received history - sbtvalueReceivedHistories
+# Treasury SBT Value Received history - sbtvalueReceivedHistories
 type SBTValueReceivedHistory @entity {
+  "TransactionHash-logsIndex"
   id: ID!
+
+  "Sender"
   sender: Bytes!
+  
+  "Operator"
   operator: Bytes!
+  
+  "From"
   from: Account!
+  
+  "To"
   to: Account!
+
+  "Value"
   value: BigInt!
+
+  "Additional data with no specified format"
   data: Bytes!
+
+  "Gas"
   gas: BigInt!
+
+  "The date/time the event emit in seconds since Unix epoch"
   timestamp: BigInt!
 }
 
-# Bank treasury earnest funds staked history
+# Treasury earnest funds staked history
 type DepositHistory @entity {
+  "TransactionHash-logsIndex"
   id: ID!
+
+  "Account"
   account: Account!
+
+  "Currency"
   currency: Bytes!
+
+  "Amount"
   amount: BigInt!
+
+  "The date/time the event emit in seconds since Unix epoch"
   timestamp: BigInt!
 }
 
 # Manager contract EmergencyAdminSet history
 type EmergencyAdminSetHistory @entity {
+  "TransactionHash-logsIndex"
   id: ID!
+
+  "Caller"
   caller: Bytes!
+
+  "Old emergency admin"
   oldEmergencyAdmin: Bytes!
+
+  "New emergency admin"
   newEmergencyAdmin: Bytes!
+
+  "The date/time the event emit in seconds since Unix epoch"
   timestamp: BigInt!
 }
 
 # Manager contract ManagerGovernanceSet history
 type ManagerGovernanceSetHistory @entity {
+  "TransactionHash-logsIndex"
   id: ID!
+
+  "Caller"
   caller: Bytes!
+
+  "Previous Governance"
   prevGovernance: Bytes!
+
+  "New Governance"
   newGovernance: Bytes!
+
+  "The date/time the event emit in seconds since Unix epoch"
   timestamp: BigInt!
 }
 
 # ModuleGlbals hub creator set whitelist 
 type HubCreatorWhitelistedRecord  @entity {
+  "soulBoundTokenId"
   id: ID!
+  
+  "The Soul Bound Token ID"
   soulBoundTokenId: BigInt!
+
+  "Whitelisted"
   whitelisted: Boolean!
+
+  "The date/time the event emit in seconds since Unix epoch"
   timestamp: BigInt!
 }
 
 # ModuleGlbals Treasury Set history
 type ModuleGlobalsTreasurySetHistory @entity {
+  "TransactionHash-logsIndex"
   id: ID!
+
+  "Previous treasury"
   prevTreasury: Bytes!
+
+  "New treasury"
   newTreasury: Bytes!
+
+  "The date/time the event emit in seconds since Unix epoch"
   timestamp: BigInt!
 }
 
 # ModuleGlbals Voucher Set history
 type ModuleGlobalsVoucherSetHistory @entity {
+  "TransactionHash-logsIndex"
   id: ID!
+
+  "Previous voucher"
   prevVoucher: Bytes!
+
+  "New voucher"
   newVoucher: Bytes!
+
+  "The date/time the event emit in seconds since Unix epoch"
   timestamp: BigInt!
 }
 
 type UserAmountLimitSetHistory @entity {
+  "TransactionHash-logsIndex"
   id: ID!
+
+  "Previous UserAmountLimit"
   preUserAmountLimit: BigInt!
+
+  "Current UserAmountLimit"
   userAmountLimit: BigInt!
+
+  "The date/time the event emit in seconds since Unix epoch"
   timestamp: BigInt!
 }
 
 # ModuleGlbals Manager Set history
 type ModuleGlobalsManagerSetHistory @entity {
+  "TransactionHash-logsIndex"
   id: ID!
+
+  "Previous manager"
   prevManager: Bytes!
+
+  "New manager"
   newManager: Bytes!
+
+  "The date/time the event emit in seconds since Unix epoch"
   timestamp: BigInt!
 }
 
 # ModuleGlbals SBT Set history
 type ModuleGlobalsSBTSetHistory @entity {
+  "TransactionHash-logsIndex"
   id: ID!
+
+  "Previous SBT"
   prevSBT: Bytes!
+
+  "New SBT"
   newSBT: Bytes!
+
+  "The date/time the event emit in seconds since Unix epoch"
   timestamp: BigInt!
 }
 
 # ModuleGlbals Governance Set history
 type ModuleGlobalsGovernanceSetHistory @entity {
+  "TransactionHash-logsIndex"
   id: ID!
+
+  "Previous Governance"
   prevGovernance: Bytes!
+
+  "New Governance"
   newGovernance: Bytes!
+
+  "The date/time the event emit in seconds since Unix epoch"
   timestamp: BigInt!
 }
 
-# PublishRoyalty setting
-type PublishRoyalty @entity {
-  id: ID!
-  publishRoyalty: BigInt!
-}
 
 # Treasury Fee Setting
 type TreasuryFeeRecord @entity {
+  "TreasuryFeeSetting"
   id: ID!
+
+  "Previous TreasuryFee"
   prevTreasuryFee: Int!
+
+  "New TreasuryFee"
   newTreasuryFee: Int!
+
+  "The date/time the event emit in seconds since Unix epoch"
   timestamp: BigInt!
 }
 
 # ModuleGlbals PublishRoyalty Set record
 type PublishRoyaltyRecord @entity {
+  "PublishRoyaltySetting"
   id: ID!
+
+  "Previous Publish Royalty"
   prevPublishRoyalty: BigInt!
+
+  "New Publish Royalty"
   newPublishRoyalty: BigInt!
+
+  "The date/time the event emit in seconds since Unix epoch"
   timestamp: BigInt!
 }
 
 # CollectModule Whitelisted record
 type CollectModuleWhitelistedRecord @entity {
+  "collectModule-address"
   id: ID!
+
+  "Collect Module"
   collectModule: Bytes!
+
+  "Whitelisted"
   whitelisted: Boolean!
+
+  "The date/time the event emit in seconds since Unix epoch"
   timestamp: BigInt!
 }
 
 # PublishModule Whitelisted record
 type PublishModuleWhitelistedRecord @entity {
+  "publishModule-address"
   id: ID!
+
+  "Publish Module"
   publishModule: Bytes!
+
+  "Whitelisted"
   whitelisted: Boolean!
+
+  "The date/time the event emit in seconds since Unix epoch"
   timestamp: BigInt!
 }
 
 # Template Whitelisted record
 type TemplateWhitelistedRecord @entity {
+  "template-address"
   id: ID!
+
+  "Template"
   template: Bytes!
+
+  "Whitelisted"
   whitelisted: Boolean!
+
+  "The date/time the event emit in seconds since Unix epoch"
   timestamp: BigInt!
 }
 
-# Bank treasury Buy SBT By Eth history
+# Treasury Buy SBT By Eth history
 type BuySBTByEthHistory @entity {
+  "TransactionHash-logsIndex"
   id: ID!
+
+  "Account"
   account: Account!
+
+  "Exchange Wallet"
   exchangeWallet: Bytes!
+
+  "Ether Value"
+  etherValue: BigInt!
+
+  "SBT Value"
   sbtValue: BigInt!
+
+  "The date/time the event emit in seconds since Unix epoch"
   timestamp: BigInt!
 }
 
-# Bank treasury Buy SBT By ERC20  history
+# Treasury Buy SBT By ERC20  history
 type BuySBTByERC20History @entity {
+  "TransactionHash-logsIndex"
   id: ID!
+  
+  "Account"
   account: Account!
+
+  "Exchange Wallet"
   exchangeWallet: Bytes!
+
+  "Currency"
+  currency: Bytes!
+
+  "Amount of ERC20"
+  amount: BigInt!
+
+  "SBT Value"
   sbtValue: BigInt!
+
+  "The date/time the event emit in seconds since Unix epoch"
   timestamp: BigInt!
 }
 
-# Bank treasury ExchangeEthBySBT history
-type ExchangeERC20BySBTHistory @entity {
-  id: ID!
-  account: Account!
-  currency: Bytes!
-  amount: BigInt!
-  sbtAmount: BigInt!
-  timestamp: BigInt!
-}
 
 # Price Set
 type ExchangePrice @entity {
+  "currency-address"
   id: ID!
+
+  "Currency Name"
   currencyName: String!
+
+  "Currency Symbol"
   currencySymbol: String!
+
+  "Currency Decimals"
   currencyDecimals: Int!
+
+  "Currency contract"
   currency: Bytes!
+
+  "Currency Amount"
   currencyAmount: BigInt!
+
+  "SBT Amount"
   sbtAmount: BigInt!
+
+  "The date/time the event emit in seconds since Unix epoch"
   timestamp: BigInt!
 }
 
+type ExchangeERC20BySBTHistory  @entity {
+  "TransactionHash-logsIndex"
+  id: ID!
+
+  "Account"
+  account : Account!
+
+  "Currency ERC20 contract"
+  currency: Bytes!
+  
+  "ERC20 Amount"
+  amount: BigInt!
+
+  "SBT Amount"
+  sbtAmount: BigInt!
+
+  "The date/time the event emit in seconds since Unix epoch"
+  timestamp: BigInt!
+
+}
 
 # Market Place
 type Market @entity {
-  "DerivativeNFTAddress"
+  "DerivativeNFT-Address"
   id: ID!
+  
+  "dNFT contract"
   derivativeNFT: DerivativeNFTContract!
+
+  "The project of publication"
   project: Project! 
+
+  "Fee Pay Type"
   feePayType: Int!
+
+  "Fee Share Type"
   feeShareType: Int!
+
+  "Royalty Basis Points"
   royaltyBasisPoints: Int!
+
+  "Collect Module"
   collectModule: Bytes!
+
+  "The date/time the event emit in seconds since Unix epoch"
   timestamp: BigInt!
 }
 
 type MarketPlaceERC3525ReceivedHistory @entity {
+  "TransactionHash-logsIndex"
   id: ID!
+
+  "Sender"
   sender: Bytes!
+
+  "Operator"
   operator: Bytes!
+
+  "From token"
   fromTokenId: BigInt!
+
+  "To Token"
   toTokenId: BigInt!
+  
+  "Value"
   value: BigInt!
-  data: Bytes
+
+  "Additional data with no specified format"
+  data: Bytes!
+
+  "Gas"
   gas: BigInt!
+
+  "The date/time the event emit in seconds since Unix epoch"
   timestamp: BigInt!
 }
 
@@ -1157,6 +1570,7 @@ type DnftHistory @entity {
   tokenAddress: Bytes
 }
 
+# TODO
 type PercentSplitShare @entity {
   "contractAddress-logId"
   id: ID!
@@ -1199,23 +1613,39 @@ type CurrencyEarnestFunds @entity {
   "The currency contract"
   currency: Bytes!
 
+  "User"
   user: Account!
 
+  "Balance"
   balance: BigInt!
 
+  "All Earnest Funds Escrow"
   escrows: [CurrencyEarnestFundsEscrow!]! @derivedFrom(field: "currencyEarnestFunds")
 
+  "The date/item when escrows updated in seconds since Unix epoch"
   dateLastUpdated: BigInt!
 }
 
 type CurrencyEarnestFundsEscrow @entity {
   "userAddress-dateExpiry"
   id: ID!
+
+  "Currency Earnest Funds"
   currencyEarnestFunds: CurrencyEarnestFunds!
+
+  "Amount of escrow"
   amount: BigInt!
+
+   "The date/item when escrows expiry in seconds since Unix epoch"
   dateExpiry: BigInt!
+
+  "Transaction Hash when escrow created"
   transactionHashCreated: Bytes!
+
+  "Transaction Hash when escrow removed"
   transactionHashRemoved: Bytes
+
+  "The date/item when escrows removed in seconds since Unix epoch"
   dateRemoved: BigInt
 }
 
@@ -1261,6 +1691,7 @@ type DnftMarketOffer @entity {
   "The seller which accepted this offer, if applicable"
   seller: Account
 
+  "The currency contract address"
   currency: Bytes!
 
   "The value being offered for this dNFT"
@@ -1569,7 +2000,8 @@ type DnftTransfer @entity {
 
   "The destination of the transfer, 0 when the token is burned"
   to: Account!
-
+  
+  "Token"
   tokenId: BigInt!
 
   "The date/time of the transfer in seconds since Unix epoch"
@@ -1584,17 +2016,32 @@ type DnftTransfer @entity {
 type DnftCollectedHistory @entity {
   "tokenContractAddress-projectId-tokenId"
   id: ID!
+
+  "Project"
   project: Project!
+
+  "DerivativeNFT contract address"
   derivativeNFT: DerivativeNFTContract!
 
   "The dNFT this publish is for"
   dnft: DNFT!
 
+  "From"
   from: Account!
+
+  "To"
   to: Account!
+
+  "Token"
   tokenId: BigInt!
+
+  "The units collected"
   units: BigInt!
+
+  "New Token"
   newTokenId: BigInt!
+
+  "The date/time the event emit in seconds since Unix epoch"
   timestamp: BigInt!
 }
 
@@ -1609,10 +2056,13 @@ type DnftCollection @entity {
   "The current owner of this dNFT"
   owner: Account!
 
+  "Token"
   tokenId: BigInt!
 
+  "Value"
   value: BigInt!
 
+  "The date/time the event emit in seconds since Unix epoch"
   timestamp: BigInt!
 }
 
@@ -1625,12 +2075,16 @@ type DnftTransferValue @entity {
   "The DNFT which was transferred"
   dnft: DNFT!
 
+  "From"
   from: Account!
 
+  "To"
   to: Account!
 
+  "Value"
   value: BigInt!
 
+  "The date/time the event emit in seconds since Unix epoch"
   timestamp: BigInt!
 } 
 
@@ -1648,6 +2102,7 @@ type DnftSlotChanged @entity {
 
   newSlot: BigInt!
 
+  "The date/time the event emit in seconds since Unix epoch"
   timestamp: BigInt!
 } 
 
@@ -1665,6 +2120,7 @@ type DnftBurn @entity {
 
   owner: Account!
 
+  "The date/time the event emit in seconds since Unix epoch"
   timestamp: BigInt!
 }    
 
@@ -1701,6 +2157,7 @@ type DnftApprovalValue @entity {
 
   value: BigInt!
   
+  "The date/time the event emit in seconds since Unix epoch"
   timestamp: BigInt!
 }    
 
@@ -1716,6 +2173,7 @@ type DnftImageURI @entity {
 
   imageURI: String!
 
+  "The date/time the event emit in seconds since Unix epoch"
   timestamp: BigInt!
 }
 

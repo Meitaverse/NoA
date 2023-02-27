@@ -47,7 +47,9 @@ export function loadOrCreateFsbtEscrow<T extends EscrowEvent>(event: T, currency
 
   // Ensure that the escrow is associated with the account's earnest funds balance
   let fsbtAccount = loadOrCreateCurrencyEarnestFunds(currency, account, event.block);
+  // fsbtAccount.balance = 
   fsbtAccount.save();
+
   fsbtEscrow.currencyEarnestFunds = fsbtAccount.id;
 
   return fsbtEscrow;

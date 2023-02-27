@@ -359,13 +359,13 @@ export class BankTreasury extends ethereum.SmartContract {
     return ethereum.CallResult.fromValue(value[0].toBigInt());
   }
 
-  calculateAmountSBT(currency: Address, amountOfSBT: BigInt): BigInt {
+  calculateAmountSBT(currency: Address, amount: BigInt): BigInt {
     let result = super.call(
       "calculateAmountSBT",
       "calculateAmountSBT(address,uint256):(uint256)",
       [
         ethereum.Value.fromAddress(currency),
-        ethereum.Value.fromUnsignedBigInt(amountOfSBT)
+        ethereum.Value.fromUnsignedBigInt(amount)
       ]
     );
 
@@ -374,14 +374,14 @@ export class BankTreasury extends ethereum.SmartContract {
 
   try_calculateAmountSBT(
     currency: Address,
-    amountOfSBT: BigInt
+    amount: BigInt
   ): ethereum.CallResult<BigInt> {
     let result = super.tryCall(
       "calculateAmountSBT",
       "calculateAmountSBT(address,uint256):(uint256)",
       [
         ethereum.Value.fromAddress(currency),
-        ethereum.Value.fromUnsignedBigInt(amountOfSBT)
+        ethereum.Value.fromUnsignedBigInt(amount)
       ]
     );
     if (result.reverted) {

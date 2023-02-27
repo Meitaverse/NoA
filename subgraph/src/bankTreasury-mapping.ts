@@ -161,6 +161,7 @@ export function handleBuySBTByEth(event: BuySBTByEth): void {
         if (sbtAccount.wallet.toHex() != ZERO_ADDRESS ) {
             history.account = loadOrCreateAccount(Address.fromBytes(sbtAccount.wallet)).id
             history.exchangeWallet = event.params.exchangeWallet
+            history.etherValue       = event.params.etherValue
             history.sbtValue       = event.params.sbtValue
             history.timestamp      = event.block.timestamp
             history.save()
@@ -179,6 +180,8 @@ export function handleBuySBTByERC20(event: BuySBTByERC20): void {
         if (sbtAccount.wallet.toHex() != ZERO_ADDRESS ) {
             history.account = loadOrCreateAccount(Address.fromBytes(sbtAccount.wallet)).id
             history.exchangeWallet = event.params.exchangeWallet
+            history.currency       = event.params.currency
+            history.amount       = event.params.amount
             history.sbtValue       = event.params.sbtValue
             history.timestamp      = event.block.timestamp
             history.save()
@@ -263,11 +266,10 @@ export function handleVoucherDeposited(event: VoucherDeposited): void {
     } 
 }
 
-
 export function handleSubmitTransaction(event: SubmitTransaction): void {
     log.info("handleSubmitTransaction, event.address: {}", [event.address.toHexString()])
 
-    let _idString = event.params.owner.toHexString()+ "-" + event.params.txIndex.toString()
+    let _idString = getLogId(event)
     const transaction = Transaction.load(_idString) || new Transaction(_idString)
     if (transaction) {
         transaction.owner = event.params.owner
@@ -284,7 +286,7 @@ export function handleSubmitTransaction(event: SubmitTransaction): void {
 export function handleConfirmTransaction(event: ConfirmTransaction): void {
     log.info("handleConfirmTransaction, event.address: {}", [event.address.toHexString()])
 
-    let _idString = event.params.owner.toHexString()+ "-" + event.params.txIndex.toString()
+    let _idString = getLogId(event)
     const transaction = Transaction.load(_idString) || new Transaction(_idString)
     if (transaction) {
         transaction.owner = event.params.owner
@@ -298,7 +300,7 @@ export function handleConfirmTransaction(event: ConfirmTransaction): void {
 export function handleRevokeConfirmation(event: RevokeConfirmation): void {
     log.info("handleRevokeConfirmation, event.address: {}", [event.address.toHexString()])
 
-    let _idString = event.params.owner.toHexString()+ "-" + event.params.txIndex.toString()
+    let _idString = getLogId(event)
     const transaction = Transaction.load(_idString)
     if (transaction) {
         transaction.isConfirmed = false
@@ -310,7 +312,7 @@ export function handleRevokeConfirmation(event: RevokeConfirmation): void {
 export function handleExecuteTransaction(event: ExecuteTransaction): void {
     log.info("handleExecuteTransaction, event.address: {}", [event.address.toHexString()])
 
-    let _idString = event.params.owner.toHexString()+ "-" + event.params.txIndex.toString()
+    let _idString = getLogId(event)
     const history = ExecuteTransactionHistory.load(_idString) || new ExecuteTransactionHistory(_idString)
     if (history) {
         history.owner = event.params.owner

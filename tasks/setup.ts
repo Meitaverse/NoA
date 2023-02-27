@@ -22,6 +22,7 @@ import {
   const VOUCHER_AMOUNT_LIMIT = 100;  
 
   // yarn setup-mumbai
+  // yarn hardhat --network local setup
 
   task('setup', 'setup grant roles and setings').setAction(async ({}, hre) => {
         const ethers = hre.ethers;
@@ -148,5 +149,8 @@ import {
 
         // Admins can register extensions or set token uri
         await waitForTx( voucher.connect(deployer).approveAdmin(governance.address) );
+
+       let admins = await voucher.getAdmins();
+       console.log('\n\t-- admins: ', admins);
 
    });

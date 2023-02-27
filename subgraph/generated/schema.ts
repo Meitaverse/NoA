@@ -421,13 +421,13 @@ export class Account extends Entity {
     this.set("dnftApprovalValues", Value.fromStringArray(value));
   }
 
-  get dnftHistory(): Array<string> {
-    let value = this.get("dnftHistory");
+  get dnftHistories(): Array<string> {
+    let value = this.get("dnftHistories");
     return value!.toStringArray();
   }
 
-  set dnftHistory(value: Array<string>) {
-    this.set("dnftHistory", Value.fromStringArray(value));
+  set dnftHistories(value: Array<string>) {
+    this.set("dnftHistories", Value.fromStringArray(value));
   }
 
   get currencyEarnestFunds(): Array<string> {
@@ -1009,6 +1009,15 @@ export class SBTAccountApproval extends Entity {
 
   set spender(value: string) {
     this.set("spender", Value.fromString(value));
+  }
+
+  get timestamp(): BigInt {
+    let value = this.get("timestamp");
+    return value!.toBigInt();
+  }
+
+  set timestamp(value: BigInt) {
+    this.set("timestamp", Value.fromBigInt(value));
   }
 }
 
@@ -2554,13 +2563,13 @@ export class VoucherRecord extends Entity {
     this.set("amounts", Value.fromBigIntArray(value));
   }
 
-  get generateTimestamp(): BigInt {
-    let value = this.get("generateTimestamp");
+  get generatedTimestamp(): BigInt {
+    let value = this.get("generatedTimestamp");
     return value!.toBigInt();
   }
 
-  set generateTimestamp(value: BigInt) {
-    this.set("generateTimestamp", Value.fromBigInt(value));
+  set generatedTimestamp(value: BigInt) {
+    this.set("generatedTimestamp", Value.fromBigInt(value));
   }
 }
 
@@ -3810,47 +3819,6 @@ export class ModuleGlobalsGovernanceSetHistory extends Entity {
   }
 }
 
-export class PublishRoyalty extends Entity {
-  constructor(id: string) {
-    super();
-    this.set("id", Value.fromString(id));
-  }
-
-  save(): void {
-    let id = this.get("id");
-    assert(id != null, "Cannot save PublishRoyalty entity without an ID");
-    if (id) {
-      assert(
-        id.kind == ValueKind.STRING,
-        `Entities of type PublishRoyalty must have an ID of type String but the id '${id.displayData()}' is of type ${id.displayKind()}`
-      );
-      store.set("PublishRoyalty", id.toString(), this);
-    }
-  }
-
-  static load(id: string): PublishRoyalty | null {
-    return changetype<PublishRoyalty | null>(store.get("PublishRoyalty", id));
-  }
-
-  get id(): string {
-    let value = this.get("id");
-    return value!.toString();
-  }
-
-  set id(value: string) {
-    this.set("id", Value.fromString(value));
-  }
-
-  get publishRoyalty(): BigInt {
-    let value = this.get("publishRoyalty");
-    return value!.toBigInt();
-  }
-
-  set publishRoyalty(value: BigInt) {
-    this.set("publishRoyalty", Value.fromBigInt(value));
-  }
-}
-
 export class TreasuryFeeRecord extends Entity {
   constructor(id: string) {
     super();
@@ -4216,6 +4184,15 @@ export class BuySBTByEthHistory extends Entity {
     this.set("exchangeWallet", Value.fromBytes(value));
   }
 
+  get etherValue(): BigInt {
+    let value = this.get("etherValue");
+    return value!.toBigInt();
+  }
+
+  set etherValue(value: BigInt) {
+    this.set("etherValue", Value.fromBigInt(value));
+  }
+
   get sbtValue(): BigInt {
     let value = this.get("sbtValue");
     return value!.toBigInt();
@@ -4286,70 +4263,6 @@ export class BuySBTByERC20History extends Entity {
     this.set("exchangeWallet", Value.fromBytes(value));
   }
 
-  get sbtValue(): BigInt {
-    let value = this.get("sbtValue");
-    return value!.toBigInt();
-  }
-
-  set sbtValue(value: BigInt) {
-    this.set("sbtValue", Value.fromBigInt(value));
-  }
-
-  get timestamp(): BigInt {
-    let value = this.get("timestamp");
-    return value!.toBigInt();
-  }
-
-  set timestamp(value: BigInt) {
-    this.set("timestamp", Value.fromBigInt(value));
-  }
-}
-
-export class ExchangeERC20BySBTHistory extends Entity {
-  constructor(id: string) {
-    super();
-    this.set("id", Value.fromString(id));
-  }
-
-  save(): void {
-    let id = this.get("id");
-    assert(
-      id != null,
-      "Cannot save ExchangeERC20BySBTHistory entity without an ID"
-    );
-    if (id) {
-      assert(
-        id.kind == ValueKind.STRING,
-        `Entities of type ExchangeERC20BySBTHistory must have an ID of type String but the id '${id.displayData()}' is of type ${id.displayKind()}`
-      );
-      store.set("ExchangeERC20BySBTHistory", id.toString(), this);
-    }
-  }
-
-  static load(id: string): ExchangeERC20BySBTHistory | null {
-    return changetype<ExchangeERC20BySBTHistory | null>(
-      store.get("ExchangeERC20BySBTHistory", id)
-    );
-  }
-
-  get id(): string {
-    let value = this.get("id");
-    return value!.toString();
-  }
-
-  set id(value: string) {
-    this.set("id", Value.fromString(value));
-  }
-
-  get account(): string {
-    let value = this.get("account");
-    return value!.toString();
-  }
-
-  set account(value: string) {
-    this.set("account", Value.fromString(value));
-  }
-
   get currency(): Bytes {
     let value = this.get("currency");
     return value!.toBytes();
@@ -4368,13 +4281,13 @@ export class ExchangeERC20BySBTHistory extends Entity {
     this.set("amount", Value.fromBigInt(value));
   }
 
-  get sbtAmount(): BigInt {
-    let value = this.get("sbtAmount");
+  get sbtValue(): BigInt {
+    let value = this.get("sbtValue");
     return value!.toBigInt();
   }
 
-  set sbtAmount(value: BigInt) {
-    this.set("sbtAmount", Value.fromBigInt(value));
+  set sbtValue(value: BigInt) {
+    this.set("sbtValue", Value.fromBigInt(value));
   }
 
   get timestamp(): BigInt {
@@ -4461,6 +4374,88 @@ export class ExchangePrice extends Entity {
 
   set currencyAmount(value: BigInt) {
     this.set("currencyAmount", Value.fromBigInt(value));
+  }
+
+  get sbtAmount(): BigInt {
+    let value = this.get("sbtAmount");
+    return value!.toBigInt();
+  }
+
+  set sbtAmount(value: BigInt) {
+    this.set("sbtAmount", Value.fromBigInt(value));
+  }
+
+  get timestamp(): BigInt {
+    let value = this.get("timestamp");
+    return value!.toBigInt();
+  }
+
+  set timestamp(value: BigInt) {
+    this.set("timestamp", Value.fromBigInt(value));
+  }
+}
+
+export class ExchangeERC20BySBTHistory extends Entity {
+  constructor(id: string) {
+    super();
+    this.set("id", Value.fromString(id));
+  }
+
+  save(): void {
+    let id = this.get("id");
+    assert(
+      id != null,
+      "Cannot save ExchangeERC20BySBTHistory entity without an ID"
+    );
+    if (id) {
+      assert(
+        id.kind == ValueKind.STRING,
+        `Entities of type ExchangeERC20BySBTHistory must have an ID of type String but the id '${id.displayData()}' is of type ${id.displayKind()}`
+      );
+      store.set("ExchangeERC20BySBTHistory", id.toString(), this);
+    }
+  }
+
+  static load(id: string): ExchangeERC20BySBTHistory | null {
+    return changetype<ExchangeERC20BySBTHistory | null>(
+      store.get("ExchangeERC20BySBTHistory", id)
+    );
+  }
+
+  get id(): string {
+    let value = this.get("id");
+    return value!.toString();
+  }
+
+  set id(value: string) {
+    this.set("id", Value.fromString(value));
+  }
+
+  get account(): string {
+    let value = this.get("account");
+    return value!.toString();
+  }
+
+  set account(value: string) {
+    this.set("account", Value.fromString(value));
+  }
+
+  get currency(): Bytes {
+    let value = this.get("currency");
+    return value!.toBytes();
+  }
+
+  set currency(value: Bytes) {
+    this.set("currency", Value.fromBytes(value));
+  }
+
+  get amount(): BigInt {
+    let value = this.get("amount");
+    return value!.toBigInt();
+  }
+
+  set amount(value: BigInt) {
+    this.set("amount", Value.fromBigInt(value));
   }
 
   get sbtAmount(): BigInt {
@@ -4658,21 +4653,13 @@ export class MarketPlaceERC3525ReceivedHistory extends Entity {
     this.set("value", Value.fromBigInt(value));
   }
 
-  get data(): Bytes | null {
+  get data(): Bytes {
     let value = this.get("data");
-    if (!value || value.kind == ValueKind.NULL) {
-      return null;
-    } else {
-      return value.toBytes();
-    }
+    return value!.toBytes();
   }
 
-  set data(value: Bytes | null) {
-    if (!value) {
-      this.unset("data");
-    } else {
-      this.set("data", Value.fromBytes(<Bytes>value));
-    }
+  set data(value: Bytes) {
+    this.set("data", Value.fromBytes(value));
   }
 
   get gas(): BigInt {

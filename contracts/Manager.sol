@@ -245,14 +245,12 @@ contract Manager is
 
         _validateSameHub(publication.hubId, publication.projectId);
 
-        if (publication.amount == 0) revert Errors.InvalidParameter();
-
         if (_hubIdBySoulBoundTokenId[publication.soulBoundTokenId] != publication.hubId && 
                 publication.fromTokenIds.length == 0)  {
             revert Errors.InsufficientDerivativeNFT();
         }
 
-        if (_derivativeNFTByProjectId[publication.projectId] == address(0)) 
+        if (_derivativeNFTByProjectId[publication.projectId] == address(0) || publication.amount == 0) 
             revert Errors.InvalidParameter();
 
         //valid publication's name is exists?

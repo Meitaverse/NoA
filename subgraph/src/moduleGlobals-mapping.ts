@@ -200,7 +200,7 @@ export function handleModuleGlobalsGovernanceSet(event: ModuleGlobalsGovernanceS
 export function handleCollectModuleWhitelisted(event: CollectModuleWhitelisted): void {
     log.info("handleCollectModuleWhitelisted, event.address: {}", [event.address.toHexString()])
 
-    let _idString = getLogId(event)
+    let _idString = event.params.collectModule.toHex()
     const record = CollectModuleWhitelistedRecord.load(_idString) || new CollectModuleWhitelistedRecord(_idString)
 
     if (record) {
@@ -214,7 +214,7 @@ export function handleCollectModuleWhitelisted(event: CollectModuleWhitelisted):
 export function handlePublishModuleWhitelisted(event: PublishModuleWhitelisted): void {
     log.info("handlePublishModuleWhitelisted, event.address: {}", [event.address.toHexString()])
 
-    let _idString = getLogId(event)
+    let _idString = event.params.publishModule.toHex()
     const record = PublishModuleWhitelistedRecord.load(_idString) || new PublishModuleWhitelistedRecord(_idString)
 
     if (record) {

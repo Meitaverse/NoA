@@ -222,6 +222,7 @@ export function handleApprovalForAll(event: ApprovalForAll): void {
       let sbtAccountApproval = new SBTAccountApproval(id);
       sbtAccountApproval.owner = loadOrCreateAccount(event.params._owner).id;
       sbtAccountApproval.spender = loadOrCreateAccount(event.params._operator).id;
+      sbtAccountApproval.timestamp = event.block.timestamp;
       sbtAccountApproval.save();
     } else {
       store.remove("SBTAccountApproval", id);
