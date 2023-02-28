@@ -157,7 +157,7 @@ library PublishLogic {
         
         ICollectModule(collectModule).initializePublicationCollectModule(
                 publishId,
-                ownershipSoulBoundTokenId,
+                // ownershipSoulBoundTokenId,
                 newTokenId,
                 currency,
                 amount,

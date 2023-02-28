@@ -76,7 +76,7 @@ contract MultirecipientFeeCollectModule is BaseFeeCollectModule {
      */
     function initializePublicationCollectModule(
         uint256 publishId,
-        uint256 ownershipSoulBoundTokenId,
+        // uint256 ownershipSoulBoundTokenId,
         uint256 tokenId,
         address currency,
         uint256 amount,
@@ -90,7 +90,7 @@ contract MultirecipientFeeCollectModule is BaseFeeCollectModule {
         tokenId;
 
         BaseFeeCollectModuleInitData memory baseInitData = BaseFeeCollectModuleInitData({
-            ownershipSoulBoundTokenId: ownershipSoulBoundTokenId,
+            // ownershipSoulBoundTokenId: ownershipSoulBoundTokenId,
             projectId: initData.projectId,
             publishId: publishId,
             salePrice: initData.salePrice, 
@@ -102,7 +102,7 @@ contract MultirecipientFeeCollectModule is BaseFeeCollectModule {
         // Zero amount for collect doesn't make sense here (in a module with 5 royaltyPoints)
         // For this better use FreeCollect module instead
         if (baseInitData.amount == 0) revert Errors.InitParamsInvalid();
-        if (ownershipSoulBoundTokenId == 0) revert Errors.InitParamsInvalid();
+        // if (ownershipSoulBoundTokenId == 0) revert Errors.InitParamsInvalid();
         _validateAndStoreRoyaltyPoints(initData.royaltyPoints, baseInitData.projectId);
         _storeBasePublicationCollectParameters(baseInitData.projectId, baseInitData);
     }
@@ -254,9 +254,9 @@ contract MultirecipientFeeCollectModule is BaseFeeCollectModule {
         uint16[MAX_RECIPIENTS] calldata newRoyaltyPoints
     ) external {
         BaseProfilePublicationData memory baseData = getBasePublicationData(projectId);
-        if (IERC3525(_sbt()).ownerOf(baseData.ownershipSoulBoundTokenId) == msg.sender ) {
-            revert Errors.Unauthorized();
-        }
+        // if (IERC3525(_sbt()).ownerOf(baseData.ownershipSoulBoundTokenId) == msg.sender ) {
+        //     revert Errors.Unauthorized();
+        // }
 
         uint16[] storage royaltyPoints = _royaltyPointsByPublicationByProfile[projectId];
 

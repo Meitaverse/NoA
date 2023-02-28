@@ -16,7 +16,7 @@ import { waitForTx, findEvent} from './helpers/utils';
 
 export let runtimeHRE: HardhatRuntimeEnvironment;
 
-// yarn hardhat --network local deposit-voucher --sbtid 2 --voucherid 10
+// yarn hardhat --network local deposit-voucher --sbtid 2 --voucherid 1
 
 task("deposit-voucher", "deposit-voucher function")
 .addParam("sbtid", "account id to collect ,from 2 to 4")

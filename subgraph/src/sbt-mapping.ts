@@ -29,7 +29,12 @@ import { loadOrCreateSoulBoundToken } from "./shared/soulBoundToken";
 import { getLogId } from "./shared/ids";
 
 export function handleProfileCreated(event: ProfileCreated): void {
-    log.info("handleProfileCreated, event.address: {}", [event.address.toHexString()])
+    log.info("handleProfileCreated, event.address: {}, soulBoundTokenId:{}, wallet: {},nickName: {} ", [
+        event.address.toHexString(),
+        event.params.soulBoundTokenId.toString(),
+        event.params.wallet.toHexString(),
+        event.params.nickName,
+    ])
 
     const profile = loadOrCreateProfile(event.params.wallet);
     if (profile) {
@@ -117,9 +122,15 @@ export function handleSBTTransferValue(event: TransferValue): void {
     let to = Address.zero()
 
     if (!event.params._fromTokenId.isZero()) {
+        //
         const sbtFrom = loadOrCreateSoulBoundToken(event.params._fromTokenId)
         if (sbtFrom) { 
             from = Address.fromBytes(sbtFrom.wallet) 
+            log.info("loadOrCreateSoulBoundToken, from: {} ", [
+                from.toHexString()
+            ])
+
+            
             const sbtAsset_from = loadOrCreateSBTAsset(from)
             const result2 = sbt.try_balanceOf1(event.params._fromTokenId)
             if (!result2.reverted) {
@@ -135,6 +146,9 @@ export function handleSBTTransferValue(event: TransferValue): void {
         const sbtTo = loadOrCreateSoulBoundToken(event.params._toTokenId)
         if (sbtTo) {
             to = Address.fromBytes(sbtTo.wallet) 
+            log.info("loadOrCreateSoulBoundToken, to: {} ", [
+                to.toHexString()
+            ])
             const sbtAsset_to = loadOrCreateSBTAsset(to)
                 
             const result2 = sbt.try_balanceOf1(event.params._toTokenId)

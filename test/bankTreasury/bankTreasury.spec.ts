@@ -288,12 +288,6 @@ makeSuiteCleanRoom('Bank Treasury', function () {
         
         it('User should deposited after user call tranferFrom to treasury', async function () {
 
-          // let totalSupply:BigNumber = await sbtContract['balanceOf(uint256)'](FIRST_PROFILE_ID);
-         
-          // let balance = INITIAL_SUPPLY.mul(BigNumber.from('10').pow(18)).sub(original_balance);
-
-          // expect(totalSupply).to.deep.equal(balance);
-
 
           await bankTreasuryContract.connect(user).deposit(
             SECOND_PROFILE_ID,

@@ -15,15 +15,15 @@ interface ICollectModule {
      * @notice Initializes data for a given publication being published. This can only be called by the manager.
      *
      * @param publishId The owner of token ID of the SoulBoundToken publishing the publication.
-     * @param ownershipSoulBoundTokenId The owner of token ID of the SoulBoundToken publishing the publication.
      * @param tokenId The associated publication's dNFT publication token ID.
      * @param amount amount of the associated publication's dNFT publication .
      * @param data Arbitrary data __passed from the user!__ to be decoded.
      *
      */
+    //  * @param ownershipSoulBoundTokenId The owner of token ID of the SoulBoundToken publishing the publication.
     function initializePublicationCollectModule(
         uint256 publishId,
-        uint256 ownershipSoulBoundTokenId,
+        // uint256 ownershipSoulBoundTokenId,
         uint256 tokenId,
         address currency,
         uint256 amount,

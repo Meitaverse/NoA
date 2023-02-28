@@ -63,6 +63,8 @@ contract NFTDerivativeProtocolTokenV1 is
         string imageURI
     );
 
+    uint256 private treasury_SBT_ID;
+
     //===== Modifiers =====//
 
     /**
@@ -106,36 +108,58 @@ contract NFTDerivativeProtocolTokenV1 is
 
     }
 
-    function setBankTreasury(address bankTreasury, uint256 initialSupply) 
+    function setBankTreasury(address bankTreasury, uint256 amount) 
         external  
     {
-        if (!hasRole(DEFAULT_ADMIN_ROLE, _msgSender())) revert Errors.Unauthorized();
+        if (!hasRole(DEFAULT_ADMIN_ROLE, _msgSender())) 
+            revert Errors.Unauthorized();
         
-        if (bankTreasury == address(0)) revert Errors.InvalidParameter();
-        if (initialSupply == 0) revert Errors.InvalidParameter();
-        if (_banktreasury != address(0)) revert Errors.InitialIsAlreadyDone();
-        _banktreasury = bankTreasury;
+        if (bankTreasury == address(0)) 
+            revert Errors.InvalidParameter();
         
-        total_supply += initialSupply * 1e18;
-        if (total_supply > MAX_SUPPLY) revert Errors.MaxSupplyExceeded();
+        if (amount == 0) 
+            revert Errors.InvalidParameter();
+        
+        if (_banktreasury == address(0)) {
+            _banktreasury = bankTreasury;
+        }
+        
+        total_supply += amount * 1e18;
 
-        //create profile for bankTreasury, tokenId is 1, not vote power
-        uint256 tokenId_ = ERC3525Upgradeable._mint(_banktreasury, 1, initialSupply * 1e18);
+        if (total_supply > MAX_SUPPLY) 
+            revert Errors.MaxSupplyExceeded();
         
-        SBTLogic.createProfile(
-            tokenId_,   
-            "Bank Treasury",
-            "",
-            _sbtDetails
-        );
+        uint256  slot = 1;
 
-        emit ProfileCreated(
-            tokenId_,
-            _msgSender(),
-            _banktreasury,    
-            "Bank Treasury",
-            ""
-        );
+        if (treasury_SBT_ID == 0) {
+            //create profile for bankTreasury, slot is 1, not vote power
+            treasury_SBT_ID = 1;
+
+            SBTLogic.createProfile(
+                treasury_SBT_ID,   
+                "Bank Treasury",
+                "",
+                _sbtDetails
+            );
+
+            emit ProfileCreated(
+                treasury_SBT_ID,
+                _msgSender(),
+                _banktreasury,    
+                "Bank Treasury",
+                ""
+            );
+            
+            uint256 _sbtId = ERC3525Upgradeable._mint(_banktreasury, slot, amount * 1e18);
+            
+            if (_sbtId != treasury_SBT_ID) revert Errors.SetBankTreasuryError();
+        
+            
+
+        } else {
+            //emit TransferValue
+            ERC3525Upgradeable._mintValue(treasury_SBT_ID, amount * 1e18);
+        }
     }
     
     function version() external pure returns(uint256) {

@@ -67,7 +67,6 @@ contract Manager is
         //default Paused
         _setState(DataTypes.ProtocolState.Paused);
         _owner = msg.sender;
-        // name = "Manager";
         if (governance == address(0)) revert Errors.InitParamsInvalid();
          _setGovernance(governance);
     }
@@ -263,7 +262,7 @@ contract Manager is
         uint256 publishId = _generateNextPublishId();
         if (publication.fromTokenIds.length == 0){
             previousPublishId = 0;
-            //save genesisPublishId for this projectId 
+            //save genesis publishId for this projectId 
             _genesisPublishIdByProjectId[publication.projectId] = publishId;
 
         } else{

@@ -120,8 +120,8 @@ export const  RECEIVER_MAGIC_VALUE = '0x009ce20b';
 export const MARKET_MAX_DURATION = 86400000; //1000 days in seconds
 export const LOCKUP_DURATION = 86400; //24h in seconds
 
-export const INITIAL_SUPPLY:BigNumber = BigNumber.from(1000000000);  //SBT初始发行总量, 1000000000 * 1e18
-export const VOUCHER_AMOUNT_LIMIT = 100;  //用户用SBT兑换Voucher的最低数量 
+export const INITIAL_SUPPLY:BigNumber = BigNumber.from(10000000000);  //SBT total supply, 10000000000 * 1e18
+export const VOUCHER_AMOUNT_LIMIT = 100;  
 
 export const DEFAULT_COLLECT_PRICE = 10;
 export const DEFAULT_TEMPLATE_NUMBER = 1;

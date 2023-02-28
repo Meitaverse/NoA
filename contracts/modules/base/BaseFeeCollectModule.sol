@@ -99,7 +99,7 @@ abstract contract BaseFeeCollectModule is
         BaseFeeCollectModuleInitData memory baseInitData
     ) internal virtual {
         //store to BaseProfilePublicationData
-        _dataByPublicationByProfile[projectId].ownershipSoulBoundTokenId = baseInitData.ownershipSoulBoundTokenId;
+        // _dataByPublicationByProfile[projectId].ownershipSoulBoundTokenId = baseInitData.ownershipSoulBoundTokenId;
         _dataByPublicationByProfile[projectId].projectId = projectId;
         _dataByPublicationByProfile[projectId].publishId = baseInitData.publishId;
         _dataByPublicationByProfile[projectId].amount = baseInitData.amount;

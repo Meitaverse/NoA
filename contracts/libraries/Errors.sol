@@ -112,8 +112,9 @@ library Errors {
   error InitParamsInvalid();
   error ModuleDataMismatch();
   error TokenDoesNotExist();
-  error InitialIsAlreadyDone();
+  error SetBankTreasuryError();
 
+  
   // MultiState Errors
   error Paused();
   error PublishingPaused();

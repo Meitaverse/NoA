@@ -37,7 +37,7 @@ struct ProfilePublicationData {
     uint256 amount;                        
     uint256 salePrice;                     
     uint256 royaltyBasisPoints;           
-    uint256 ownershipSoulBoundTokenId; 
+    // uint256 ownershipSoulBoundTokenId; 
     uint16 genesisFee;                     
     uint16 previousFee;              
 }
@@ -66,7 +66,7 @@ contract FeeCollectModule is ReentrancyGuard, FeeModuleBase, ModuleBase, ICollec
 
     function initializePublicationCollectModule(
         uint256 publishId,
-        uint256 ownershipSoulBoundTokenId,
+        // uint256 ownershipSoulBoundTokenId,
         uint256 tokenId,
         address currency,
         uint256 amount,
@@ -81,7 +81,7 @@ contract FeeCollectModule is ReentrancyGuard, FeeModuleBase, ModuleBase, ICollec
             revert Errors.CurrencyNotInWhitelisted(currency);
 
         if ( publishId == 0 || 
-            ownershipSoulBoundTokenId == 0 || 
+            // ownershipSoulBoundTokenId == 0 || 
             genesisFee > BASIS_POINTS - 1000 || 
             amount == 0
         )
@@ -98,7 +98,7 @@ contract FeeCollectModule is ReentrancyGuard, FeeModuleBase, ModuleBase, ICollec
             _dataByPublicationByProfile[publishId].amount = amount;
             _dataByPublicationByProfile[publishId].salePrice = salePrice;
             _dataByPublicationByProfile[publishId].royaltyBasisPoints = royaltyBasisPoints;
-            _dataByPublicationByProfile[publishId].ownershipSoulBoundTokenId = ownershipSoulBoundTokenId;
+            // _dataByPublicationByProfile[publishId].ownershipSoulBoundTokenId = ownershipSoulBoundTokenId;
             _dataByPublicationByProfile[publishId].genesisSoulBoundTokenId = genesisSoulBoundTokenId;
             _dataByPublicationByProfile[publishId].previousSoulBoundTokenId = previousPublishData.publication.soulBoundTokenId;
             _dataByPublicationByProfile[publishId].genesisFee = genesisFee;

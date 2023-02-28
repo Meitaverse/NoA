@@ -18,7 +18,6 @@ import {
   
   
   const FIRST_PROFILE_ID = 1; 
-  const INITIAL_SUPPLY =  1000000;
   const VOUCHER_AMOUNT_LIMIT = 100;  
 
   // yarn setup-mumbai

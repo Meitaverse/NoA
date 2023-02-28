@@ -46,11 +46,12 @@ import { ManagerLibraryAddresses } from '../typechain/factories/contracts/Manage
 import { DataTypes } from '../typechain/contracts/modules/template/Template';
 import { MarketPlaceLibraryAddresses } from '../typechain/factories/contracts/MarketPlace__factory';
 import { NFTDerivativeProtocolTokenV1LibraryAddresses } from '../typechain/factories/contracts/NFTDerivativeProtocolTokenV1__factory';
+import { BigNumber } from 'ethers';
   
   const TREASURY_FEE_BPS = 500;
   const RECEIVER_MAGIC_VALUE = '0x009ce20b';
   const FIRST_PROFILE_ID = 1; 
-  const INITIAL_SUPPLY =  100000000;
+  const INITIAL_SUPPLY:BigNumber = BigNumber.from(100000000);  //SBT ininital supply, 100000000 * 1e18
   const VOUCHER_AMOUNT_LIMIT = 100;  
   const SBT_NAME = 'Bitsoul Protocol';
   const SBT_SYMBOL = 'SOUL';
