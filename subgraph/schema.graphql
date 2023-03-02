@@ -8,6 +8,41 @@ type ProtocolContract @entity {
   contract: Bytes!
 }
 
+#  Voucher Asset
+type VoucherAsset @entity {
+  "OwnerAddress-TokenId"
+  id: ID!
+
+  "Wallet"
+  wallet: Bytes!
+
+  "Token Id"
+  tokenId: BigInt!
+ 
+  "Value"
+  value: BigInt!
+
+  "Link to URI"
+  uri: VoucherURI! 
+ 
+  "The date/time the event emit in seconds since Unix epoch"
+  timestamp: BigInt!
+}
+
+#  Voucher URI
+type VoucherURI @entity {
+  "TokenId"
+  id: ID!
+
+  "Token Id"
+  tokenId: BigInt
+ 
+  "URI"
+  uri: String
+
+  voucherAsset: VoucherAsset!
+}
+
 # Currency Whitelist
 type CurrencyWhitelist @entity {
   "CurrencyAddress-Name"
@@ -625,36 +660,6 @@ type ExecuteTransactionERC3525History @entity {
 
   "The date/time the event emit in seconds since Unix epoch"
   timestamp: BigInt!
-}
-
-#  Voucher Asset
-type VoucherAsset @entity {
-  "OwnerAddress-TokenId"
-  id: ID!
-
-  "Wallet"
-  wallet: Bytes!
-
-  "Token Id"
-  tokenId: BigInt!
- 
-  "Value"
-  value: BigInt!
- 
-  "The date/time the event emit in seconds since Unix epoch"
-  timestamp: BigInt!
-}
-
-#  Voucher URI
-type VoucherURI @entity {
-  "TokenId"
-  id: ID!
-
-  "Token Id"
-  tokenId: BigInt!
- 
-  "URI"
-  uri: String!
 }
 
 type VoucherRecord @entity {
