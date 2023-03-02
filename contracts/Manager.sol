@@ -92,9 +92,8 @@ contract Manager is
         _validateNickName(vars.nickName);
 
         uint256 soulBoundTokenId = INFTDerivativeProtocolTokenV1(_sbt).createProfile(
-            msg.sender, 
             _voucher,
-            vars
+            vars 
         );
 
         _soulBoundTokenIdToWallet[soulBoundTokenId] = vars.wallet;

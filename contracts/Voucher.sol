@@ -7,13 +7,12 @@ pragma solidity ^0.8.0;
 import "@openzeppelin/contracts-upgradeable/token/ERC1155/ERC1155Upgradeable.sol";
 import "@manifoldxyz/libraries-solidity/contracts/access/AdminControlUpgradeable.sol";
 import "@solvprotocol/erc-3525/contracts/IERC3525.sol";
-import "./creatorCore/ERC1155CreatorCore.sol";
 import "@solvprotocol/erc-3525/contracts/ERC3525Upgradeable.sol";
-// import "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol";
 
+// import "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol";
+import "./creatorCore/ERC1155CreatorCore.sol";
 import './libraries/Constants.sol';
 import {Errors} from "./libraries/Errors.sol";
-import {INFTDerivativeProtocolTokenV1} from "./interfaces/INFTDerivativeProtocolTokenV1.sol";
 
 /**
  * @dev ERC1155Creator implementation (using transparent upgradeable proxy)
@@ -54,18 +53,27 @@ contract Voucher is
         uint256[] tokenIds
     );
 
+    /**
+     * @dev Emitted when a tokenUri is set
+     *
+     * @param tokenId The token id of voucher
+     * @param uri The uri
+     */
+    event TokenURISet(
+        uint256 indexed tokenId,
+        string indexed uri
+    );
+
     mapping(uint256 => uint256) private _totalSupply;
     uint256 private _userAmountLimit;
 
     address immutable internal sbt;
     address immutable internal treasury;
 
-
     modifier onlySBTUser(uint256 soulBoundTokenId_) {
         _validateCallerIsSoulBoundTokenOwner(soulBoundTokenId_);
         _;
     }
-
 
     /// @custom:oz-upgrades-unsafe-allow constructor
     constructor(
@@ -74,7 +82,8 @@ contract Voucher is
     ) {
         sbt = _sbt;
         treasury = _treasury;
-    }    
+    }  
+
     /**
      * Initializer
      */
@@ -261,18 +270,10 @@ contract Voucher is
             totalAmount
         );
 
-        uint256[] memory tokenIds = _mintNew(address(0), to, amounts, uris);
+        uint256[] memory tokenIds = _mintNew(soulBoundTokenId, totalAmount, address(0), to, amounts, uris);
         
         setApprovalForAll(treasury, true);
         
-        emit GenerateVoucher(
-             soulBoundTokenId,
-             totalAmount,
-             to,
-             amounts,
-             uris,
-             tokenIds 
-        );
         return tokenIds; 
     }
 
@@ -308,22 +309,14 @@ contract Voucher is
             totalAmount
         );
 
-        tokenIds = _mintNew(msg.sender, to, amounts, uris);
+        tokenIds = _mintNew(soulBoundTokenId, totalAmount, msg.sender, to, amounts, uris);
 
-        emit GenerateVoucher(
-             soulBoundTokenId,
-             totalAmount,
-             to,
-             amounts,
-             uris,
-             tokenIds 
-        );
     }
 
     /**
      * @dev Mint new tokens
      */
-    function _mintNew(address extension, address[] memory to, uint256[] memory amounts, string[] memory uris) internal returns(uint256[] memory tokenIds) {
+    function _mintNew(uint256 soulBoundTokenId, uint256 totalAmount, address extension, address[] memory to, uint256[] memory amounts, string[] memory uris) internal returns(uint256[] memory tokenIds) {
         if (to.length > 1) {
             // Multiple receiver.  Give every receiver the same new token
             tokenIds = new uint256[](1);
@@ -376,8 +369,16 @@ contract Voucher is
             }
             unchecked { ++i; }
         }
+         
+        emit GenerateVoucher(
+             soulBoundTokenId,
+             totalAmount,
+             to,
+             amounts,
+             uris,
+             tokenIds 
+        );
     }
-
 
     /**
      * @dev See {IERC1155CreatorCore-tokenExtension}.
@@ -508,7 +509,14 @@ contract Voucher is
             unchecked { ++i; }
         }
     }
+    /**
+     * @dev Set token uri for a token with no extension
+     */
+    function _setTokenURI(uint256 tokenId, string calldata uri_) internal virtual override{
+       super._setTokenURI(tokenId, uri_);
 
+       emit TokenURISet(tokenId, uri_);
+    }
     /**
      * @dev See {ICreatorCore-setApproveTransfer}.
      */

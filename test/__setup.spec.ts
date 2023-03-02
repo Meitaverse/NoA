@@ -64,7 +64,6 @@ import {
   SBTMetadataDescriptor__factory,
   Currency,
   Currency__factory,
-  SBTLogic__factory,
   RoyaltyRegistry,
   RoyaltyRegistry__factory,
   MockERC1155CreatorExtensionOverride,
@@ -85,7 +84,6 @@ import {
 
 import { DataTypes } from '../typechain/contracts/modules/template/Template';
 import { MarketPlaceLibraryAddresses } from '../typechain/factories/contracts/MarketPlace__factory';
-import { NFTDerivativeProtocolTokenV1LibraryAddresses } from '../typechain/factories/contracts/NFTDerivativeProtocolTokenV1__factory';
 
 use(solidity);
 
@@ -182,7 +180,6 @@ export let feeCollectModule: FeeCollectModule;
 // MultiRoyalties
 export let multirecipientFeeCollectModule: MultirecipientFeeCollectModule;
 
-export let sbtLibs: NFTDerivativeProtocolTokenV1LibraryAddresses;
 
 //Template
 export let template: Template;
@@ -302,11 +299,8 @@ before(async function () {
     manager.address
   );
 
-  const sbtLogic = await new SBTLogic__factory(deployer).deploy();
-  sbtLibs = {
-    'contracts/libraries/SBTLogic.sol:SBTLogic': sbtLogic.address,
-  };
-  sbtImpl = await new NFTDerivativeProtocolTokenV1__factory(sbtLibs, deployer).deploy();
+
+  sbtImpl = await new NFTDerivativeProtocolTokenV1__factory(deployer).deploy();
   let initializeSBTData = sbtImpl.interface.encodeFunctionData("initialize", [
       SBT_NAME, 
       SBT_SYMBOL, 
@@ -318,7 +312,7 @@ before(async function () {
     sbtImpl.address,
     initializeSBTData
   );
-  sbtContract = new NFTDerivativeProtocolTokenV1__factory(sbtLibs, deployer).attach(sbtProxy.address);
+  sbtContract = new NFTDerivativeProtocolTokenV1__factory(deployer).attach(sbtProxy.address);
   console.log("sbtContract.address: ", sbtContract.address);
 
 
@@ -533,6 +527,7 @@ before(async function () {
     bankTreasuryContract.address, 
     INITIAL_SUPPLY
   )).to.not.be.reverted;
+  console.log('sbtContract setBankTreasury ok ');
   
   const transferValueRole = await sbtContract.TRANSFER_VALUE_ROLE();
 

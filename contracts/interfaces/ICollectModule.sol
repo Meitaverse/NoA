@@ -20,10 +20,8 @@ interface ICollectModule {
      * @param data Arbitrary data __passed from the user!__ to be decoded.
      *
      */
-    //  * @param ownershipSoulBoundTokenId The owner of token ID of the SoulBoundToken publishing the publication.
     function initializePublicationCollectModule(
         uint256 publishId,
-        // uint256 ownershipSoulBoundTokenId,
         uint256 tokenId,
         address currency,
         uint256 amount,

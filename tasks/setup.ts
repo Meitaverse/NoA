@@ -147,9 +147,14 @@ import {
         */
 
         // Admins can register extensions or set token uri
-        await waitForTx( voucher.connect(deployer).approveAdmin(governance.address) );
+        // await waitForTx( voucher.connect(deployer).approveAdmin(governance.address) );
+        
+        let admins = await voucher.getAdmins();
+        console.log('\n\t-- admins: ', admins);
 
-       let admins = await voucher.getAdmins();
-       console.log('\n\t-- admins: ', admins);
+        await waitForTx( voucher.connect(governance)['setTokenURI(uint256,string)'](1, "https://nftstorage.link/ipfs/bafybeiej6hnolqihsh7pg22xe4gaf3dlf4qgvfzhenkuwcy67rwmma7bfq") );
+
+        let uri = await voucher.uri(1);
+        console.log('\n\t-- uri: ', uri);
 
    });

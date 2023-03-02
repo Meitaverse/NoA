@@ -18,6 +18,7 @@ import {IERC20} from '@openzeppelin/contracts/token/ERC20/IERC20.sol';
 import {SafeERC20} from '@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol';
 // import "hardhat/console.sol";
 
+
 /**
  * @notice A struct containing the necessary data to execute collect actions on a publication.
  *
@@ -37,7 +38,8 @@ struct ProfilePublicationData {
     uint256 amount;                        
     uint256 salePrice;                     
     uint256 royaltyBasisPoints;           
-    // uint256 ownershipSoulBoundTokenId; 
+    //TODO
+    uint256 collectLimitPerAddress;
     uint16 genesisFee;                     
     uint16 previousFee;              
 }
@@ -66,7 +68,6 @@ contract FeeCollectModule is ReentrancyGuard, FeeModuleBase, ModuleBase, ICollec
 
     function initializePublicationCollectModule(
         uint256 publishId,
-        // uint256 ownershipSoulBoundTokenId,
         uint256 tokenId,
         address currency,
         uint256 amount,
@@ -98,7 +99,7 @@ contract FeeCollectModule is ReentrancyGuard, FeeModuleBase, ModuleBase, ICollec
             _dataByPublicationByProfile[publishId].amount = amount;
             _dataByPublicationByProfile[publishId].salePrice = salePrice;
             _dataByPublicationByProfile[publishId].royaltyBasisPoints = royaltyBasisPoints;
-            // _dataByPublicationByProfile[publishId].ownershipSoulBoundTokenId = ownershipSoulBoundTokenId;
+            _dataByPublicationByProfile[publishId].collectLimitPerAddress = 0;
             _dataByPublicationByProfile[publishId].genesisSoulBoundTokenId = genesisSoulBoundTokenId;
             _dataByPublicationByProfile[publishId].previousSoulBoundTokenId = previousPublishData.publication.soulBoundTokenId;
             _dataByPublicationByProfile[publishId].genesisFee = genesisFee;
@@ -190,9 +191,7 @@ contract FeeCollectModule is ReentrancyGuard, FeeModuleBase, ModuleBase, ICollec
             }
         }
         
-
         unchecked {
-
             if (payValue > 0) {
                 uint256 genesisSoulBoundTokenId = _dataByPublicationByProfile[publishId].genesisSoulBoundTokenId;
                 (address treasury, uint16 treasuryFee) = _treasuryData();

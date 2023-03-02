@@ -220,6 +220,7 @@ dataSources:
       entities:
         - UserAmountLimitSet
         - GenerateVoucher
+        - TokenURISet
         - TransferBatch
         - TransferSingle
       abis:
@@ -231,6 +232,8 @@ dataSources:
         - event: GenerateVoucher(indexed uint256,indexed
             uint256,address[],uint256[],string[],uint256[])
           handler: handleGenerateVoucher
+        - event: TokenURISet(indexed uint256,indexed string)
+          handler: handleTokenURISet
         - event: TransferBatch(indexed address,indexed address,indexed
             address,uint256[],uint256[])
           handler: handleTransferBatch

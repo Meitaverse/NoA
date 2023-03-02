@@ -364,6 +364,28 @@ export class RoyaltiesUpdated__Params {
   }
 }
 
+export class TokenURISet extends ethereum.Event {
+  get params(): TokenURISet__Params {
+    return new TokenURISet__Params(this);
+  }
+}
+
+export class TokenURISet__Params {
+  _event: TokenURISet;
+
+  constructor(event: TokenURISet) {
+    this._event = event;
+  }
+
+  get tokenId(): BigInt {
+    return this._event.parameters[0].value.toBigInt();
+  }
+
+  get uri(): Bytes {
+    return this._event.parameters[1].value.toBytes();
+  }
+}
+
 export class TransferBatch extends ethereum.Event {
   get params(): TransferBatch__Params {
     return new TransferBatch__Params(this);

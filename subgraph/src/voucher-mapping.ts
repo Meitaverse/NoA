@@ -1,10 +1,11 @@
-import { log, Address, BigInt, Bytes, store, TypedMap } from "@graphprotocol/graph-ts";
+import { log, Address, BigInt, Bytes, store, TypedMap, Value } from "@graphprotocol/graph-ts";
 
 
 import {
     Voucher,
     UserAmountLimitSet,
     GenerateVoucher,
+    TokenURISet,
     TransferBatch,
     TransferSingle,
 } from "../generated/Voucher/Voucher"
@@ -12,6 +13,7 @@ import {
 import {
     UserAmountLimitSetHistory,
     VoucherRecord,
+    VoucherURI,
     VoucherAsset,
 } from "../generated/schema"
 import { loadOrCreateAccount } from "./shared/accounts";
@@ -46,29 +48,50 @@ export function handleGenerateVoucher(event: GenerateVoucher): void {
             voucherRecord.totalAmount = event.params.totalAmount
 
             let targets: Array<Bytes> = [];
-            for (let index = 0; index <  event.params.to.length; index++) {
-                targets.push(event.params.to[index])
+            for (let i = 0; i <  event.params.tokenIds.length; i++) {
+                targets.push(event.params.to[i])
+                
+                let voucherURI_id = event.params.tokenIds[i].toString()
+                const voucherURI = VoucherURI.load(voucherURI_id) || new VoucherURI(voucherURI_id)
+
+                if (voucherURI) {
+                    voucherURI.tokenId = event.params.tokenIds[i]
+                    voucherURI.uri = event.params.uris[i]
+                    voucherURI.save()
+                } 
             }
+
             voucherRecord.to  = targets
             voucherRecord.amounts = event.params.amounts
+            voucherRecord.tokenIds = event.params.tokenIds
             voucherRecord.generatedTimestamp = event.block.timestamp
+            
             voucherRecord.save()
         } 
     }
 }
 
+export function handleTokenURISet(event: TokenURISet): void {
+    log.info("handleTokenURISet, tokenId: {}, uri: {}", [
+        event.params.tokenId.toString(),
+        event.params.uri.toString(),
+    ])
+    let voucherURI_id = event.params.tokenId.toString()
+    const voucherURI = VoucherURI.load(voucherURI_id) || new VoucherURI(voucherURI_id)
+
+    if (voucherURI) {
+        voucherURI.tokenId = event.params.tokenId
+        const voucher = Voucher.bind(event.address)
+        const result = voucher.try_uri(event.params.tokenId)
+        if (!result.reverted) {
+            log.info("try_uri, result.value: {}", [result.value.toString()])
+            voucherURI.uri = result.value
+        }
+        voucherURI.save()
+    } 
+}
+
 export function handleTransferBatch(event: TransferBatch): void {
-    
-    /*
-    event TransferBatch(
-        address indexed operator,
-        address indexed from,
-        address indexed to,
-        uint256[] ids,
-        uint256[] values
-        );
-        
-        */
     
     log.info("handleTransferSingle, operator: {}, from: {}, to: {}", [
         event.params.operator.toHexString(),
@@ -147,7 +170,6 @@ export function handleTransferBatch(event: TransferBatch): void {
 
 export function handleTransferSingle(event: TransferSingle): void {
 
-    //event TransferSingle(address indexed operator, address indexed from, address indexed to, uint256 id, uint256 value);
     log.info("handleTransferSingle, operator: {}, from: {}, to: {}, id: {}, value:{}", [
         event.params.operator.toHexString(),
         event.params.from.toHexString(),
@@ -208,7 +230,6 @@ export function handleTransferSingle(event: TransferSingle): void {
             voucherAssetfrom.timestamp = event.block.timestamp
             voucherAssetfrom.save()
         } 
-        
     }
         
   

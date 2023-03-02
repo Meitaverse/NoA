@@ -6,12 +6,40 @@ import {DataTypes} from "../libraries/DataTypes.sol";
 
 interface INFTDerivativeProtocolTokenV2  { 
 
+    /**
+     * @dev Emitted when a profile is created.
+     *
+     * @param soulBoundTokenId The newly created profile's token ID.
+     * @param creator The profile creator, who created the token with the given profile ID.
+     * @param wallet The address receiving the profile with the given profile ID.
+     * @param nickName The nickName set for the profile.
+     * @param imageURI The image uri set for the profile.
+     */
+    event ProfileCreated(
+        uint256 indexed soulBoundTokenId,
+        address indexed creator,
+        address indexed wallet,
+        string nickName,
+        string imageURI
+    );
+
+    /**
+     * @dev Emitted when a profile is updated.
+     *
+     * @param soulBoundTokenId The updated profile's token ID.
+     * @param nickName The nickName set for the profile.
+     * @param imageURI The image uri set for the profile.
+     */
+    event ProfileUpdated(
+        uint256 indexed soulBoundTokenId,
+        string nickName,
+        string imageURI
+    );
 
     function version() external view returns(uint256);
 
 
     function createProfile(
-       address creator,
        address voucher,
        DataTypes.CreateProfileData calldata vars
     ) external returns(uint256);

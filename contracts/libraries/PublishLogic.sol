@@ -126,7 +126,7 @@ library PublishLogic {
             _initCollectModule(
                     publication.projectId,
                     publishId,
-                    publication.soulBoundTokenId,
+                    // publication.soulBoundTokenId,
                     newTokenId,
                     publication.currency,
                     publication.amount,
@@ -144,7 +144,7 @@ library PublishLogic {
     function _initCollectModule(
         uint256 projectId,
         uint256 publishId,
-        uint256 ownershipSoulBoundTokenId,
+        // uint256 ownershipSoulBoundTokenId,
         uint256 newTokenId,
         address currency,
         uint256 amount,
@@ -157,7 +157,6 @@ library PublishLogic {
         
         ICollectModule(collectModule).initializePublicationCollectModule(
                 publishId,
-                // ownershipSoulBoundTokenId,
                 newTokenId,
                 currency,
                 amount,

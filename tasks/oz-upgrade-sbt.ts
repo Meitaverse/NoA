@@ -3,6 +3,12 @@ import { hexlify, keccak256, RLP } from 'ethers/lib/utils';
 import { task } from 'hardhat/config';
 import { exportAddress, loadContract } from "./config";
 import { exportSubgraphNetworksJson } from "./subgraph";
+import { expect } from "chai";
+import { upgrades } from "hardhat";
+import { loadFixture } from "@nomicfoundation/hardhat-network-helpers";
+import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
+import { constants } from "ethers";
+import { parseEther } from "ethers/lib/utils";
 
 import {
     MIN_DELAY,
@@ -36,7 +42,6 @@ import {
     FETH__factory,
     RoyaltyRegistry__factory,
     VoucherMarket__factory,
-    SBTLogic__factory,
     NFTDerivativeProtocolTokenV2,
     NFTDerivativeProtocolTokenV2__factory,
   } from '../typechain';
@@ -45,7 +50,6 @@ import {
   
   import { DataTypes } from '../typechain/contracts/modules/template/Template';
   import { MarketPlaceLibraryAddresses } from '../typechain/factories/contracts/MarketPlace__factory';
-  import { NFTDerivativeProtocolTokenV1LibraryAddresses } from '../typechain/factories/contracts/NFTDerivativeProtocolTokenV1__factory';
 import { BigNumber } from 'ethers';
   
   const TREASURY_FEE_BPS = 500;
@@ -62,12 +66,11 @@ import { BigNumber } from 'ethers';
   const PublishRoyaltySBT = 100;
   
   let managerLibs: ManagerLibraryAddresses;
-  export let sbtLibs: NFTDerivativeProtocolTokenV1LibraryAddresses;
 
 
-  // yarn hardhat --network local upgrade-sbt 
+  // yarn hardhat --network local oz-upgrade-sbt 
 
-  task('upgrade-sbt', 'upgrade sbt contract').setAction(async ({}, hre) => {
+  task('oz-upgrade-sbt', 'openzepplin upgrade sbt contract').setAction(async ({}, hre) => {
         // Note that the use of these signers is a placeholder and is not meant to be used in
         // production.
         const ethers = hre.ethers;
@@ -90,23 +93,22 @@ import { BigNumber } from 'ethers';
         let balance = await sbt['balanceOf(uint256)'](1);
         console.log('\n\t ---- balance of treasury: ', balance);
 
-        const sbtLogic = await new SBTLogic__factory(deployer).deploy();
-        sbtLibs = {
-            'contracts/libraries/SBTLogic.sol:SBTLogic': sbtLogic.address,
-        };
+        // const sbtLogic = await new SBTLogic__factory(deployer).deploy();
+        // sbtLibs = {
+        //     'contracts/libraries/SBTLogic.sol:SBTLogic': sbtLogic.address,
+        // };
 
-        let sbtImplV2: NFTDerivativeProtocolTokenV2 = await new NFTDerivativeProtocolTokenV2__factory(sbtLibs, deployer).deploy();
+        // let sbtImplV2: NFTDerivativeProtocolTokenV2 = await new NFTDerivativeProtocolTokenV2__factory(sbtLibs, deployer).deploy();
 
-        const data = sbtImplV2.interface.encodeFunctionData("setBankTreasury", [
-            bankTreasury.address,
-            50000000
-        ]);
-          
-        await sbt.connect(deployer).upgradeToAndCall(sbtImplV2.address, data);
+        // await sbt.connect(deployer).upgradeTo(sbtImplV2.address);
   
-        const v2 = new NFTDerivativeProtocolTokenV2__factory(sbtLibs, deployer).attach(sbt.address);
-        // expect(await v2.version()).to.eq(2);
-        // expect(await v2.getSigner()).to.eq(userAddress);
+        const v2 = new NFTDerivativeProtocolTokenV2__factory(deployer).attach(sbt.address);
+
+        console.log('\n\t-- sbtContract set bankTreasuryContract address and mint value --');
+        await waitForTx(sbt.connect(deployer).setBankTreasury(
+            bankTreasury.address, 
+            5000
+        ));
 
         console.log('\n\t ---- version: ', await v2.version());
 

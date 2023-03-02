@@ -629,7 +629,7 @@ type ExecuteTransactionERC3525History @entity {
 
 #  Voucher Asset
 type VoucherAsset @entity {
-  "Token Id"
+  "OwnerAddress-TokenId"
   id: ID!
 
   "Wallet"
@@ -640,9 +640,21 @@ type VoucherAsset @entity {
  
   "Value"
   value: BigInt!
-
+ 
   "The date/time the event emit in seconds since Unix epoch"
   timestamp: BigInt!
+}
+
+#  Voucher URI
+type VoucherURI @entity {
+  "TokenId"
+  id: ID!
+
+  "Token Id"
+  tokenId: BigInt!
+ 
+  "URI"
+  uri: String!
 }
 
 type VoucherRecord @entity {
@@ -660,6 +672,9 @@ type VoucherRecord @entity {
 
   "List of amount"
   amounts: [BigInt!]!
+
+  "List of tokenIds"
+  tokenIds: [BigInt!]!
 
   "Generated timestamp"
   generatedTimestamp: BigInt!

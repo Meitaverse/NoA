@@ -4,7 +4,6 @@ pragma solidity ^0.8.13;
 
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import "@openzeppelin/contracts-upgradeable/access/AccessControlUpgradeable.sol";
-import "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
 import "@solvprotocol/erc-3525/contracts/ERC3525Upgradeable.sol";
 import "@solvprotocol/erc-3525/contracts/extensions/IERC3525Metadata.sol";
@@ -15,7 +14,6 @@ import {Errors} from "../libraries/Errors.sol";
 import '../libraries/Constants.sol';
 import {IManager} from "../interfaces/IManager.sol";
 import {ERC3525Votes} from "../extensions/ERC3525Votes.sol";
-import {SBTLogic} from '../libraries/SBTLogic.sol';
 import "../storage/SBTStorage.sol";
 import {INFTDerivativeProtocolTokenV2} from "../interfaces/INFTDerivativeProtocolTokenV2.sol";
 
@@ -25,7 +23,6 @@ import {INFTDerivativeProtocolTokenV2} from "../interfaces/INFTDerivativeProtoco
 contract NFTDerivativeProtocolTokenV2 is
     Initializable,
     AccessControlUpgradeable,
-    PausableUpgradeable,
     ERC3525Votes,
     SBTStorage,
     INFTDerivativeProtocolTokenV2,
@@ -37,39 +34,10 @@ contract NFTDerivativeProtocolTokenV2 is
     bytes32 public constant TRANSFER_VALUE_ROLE = keccak256("TRANSFER_VALUE_ROLE");
     bytes32 public constant UPGRADER_ROLE = keccak256("UPGRADER_ROLE");
 
-    address internal SIGNER;
-
-    /**
-     * @dev Emitted when a profile is created.
-     *
-     * @param soulBoundTokenId The newly created profile's token ID.
-     * @param creator The profile creator, who created the token with the given profile ID.
-     * @param wallet The address receiving the profile with the given profile ID.
-     * @param nickName The nickName set for the profile.
-     * @param imageURI The image uri set for the profile.
-     */
-    event ProfileCreated(
-        uint256 indexed soulBoundTokenId,
-        address indexed creator,
-        address indexed wallet,
-        string nickName,
-        string imageURI
-    );
-
-    /**
-     * @dev Emitted when a profile is updated.
-     *
-     * @param soulBoundTokenId The updated profile's token ID.
-     * @param nickName The nickName set for the profile.
-     * @param imageURI The image uri set for the profile.
-     */
-    event ProfileUpdated(
-        uint256 indexed soulBoundTokenId,
-        string nickName,
-        string imageURI
-    );
-
     uint256 private treasury_SBT_ID;
+
+    //New variables should be placed after all existing inherited variables
+    address internal SIGNER;
 
     //===== Modifiers =====//
 
@@ -114,21 +82,6 @@ contract NFTDerivativeProtocolTokenV2 is
             //create profile for bankTreasury, slot is 1, not vote power
             treasury_SBT_ID = 1;
             
-            SBTLogic.createProfile(
-                treasury_SBT_ID,   
-                "Bank Treasury",
-                "",
-                _sbtDetails
-            );
-
-            emit ProfileCreated(
-                treasury_SBT_ID,
-                _msgSender(),
-                _banktreasury,    
-                "Bank Treasury",
-                ""
-            );
-            
             uint256 _sbtId = ERC3525Upgradeable._mint(_banktreasury, slot, amount * 1e18);
             
             if (_sbtId != treasury_SBT_ID) revert Errors.SetBankTreasuryError();
@@ -144,7 +97,6 @@ contract NFTDerivativeProtocolTokenV2 is
     }
 
     function createProfile(
-        address creator,
         address voucher,
         DataTypes.CreateProfileData calldata vars
     ) 
@@ -159,19 +111,12 @@ contract NFTDerivativeProtocolTokenV2 is
         ERC3525Upgradeable._setApprovalForAll(vars.wallet, voucher, true);
         ERC3525Upgradeable._setApprovalForAll(vars.wallet, _banktreasury, true);
        
-        SBTLogic.createProfile(
+        _createProfile(
             tokenId_,
-            vars.nickName,
-            vars.imageURI,
-            _sbtDetails
-        );
-        emit ProfileCreated(
-            tokenId_,
-            creator,
-            vars.wallet,    
             vars.nickName,
             vars.imageURI
         );
+
         return tokenId_;
     }
 
@@ -185,12 +130,11 @@ contract NFTDerivativeProtocolTokenV2 is
         if (msg.sender != ownerOf(soulBoundTokenId)) 
             revert Errors.NotOwner();
 
-        SBTLogic.updateProfile(
-            soulBoundTokenId,   
-            nickName,
-            imageURI,
-            _sbtDetails
-        );      
+        _sbtDetails[soulBoundTokenId] = DataTypes.SoulBoundTokenDetail({
+            nickName: nickName,
+            imageURI: imageURI,
+            locked: true
+        });
 
         emit ProfileUpdated(
             soulBoundTokenId,
@@ -209,7 +153,14 @@ contract NFTDerivativeProtocolTokenV2 is
         if (msg.sender != ownerOf(soulBoundTokenId)) 
             revert Errors.NotOwner();
 
-        SBTLogic.burnProcess(address(this), soulBoundTokenId, _sbtDetails);
+        uint256 balance = balanceOf(soulBoundTokenId);
+
+        if (balance > 0 ) {
+            this.transferValue(soulBoundTokenId, BANK_TREASURY_SOUL_BOUND_TOKENID, balance);
+        }
+        
+        delete _sbtDetails[soulBoundTokenId];
+
         ERC3525Upgradeable._burn(soulBoundTokenId);
     }
 
@@ -268,7 +219,6 @@ contract NFTDerivativeProtocolTokenV2 is
             super.supportsInterface(interfaceId);
     } 
 
-    
     /// ****************************
     /// *****INTERNAL FUNCTIONS*****
     /// ****************************
@@ -281,11 +231,34 @@ contract NFTDerivativeProtocolTokenV2 is
         if (msg.sender != _manager) revert Errors.NotManager();
     }
 
+    function _createProfile(
+        uint256 tokenId_,
+        string memory nickName,
+        string memory imageURI
+    ) internal {
+        if (tokenId_ == 0) revert Errors.TokenIdIsZero();
+        
+        _sbtDetails[tokenId_] = DataTypes.SoulBoundTokenDetail({
+            nickName: nickName,
+            imageURI: imageURI,
+            locked: true
+        });
+
+         emit ProfileCreated(
+            tokenId_,
+            _msgSender(),
+            _banktreasury,    
+            nickName,
+            imageURI
+        );
+    }
+
+
     //-- orverride -- //
     function _authorizeUpgrade(address /*newImplementation*/) internal virtual override {
         if (!hasRole(UPGRADER_ROLE, _msgSender())) revert Errors.Unauthorized();
     }
-   
+    
     //V2
     function setSigner(address signer) external {
         SIGNER = signer;

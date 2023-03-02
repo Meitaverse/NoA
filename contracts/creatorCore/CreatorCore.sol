@@ -223,7 +223,7 @@ abstract contract CreatorCore is ReentrancyGuard, ICreatorCore, ERC165 {
     /**
      * @dev Set token uri for a token with no extension
      */
-    function _setTokenURI(uint256 tokenId, string calldata uri) internal {
+    function _setTokenURI(uint256 tokenId, string calldata uri) internal virtual {
         require(tokenId > 0 && tokenId <= _tokenCount && _tokensExtension[tokenId] == address(0), "Invalid token");
         _tokenURIs[tokenId] = uri;
     }

@@ -60,7 +60,7 @@ contract ManagerV2 is IManagerV2, NFTDerivativeProtocolMultiState, MockManagerV2
     ) external returns (uint256) {
          address _voucher = IModuleGlobals(MODULE_GLOBALS).getVoucher();
         if (!IModuleGlobals(MODULE_GLOBALS).isWhitelistProfileCreator(vars.wallet)) revert Errors.ProfileCreatorNotWhitelisted();
-        uint256 soulBoundTokenId = INFTDerivativeProtocolTokenV1(SBT).createProfile(msg.sender, _voucher, vars);
+        uint256 soulBoundTokenId = INFTDerivativeProtocolTokenV1(SBT).createProfile(_voucher, vars);
 
         return soulBoundTokenId;
     }
