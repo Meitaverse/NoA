@@ -47,7 +47,7 @@ library PublishLogic {
     function updatePublish(
         uint256 publishId,
         uint256 salePrice,
-        uint256 royaltyBasisPoints,
+        uint16 royaltyBasisPoints,
         uint256 amount,
         string memory name,
         string memory description,
@@ -126,7 +126,6 @@ library PublishLogic {
             _initCollectModule(
                     publication.projectId,
                     publishId,
-                    // publication.soulBoundTokenId,
                     newTokenId,
                     publication.currency,
                     publication.amount,
@@ -144,7 +143,6 @@ library PublishLogic {
     function _initCollectModule(
         uint256 projectId,
         uint256 publishId,
-        // uint256 ownershipSoulBoundTokenId,
         uint256 newTokenId,
         address currency,
         uint256 amount,
@@ -156,11 +154,11 @@ library PublishLogic {
          _pubByIdByProfile[projectId][newTokenId].collectModule = collectModule;
         
         ICollectModule(collectModule).initializePublicationCollectModule(
-                publishId,
-                newTokenId,
-                currency,
-                amount,
-                collectModuleInitData 
+            publishId,
+            newTokenId,
+            currency,
+            amount,
+            collectModuleInitData 
         );
     }
 

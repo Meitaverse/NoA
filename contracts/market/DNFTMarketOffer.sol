@@ -229,7 +229,12 @@ abstract contract DNFTMarketOffer is
 
     // Distribute revenue for this sale leveraging the SBT Value received from the SBT contract in the line above.
     address collectModule = _getMarketInfo(derivativeNFT).collectModule;
-    bytes memory collectModuleInitData = abi.encode(offer.soulBoundTokenIdReferrer, BUY_REFERRER_FEE_DENOMINATOR);
+    bytes memory collectModuleInitData = abi.encode(
+      offer.soulBoundTokenIdReferrer, 
+      BUY_REFERRER_FEE_DENOMINATOR,
+      offer.units
+    );
+    
     DataTypes.RoyaltyAmounts memory royaltyAmounts = ICollectModule(collectModule).processCollect(
         soulBoundTokenIdOwner,
         offer.soulBoundTokenIdBuyer,

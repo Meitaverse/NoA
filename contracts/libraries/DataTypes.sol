@@ -117,7 +117,7 @@ library DataTypes {
         uint256 hubId;
         uint256 projectId;
         uint256 salePrice;
-        uint256 royaltyBasisPoints;       
+        uint16 royaltyBasisPoints;       
         address currency;
         uint256 amount;
         string name;

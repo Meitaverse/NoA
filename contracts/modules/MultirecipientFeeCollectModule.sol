@@ -76,7 +76,6 @@ contract MultirecipientFeeCollectModule is BaseFeeCollectModule {
      */
     function initializePublicationCollectModule(
         uint256 publishId,
-        // uint256 ownershipSoulBoundTokenId,
         uint256 tokenId,
         address currency,
         uint256 amount,

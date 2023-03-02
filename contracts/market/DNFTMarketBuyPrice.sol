@@ -254,7 +254,8 @@ abstract contract DNFTMarketBuyPrice is
   
     bytes memory collectModuleInitData = abi.encode(
       soulBoundTokenIdReferrer, 
-      BUY_REFERRER_FEE_DENOMINATOR
+      BUY_REFERRER_FEE_DENOMINATOR,
+      buyPrice.units
     );
 
     DataTypes.RoyaltyAmounts memory royaltyAmounts = ICollectModule(collectModule).processCollect(

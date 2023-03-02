@@ -337,7 +337,11 @@ abstract contract DNFTMarketReserveAuction is
 
     // Distribute revenue for this sale.
     address collectModule = _getMarketInfo(auction.derivativeNFT).collectModule;
-    bytes memory collectModuleInitData = abi.encode(auction.soulBoundTokenIdReferrer, BUY_REFERRER_FEE_DENOMINATOR);
+    bytes memory collectModuleInitData = abi.encode(
+      auction.soulBoundTokenIdReferrer, 
+      BUY_REFERRER_FEE_DENOMINATOR,
+      auction.units
+    );
     DataTypes.RoyaltyAmounts memory royaltyAmounts = ICollectModule(collectModule).processCollect(
         auction.soulBoundTokenId,
         auction.soulBoundTokenIdBidder,

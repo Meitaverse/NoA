@@ -72,9 +72,9 @@ task("publish", "publish function")
     const DEFAULT_TEMPLATE_NUMBER = 1;
 
     const collectModuleInitData = abiCoder.encode(
-      ['uint256', 'uint16', 'uint256', 'uint256'],
-      [SECOND_PROFILE_ID, GENESIS_FEE_BPS, DEFAULT_COLLECT_PRICE, Default_royaltyBasisPoints]
-    );
+      ['uint256', 'uint16', 'uint16'],
+      [DEFAULT_COLLECT_PRICE, Default_royaltyBasisPoints, 0]
+  );
 
     const publishModuleinitData = abiCoder.encode(
         ['address', 'uint256'],

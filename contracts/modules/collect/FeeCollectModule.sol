@@ -22,7 +22,7 @@ import {SafeERC20} from '@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol
 /**
  * @notice A struct containing the necessary data to execute collect actions on a publication.
  *
- * @param genesisSoulBoundTokenId The genesi sSoulBoundTokenId with this publication.
+ * @param genesisSoulBoundTokenId The genesis SoulBoundTokenId with this publication.
  * @param tokenId The tokenId with this publication.
  * @param amount The total supply with this publication.
  * @param salePrice The collecting cost associated with this publication.
@@ -38,8 +38,7 @@ struct ProfilePublicationData {
     uint256 amount;                        
     uint256 salePrice;                     
     uint256 royaltyBasisPoints;           
-    //TODO
-    uint256 collectLimitPerAddress;
+    uint16 collectLimitPerAddress;
     uint16 genesisFee;                     
     uint16 previousFee;              
 }
@@ -64,6 +63,9 @@ contract FeeCollectModule is ReentrancyGuard, FeeModuleBase, ModuleBase, ICollec
     // publishId => ProfilePublicationData
     mapping(uint256 =>  ProfilePublicationData) internal _dataByPublicationByProfile;
 
+    //publishId => collector SBT Id => collect total count
+    mapping(uint256 => mapping(uint256 => uint256)) internal _collectCountPerAddress;
+
     constructor(address manager, address market, address moduleGlobals) FeeModuleBase(moduleGlobals) ModuleBase(manager, market) {}
 
     function initializePublicationCollectModule(
@@ -73,25 +75,30 @@ contract FeeCollectModule is ReentrancyGuard, FeeModuleBase, ModuleBase, ICollec
         uint256 amount,
         bytes calldata data 
     ) external override nonReentrant onlyManager {
-        (uint256 genesisSoulBoundTokenId, uint16 genesisFee, uint256 salePrice, uint256 royaltyBasisPoints) = abi.decode(
+        (uint256 salePrice, uint16 royaltyBasisPoints, uint16 collectLimitPerAddress) = abi.decode
+        (
             data,
-            (uint256, uint16,  uint256, uint256)
+            (uint256, uint16, uint16)
         );
 
         if ( !_currencyWhitelisted(currency))
             revert Errors.CurrencyNotInWhitelisted(currency);
 
         if ( publishId == 0 || 
-            // ownershipSoulBoundTokenId == 0 || 
-            genesisFee > BASIS_POINTS - 1000 || 
+            salePrice == 0 || 
+            royaltyBasisPoints > BASIS_POINTS - 1000 || 
             amount == 0
         )
             revert Errors.InitParamsInvalid();
 
         //previous 
         {
-            DataTypes.PublishData memory publishData  = IManager(MANAGER).getPublishInfo(publishId);
-            DataTypes.PublishData memory previousPublishData = IManager(MANAGER).getPublishInfo(publishData.previousPublishId);
+            (
+                uint256 genesisSoulBoundTokenId,  //genesis SBT id
+                uint16 genesisFee,  //genesis royaltyBasisPoints
+                uint256 previousSoulBoundTokenId,  //previous SBT id
+                uint16 previousRoyaltyBasisPoints  //previous royaltyBasisPoints
+            ) = IManager(MANAGER).getGenesisAndPreviousInfo(publishId);
 
              //Save 
             _dataByPublicationByProfile[publishId].tokenId = tokenId;
@@ -99,11 +106,11 @@ contract FeeCollectModule is ReentrancyGuard, FeeModuleBase, ModuleBase, ICollec
             _dataByPublicationByProfile[publishId].amount = amount;
             _dataByPublicationByProfile[publishId].salePrice = salePrice;
             _dataByPublicationByProfile[publishId].royaltyBasisPoints = royaltyBasisPoints;
-            _dataByPublicationByProfile[publishId].collectLimitPerAddress = 0;
+            _dataByPublicationByProfile[publishId].collectLimitPerAddress = collectLimitPerAddress;
             _dataByPublicationByProfile[publishId].genesisSoulBoundTokenId = genesisSoulBoundTokenId;
-            _dataByPublicationByProfile[publishId].previousSoulBoundTokenId = previousPublishData.publication.soulBoundTokenId;
+            _dataByPublicationByProfile[publishId].previousSoulBoundTokenId = previousSoulBoundTokenId;
             _dataByPublicationByProfile[publishId].genesisFee = genesisFee;
-            _dataByPublicationByProfile[publishId].previousFee = uint16(previousPublishData.publication.royaltyBasisPoints);
+            _dataByPublicationByProfile[publishId].previousFee = previousRoyaltyBasisPoints;
         }
     }
 
@@ -176,19 +183,34 @@ contract FeeCollectModule is ReentrancyGuard, FeeModuleBase, ModuleBase, ICollec
         uint96 payValue,
         bytes calldata data
     ) internal returns (DataTypes.RoyaltyAmounts memory royaltyAmounts){
-        uint256 referrerSoulBoundTokenId;
-        uint16 referrerFee;
-
+        // uint256 referrerSoulBoundTokenId;
+        // uint16 referrerFee;
+        uint256 uints;
         
         if (data.length != 0) {
-            (referrerSoulBoundTokenId, referrerFee) = abi.decode(
+            (, , uints) = abi.decode(
                 data,
-                (uint256, uint16)
+                (uint256, uint16,uint256)
             );
             // referrerFee max limit 1000
-            if (referrerFee >  BUY_REFERRER_FEE_DENOMINATOR ) {
-                revert Errors.ReferrerFeeExceeded();
+            // if (referrerFee >  BUY_REFERRER_FEE_DENOMINATOR ) {
+            //     revert Errors.ReferrerFeeExceeded();
+            // }
+        }
+
+        //TODO
+        {
+            if (_dataByPublicationByProfile[publishId].collectLimitPerAddress > 0 && 
+                uints > _dataByPublicationByProfile[publishId].collectLimitPerAddress) {
+                revert Errors.CollectPerAddrLimitExceeded();
             }
+
+            _collectCountPerAddress[publishId][collectorSoulBoundTokenId] += uints;
+
+            if (_dataByPublicationByProfile[publishId].collectLimitPerAddress > 0 && 
+                _collectCountPerAddress[publishId][collectorSoulBoundTokenId] > _dataByPublicationByProfile[publishId].collectLimitPerAddress)
+              revert Errors.CollectPerAddrLimitExceeded();
+
         }
         
         unchecked {
@@ -200,14 +222,14 @@ contract FeeCollectModule is ReentrancyGuard, FeeModuleBase, ModuleBase, ICollec
                 royaltyAmounts.previousAmount = uint96(payValue * _dataByPublicationByProfile[publishId].previousFee / BASIS_POINTS);
                 royaltyAmounts.genesisAmount = uint96(payValue * _dataByPublicationByProfile[publishId].genesisFee / BASIS_POINTS);
                 royaltyAmounts.adjustedAmount = payValue - royaltyAmounts.treasuryAmount - royaltyAmounts.genesisAmount - royaltyAmounts.previousAmount;
-                 if (treasuryFee >0 && treasuryFee > referrerFee ) {
+                //  if (treasuryFee >0 && treasuryFee > referrerFee ) {
 
-                    if (referrerSoulBoundTokenId != 0 && referrerFee > 0) {
-                        royaltyAmounts.referrerAmount = uint96(payValue * referrerFee / BASIS_POINTS);
-                        royaltyAmounts.treasuryAmount = royaltyAmounts.treasuryAmount - royaltyAmounts.referrerAmount;
-                    }
+                    // if (referrerSoulBoundTokenId != 0 && referrerFee > 0) {
+                    //     royaltyAmounts.referrerAmount = uint96(payValue * referrerFee / BASIS_POINTS);
+                    //     royaltyAmounts.treasuryAmount = royaltyAmounts.treasuryAmount - royaltyAmounts.referrerAmount;
+                    // }
 
-                 }
+                //  }
 
                 // console.log("royaltyAmounts.treasuryAmount:", royaltyAmounts.treasuryAmount);
                 // console.log("royaltyAmounts.genesisAmount:", royaltyAmounts.genesisAmount);
@@ -220,7 +242,7 @@ contract FeeCollectModule is ReentrancyGuard, FeeModuleBase, ModuleBase, ICollec
                     collectorSoulBoundTokenId: collectorSoulBoundTokenId,
                     genesisSoulBoundTokenId: genesisSoulBoundTokenId,
                     previousSoulBoundTokenId: _dataByPublicationByProfile[publishId].previousSoulBoundTokenId,
-                    referrerSoulBoundTokenId: referrerSoulBoundTokenId
+                    referrerSoulBoundTokenId: 0 //referrerSoulBoundTokenId
                 });
 
                 {

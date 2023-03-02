@@ -114,9 +114,9 @@ task("publish-derivative", "publish-derivative function")
 
 
     const collectModuleInitData = abiCoder.encode(
-      ['uint256', 'uint16', 'uint256', 'uint256'],
-      [SECOND_PROFILE_ID, GENESIS_FEE_BPS, DEFAULT_COLLECT_PRICE, Default_royaltyBasisPoints]
-    );
+      ['uint256', 'uint16', 'uint16'],
+      [DEFAULT_COLLECT_PRICE, Default_royaltyBasisPoints, 0]
+  );
 
     const publishModuleinitData = abiCoder.encode(
         ['address', 'uint256'],
@@ -131,7 +131,7 @@ task("publish-derivative", "publish-derivative function")
         currency: sbt.address,
         amount: 4,                          //二创数量
         salePrice: DEFAULT_COLLECT_PRICE,
-        royaltyBasisPoints: Default_royaltyBasisPoints,
+        royaltyBasisPoints: Default_royaltyBasisPoints, //genesis 
         name: `Secondary creation from #${fromtokenid}`,  //注意，不能重复
         description: `Secondary creation description`,
         canCollect: true,

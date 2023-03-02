@@ -154,7 +154,7 @@ contract DerivativeMetadataDescriptor is IERC3525MetadataDescriptor {
             '"salePrice":"',
               _slotDetail(slot_).publication.salePrice.toString(), 
             '"royaltyBasisPoints":"',
-              _slotDetail(slot_).publication.royaltyBasisPoints.toString(), 
+              uint256(_slotDetail(slot_).publication.royaltyBasisPoints).toString(), 
             '"amount":"',
               _slotDetail(slot_).publication.amount.toString(), 
             '"materialURIs":"',
@@ -204,7 +204,7 @@ contract DerivativeMetadataDescriptor is IERC3525MetadataDescriptor {
           '"genesis_sale_price":"',
               gengesisPublishData.publication.salePrice.toString(), 
           '"genesis_royalty_basis_points":"',
-              gengesisPublishData.publication.royaltyBasisPoints.toString()
+              uint256(gengesisPublishData.publication.royaltyBasisPoints).toString()
           /* solhint-enable */
         )
       );
@@ -221,7 +221,7 @@ contract DerivativeMetadataDescriptor is IERC3525MetadataDescriptor {
           '"previous_sale_price":"',
               previousPublishData.publication.salePrice.toString(), 
           '"previous_royalty_basis_points":"',
-              previousPublishData.publication.royaltyBasisPoints.toString()
+              uint256(previousPublishData.publication.royaltyBasisPoints).toString()
           /* solhint-enable */
         )
       );
@@ -242,7 +242,7 @@ contract DerivativeMetadataDescriptor is IERC3525MetadataDescriptor {
             '"sale_price":"',
               publishData.publication.salePrice.toString(), 
             'royalty_basis_points":"',
-              publishData.publication.royaltyBasisPoints.toString(),             
+              uint256(publishData.publication.royaltyBasisPoints).toString(),             
             genesis_temp, 
             previous_temp,              
           '"}'

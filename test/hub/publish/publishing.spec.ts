@@ -112,8 +112,8 @@ makeSuiteCleanRoom('Publishing', function () {
             );
 
             const collectModuleInitData = abiCoder.encode(
-                ['uint256', 'uint16', 'uint256', 'uint256'],
-                [SECOND_PROFILE_ID, GENESIS_FEE_BPS, DEFAULT_COLLECT_PRICE, Default_royaltyBasisPoints]
+                ['uint256', 'uint16', 'uint16'],
+                [DEFAULT_COLLECT_PRICE, Default_royaltyBasisPoints, 0]
             );
 
             //mint 100Value to user
@@ -160,8 +160,8 @@ makeSuiteCleanRoom('Publishing', function () {
             );
 
             const collectModuleInitData = abiCoder.encode(
-                ['uint256', 'uint16', 'uint256', 'uint256'],
-                [SECOND_PROFILE_ID, GENESIS_FEE_BPS, DEFAULT_COLLECT_PRICE, Default_royaltyBasisPoints]
+                ['uint256', 'uint16', 'uint16'],
+                [DEFAULT_COLLECT_PRICE, Default_royaltyBasisPoints, 0]
             );
 
             //mint 100Value to user
@@ -201,10 +201,10 @@ makeSuiteCleanRoom('Publishing', function () {
             );
 
             const collectModuleInitData = abiCoder.encode(
-                ['uint256', 'uint16', 'uint256', 'uint256'],
-                [SECOND_PROFILE_ID, GENESIS_FEE_BPS, DEFAULT_COLLECT_PRICE, Default_royaltyBasisPoints]
+                ['uint256', 'uint16', 'uint16'],
+                [DEFAULT_COLLECT_PRICE, Default_royaltyBasisPoints, 0]
             );
-            
+                
             //mint 100Value to user
             await bankTreasuryContract.connect(user).buySBT(SECOND_PROFILE_ID, {value: 100});
 
@@ -260,8 +260,8 @@ makeSuiteCleanRoom('Publishing', function () {
             );
 
             const collectModuleInitData = abiCoder.encode(
-                ['uint256', 'uint16', 'uint256', 'uint256'],
-                [SECOND_PROFILE_ID, GENESIS_FEE_BPS, DEFAULT_COLLECT_PRICE, Default_royaltyBasisPoints]
+                ['uint256', 'uint16', 'uint16'],
+                [DEFAULT_COLLECT_PRICE, Default_royaltyBasisPoints, 0]
             );
             
             //mint 100Value to user

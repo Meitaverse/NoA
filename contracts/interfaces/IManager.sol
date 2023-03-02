@@ -151,7 +151,8 @@ interface IManager {
     
     function getWalletBySoulBoundTokenId(uint256 soulBoundTokenId) external view returns(address);
 
-    function getGenesisAndPreviousInfo(uint256 projectId, uint256 tokenId) external view returns(uint256,uint256,uint256,uint256);
+    function getGenesisAndPreviousInfo(uint256 projectId, uint256 tokenId) external view returns(uint256,uint16,uint256,uint16);
+    function getGenesisAndPreviousInfo(uint256 publishId) external view returns(uint256,uint16,uint256,uint16);
 
     function getSoulBoundTokenIdByWallet(address wallet) external view returns(uint256);
 
@@ -221,7 +222,7 @@ interface IManager {
     function updatePublish(
         uint256 publishId,
         uint256 salePrice,
-        uint256 royaltyBasisPoints,   
+        uint16 royaltyBasisPoints,   
         uint256 amount,
         string calldata name,
         string calldata description,

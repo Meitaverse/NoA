@@ -150,10 +150,9 @@ makeSuiteCleanRoom('Fee Collect Module', function () {
         );
 
         const collectModuleInitData = abiCoder.encode(
-            ['uint256', 'uint16', 'uint256', 'uint256'],
-           
-            [SECOND_PROFILE_ID, GENESIS_FEE_BPS, DEFAULT_COLLECT_PRICE, Default_royaltyBasisPoints]
-        );
+          ['uint256', 'uint16', 'uint16'],
+          [DEFAULT_COLLECT_PRICE, Default_royaltyBasisPoints, 0]
+      );
 
         await expect(
           manager.connect(user).prePublish({
@@ -181,43 +180,7 @@ makeSuiteCleanRoom('Fee Collect Module', function () {
         ).to.be.revertedWith(ERRORS.PROJECT_ID_INVALID);
       });      
 
-      it('user should fail to publish with fee collect module using genesis fee greater than max BPS', async function () {
-        const publishModuleinitData = abiCoder.encode(
-          ['address', 'uint256'],
-          [template.address, DEFAULT_TEMPLATE_NUMBER],
-        );
-
-        const collectModuleInitData = abiCoder.encode(
-            ['uint256', 'uint16', 'uint256', 'uint256'],
-            //10000 is max
-            [SECOND_PROFILE_ID, 10000, DEFAULT_COLLECT_PRICE, Default_royaltyBasisPoints]
-        );
-
-        await expect(
-          manager.connect(user).prePublish({
-             soulBoundTokenId: SECOND_PROFILE_ID,
-             hubId: FIRST_HUB_ID,
-             projectId: FIRST_PROJECT_ID,
-             currency: sbtContract.address,
-             amount: 1,
-             salePrice: DEFAULT_COLLECT_PRICE,
-             royaltyBasisPoints: Default_royaltyBasisPoints,             
-             name: "Dollar",
-             description: "Hand draw",
-             canCollect: true,
-             materialURIs: [],
-             fromTokenIds: [],
-             collectModule: feeCollectModule.address,
-             collectModuleInitData: collectModuleInitData,
-             publishModule: publishModule.address,
-             publishModuleInitData: publishModuleinitData,
-          })
-        ).to.not.be.reverted;
-        
-        await expect(
-          manager.connect(user).publish(FIRST_PUBLISH_ID) 
-        ).to.be.revertedWith(ERRORS.INIT_PARAMS_INVALID);
-      });      
+      
 
       it('user should fail to publish with fee collect module with zero amount', async function () {
         const publishModuleinitData = abiCoder.encode(
@@ -226,10 +189,9 @@ makeSuiteCleanRoom('Fee Collect Module', function () {
         );
 
         const collectModuleInitData = abiCoder.encode(
-            ['uint256', 'uint16', 'uint256', 'uint256'],
-           
-            [SECOND_PROFILE_ID, GENESIS_FEE_BPS, DEFAULT_COLLECT_PRICE, Default_royaltyBasisPoints]
-        );
+          ['uint256', 'uint16', 'uint16'],
+          [DEFAULT_COLLECT_PRICE, Default_royaltyBasisPoints, 0]
+      );
 
         await expect(
           manager.connect(user).prePublish({
@@ -265,10 +227,9 @@ makeSuiteCleanRoom('Fee Collect Module', function () {
         );
 
         const collectModuleInitData = abiCoder.encode(
-            ['uint256', 'uint16', 'uint256', 'uint256'],
-           
-            [SECOND_PROFILE_ID, GENESIS_FEE_BPS, DEFAULT_COLLECT_PRICE, Default_royaltyBasisPoints]
-        );
+          ['uint256', 'uint16', 'uint16'],
+          [DEFAULT_COLLECT_PRICE, Default_royaltyBasisPoints, 0]
+      );
 
         await expect(
             manager.connect(user).prePublish({
@@ -278,7 +239,7 @@ makeSuiteCleanRoom('Fee Collect Module', function () {
               currency: sbtContract.address,
               amount: 1,
               salePrice: DEFAULT_COLLECT_PRICE,
-              royaltyBasisPoints: Default_royaltyBasisPoints,              
+              royaltyBasisPoints: GENESIS_FEE_BPS,              
               name: "Dollar",
               description: "Hand draw",
               canCollect: true,
@@ -431,10 +392,9 @@ makeSuiteCleanRoom('Fee Collect Module', function () {
         );
 
         const collectModuleInitData = abiCoder.encode(
-            ['uint256', 'uint16', 'uint256', 'uint256'],
-           
-            [SECOND_PROFILE_ID, GENESIS_FEE_BPS, DEFAULT_COLLECT_PRICE, Default_royaltyBasisPoints]
-        );
+          ['uint256', 'uint16', 'uint16'],
+          [DEFAULT_COLLECT_PRICE, Default_royaltyBasisPoints, 0]
+      );
 
         await expect(
             manager.connect(user).prePublish({
@@ -535,10 +495,9 @@ makeSuiteCleanRoom('Fee Collect Module', function () {
         );
 
         const collectModuleInitData = abiCoder.encode(
-            ['uint256', 'uint16', 'uint256', 'uint256'],
-           
-            [SECOND_PROFILE_ID, GENESIS_FEE_BPS, DEFAULT_COLLECT_PRICE, Default_royaltyBasisPoints]
-        );
+          ['uint256', 'uint16', 'uint16'],
+          [DEFAULT_COLLECT_PRICE, Default_royaltyBasisPoints, 0]
+      );
 
         await expect(
             manager.connect(user).prePublish({

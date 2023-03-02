@@ -44,7 +44,7 @@ interface IPublishModule {
     function updatePublish(
         uint256 publishId,
         uint256 salePrice,
-        uint256 royaltyBasisPoints,
+        uint16 royaltyBasisPoints,
         uint256 amount,
         string memory name,
         string memory description,

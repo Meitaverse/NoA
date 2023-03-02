@@ -328,7 +328,7 @@ contract Manager is
     function updatePublish(
         uint256 publishId,
         uint256 salePrice,
-        uint256 royaltyBasisPoints,
+        uint16 royaltyBasisPoints,
         uint256 amount,
         string calldata name,
         string calldata description,
@@ -523,7 +523,12 @@ contract Manager is
     function getGenesisAndPreviousInfo(uint256 projectId, uint256 tokenId) 
         external 
         view 
-        returns(uint256, uint256,uint256,uint256) 
+        returns(
+            uint256,  //genesis SBT id
+            uint16,  //genesis royaltyBasisPoints
+            uint256,  //previous SBT id
+            uint16   //previous royaltyBasisPoints
+        ) 
     {
          //genesis
         uint256 genesisPublishId = _genesisPublishIdByProjectId[projectId];
@@ -532,6 +537,30 @@ contract Manager is
         address derivativeNFT =  _derivativeNFTByProjectId[projectId];
         uint256 publishId = IDerivativeNFT(derivativeNFT).getPublishIdByTokenId(tokenId);
         
+        return (
+            _projectDataByPublishId[genesisPublishId].publication.soulBoundTokenId,
+            _projectDataByPublishId[genesisPublishId].publication.royaltyBasisPoints,
+            _projectDataByPublishId[_projectDataByPublishId[publishId].previousPublishId].publication.soulBoundTokenId,
+            _projectDataByPublishId[_projectDataByPublishId[publishId].previousPublishId].publication.royaltyBasisPoints
+        );
+    }
+
+    function getGenesisAndPreviousInfo(uint256 publishId) 
+        external 
+        view 
+        returns(
+            uint256,  //genesis SBT id
+            uint16,  //genesis royaltyBasisPoints
+            uint256,  //previous SBT id
+            uint16   //previous royaltyBasisPoints
+        ) 
+    {
+        
+        uint256 projectid = _projectDataByPublishId[publishId].publication.projectId;
+
+         //genesis
+        uint256 genesisPublishId = _genesisPublishIdByProjectId[projectid];
+
         return (
             _projectDataByPublishId[genesisPublishId].publication.soulBoundTokenId,
             _projectDataByPublishId[genesisPublishId].publication.royaltyBasisPoints,
