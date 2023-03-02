@@ -3,7 +3,7 @@ import { hexlify, keccak256, RLP } from 'ethers/lib/utils';
 import { task } from 'hardhat/config';
 import { exportAddress } from "./config";
 import { exportSubgraphNetworksJson } from "./subgraph";
-import { ethers, upgrades } from 'hardhat';
+// import { ethers, upgrades } from 'hardhat';
 
 import {
     MIN_DELAY,
@@ -242,9 +242,9 @@ import { BigNumber } from 'ethers';
                 { nonce: deployerNonce++ }
         );
 
-        /*
+        
         const sbtImpl = await deployContract(
-            new NFTDerivativeProtocolTokenV1__factory(sbtLibs, deployer).deploy(
+            new NFTDerivativeProtocolTokenV1__factory(deployer).deploy(
                 { nonce: deployerNonce++ }
             )
         );
@@ -261,9 +261,9 @@ import { BigNumber } from 'ethers';
             initializeSBTData,
             { nonce: deployerNonce++ }
         );
-        const sbtContract = new NFTDerivativeProtocolTokenV1__factory(sbtLibs, deployer).attach(sbtProxy.address);
-        */
-
+        const sbtContract = new NFTDerivativeProtocolTokenV1__factory(deployer).attach(sbtProxy.address);
+        
+/*
         const implV1Factory = new NFTDerivativeProtocolTokenV1__factory(deployer);
 
         const sbtContract= (await upgrades.deployProxy(
@@ -278,11 +278,13 @@ import { BigNumber } from 'ethers';
           { kind: "uups", initializer: "initialize" }
         )) as NFTDerivativeProtocolTokenV1;
 
+        */
+
         console.log('\t-- sbtContract: ', sbtContract.address);
         await exportAddress(hre, sbtContract, 'SBT');
         await exportSubgraphNetworksJson(hre, sbtContract, 'SBT');
 
-        /*
+        
         const governorImpl = await new GovernorContract__factory(deployer).deploy({ nonce: deployerNonce++ });
         let initializeDataGovrnor = governorImpl.interface.encodeFunctionData("initialize", [
             sbtContract.address,
@@ -298,9 +300,10 @@ import { BigNumber } from 'ethers';
             { nonce: deployerNonce++ }
         );
         const governorContract = new GovernorContract__factory(deployer).attach(gonvernorProxy.address);
-        */
+        
 
         //gonvernor
+        /*
         const governorImpl = new GovernorContract__factory(deployer);
 
         const governorContract = (await upgrades.deployProxy(
@@ -314,6 +317,7 @@ import { BigNumber } from 'ethers';
           ],
           { kind: "uups", initializer: "initialize" }
         )) as GovernorContract;     
+        */
           
         console.log("\t-- governorContract address: ", governorContract.address);
         await exportAddress(hre, governorContract, 'GovernorContract');

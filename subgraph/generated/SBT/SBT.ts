@@ -510,25 +510,6 @@ export class SBT extends ethereum.SmartContract {
     return ethereum.CallResult.fromValue(value[0].toBytes());
   }
 
-  UPGRADER_ROLE(): Bytes {
-    let result = super.call("UPGRADER_ROLE", "UPGRADER_ROLE():(bytes32)", []);
-
-    return result[0].toBytes();
-  }
-
-  try_UPGRADER_ROLE(): ethereum.CallResult<Bytes> {
-    let result = super.tryCall(
-      "UPGRADER_ROLE",
-      "UPGRADER_ROLE():(bytes32)",
-      []
-    );
-    if (result.reverted) {
-      return new ethereum.CallResult();
-    }
-    let value = result.value;
-    return ethereum.CallResult.fromValue(value[0].toBytes());
-  }
-
   allowance(tokenId_: BigInt, operator_: Address): BigInt {
     let result = super.call(
       "allowance",
@@ -652,36 +633,26 @@ export class SBT extends ethereum.SmartContract {
   }
 
   createProfile(
-    creator: Address,
     voucher: Address,
     vars: SBT__createProfileInputVarsStruct
   ): BigInt {
     let result = super.call(
       "createProfile",
-      "createProfile(address,address,(address,string,string)):(uint256)",
-      [
-        ethereum.Value.fromAddress(creator),
-        ethereum.Value.fromAddress(voucher),
-        ethereum.Value.fromTuple(vars)
-      ]
+      "createProfile(address,(address,string,string)):(uint256)",
+      [ethereum.Value.fromAddress(voucher), ethereum.Value.fromTuple(vars)]
     );
 
     return result[0].toBigInt();
   }
 
   try_createProfile(
-    creator: Address,
     voucher: Address,
     vars: SBT__createProfileInputVarsStruct
   ): ethereum.CallResult<BigInt> {
     let result = super.tryCall(
       "createProfile",
-      "createProfile(address,address,(address,string,string)):(uint256)",
-      [
-        ethereum.Value.fromAddress(creator),
-        ethereum.Value.fromAddress(voucher),
-        ethereum.Value.fromTuple(vars)
-      ]
+      "createProfile(address,(address,string,string)):(uint256)",
+      [ethereum.Value.fromAddress(voucher), ethereum.Value.fromTuple(vars)]
     );
     if (result.reverted) {
       return new ethereum.CallResult();
@@ -1366,17 +1337,13 @@ export class CreateProfileCall__Inputs {
     this._call = call;
   }
 
-  get creator(): Address {
-    return this._call.inputValues[0].value.toAddress();
-  }
-
   get voucher(): Address {
-    return this._call.inputValues[1].value.toAddress();
+    return this._call.inputValues[0].value.toAddress();
   }
 
   get vars(): CreateProfileCallVarsStruct {
     return changetype<CreateProfileCallVarsStruct>(
-      this._call.inputValues[2].value.toTuple()
+      this._call.inputValues[1].value.toTuple()
     );
   }
 }

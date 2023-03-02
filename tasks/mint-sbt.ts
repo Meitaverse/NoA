@@ -36,7 +36,6 @@ import {
     FETH__factory,
     RoyaltyRegistry__factory,
     VoucherMarket__factory,
-    SBTLogic__factory,
     NFTDerivativeProtocolTokenV2,
     NFTDerivativeProtocolTokenV2__factory,
   } from '../typechain';
@@ -45,7 +44,6 @@ import {
   
   import { DataTypes } from '../typechain/contracts/modules/template/Template';
   import { MarketPlaceLibraryAddresses } from '../typechain/factories/contracts/MarketPlace__factory';
-  import { NFTDerivativeProtocolTokenV1LibraryAddresses } from '../typechain/factories/contracts/NFTDerivativeProtocolTokenV1__factory';
 import { BigNumber } from 'ethers';
   
   const TREASURY_FEE_BPS = 500;
@@ -62,7 +60,6 @@ import { BigNumber } from 'ethers';
   const PublishRoyaltySBT = 100;
   
   let managerLibs: ManagerLibraryAddresses;
-  export let sbtLibs: NFTDerivativeProtocolTokenV1LibraryAddresses;
 
 
   // yarn hardhat --network local mint-sbt

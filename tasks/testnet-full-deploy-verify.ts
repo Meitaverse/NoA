@@ -38,14 +38,12 @@ import {
     FETH__factory,
     RoyaltyRegistry__factory,
     VoucherMarket__factory,
-    SBTLogic__factory,
 } from '../typechain';
 import { deployContract, deployWithVerify, waitForTx, ProtocolState, Error, ZERO_ADDRESS} from './helpers/utils';
 import { ManagerLibraryAddresses } from '../typechain/factories/contracts/Manager__factory';
 
 import { DataTypes } from '../typechain/contracts/modules/template/Template';
 import { MarketPlaceLibraryAddresses } from '../typechain/factories/contracts/MarketPlace__factory';
-import { NFTDerivativeProtocolTokenV1LibraryAddresses } from '../typechain/factories/contracts/NFTDerivativeProtocolTokenV1__factory';
 import { BigNumber } from 'ethers';
   
   const TREASURY_FEE_BPS = 500;
@@ -62,7 +60,6 @@ import { BigNumber } from 'ethers';
   const PublishRoyaltySBT = 100;
   
   let managerLibs: ManagerLibraryAddresses;
-  export let sbtLibs: NFTDerivativeProtocolTokenV1LibraryAddresses;
 
   export let runtimeHRE: HardhatRuntimeEnvironment;
   
@@ -263,12 +260,8 @@ import { BigNumber } from 'ethers';
                 { nonce: deployerNonce++ }
         );
 
-        const sbtLogic = await new SBTLogic__factory(deployer).deploy({ nonce: deployerNonce++ });
-        sbtLibs = {
-          'contracts/libraries/SBTLogic.sol:SBTLogic': sbtLogic.address,
-        };
         const sbtImpl = await deployWithVerify(
-            new NFTDerivativeProtocolTokenV1__factory(sbtLibs, deployer).deploy(
+            new NFTDerivativeProtocolTokenV1__factory(deployer).deploy(
                 { nonce: deployerNonce++ }
             ),
             [],
@@ -287,7 +280,7 @@ import { BigNumber } from 'ethers';
             initializeSBTData,
             { nonce: deployerNonce++ }
         );
-        const sbtContract = new NFTDerivativeProtocolTokenV1__factory(sbtLibs, deployer).attach(sbtProxy.address);
+        const sbtContract = new NFTDerivativeProtocolTokenV1__factory(deployer).attach(sbtProxy.address);
         console.log('\t-- sbtContract: ', sbtContract.address);
         await exportAddress(hre, sbtContract, 'SBT');
         await exportSubgraphNetworksJson(hre, sbtContract, 'SBT');

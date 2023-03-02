@@ -10,46 +10,6 @@ import {
   BigInt
 } from "@graphprotocol/graph-ts";
 
-export class AdminChanged extends ethereum.Event {
-  get params(): AdminChanged__Params {
-    return new AdminChanged__Params(this);
-  }
-}
-
-export class AdminChanged__Params {
-  _event: AdminChanged;
-
-  constructor(event: AdminChanged) {
-    this._event = event;
-  }
-
-  get previousAdmin(): Address {
-    return this._event.parameters[0].value.toAddress();
-  }
-
-  get newAdmin(): Address {
-    return this._event.parameters[1].value.toAddress();
-  }
-}
-
-export class BeaconUpgraded extends ethereum.Event {
-  get params(): BeaconUpgraded__Params {
-    return new BeaconUpgraded__Params(this);
-  }
-}
-
-export class BeaconUpgraded__Params {
-  _event: BeaconUpgraded;
-
-  constructor(event: BeaconUpgraded) {
-    this._event = event;
-  }
-
-  get beacon(): Address {
-    return this._event.parameters[0].value.toAddress();
-  }
-}
-
 export class Initialized extends ethereum.Event {
   get params(): Initialized__Params {
     return new Initialized__Params(this);
@@ -178,24 +138,6 @@ export class Unpaused__Params {
   }
 
   get account(): Address {
-    return this._event.parameters[0].value.toAddress();
-  }
-}
-
-export class Upgraded extends ethereum.Event {
-  get params(): Upgraded__Params {
-    return new Upgraded__Params(this);
-  }
-}
-
-export class Upgraded__Params {
-  _event: Upgraded;
-
-  constructor(event: Upgraded) {
-    this._event = event;
-  }
-
-  get implementation(): Address {
     return this._event.parameters[0].value.toAddress();
   }
 }
@@ -974,25 +916,6 @@ export class BankTreasury extends ethereum.SmartContract {
     }
     let value = result.value;
     return ethereum.CallResult.fromValue(value[0].toBoolean());
-  }
-
-  proxiableUUID(): Bytes {
-    let result = super.call("proxiableUUID", "proxiableUUID():(bytes32)", []);
-
-    return result[0].toBytes();
-  }
-
-  try_proxiableUUID(): ethereum.CallResult<Bytes> {
-    let result = super.tryCall(
-      "proxiableUUID",
-      "proxiableUUID():(bytes32)",
-      []
-    );
-    if (result.reverted) {
-      return new ethereum.CallResult();
-    }
-    let value = result.value;
-    return ethereum.CallResult.fromValue(value[0].toBytes());
   }
 
   sigNonces(param0: Address): BigInt {
@@ -2218,70 +2141,6 @@ export class UnpauseCall__Outputs {
   _call: UnpauseCall;
 
   constructor(call: UnpauseCall) {
-    this._call = call;
-  }
-}
-
-export class UpgradeToCall extends ethereum.Call {
-  get inputs(): UpgradeToCall__Inputs {
-    return new UpgradeToCall__Inputs(this);
-  }
-
-  get outputs(): UpgradeToCall__Outputs {
-    return new UpgradeToCall__Outputs(this);
-  }
-}
-
-export class UpgradeToCall__Inputs {
-  _call: UpgradeToCall;
-
-  constructor(call: UpgradeToCall) {
-    this._call = call;
-  }
-
-  get newImplementation(): Address {
-    return this._call.inputValues[0].value.toAddress();
-  }
-}
-
-export class UpgradeToCall__Outputs {
-  _call: UpgradeToCall;
-
-  constructor(call: UpgradeToCall) {
-    this._call = call;
-  }
-}
-
-export class UpgradeToAndCallCall extends ethereum.Call {
-  get inputs(): UpgradeToAndCallCall__Inputs {
-    return new UpgradeToAndCallCall__Inputs(this);
-  }
-
-  get outputs(): UpgradeToAndCallCall__Outputs {
-    return new UpgradeToAndCallCall__Outputs(this);
-  }
-}
-
-export class UpgradeToAndCallCall__Inputs {
-  _call: UpgradeToAndCallCall;
-
-  constructor(call: UpgradeToAndCallCall) {
-    this._call = call;
-  }
-
-  get newImplementation(): Address {
-    return this._call.inputValues[0].value.toAddress();
-  }
-
-  get data(): Bytes {
-    return this._call.inputValues[1].value.toBytes();
-  }
-}
-
-export class UpgradeToAndCallCall__Outputs {
-  _call: UpgradeToAndCallCall;
-
-  constructor(call: UpgradeToAndCallCall) {
     this._call = call;
   }
 }

@@ -9,7 +9,7 @@ dataSources:
     network: mainnet
     source:
       abi: SBT
-      address: "0xB7f8BC63BbcaD18155201308C8f3540b07f84F5e"
+      address: "0x610178dA211FEF7D417bC0e6FeD39F05609AD788"
       startBlock: 1
     mapping:
       kind: ethereum/events
@@ -121,7 +121,7 @@ dataSources:
     network: mainnet
     source:
       abi: Events
-      address: "0x0B306BF915C4d645ff596e518fAf3F9669b97016"
+      address: "0x9A676e781A523b5d0C0e43731313A708CB607508"
       startBlock: 1
     mapping:
       kind: ethereum/events
@@ -211,7 +211,7 @@ dataSources:
     network: mainnet
     source:
       abi: Voucher
-      address: "0x9A9f2CCfdE556A7E9Ff0848998Aa4a0CFD8863AE"
+      address: "0x959922bE3CAee4b8Cd9a407cc3ac1C251C2007B1"
       startBlock: 1
     mapping:
       kind: ethereum/events
@@ -246,7 +246,7 @@ dataSources:
     network: mainnet
     source:
       abi: Events
-      address: "0x59b670e9fA9D0A427751Af201D676719a970857b"
+      address: "0xc6e7DF5E7b4f2A278906862b61205850344D4e7d"
       startBlock: 1
     mapping:
       kind: ethereum/events
@@ -326,7 +326,7 @@ dataSources:
     network: mainnet
     source:
       abi: Events
-      address: "0xc6e7DF5E7b4f2A278906862b61205850344D4e7d"
+      address: "0x3Aa5ebB10DC797CAC828524e59A333d0A371443c"
       startBlock: 1
     mapping:
       kind: ethereum/events

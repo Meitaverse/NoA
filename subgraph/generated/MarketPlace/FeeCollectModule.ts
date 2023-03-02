@@ -78,12 +78,16 @@ export class FeeCollectModule__getPublicationDataResultValue0Struct extends ethe
     return this[6].toBigInt();
   }
 
+  get collectLimitPerAddress(): BigInt {
+    return this[7].toBigInt();
+  }
+
   get genesisFee(): i32 {
-    return this[7].toI32();
+    return this[8].toI32();
   }
 
   get previousFee(): i32 {
-    return this[8].toI32();
+    return this[9].toI32();
   }
 }
 
@@ -215,7 +219,7 @@ export class FeeCollectModule extends ethereum.SmartContract {
   ): FeeCollectModule__getPublicationDataResultValue0Struct {
     let result = super.call(
       "getPublicationData",
-      "getPublicationData(uint256):((uint256,uint256,uint256,address,uint256,uint256,uint256,uint16,uint16))",
+      "getPublicationData(uint256):((uint256,uint256,uint256,address,uint256,uint256,uint256,uint256,uint16,uint16))",
       [ethereum.Value.fromUnsignedBigInt(publishId)]
     );
 
@@ -231,7 +235,7 @@ export class FeeCollectModule extends ethereum.SmartContract {
   > {
     let result = super.tryCall(
       "getPublicationData",
-      "getPublicationData(uint256):((uint256,uint256,uint256,address,uint256,uint256,uint256,uint16,uint16))",
+      "getPublicationData(uint256):((uint256,uint256,uint256,address,uint256,uint256,uint256,uint256,uint16,uint16))",
       [ethereum.Value.fromUnsignedBigInt(publishId)]
     );
     if (result.reverted) {

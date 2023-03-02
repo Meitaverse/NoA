@@ -93,12 +93,8 @@ import { BigNumber } from 'ethers';
         let balance = await sbt['balanceOf(uint256)'](1);
         console.log('\n\t ---- balance of treasury: ', balance);
 
-        // const sbtLogic = await new SBTLogic__factory(deployer).deploy();
-        // sbtLibs = {
-        //     'contracts/libraries/SBTLogic.sol:SBTLogic': sbtLogic.address,
-        // };
 
-        // let sbtImplV2: NFTDerivativeProtocolTokenV2 = await new NFTDerivativeProtocolTokenV2__factory(sbtLibs, deployer).deploy();
+        // let sbtImplV2: NFTDerivativeProtocolTokenV2 = await new NFTDerivativeProtocolTokenV2__factory(deployer).deploy();
 
         // await sbt.connect(deployer).upgradeTo(sbtImplV2.address);
   
