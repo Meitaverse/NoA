@@ -112,6 +112,7 @@ contract NFTDerivativeProtocolTokenV2 is
         ERC3525Upgradeable._setApprovalForAll(vars.wallet, _banktreasury, true);
        
         _createProfile(
+            vars.wallet,
             tokenId_,
             vars.nickName,
             vars.imageURI
@@ -232,6 +233,7 @@ contract NFTDerivativeProtocolTokenV2 is
     }
 
     function _createProfile(
+        address wallet_,
         uint256 tokenId_,
         string memory nickName,
         string memory imageURI
@@ -246,8 +248,8 @@ contract NFTDerivativeProtocolTokenV2 is
 
          emit ProfileCreated(
             tokenId_,
-            _msgSender(),
-            _banktreasury,    
+            tx.origin,
+            wallet_,    
             nickName,
             imageURI
         );

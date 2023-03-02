@@ -3,7 +3,7 @@ import '@nomiclabs/hardhat-ethers';
 import { expect, use } from 'chai';
 import { solidity } from 'ethereum-waffle';
 import { BigNumber, BytesLike, Contract, Signer, Wallet } from 'ethers';
-import { ethers } from "hardhat";
+import { ethers, upgrades } from 'hardhat';
 import {
   MIN_DELAY,
   QUORUM_PERCENTAGE,
@@ -39,9 +39,7 @@ import {
   DerivativeNFT,
   DerivativeNFT__factory,
   NFTDerivativeProtocolTokenV1,
-  NFTDerivativeProtocolTokenV2,
   NFTDerivativeProtocolTokenV1__factory,
-  NFTDerivativeProtocolTokenV2__factory,
   Manager,
   Manager__factory,
   Voucher,
@@ -52,7 +50,6 @@ import {
   Template__factory,
   MultirecipientFeeCollectModule,
   MultirecipientFeeCollectModule__factory,
-  MarketLogic,
   MarketLogic__factory,
   FETH,
   FETH__factory,
@@ -66,8 +63,6 @@ import {
   Currency__factory,
   RoyaltyRegistry,
   RoyaltyRegistry__factory,
-  MockERC1155CreatorExtensionOverride,
-  MockERC1155CreatorExtensionOverride__factory,
 } from '../typechain';
 
 import { ManagerLibraryAddresses } from '../typechain/factories/contracts/Manager__factory';
@@ -152,14 +147,12 @@ export let eventsLib: Events;
 export let moduleGlobals: ModuleGlobals;
 export let helper: Helper;
 export let receiverMock: ERC3525ReceiverMock
-export let bankTreasuryImpl: BankTreasury
 export let bankTreasuryContract: BankTreasury
 export let marketLibs:MarketPlaceLibraryAddresses
 export let marketPlaceImpl: MarketPlace
 export let marketPlaceContract: MarketPlace
 export let voucherMarketImpl: VoucherMarket
 export let voucherMarketContract: VoucherMarket
-export let sbtImpl: NFTDerivativeProtocolTokenV1;
 export let sbtContract: NFTDerivativeProtocolTokenV1;
 export let derivativeNFTImpl: DerivativeNFT;
 export let metadataDescriptor: DerivativeMetadataDescriptor;
@@ -169,7 +162,6 @@ export let fethImpl: FETH
 export let feth: FETH;
 export let royaltyRegistry: RoyaltyRegistry;
 
-export let voucherImpl: Voucher;
 export let voucherContract: Voucher
 
 /* Modules */
@@ -223,7 +215,6 @@ before(async function () {
 
   // Deployment
   helper = await new Helper__factory(deployer).deploy();
-
 
 
   //Template
@@ -299,41 +290,44 @@ before(async function () {
     manager.address
   );
 
+  const implV1Factory = new NFTDerivativeProtocolTokenV1__factory(deployer);
 
-  sbtImpl = await new NFTDerivativeProtocolTokenV1__factory(deployer).deploy();
-  let initializeSBTData = sbtImpl.interface.encodeFunctionData("initialize", [
+  sbtContract= (await upgrades.deployProxy(
+    implV1Factory,
+    [
       SBT_NAME, 
       SBT_SYMBOL, 
       SBT_DECIMALS,
       manager.address,
       sbtMetadataDescriptor.address,
-  ]);
-  const sbtProxy = await new ERC1967Proxy__factory(deployer).deploy(
-    sbtImpl.address,
-    initializeSBTData
-  );
-  sbtContract = new NFTDerivativeProtocolTokenV1__factory(deployer).attach(sbtProxy.address);
+    ],
+    { kind: "uups", initializer: "initialize" }
+  )) as NFTDerivativeProtocolTokenV1;
+
   console.log("sbtContract.address: ", sbtContract.address);
 
+  //gonvernor
+  const governorImpl = new GovernorContract__factory(deployer);
 
-  const governorImpl = await new GovernorContract__factory(deployer).deploy();
-  let initializeDataGovrnor = governorImpl.interface.encodeFunctionData("initialize", [
-    sbtContract.address,
-    timeLock.address,
-    QUORUM_PERCENTAGE, 
-    VOTING_PERIOD,
-    VOTING_DELAY,
-  ]);
+  governorContract = (await upgrades.deployProxy(
+    governorImpl,
+    [
+      sbtContract.address,
+      timeLock.address,
+      QUORUM_PERCENTAGE, 
+      VOTING_PERIOD,
+      VOTING_DELAY,
+    ],
+    { kind: "uups", initializer: "initialize" }
+  )) as GovernorContract;
 
-  const gonvernorProxy = await new ERC1967Proxy__factory(deployer).deploy(
-    governorImpl.address,
-    initializeDataGovrnor
-    );
-  governorContract = new GovernorContract__factory(deployer).attach(gonvernorProxy.address);
   console.log("governorContract address: ", governorContract.address);
   
   const soulBoundTokenIdOfBankTreaury = FIRST_PROFILE_ID;
-  bankTreasuryImpl = await new BankTreasury__factory(deployer).deploy(
+
+  //treasury
+  
+  const bankTreasuryImpl = await new BankTreasury__factory(deployer).deploy(
   );
   let initializeData = bankTreasuryImpl.interface.encodeFunctionData("initialize", [
     deployerAddress,
@@ -349,10 +343,28 @@ before(async function () {
     initializeData
   );
   bankTreasuryContract = new BankTreasury__factory(deployer).attach(bankTreasuryProxy.address);
+  
+ /*
+  const bankTreasuryImpl = new BankTreasury__factory(deployer);
+
+  bankTreasuryContract = (await upgrades.deployProxy(
+    bankTreasuryImpl,
+    [
+      deployerAddress,
+      governanceAddress,
+      soulBoundTokenIdOfBankTreaury,
+      [userAddress, userTwoAddress, userThreeAddress],
+      NUM_CONFIRMATIONS_REQUIRED,  //All full signed 
+      LOCKUP_DURATION
+    ],
+    { kind: "uups", initializer: "initialize" }
+  )) as BankTreasury;
+*/
   console.log("bankTreasuryContract.address: ", bankTreasuryContract.address);
   
   // voucher
-  voucherImpl = await new Voucher__factory(deployer).deploy( 
+  
+  const voucherImpl = await new Voucher__factory(deployer).deploy( 
     sbtContract.address, 
     bankTreasuryContract.address 
   );
@@ -366,6 +378,7 @@ before(async function () {
     initializeVoucherData
   );
   voucherContract = new Voucher__factory(deployer).attach(voucherProxy.address);
+  
   console.log("voucherContract.address: ", voucherContract.address);
 
 

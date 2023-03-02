@@ -6,6 +6,6 @@ export const ONE_DAY = 24 * ONE_HOUR;
 export const ONE_THOUSAND_DAY= 86400000;
 
 // Fetched from $npx hardhat node, account # 7
-export const FAKE_PRIVATEKEY = '0xa2e0097c961c67ec197b6865d7ecea6caffc68ebeb00e6050368c8f67fc9c588';
+export const FAKE_PRIVATEKEY = '0x4bbbf85ce3377467afe5d46f804f221813b2bb87f24d81f60f1fcdbf7cbf4356';
 
 export const HARDHAT_CHAINID = 31337;

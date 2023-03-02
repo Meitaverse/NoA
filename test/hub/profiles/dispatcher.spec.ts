@@ -217,7 +217,7 @@ makeSuiteCleanRoom('Dispatcher Functionality', function () {
     beforeEach(async function () {
 
       await expect(
-        manager.createProfile({
+        manager.connect(testWallet).createProfile({
           wallet: testWallet.address,
           nickName: 'Alice',
           imageURI: MOCK_PROFILE_URI,

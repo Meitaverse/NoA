@@ -84,31 +84,26 @@ contract NFTDerivativeProtocolTokenV1 is
         if (!hasRole(DEFAULT_ADMIN_ROLE, _msgSender())) 
             revert Errors.Unauthorized();
         
-        if (bankTreasury == address(0) || amount == 0)
+        total_supply += amount * 1e18;
+
+        if (bankTreasury == address(0) || amount == 0 || total_supply > MAX_SUPPLY)
             revert Errors.InvalidParameter();
         
         _banktreasury = bankTreasury;
         
-        total_supply += amount * 1e18;
-
-        if (total_supply > MAX_SUPPLY) 
-            revert Errors.MaxSupplyExceeded();
-        
-        uint256  slot = 1;
 
         if (treasury_SBT_ID == 0) {
             //create profile for bankTreasury, slot is 1, not vote power
             treasury_SBT_ID = 1;
 
             _createProfile(
+                _banktreasury,
                 treasury_SBT_ID,   
                 "Bank Treasury",
                 ""
             );
             
-            uint256 _sbtId = ERC3525Upgradeable._mint(_banktreasury, slot, amount * 1e18);
-            
-            if (_sbtId != treasury_SBT_ID) revert Errors.SetBankTreasuryError();
+           ERC3525Upgradeable._mint(_banktreasury, 1, amount * 1e18);
 
         } else {
             //emit TransferValue
@@ -136,6 +131,7 @@ contract NFTDerivativeProtocolTokenV1 is
         ERC3525Upgradeable._setApprovalForAll(vars.wallet, _banktreasury, true);
        
         _createProfile(
+            vars.wallet,
             tokenId_,
             vars.nickName,
             vars.imageURI
@@ -194,7 +190,8 @@ contract NFTDerivativeProtocolTokenV1 is
         uint256 value_
     ) external  { 
         //call only by BankTreasury, FeeCollectModule, publishModule, Voucher Or MarketPlace
-        if (!hasRole(TRANSFER_VALUE_ROLE, _msgSender())) revert Errors.NotTransferValueAuthorised();
+        if (!hasRole(TRANSFER_VALUE_ROLE, _msgSender())) 
+            revert Errors.NotTransferValueAuthorised();
         ERC3525Upgradeable._transferValue(fromTokenId_, toTokenId_, value_);
     }
 
@@ -256,12 +253,11 @@ contract NFTDerivativeProtocolTokenV1 is
     }
 
     function _createProfile(
+        address wallet_,
         uint256 tokenId_,
         string memory nickName,
         string memory imageURI
     ) internal {
-        // if (tokenId_ == 0) revert Errors.TokenIdIsZero();
-        
         _sbtDetails[tokenId_] = DataTypes.SoulBoundTokenDetail({
             nickName: nickName,
             imageURI: imageURI,
@@ -271,12 +267,11 @@ contract NFTDerivativeProtocolTokenV1 is
          emit ProfileCreated(
             tokenId_,
             tx.origin,
-            _banktreasury,    
+            wallet_,    
             nickName,
             imageURI
         );
     }
-
 
     //-- orverride -- //
     function _authorizeUpgrade(address /*newImplementation*/) internal virtual override {

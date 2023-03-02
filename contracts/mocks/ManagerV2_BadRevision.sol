@@ -74,7 +74,6 @@ contract ManagerV2_BadRevision is
         return soulBoundTokenId;
     }
 
-
     function createHub(
         DataTypes.HubData memory hub
     ) external whenNotPaused onlyGov {

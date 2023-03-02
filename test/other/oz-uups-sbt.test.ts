@@ -42,19 +42,17 @@ import {
   derivativeNFTImpl,
   governanceAddress,
   sbtMetadataDescriptor,
-  sbtImpl,
-  // sbtContract,
   bankTreasuryContract,
   bankTreasuryImpl,
   LOCKUP_DURATION,
   INITIAL_SUPPLY,
   FIRST_PROFILE_ID,
   NickName,
+  sbtContract,
 } from '../__setup.spec';
 import { parseEther } from 'ethers/lib/utils';
 import { createProfileReturningTokenId } from '../helpers/utils';
 
- let sbtV1Proxy: NFTDerivativeProtocolTokenV1;
  let sbtProxyV2: NFTDerivativeProtocolTokenV2;
  let original_balance = 10000;
 
@@ -62,33 +60,29 @@ makeSuiteCleanRoom('UUPS SBT ability', function () {
   describe("Deployment", () => {
     beforeEach(async () => {
 
-      const implV1Factory = new NFTDerivativeProtocolTokenV1__factory(deployer);
+        await manager.connect(user).createProfile({ 
+          wallet: userAddress,
+          nickName: NickName,
+          imageURI: MOCK_PROFILE_URI,
+        });
 
-       sbtV1Proxy = (await upgrades.deployProxy(
-        implV1Factory,
-        [
-          SBT_NAME, 
-          SBT_SYMBOL, 
-          SBT_DECIMALS,
-          manager.address,
-          sbtMetadataDescriptor.address,
-        ],
-        { kind: "uups", initializer: "initialize" }
-      )) as NFTDerivativeProtocolTokenV1;
-
-      // console.log('sbtV1Proxy: ' , sbtV1Proxy.address);
+          //user buy some SBT Values 
+          await bankTreasuryContract.connect(user).buySBT(SECOND_PROFILE_ID, {value: original_balance});
+          
+          let balance = await sbtContract.connect(user)['balanceOf(uint256)'](SECOND_PROFILE_ID);
+          console.log('balance of user: ' , balance);
+    
 
       });
 
     it("Proxy state", async () => {
-      // sbtContract.connect(governance).
-      const name = await sbtV1Proxy.name();
-      const symbol = await sbtV1Proxy.symbol();
-      const decimals = await sbtV1Proxy.valueDecimals();
+      const name = await sbtContract.name();
+      const symbol = await sbtContract.symbol();
+      const decimals = await sbtContract.valueDecimals();
       expect([
-        await sbtV1Proxy.name(),
-        await sbtV1Proxy.symbol(),
-        await sbtV1Proxy.valueDecimals(),
+        await sbtContract.name(),
+        await sbtContract.symbol(),
+        await sbtContract.valueDecimals(),
       ]).to.deep.eq([
         SBT_NAME,
         SBT_SYMBOL,
@@ -98,7 +92,7 @@ makeSuiteCleanRoom('UUPS SBT ability', function () {
 
     it("Attempt to initialize the original SBT contract should revert", async () => {
       await expect(
-        sbtV1Proxy.connect(user).initialize(
+        sbtContract.connect(user).initialize(
           SBT_NAME, 
           SBT_SYMBOL, 
           8,
@@ -107,61 +101,41 @@ makeSuiteCleanRoom('UUPS SBT ability', function () {
           )
         ).to.be.revertedWith(ERRORS.UUPSINITIALIZED);
     });
+
+    it("SBT Proxy balance of user", async () => {
+      expect(
+        await sbtContract['balanceOf(uint256)'](SECOND_PROFILE_ID),
+      ).to.deep.eq(
+        original_balance
+      );
+
+    });
+
   });
 
   describe("#upgrade V2", () => {
     beforeEach(async () => {
 
-      const implV1Factory = new NFTDerivativeProtocolTokenV1__factory(deployer);
+      await manager.connect(user).createProfile({ 
+        wallet: userAddress,
+        nickName: NickName,
+        imageURI: MOCK_PROFILE_URI,
+      });
 
-      const sbtV1Proxy = (await upgrades.deployProxy(
-        implV1Factory,
-        [
-          SBT_NAME, 
-          SBT_SYMBOL, 
-          SBT_DECIMALS,
-          manager.address,
-          sbtMetadataDescriptor.address,
-        ],
-        { kind: "uups", initializer: "initialize" }
-      )) as NFTDerivativeProtocolTokenV1;
-
-      // console.log('sbtV1Proxy: ' , sbtV1Proxy.address);
-
-      await expect(sbtV1Proxy.connect(deployer).setBankTreasury(
-        bankTreasuryContract.address, 
-        INITIAL_SUPPLY
-      )).to.not.be.reverted;
       
-      // expect(
-      //     await createProfileReturningTokenId({
-      //         vars: {
-      //         wallet: userAddress,
-      //         nickName: NickName,
-      //         imageURI: MOCK_PROFILE_URI,
-      //       },
-      //     }) 
-      // ).to.eq(SECOND_PROFILE_ID);
-
-      await expect(manager.connect(user).createProfile({ 
-            wallet: userTwoAddress,
-            nickName: NickName,
-            imageURI: MOCK_PROFILE_URI,
-      })).to.not.be.reverted;
-
-      let balance = await sbtV1Proxy['balanceOf(uint256)'](SECOND_PROFILE_ID);
-      console.log('balance of user: ' , balance);
-
       //user buy some SBT Values 
       await bankTreasuryContract.connect(user).buySBT(SECOND_PROFILE_ID, {value: original_balance});
 
+      let balance = await sbtContract.connect(user)['balanceOf(uint256)'](SECOND_PROFILE_ID);
+      console.log('sbtContract, balance of user: ' , balance);
+
       const implV2Factory = new NFTDerivativeProtocolTokenV2__factory(deployer);
       sbtProxyV2 = (await upgrades.upgradeProxy(
-        sbtV1Proxy.address,
+        sbtContract.address,
         implV2Factory,
       )) as NFTDerivativeProtocolTokenV2;
       
-      // console.log('sbtProxyV2: ' , sbtProxyV2.address);
+      console.log('sbtProxyV2: ' , sbtProxyV2.address);
 
     });
 
@@ -180,22 +154,14 @@ makeSuiteCleanRoom('UUPS SBT ability', function () {
       ]);
     });
 
-    it("New SBT Proxy balance of treasury", async () => {
-      expect([
-        await sbtProxyV2['balanceOf(uint256)'](FIRST_PROFILE_ID),
-      ]).to.deep.eq([
-        parseEther(INITIAL_SUPPLY.toString()),
-      ]);
-    });
+    it("New SBT Proxy balance of user still not changed", async () => {
+        expect(
+          await sbtProxyV2['balanceOf(uint256)'](SECOND_PROFILE_ID),
+        ).to.deep.eq(
+          original_balance
+        );
 
-    it("New SBT Proxy balance of user", async () => {
-      expect([
-        await sbtProxyV2['balanceOf(uint256)'](SECOND_PROFILE_ID),
-      ]).to.deep.eq([
-        parseEther(original_balance.toString()),
-      ]);
 
-      // await bankTreasuryContract.connect(user).buySBT(SECOND_PROFILE_ID, {value: original_balance});
     });
 
 

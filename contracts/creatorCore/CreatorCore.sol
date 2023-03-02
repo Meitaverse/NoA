@@ -3,7 +3,7 @@
 pragma solidity ^0.8.0;
 
 /// @author:Bitsoul Protocol
-
+import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import "@openzeppelin/contracts/utils/Strings.sol";
 import "@openzeppelin/contracts/utils/introspection/ERC165.sol";
@@ -20,7 +20,7 @@ import "./ICreatorCore.sol";
 /**
  * @dev Core creator implementation
  */
-abstract contract CreatorCore is ReentrancyGuard, ICreatorCore, ERC165 {
+abstract contract CreatorCore is Initializable, ReentrancyGuard, ICreatorCore, ERC165 {
     using Strings for uint256;
     using EnumerableSet for EnumerableSet.AddressSet;
     using AddressUpgradeable for address;
@@ -100,6 +100,9 @@ abstract contract CreatorCore is ReentrancyGuard, ICreatorCore, ERC165 {
      */
     bytes4 private constant _INTERFACE_ID_ROYALTIES_EIP2981 = 0x2a55205a;
 
+    function __AccessControl_init() internal onlyInitializing {
+
+    }
     /**
      * @dev See {IERC165-supportsInterface}.
      */

@@ -3,6 +3,7 @@ import { hexlify, keccak256, RLP } from 'ethers/lib/utils';
 import { task } from 'hardhat/config';
 import { exportAddress } from "./config";
 import { exportSubgraphNetworksJson } from "./subgraph";
+import { ethers, upgrades } from 'hardhat';
 
 import {
     MIN_DELAY,
@@ -36,14 +37,14 @@ import {
     FETH__factory,
     RoyaltyRegistry__factory,
     VoucherMarket__factory,
-    SBTLogic__factory,
+    NFTDerivativeProtocolTokenV1,
+    GovernorContract,
   } from '../typechain';
   import { deployContract, waitForTx , ProtocolState, Error, ZERO_ADDRESS} from './helpers/utils';
   import { ManagerLibraryAddresses } from '../typechain/factories/contracts/Manager__factory';
   
   import { DataTypes } from '../typechain/contracts/modules/template/Template';
   import { MarketPlaceLibraryAddresses } from '../typechain/factories/contracts/MarketPlace__factory';
-  import { NFTDerivativeProtocolTokenV1LibraryAddresses } from '../typechain/factories/contracts/NFTDerivativeProtocolTokenV1__factory';
 import { BigNumber } from 'ethers';
   
   const TREASURY_FEE_BPS = 500;
@@ -60,7 +61,6 @@ import { BigNumber } from 'ethers';
   const PublishRoyaltySBT = 100;
   
   let managerLibs: ManagerLibraryAddresses;
-  export let sbtLibs: NFTDerivativeProtocolTokenV1LibraryAddresses;
 
 
   // yarn full-deploy-local
@@ -242,10 +242,7 @@ import { BigNumber } from 'ethers';
                 { nonce: deployerNonce++ }
         );
 
-        const sbtLogic = await new SBTLogic__factory(deployer).deploy({ nonce: deployerNonce++ });
-        sbtLibs = {
-          'contracts/libraries/SBTLogic.sol:SBTLogic': sbtLogic.address,
-        };
+        /*
         const sbtImpl = await deployContract(
             new NFTDerivativeProtocolTokenV1__factory(sbtLibs, deployer).deploy(
                 { nonce: deployerNonce++ }
@@ -265,10 +262,27 @@ import { BigNumber } from 'ethers';
             { nonce: deployerNonce++ }
         );
         const sbtContract = new NFTDerivativeProtocolTokenV1__factory(sbtLibs, deployer).attach(sbtProxy.address);
+        */
+
+        const implV1Factory = new NFTDerivativeProtocolTokenV1__factory(deployer);
+
+        const sbtContract= (await upgrades.deployProxy(
+          implV1Factory,
+          [
+            SBT_NAME, 
+            SBT_SYMBOL, 
+            SBT_DECIMALS,
+            manager.address,
+            sbtMetadataDescriptor.address,
+          ],
+          { kind: "uups", initializer: "initialize" }
+        )) as NFTDerivativeProtocolTokenV1;
+
         console.log('\t-- sbtContract: ', sbtContract.address);
         await exportAddress(hre, sbtContract, 'SBT');
         await exportSubgraphNetworksJson(hre, sbtContract, 'SBT');
 
+        /*
         const governorImpl = await new GovernorContract__factory(deployer).deploy({ nonce: deployerNonce++ });
         let initializeDataGovrnor = governorImpl.interface.encodeFunctionData("initialize", [
             sbtContract.address,
@@ -284,6 +298,23 @@ import { BigNumber } from 'ethers';
             { nonce: deployerNonce++ }
         );
         const governorContract = new GovernorContract__factory(deployer).attach(gonvernorProxy.address);
+        */
+
+        //gonvernor
+        const governorImpl = new GovernorContract__factory(deployer);
+
+        const governorContract = (await upgrades.deployProxy(
+          governorImpl,
+          [
+            sbtContract.address,
+            timeLock.address,
+            QUORUM_PERCENTAGE, 
+            VOTING_PERIOD,
+            VOTING_DELAY,
+          ],
+          { kind: "uups", initializer: "initialize" }
+        )) as GovernorContract;     
+          
         console.log("\t-- governorContract address: ", governorContract.address);
         await exportAddress(hre, governorContract, 'GovernorContract');
         await exportSubgraphNetworksJson(hre, governorContract, 'GovernorContract');

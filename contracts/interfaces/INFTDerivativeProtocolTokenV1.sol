@@ -1,7 +1,9 @@
 //SPDX-License-Identifier: MIT
 
 pragma solidity ^0.8.0;
+
 import {DataTypes} from "../libraries/DataTypes.sol";
+
 interface INFTDerivativeProtocolTokenV1  { 
 
     /**
@@ -16,7 +18,7 @@ interface INFTDerivativeProtocolTokenV1  {
     event ProfileCreated(
         uint256 indexed soulBoundTokenId,
         address indexed creator,
-        address indexed -,
+        address indexed wallet,
         string nickName,
         string imageURI
     );
@@ -33,31 +35,6 @@ interface INFTDerivativeProtocolTokenV1  {
         string nickName,
         string imageURI
     );
-
-    // /**
-    //  * @notice Initializes the dNFT Derivative Protocol Token, setting the initial governance address as well as the name and symbol in
-    //  * the ERC3525 base contract.
-    //  *
-    //  * @param name The name to set for the Token.
-    //  * @param symbol The symbol to set for the Token.
-    //  * @param decimals The decimal to set for the Token.
-    //  * @param manager The address of Manager contract
-    //  * @param metadataDescriptor The address of metadata descriptor
-    //  */
-    // function initialize(
-    //     string calldata name,
-    //     string calldata symbol,
-    //     uint8 decimals,
-    //     address manager,
-    //     address metadataDescriptor
-    // ) external ;
-
-    // /**
-    //  * @notice Return the version of current contract
-    //  *
-    //  * @return version number
-    //  */
-    // function version() external view returns(uint256);
 
     /**
      * @notice Create a profile
@@ -91,6 +68,4 @@ interface INFTDerivativeProtocolTokenV1  {
         uint256 toTokenId_,
         uint256 value_
     ) external;
-
-
 }

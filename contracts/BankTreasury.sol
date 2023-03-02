@@ -5,7 +5,7 @@ pragma solidity ^0.8.13;
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/access/AccessControlUpgradeable.sol";
-import "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
+// import "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
 import "@openzeppelin/contracts/utils/introspection/IERC165.sol";
 import "@solvprotocol/erc-3525/contracts/IERC3525Receiver.sol";
 import "@solvprotocol/erc-3525/contracts/IERC3525.sol";
@@ -48,8 +48,8 @@ contract BankTreasury is
     IERC3525Receiver,
     PausableUpgradeable,
     AdminRoleEnumerable,
-    FeeModuleRoleEnumerable,
-    UUPSUpgradeable
+    FeeModuleRoleEnumerable
+    // UUPSUpgradeable
 {
     using Address for address payable;
     using SafeERC20Upgradeable for IERC20Upgradeable;
@@ -108,7 +108,7 @@ contract BankTreasury is
     ) external override initializer {
         AdminRoleEnumerable._initializeAdminRole(admin);
         __Pausable_init();
-        __UUPSUpgradeable_init();
+        // __UUPSUpgradeable_init();
         ReentrancyGuardUpgradeable.__ReentrancyGuard_init();
 
         lockupDuration = _lockupDuration;
@@ -944,9 +944,9 @@ contract BankTreasury is
     }
 
     //-- orverride -- //
-    function _authorizeUpgrade(address /*newImplementation*/) internal virtual override {
-        if (!hasRole(DEFAULT_ADMIN_ROLE, _msgSender())) revert Errors.Unauthorized();
-    }
+    // function _authorizeUpgrade(address /*newImplementation*/) internal virtual override {
+    //     if (!hasRole(DEFAULT_ADMIN_ROLE, _msgSender())) revert Errors.Unauthorized();
+    // }
 
     /**
      * @notice Lockup an account's earnest funds for 24-25 hours.

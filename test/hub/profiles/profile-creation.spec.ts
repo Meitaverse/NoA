@@ -105,6 +105,8 @@ makeSuiteCleanRoom('Profile Creation', function () {
                     MOCK_PROFILE_URI
               );
 
+             let balance = await sbtContract.connect(user)['balanceOf(uint256)'](SECOND_PROFILE_ID);
+             console.log('balance of user: ' , balance);
 
             });
 

@@ -30,7 +30,7 @@ export const accounts = [
     balance,
   },
   {
-    secretKey: '0xa2e0097c961c67ec197b6865d7ecea6caffc68ebeb00e6050368c8f67fc9c588',
+    secretKey: '0x4bbbf85ce3377467afe5d46f804f221813b2bb87f24d81f60f1fcdbf7cbf4356',
     balance,
   },
 ];
