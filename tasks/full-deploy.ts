@@ -502,7 +502,7 @@ import { BigNumber } from 'ethers';
         );
   
         console.log('\n\t-- sbtContract set bankTreasuryContract address and INITIAL SUPPLY --');
-        await waitForTx(sbtContract.connect(deployer).setBankTreasury(
+        await waitForTx(sbtContract.connect(governance).setBankTreasury(
             bankTreasuryContract.address, 
             INITIAL_SUPPLY
         ));
