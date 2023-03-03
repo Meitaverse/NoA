@@ -32,7 +32,6 @@ library Errors {
   error PublicationIsExisted();
   error MaxSupplyExceeded();
   error MaxExceeded();
-  error ReferrerFeeExceeded();
   error CollectPerAddrLimitExceeded();
   error NFTMarketFees_Invalid_Referrer_Fee();
   error ApproveToOwner();

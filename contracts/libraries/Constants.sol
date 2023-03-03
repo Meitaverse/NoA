@@ -37,17 +37,6 @@ uint256 constant MAX_ROYALTY_RECIPIENTS = 5;
 uint256 constant MIN_PERCENT_INCREMENT_DENOMINATOR = BASIS_POINTS / 1_000;
 
 /**
- * @dev Default royalty cut paid out on secondary sales.
- * Set to 10% of the secondary sale.
- */
-uint96 constant ROYALTY_IN_BASIS_POINTS = 1_000;
-
-/**
- * @dev 10%, expressed as a denominator for more efficient calculations.
- */
-uint256 constant ROYALTY_RATIO = BASIS_POINTS / ROYALTY_IN_BASIS_POINTS;
-
-/**
  * @dev The gas limit to send ETH to multiple recipients, enough for a 5-way split.
  */
 uint256 constant SEND_VALUE_GAS_LIMIT_MULTIPLE_RECIPIENTS = 210_000;

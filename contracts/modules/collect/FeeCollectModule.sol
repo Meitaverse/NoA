@@ -23,12 +23,15 @@ import {SafeERC20} from '@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol
  * @notice A struct containing the necessary data to execute collect actions on a publication.
  *
  * @param genesisSoulBoundTokenId The genesis SoulBoundTokenId with this publication.
+ * @param previousSoulBoundTokenId The previous SoulBoundTokenId with this publication.
  * @param tokenId The tokenId with this publication.
+ * @param currencycurrency The currency
  * @param amount The total supply with this publication.
  * @param salePrice The collecting cost associated with this publication.
  * @param royaltyBasisPoints The royalty basis points for derivative or OpenSea
- * @param ownershipSoulBoundTokenId The toSoulBoundTokenId associated with this publication.
+ * @param collectLimitPerAddress The toSoulBoundTokenId associated with this publication.
  * @param genesisFee The percentage of the fee that will be transferred to the genesis soulBoundTokenId of this publication.
+ * @param previousFee The percentage of the fee that will be transferred to the previous soulBoundTokenId of this publication.
  */
 struct ProfilePublicationData {
     uint256 genesisSoulBoundTokenId;      
@@ -66,7 +69,11 @@ contract FeeCollectModule is ReentrancyGuard, FeeModuleBase, ModuleBase, ICollec
     //publishId => collector SBT Id => collect total count
     mapping(uint256 => mapping(uint256 => uint256)) internal _collectCountPerAddress;
 
-    constructor(address manager, address market, address moduleGlobals) FeeModuleBase(moduleGlobals) ModuleBase(manager, market) {}
+    constructor(
+        address manager, 
+        address market, 
+        address moduleGlobals
+    ) FeeModuleBase(moduleGlobals) ModuleBase(manager, market) {}
 
     function initializePublicationCollectModule(
         uint256 publishId,
@@ -173,7 +180,6 @@ contract FeeCollectModule is ReentrancyGuard, FeeModuleBase, ModuleBase, ICollec
             previousCreatorRev = uint96(payValue * _dataByPublicationByProfile[publishId].previousFee / BASIS_POINTS);
             sellerRev = uint96(payValue) - totalFees - creatorRev - previousCreatorRev;
         }
-
     }
 
     function _processCollect(
@@ -183,19 +189,14 @@ contract FeeCollectModule is ReentrancyGuard, FeeModuleBase, ModuleBase, ICollec
         uint96 payValue,
         bytes calldata data
     ) internal returns (DataTypes.RoyaltyAmounts memory royaltyAmounts){
-        // uint256 referrerSoulBoundTokenId;
-        // uint16 referrerFee;
+        uint256 referrerSoulBoundTokenId;
         uint256 uints;
         
         if (data.length != 0) {
-            (, , uints) = abi.decode(
+            (referrerSoulBoundTokenId, , uints) = abi.decode(
                 data,
                 (uint256, uint16,uint256)
             );
-            // referrerFee max limit 1000
-            // if (referrerFee >  BUY_REFERRER_FEE_DENOMINATOR ) {
-            //     revert Errors.ReferrerFeeExceeded();
-            // }
         }
 
         //TODO
@@ -222,14 +223,14 @@ contract FeeCollectModule is ReentrancyGuard, FeeModuleBase, ModuleBase, ICollec
                 royaltyAmounts.previousAmount = uint96(payValue * _dataByPublicationByProfile[publishId].previousFee / BASIS_POINTS);
                 royaltyAmounts.genesisAmount = uint96(payValue * _dataByPublicationByProfile[publishId].genesisFee / BASIS_POINTS);
                 royaltyAmounts.adjustedAmount = payValue - royaltyAmounts.treasuryAmount - royaltyAmounts.genesisAmount - royaltyAmounts.previousAmount;
-                //  if (treasuryFee >0 && treasuryFee > referrerFee ) {
+                 if (treasuryFee >0 && treasuryFee > BUY_REFERRER_FEE_DENOMINATOR ) {
 
-                    // if (referrerSoulBoundTokenId != 0 && referrerFee > 0) {
-                    //     royaltyAmounts.referrerAmount = uint96(payValue * referrerFee / BASIS_POINTS);
-                    //     royaltyAmounts.treasuryAmount = royaltyAmounts.treasuryAmount - royaltyAmounts.referrerAmount;
-                    // }
+                    if (referrerSoulBoundTokenId != 0 ) {
+                        royaltyAmounts.referrerAmount = uint96(payValue * BUY_REFERRER_FEE_DENOMINATOR / BASIS_POINTS);
+                        royaltyAmounts.treasuryAmount = royaltyAmounts.treasuryAmount - royaltyAmounts.referrerAmount;
+                    }
 
-                //  }
+                 }
 
                 // console.log("royaltyAmounts.treasuryAmount:", royaltyAmounts.treasuryAmount);
                 // console.log("royaltyAmounts.genesisAmount:", royaltyAmounts.genesisAmount);
@@ -242,7 +243,7 @@ contract FeeCollectModule is ReentrancyGuard, FeeModuleBase, ModuleBase, ICollec
                     collectorSoulBoundTokenId: collectorSoulBoundTokenId,
                     genesisSoulBoundTokenId: genesisSoulBoundTokenId,
                     previousSoulBoundTokenId: _dataByPublicationByProfile[publishId].previousSoulBoundTokenId,
-                    referrerSoulBoundTokenId: 0 //referrerSoulBoundTokenId
+                    referrerSoulBoundTokenId: referrerSoulBoundTokenId
                 });
 
                 {
@@ -255,7 +256,6 @@ contract FeeCollectModule is ReentrancyGuard, FeeModuleBase, ModuleBase, ICollec
                         royaltyAmounts
                     ); 
                 }
-               
             }
         }
     }
