@@ -4,8 +4,7 @@ pragma solidity ^0.8.13;
 
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol";
-import "@openzeppelin/contracts-upgradeable/access/AccessControlUpgradeable.sol";
-// import "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
+
 import "@openzeppelin/contracts/utils/introspection/IERC165.sol";
 import "@solvprotocol/erc-3525/contracts/IERC3525Receiver.sol";
 import "@solvprotocol/erc-3525/contracts/IERC3525.sol";
@@ -49,7 +48,6 @@ contract BankTreasury is
     PausableUpgradeable,
     AdminRoleEnumerable,
     FeeModuleRoleEnumerable
-    // UUPSUpgradeable
 {
     using Address for address payable;
     using SafeERC20Upgradeable for IERC20Upgradeable;

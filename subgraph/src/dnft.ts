@@ -5,6 +5,7 @@ import {
 } from "../generated/Manager/DerivativeNFT"
 
 import {
+  TransactionHashHistory,
   DNFT,
   DerivativeNFTContract,
 } from "../generated/schema";
@@ -126,4 +127,23 @@ export function loadOrCreateDNFT(address: Address, id: BigInt, event: ethereum.E
   } else {
     return null;
   }
+}
+
+export function saveTransactionHashHistory(eventName: string, event: ethereum.Event) : TransactionHashHistory | null {
+  
+  let _idString = event.transaction.hash.toHex();
+
+  const history = TransactionHashHistory.load(_idString) || new TransactionHashHistory(_idString)
+
+    if (history) {
+        history.eventName = eventName;
+        history.logIndex = event.logIndex;
+        history.eventAddress = event.address;
+        history.timestamp = event.block.timestamp
+        history.save()
+    } 
+
+    return history;
+
+
 }

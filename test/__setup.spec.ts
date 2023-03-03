@@ -3,7 +3,7 @@ import '@nomiclabs/hardhat-ethers';
 import { expect, use } from 'chai';
 import { solidity } from 'ethereum-waffle';
 import { BigNumber, BytesLike, Contract, Signer, Wallet } from 'ethers';
-import { ethers, upgrades } from 'hardhat';
+import { ethers } from 'hardhat';
 import {
   MIN_DELAY,
   QUORUM_PERCENTAGE,
@@ -259,7 +259,7 @@ before(async function () {
   // nonce + 2 is manager proxy
 
   const managerProxyAddress = computeContractAddress(deployerAddress, nonce + 2); //'0x' + keccak256(RLP.encode([deployerAddress, hubProxyNonce])).substr(26);
-  console.log("managerProxyAddress: ", managerProxyAddress);
+  // console.log("managerProxyAddress: ", managerProxyAddress);
 
   derivativeNFTImpl = await new DerivativeNFT__factory(deployer).deploy(
     managerProxyAddress
@@ -290,36 +290,48 @@ before(async function () {
     manager.address
   );
 
-  const implV1Factory = new NFTDerivativeProtocolTokenV1__factory(deployer);
+  const sbtImpl = await new NFTDerivativeProtocolTokenV1__factory(deployer).deploy();
 
-  sbtContract= (await upgrades.deployProxy(
-    implV1Factory,
-    [
+  let sbt_data = sbtImpl.interface.encodeFunctionData('initialize', [
       SBT_NAME, 
       SBT_SYMBOL, 
       SBT_DECIMALS,
       manager.address,
+      governanceAddress,
       sbtMetadataDescriptor.address,
-    ],
-    { kind: "uups", initializer: "initialize" }
-  )) as NFTDerivativeProtocolTokenV1;
+  ]);
+  
+  let sbtProxy = await new TransparentUpgradeableProxy__factory(deployer).deploy(
+    sbtImpl.address,  //logic
+    deployerAddress,  //admin
+    sbt_data          //initial data
+  );
+
+  // Connect the sbt proxy to the NFTDerivativeProtocolTokenV1 factory, must connect by governance, not deployer
+  sbtContract = NFTDerivativeProtocolTokenV1__factory.connect(sbtProxy.address, governance);
 
   console.log("sbtContract.address: ", sbtContract.address);
 
   //gonvernor
-  const governorImpl = new GovernorContract__factory(deployer);
+  const governorImpl = await new GovernorContract__factory(deployer).deploy();
 
-  governorContract = (await upgrades.deployProxy(
-    governorImpl,
-    [
+  let governor_data = governorImpl.interface.encodeFunctionData('initialize', [
+      governanceAddress,
       sbtContract.address,
       timeLock.address,
       QUORUM_PERCENTAGE, 
       VOTING_PERIOD,
       VOTING_DELAY,
-    ],
-    { kind: "uups", initializer: "initialize" }
-  )) as GovernorContract;
+  ]);
+  
+  let governorProxy = await new TransparentUpgradeableProxy__factory(deployer).deploy(
+    governorImpl.address,  //logic
+    deployerAddress,       // admin
+    governor_data          //initial data
+  );
+
+  governorContract = GovernorContract__factory.connect(governorProxy.address, governance);
+
 
   console.log("governorContract address: ", governorContract.address);
   
@@ -344,22 +356,6 @@ before(async function () {
   );
   bankTreasuryContract = new BankTreasury__factory(deployer).attach(bankTreasuryProxy.address);
   
- /*
-  const bankTreasuryImpl = new BankTreasury__factory(deployer);
-
-  bankTreasuryContract = (await upgrades.deployProxy(
-    bankTreasuryImpl,
-    [
-      deployerAddress,
-      governanceAddress,
-      soulBoundTokenIdOfBankTreaury,
-      [userAddress, userTwoAddress, userThreeAddress],
-      NUM_CONFIRMATIONS_REQUIRED,  //All full signed 
-      LOCKUP_DURATION
-    ],
-    { kind: "uups", initializer: "initialize" }
-  )) as BankTreasury;
-*/
   console.log("bankTreasuryContract.address: ", bankTreasuryContract.address);
   
   // voucher
@@ -536,37 +532,37 @@ before(async function () {
   await marketPlaceContract.connect(governance).setGlobalModules(moduleGlobals.address);
   console.log('marketPlaceContract setGlobalModules ok ');
   
-  await expect(sbtContract.connect(deployer).setBankTreasury(
+  await expect(sbtContract.connect(governance).setBankTreasury(
     bankTreasuryContract.address, 
     INITIAL_SUPPLY
   )).to.not.be.reverted;
   console.log('sbtContract setBankTreasury ok ');
   
-  const transferValueRole = await sbtContract.TRANSFER_VALUE_ROLE();
+  // const transferValueRole = await sbtContract.TRANSFER_VALUE_ROLE();
 
   await expect(
-    sbtContract.connect(deployer).grantRole(transferValueRole, manager.address)
+    sbtContract.connect(governance).grantTransferRole(manager.address)
   ).to.not.be.reverted;
   
   await expect(
-    sbtContract.connect(deployer).grantRole(transferValueRole, publishModule.address)
+    sbtContract.connect(governance).grantTransferRole(publishModule.address)
   ).to.not.be.reverted;
 
   await expect(
-    sbtContract.connect(deployer).grantRole(transferValueRole, feeCollectModule.address)
+    sbtContract.connect(governance).grantTransferRole(feeCollectModule.address)
   ).to.not.be.reverted;
   
   await expect(
-    sbtContract.connect(deployer).grantRole(transferValueRole, multirecipientFeeCollectModule.address)
+    sbtContract.connect(governance).grantTransferRole(multirecipientFeeCollectModule.address)
   ).to.not.be.reverted;
   await expect(
-    sbtContract.connect(deployer).grantRole(transferValueRole, bankTreasuryContract.address)
+    sbtContract.connect(governance).grantTransferRole(bankTreasuryContract.address)
   ).to.not.be.reverted;
   await expect(
-    sbtContract.connect(deployer).grantRole(transferValueRole, voucherContract.address)
+    sbtContract.connect(governance).grantTransferRole(voucherContract.address)
   ).to.not.be.reverted;
   await expect(
-    sbtContract.connect(deployer).grantRole(transferValueRole, marketPlaceContract.address)
+    sbtContract.connect(governance).grantTransferRole(marketPlaceContract.address)
   ).to.not.be.reverted;
 
   await expect(

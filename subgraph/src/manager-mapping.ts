@@ -42,7 +42,7 @@ import { loadProject } from "./shared/project";
 import { loadHub } from "./shared/hub";
 import { loadOrCreatePublish } from "./shared/publish";
 import { loadOrCreateAccount } from "./shared/accounts";
-import { loadOrCreateDNFT, loadOrCreateDNFTContract } from "./dnft";
+import { loadOrCreateDNFT, loadOrCreateDNFTContract, saveTransactionHashHistory } from "./dnft";
 import { loadOrCreateSoulBoundToken } from "./shared/soulBoundToken";
 import { getLogId } from "./shared/ids";
 import { TREASURY_SBT_ID } from "./shared/constants";
@@ -59,6 +59,8 @@ export function handleEmergencyAdminSet(event: EmergencyAdminSet): void {
         history.timestamp = event.block.timestamp
         history.save()
     } 
+
+    saveTransactionHashHistory("EmergencyAdminSet", event);
 }
 
 
@@ -81,6 +83,8 @@ export function handleManagerGovernanceSet(event: ManagerGovernanceSet): void {
             protocolContract.save()        
         }
     } 
+
+    saveTransactionHashHistory("ManagerGovernanceSet", event);
 }
 
 export function handleGlobalModulesSet(event: GlobalModulesSet): void {
@@ -93,7 +97,7 @@ export function handleGlobalModulesSet(event: GlobalModulesSet): void {
         protocolContract.contract = event.params.globalModule
         protocolContract.save()        
     }
-    
+    saveTransactionHashHistory("GlobalModulesSet", event);
 }
 
 export function handleHubCreated(event: HubCreated): void {
@@ -128,7 +132,7 @@ export function handleHubCreated(event: HubCreated): void {
             hub.save()
         }
     }
-
+    saveTransactionHashHistory("HubCreated", event);
 }
 
 export function handleHubUpdated(event: HubUpdated): void {
@@ -152,6 +156,7 @@ export function handleHubUpdated(event: HubUpdated): void {
             hub.save()
         }
     }
+    saveTransactionHashHistory("HubUpdated", event);
 }
 
 export function handlePublishPrepared(event: PublishPrepared): void {
@@ -238,6 +243,8 @@ export function handlePublishPrepared(event: PublishPrepared): void {
             }
         }
     }
+
+    saveTransactionHashHistory("PublishPrepared", event);
 }
 
 
@@ -299,6 +306,8 @@ export function handlePublishUpdated(event: PublishUpdated): void {
             publication.save()
         }
     }
+
+    saveTransactionHashHistory("PublishUpdated", event);
 }
 
 export function handleDerivativeNFTDeployed(event: DerivativeNFTDeployed): void {
@@ -331,6 +340,8 @@ export function handleDerivativeNFTDeployed(event: DerivativeNFTDeployed): void 
             project.save();
         }    
     }
+
+    saveTransactionHashHistory("DerivativeNFTDeployed", event);
 }
 
 export function handlePublishCreated(event: PublishCreated): void {
@@ -362,6 +373,8 @@ export function handlePublishCreated(event: PublishCreated): void {
             }
         }
     }
+
+    saveTransactionHashHistory("PublishCreated", event);
 }
 
 export function handlePublishMinted(event: PublishMinted): void {
@@ -381,6 +394,8 @@ export function handlePublishMinted(event: PublishMinted): void {
             ])
         }    
     }
+
+    saveTransactionHashHistory("PublishMinted", event);
  
 }
 
@@ -422,6 +437,8 @@ export function handleDerivativeNFTCollected(event: DerivativeNFTCollected): voi
             //TODO royaltyAmounts
         } 
     }
+
+    saveTransactionHashHistory("DerivativeNFTCollected", event);
 }
 
 export function handleDerivativeNFTAirdroped(event: DerivativeNFTAirdroped): void {
@@ -447,6 +464,8 @@ export function handleDerivativeNFTAirdroped(event: DerivativeNFTAirdroped): voi
             history.save()
         }
     }
+
+    saveTransactionHashHistory("DerivativeNFTAirdroped", event);
 }
 
 export function handleDispatcherSet(event: DispatcherSet): void {
@@ -469,6 +488,8 @@ export function handleDispatcherSet(event: DispatcherSet): void {
             }
         }
     }
+
+    saveTransactionHashHistory("DispatcherSet", event);
 }
 
 export function handleStateSet(event: StateSet): void {
@@ -483,4 +504,6 @@ export function handleStateSet(event: StateSet): void {
         history.timestamp = event.params.timestamp
         history.save()
     } 
+
+    saveTransactionHashHistory("StateSet", event);
 }

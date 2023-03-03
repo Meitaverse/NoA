@@ -215,14 +215,12 @@ contract MultirecipientFeeCollectModule is BaseFeeCollectModule {
         /*
         uint96 fraction = IDerivativeNFT(IManager(MANAGER).getDerivativeNFT(projectId)).getDefaultRoyalty();
          
-        uint256 payFees = collectUnits.mul(_dataByPublicationByProfile[projectId].salePrice) * fraction;
 
         (address treasury, uint16 treasuryFee) = _treasuryData();
         uint256 treasuryAmount = (payFees * treasuryFee) / BASIS_POINTS;
         uint256[] memory royalties = new uint256[](recipients.length);
 
         for (uint256 i = 0; i < recipients.length; ) {
-            uint256 royaltyAmount = (_dataByPublicationByProfile[projectId].salePrice * _dataByPublicationByProfile[projectId].royaltyPoints[i]) / BASIS_POINTS;
             royalties[i] = royaltyAmount;
 
             unchecked {
@@ -279,4 +277,12 @@ contract MultirecipientFeeCollectModule is BaseFeeCollectModule {
         );
 */
     }   
+
+     function updateCollectLimitPerAddress(
+        uint256 publishId, 
+        uint16 collectLimitPerAddress
+    ) external onlyManager {
+
+    }
+    
 }

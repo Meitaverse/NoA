@@ -1,5 +1,6 @@
 import '@nomiclabs/hardhat-ethers';
 import { expect } from 'chai';
+import hre from 'hardhat' 
 import { ethers } from 'hardhat';
 import {
   ManagerV2,
@@ -50,19 +51,9 @@ makeSuiteCleanRoom('Upgradeability', function () {
   // The Manager contract's last storage variable by default is at the 23nd slot (index 22) and contains the emergency admin
   // We're going to validate the first 23 slots and the 24rd slot before and after the change
   it("Should upgrade and set a new variable's value, previous storage is unchanged, new value is accurate", async function () {
+    
     const newImpl = await new ManagerV2__factory(managerLibs, deployer).deploy();
     const proxyHub = TransparentUpgradeableProxy__factory.connect(manager.address, deployer);
-
-    // const prevStorage: string[] = [];
-    // for (let i = 0; i < 24; i++) {
-    //   const valueAt = await ethers.provider.getStorageAt(proxyHub.address, i);
-    //   prevStorage.push(valueAt);
-    // }
-
-    // const prevNextSlot = await ethers.provider.getStorageAt(proxyHub.address, 24);
-    // const formattedZero = abiCoder.encode(['uint256'], [0]);
-    // expect(prevNextSlot).to.eq(formattedZero);
-
     await proxyHub.upgradeTo(newImpl.address);
     const managerV2 = new ManagerV2__factory(managerLibs, deployer).attach(proxyHub.address);
     // console.log("ManagerV1 address: ", manager.address);

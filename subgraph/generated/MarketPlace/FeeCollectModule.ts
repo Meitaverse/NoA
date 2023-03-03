@@ -78,8 +78,8 @@ export class FeeCollectModule__getPublicationDataResultValue0Struct extends ethe
     return this[6].toBigInt();
   }
 
-  get collectLimitPerAddress(): BigInt {
-    return this[7].toBigInt();
+  get collectLimitPerAddress(): i32 {
+    return this[7].toI32();
   }
 
   get genesisFee(): i32 {
@@ -219,7 +219,7 @@ export class FeeCollectModule extends ethereum.SmartContract {
   ): FeeCollectModule__getPublicationDataResultValue0Struct {
     let result = super.call(
       "getPublicationData",
-      "getPublicationData(uint256):((uint256,uint256,uint256,address,uint256,uint256,uint256,uint256,uint16,uint16))",
+      "getPublicationData(uint256):((uint256,uint256,uint256,address,uint256,uint256,uint256,uint16,uint16,uint16))",
       [ethereum.Value.fromUnsignedBigInt(publishId)]
     );
 
@@ -235,7 +235,7 @@ export class FeeCollectModule extends ethereum.SmartContract {
   > {
     let result = super.tryCall(
       "getPublicationData",
-      "getPublicationData(uint256):((uint256,uint256,uint256,address,uint256,uint256,uint256,uint256,uint16,uint16))",
+      "getPublicationData(uint256):((uint256,uint256,uint256,address,uint256,uint256,uint256,uint16,uint16,uint16))",
       [ethereum.Value.fromUnsignedBigInt(publishId)]
     );
     if (result.reverted) {
@@ -458,5 +458,39 @@ export class ProcessCollectCallValue0Struct extends ethereum.Tuple {
 
   get adjustedAmount(): BigInt {
     return this[4].toBigInt();
+  }
+}
+
+export class UpdateCollectLimitPerAddressCall extends ethereum.Call {
+  get inputs(): UpdateCollectLimitPerAddressCall__Inputs {
+    return new UpdateCollectLimitPerAddressCall__Inputs(this);
+  }
+
+  get outputs(): UpdateCollectLimitPerAddressCall__Outputs {
+    return new UpdateCollectLimitPerAddressCall__Outputs(this);
+  }
+}
+
+export class UpdateCollectLimitPerAddressCall__Inputs {
+  _call: UpdateCollectLimitPerAddressCall;
+
+  constructor(call: UpdateCollectLimitPerAddressCall) {
+    this._call = call;
+  }
+
+  get publishId(): BigInt {
+    return this._call.inputValues[0].value.toBigInt();
+  }
+
+  get collectLimitPerAddress(): i32 {
+    return this._call.inputValues[1].value.toI32();
+  }
+}
+
+export class UpdateCollectLimitPerAddressCall__Outputs {
+  _call: UpdateCollectLimitPerAddressCall;
+
+  constructor(call: UpdateCollectLimitPerAddressCall) {
+    this._call = call;
   }
 }

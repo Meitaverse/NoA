@@ -365,6 +365,27 @@ contract Manager is
         );
     }
 
+    function updateCollectLimitPerAddress(
+        uint256 publishId, 
+        uint16 collectLimitPerAddress
+    ) 
+        external 
+        whenPublishingEnabled
+        nonReentrant
+    {
+        uint256 soulBoundTokenId = _walletToSoulBoundTokenId[msg.sender];
+        if (soulBoundTokenId == _projectDataByPublishId[publishId].publication.soulBoundTokenId) {
+            PublishLogic.updateCollectLimitPerAddress(
+                _projectDataByPublishId[publishId].publication.collectModule,
+                publishId, 
+                collectLimitPerAddress
+            );
+        } else {
+            revert Errors.NotOwner();
+        }
+
+    }
+
     function publish(
         uint256 publishId
     ) 

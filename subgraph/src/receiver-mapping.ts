@@ -8,6 +8,7 @@ import {
     ReceiverReceivedHistory,
 } from "../generated/schema"
 import { getLogId } from "./shared/ids";
+import { saveTransactionHashHistory } from "./dnft";
 
 export function handleReceiverReceived(event: ReceiverReceived): void {
     log.info("handleReceiverReceived, event.address: {}", [event.address.toHexString()])
@@ -25,4 +26,6 @@ export function handleReceiverReceived(event: ReceiverReceived): void {
         history.timestamp = event.block.timestamp
         history.save()
     } 
+
+    saveTransactionHashHistory("ReceiverReceived", event);
 }

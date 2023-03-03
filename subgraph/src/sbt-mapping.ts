@@ -14,7 +14,6 @@ import {
 
 import {
     SBTTransferHistory,
-    SBTAsset,
     SBTTransferValueHistory,
     SBTSlotChangedHistory,
     SBTAccountApproval,
@@ -27,6 +26,7 @@ import { loadOrCreateSBTAsset } from "./shared/sbtAsset";
 import { loadOrCreateAccount } from "./shared/accounts";
 import { loadOrCreateSoulBoundToken } from "./shared/soulBoundToken";
 import { getLogId } from "./shared/ids";
+import { saveTransactionHashHistory } from "./dnft";
 
 export function handleProfileCreated(event: ProfileCreated): void {
     log.info("handleProfileCreated, event.address: {}, soulBoundTokenId:{}, wallet: {},nickName: {} ", [
@@ -53,6 +53,7 @@ export function handleProfileCreated(event: ProfileCreated): void {
         }
         
     } 
+    saveTransactionHashHistory("ProfileCreated", event);
 }
 
 export function handleProfileUpdated(event: ProfileUpdated): void {
@@ -67,6 +68,7 @@ export function handleProfileUpdated(event: ProfileUpdated): void {
             profile.save()
         }   
     } 
+    saveTransactionHashHistory("ProfileUpdated", event);
 }
 
 
@@ -107,6 +109,7 @@ export function handleSBTTransfer(event: Transfer): void {
         
         }
     }
+    saveTransactionHashHistory("Transfer", event);
 }
 
 export function handleSBTTransferValue(event: TransferValue): void {
@@ -189,6 +192,8 @@ export function handleSBTTransferValue(event: TransferValue): void {
         historyTo.timestamp = event.block.timestamp
         historyTo.save()
     } 
+
+    saveTransactionHashHistory("TransferValue", event);
 }
 
 export function handleSBTSlotChanged(event: SlotChanged): void {
@@ -213,6 +218,8 @@ export function handleSBTSlotChanged(event: SlotChanged): void {
         }
 
     }
+
+    saveTransactionHashHistory("SlotChanged", event);
 }
 
 export function handleApproval(event: Approval): void {
@@ -225,6 +232,8 @@ export function handleApproval(event: Approval): void {
         sbtAsset.approvedSpender = null;
     }
     sbtAsset.save();
+
+    saveTransactionHashHistory("Approval", event);
 
 }
 
@@ -241,6 +250,8 @@ export function handleApprovalForAll(event: ApprovalForAll): void {
     } else {
       store.remove("SBTAccountApproval", id);
     }
+
+    saveTransactionHashHistory("ApprovalForAll", event);
 }
 
 export function handleApprovalValue(event: ApprovalValue): void {
@@ -263,4 +274,6 @@ export function handleApprovalValue(event: ApprovalValue): void {
             sbtApprovalValue.save()
         } 
     }
+
+    saveTransactionHashHistory("ApprovalValue", event);
 }

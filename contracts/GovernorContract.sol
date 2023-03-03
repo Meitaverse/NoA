@@ -3,7 +3,7 @@ pragma solidity ^0.8.13;
 
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol";
-import "@openzeppelin/contracts-upgradeable/access/AccessControlUpgradeable.sol";
+import "./libraries/AdminRoleEnumerable.sol";
 import "@openzeppelin/contracts-upgradeable/governance/GovernorUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/governance/extensions/GovernorSettingsUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/governance/extensions/GovernorCountingSimpleUpgradeable.sol";
@@ -11,7 +11,6 @@ import "@openzeppelin/contracts-upgradeable/governance/extensions/GovernorVotesU
 import "@openzeppelin/contracts-upgradeable/governance/extensions/GovernorVotesQuorumFractionUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/governance/extensions/GovernorTimelockControlUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/security/ReentrancyGuardUpgradeable.sol";
-import "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
 import {Errors} from "./libraries/Errors.sol";
 import {Events} from "./libraries/Events.sol";
 import "hardhat/console.sol";
@@ -30,17 +29,14 @@ contract GovernorContract is
     GovernorVotesQuorumFractionUpgradeable,
     GovernorTimelockControlUpgradeable,
     PausableUpgradeable,
-    AccessControlUpgradeable,
-    UUPSUpgradeable
+    AdminRoleEnumerable
 {
    
-    bytes32 public constant PAUSER_ROLE = keccak256("PAUSER_ROLE");
-    bytes32 public constant UPGRADER_ROLE = keccak256("UPGRADER_ROLE");
-
     /// @custom:oz-upgrades-unsafe-allow constructor
     constructor() initializer {}
 
     function initialize(
+        address admin,
         IVotesUpgradeable _token,
         TimelockControllerUpgradeable _timelock,
         uint256 _quorumPercentage,
@@ -56,17 +52,21 @@ contract GovernorContract is
         __GovernorVotesQuorumFraction_init_unchained(_quorumPercentage);
         __ReentrancyGuard_init();
 
-        __AccessControl_init();
+        AdminRoleEnumerable._initializeAdminRole(admin);
         __Pausable_init();
-        __UUPSUpgradeable_init();
         ReentrancyGuardUpgradeable.__ReentrancyGuard_init();
 
-        _setupRole(DEFAULT_ADMIN_ROLE, msg.sender);
-        _setupRole(PAUSER_ROLE, msg.sender);
-        _setupRole(UPGRADER_ROLE, msg.sender);
     }
 
     // The following functions are overrides required by Solidity.
+
+    function pause() public onlyAdmin {
+        _pause();
+    }
+
+    function unpause() public onlyAdmin {
+        _unpause();
+    }
 
     function votingDelay() public view override(IGovernorUpgradeable, GovernorSettingsUpgradeable) returns (uint256) {
         return super.votingDelay();
@@ -143,12 +143,9 @@ contract GovernorContract is
 
     function supportsInterface(
         bytes4 interfaceId
-    ) public view override(AccessControlUpgradeable, GovernorUpgradeable, GovernorTimelockControlUpgradeable) returns (bool) {
+    ) public view override(GovernorUpgradeable, GovernorTimelockControlUpgradeable) returns (bool) {
         
-        return interfaceId == type(AccessControlUpgradeable).interfaceId || super.supportsInterface(interfaceId);
+        return super.supportsInterface(interfaceId);
     }
 
-    function _authorizeUpgrade(address /*newImplementation*/) internal virtual override {
-         if (!hasRole(UPGRADER_ROLE, _msgSender())) revert Errors.Unauthorized();
-    }
 }

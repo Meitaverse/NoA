@@ -3,9 +3,8 @@
 pragma solidity ^0.8.13;
 
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
-import "@openzeppelin/contracts-upgradeable/access/AccessControlUpgradeable.sol";
-import "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
 import "@solvprotocol/erc-3525/contracts/ERC3525Upgradeable.sol";
+import "./libraries/AdminRoleEnumerable.sol";
 
 import {Errors} from "./libraries/Errors.sol";
 import './libraries/Constants.sol';
@@ -21,16 +20,14 @@ import {INFTDerivativeProtocolTokenV1} from "./interfaces/INFTDerivativeProtocol
  */
 contract NFTDerivativeProtocolTokenV1 is
     Initializable,
-    AccessControlUpgradeable,
+    AdminRoleEnumerable,
     ERC3525Votes,
     SBTStorage,
-    INFTDerivativeProtocolTokenV1, 
-    UUPSUpgradeable
+    INFTDerivativeProtocolTokenV1
 {
     uint256 internal constant VERSION = 1;
     uint256 internal constant MAX_SUPPLY = 10000000000 * 1e18;
     bytes32 public constant TRANSFER_VALUE_ROLE = keccak256("TRANSFER_VALUE_ROLE");
-    bytes32 internal constant UPGRADER_ROLE = keccak256("UPGRADER_ROLE");
 
     uint256 private treasury_SBT_ID;
 
@@ -41,6 +38,16 @@ contract NFTDerivativeProtocolTokenV1 is
      */
     modifier onlyManager() {
         _validateCallerIsManager();
+        _;
+    }
+
+    modifier onlyGov() {
+        _validateCallerIsGov();
+        _;
+    }
+
+    modifier onlyTransferRole() {
+        require(hasRole(TRANSFER_VALUE_ROLE, msg.sender), "SBT: caller does not have the role");
         _;
     }
 
@@ -59,38 +66,54 @@ contract NFTDerivativeProtocolTokenV1 is
         string calldata symbol,
         uint8 decimals,
         address manager,
+        address governance,
         address metadataDescriptor_
     ) external initializer {
 
         __ERC3525_init_unchained(name, symbol, decimals);
-        __AccessControl_init();
-        __UUPSUpgradeable_init();
+        AdminRoleEnumerable._initializeAdminRole(governance);
 
-        _setupRole(DEFAULT_ADMIN_ROLE, _msgSender());
-        _grantRole(UPGRADER_ROLE, _msgSender());
-
-        if (manager == address(0x0) || metadataDescriptor_ == address(0x0)) 
+        if (    manager == address(0x0) || 
+                governance == address(0x0) || 
+                metadataDescriptor_ == address(0x0)
+            ) 
             revert Errors.InitParamsInvalid();
 
         _setManager(manager);
 
-        _setMetadataDescriptor(metadataDescriptor_);
+        _setGovernance(governance);
 
+        _setMetadataDescriptor(metadataDescriptor_);
+    }
+    
+    /**
+     * @notice Adds the account to the list of approved operators.
+     * @dev Only callable by admins as enforced by `grantRole`.
+     * @param account The address to be approved.
+     */
+    function grantTransferRole(address account) external {
+        grantRole(TRANSFER_VALUE_ROLE, account);
+    }
+
+    /**
+     * @notice Removes the account from the list of approved operators.
+     * @dev Only callable by admins as enforced by `revokeRole`.
+     * @param account The address to be removed from the approved list.
+     */
+    function revokeFeeModule(address account) external {
+        revokeRole(TRANSFER_VALUE_ROLE, account);
     }
 
     function setBankTreasury(address bankTreasury, uint256 amount) 
         external  
+        onlyGov
     {
-        if (!hasRole(DEFAULT_ADMIN_ROLE, _msgSender())) 
-            revert Errors.Unauthorized();
-        
         total_supply += amount * 1e18;
 
         if (bankTreasury == address(0) || amount == 0 || total_supply > MAX_SUPPLY)
             revert Errors.InvalidParameter();
         
         _banktreasury = bankTreasury;
-        
 
         if (treasury_SBT_ID == 0) {
             //create profile for bankTreasury, slot is 1, not vote power
@@ -188,10 +211,10 @@ contract NFTDerivativeProtocolTokenV1 is
         uint256 fromTokenId_,
         uint256 toTokenId_,
         uint256 value_
-    ) external  { 
-        //call only by BankTreasury, FeeCollectModule, publishModule, Voucher Or MarketPlace
-        if (!hasRole(TRANSFER_VALUE_ROLE, _msgSender())) 
-            revert Errors.NotTransferValueAuthorised();
+    ) 
+        external  
+        onlyTransferRole
+    { 
         ERC3525Upgradeable._transferValue(fromTokenId_, toTokenId_, value_);
     }
 
@@ -234,10 +257,8 @@ contract NFTDerivativeProtocolTokenV1 is
         super.safeTransferFrom(from_, to_, tokenId_, data_);
     }
 
-    function supportsInterface(bytes4 interfaceId) public view virtual override(AccessControlUpgradeable, ERC3525Upgradeable) returns (bool) {
-        return
-            interfaceId == type(AccessControlUpgradeable).interfaceId || 
-            super.supportsInterface(interfaceId);
+    function supportsInterface(bytes4 interfaceId) public view virtual override(ERC3525Upgradeable) returns (bool) {
+        return super.supportsInterface(interfaceId);
     } 
 
     /// ****************************
@@ -247,9 +268,16 @@ contract NFTDerivativeProtocolTokenV1 is
     function _setManager(address manager) internal {
         _manager = manager;
     }   
+    function _setGovernance(address governance) internal {
+        _governance = governance;
+    }   
 
     function _validateCallerIsManager() internal view {
         if (msg.sender != _manager) revert Errors.NotManager();
+    }
+
+    function _validateCallerIsGov() internal view {
+        if (msg.sender != _governance) revert Errors.NotManager();
     }
 
     function _createProfile(
@@ -271,11 +299,6 @@ contract NFTDerivativeProtocolTokenV1 is
             nickName,
             imageURI
         );
-    }
-
-    //-- orverride -- //
-    function _authorizeUpgrade(address /*newImplementation*/) internal virtual override {
-        if (!hasRole(UPGRADER_ROLE, _msgSender())) revert Errors.Unauthorized();
     }
    
 }

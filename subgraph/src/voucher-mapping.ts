@@ -20,7 +20,7 @@ import { loadOrCreateAccount } from "./shared/accounts";
 import { getLogId } from "./shared/ids";
 import { loadOrCreateSoulBoundToken } from "./shared/soulBoundToken";
 import { ZERO_ADDRESS_STRING, ZERO_BIG_INT } from "./shared/constants";
-
+import { saveTransactionHashHistory } from "./dnft";
 
 export function handleUserAmountLimitSet(event: UserAmountLimitSet): void {
     log.info("handleUserAmountLimitSet, event.address: {}", [event.address.toHexString()])
@@ -34,6 +34,8 @@ export function handleUserAmountLimitSet(event: UserAmountLimitSet): void {
         history.timestamp = event.block.timestamp
         history.save()
     } 
+
+    saveTransactionHashHistory("UserAmountLimitSet", event);
 }
 
 export function handleGenerateVoucher(event: GenerateVoucher): void {
@@ -79,6 +81,8 @@ export function handleGenerateVoucher(event: GenerateVoucher): void {
             voucherRecord.save()
         } 
     }
+
+    saveTransactionHashHistory("GenerateVoucher", event);
 }
 
 export function handleTokenURISet(event: TokenURISet): void {
@@ -99,6 +103,8 @@ export function handleTokenURISet(event: TokenURISet): void {
         }
         voucherURI.save()
     } 
+
+    saveTransactionHashHistory("TokenURISet", event);
 }
 
 export function handleTransferBatch(event: TransferBatch): void {
@@ -186,6 +192,8 @@ export function handleTransferBatch(event: TransferBatch): void {
         }
         
     }
+
+    saveTransactionHashHistory("TransferBatch", event);
 }
 
 export function handleTransferSingle(event: TransferSingle): void {
@@ -262,7 +270,7 @@ export function handleTransferSingle(event: TransferSingle): void {
         } 
     }
         
-  
+    saveTransactionHashHistory("TransferSingle", event);
 
     
 }

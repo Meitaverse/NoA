@@ -4,10 +4,8 @@ pragma solidity ^0.8.13;
 
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import "@openzeppelin/contracts-upgradeable/access/AccessControlUpgradeable.sol";
-import "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
 import "@solvprotocol/erc-3525/contracts/ERC3525Upgradeable.sol";
 import "@solvprotocol/erc-3525/contracts/extensions/IERC3525Metadata.sol";
-
 import {IERC20Upgradeable} from "@openzeppelin/contracts-upgradeable/token/ERC20/IERC20Upgradeable.sol";
 import {SafeMathUpgradeable} from "@openzeppelin/contracts-upgradeable/utils/math/SafeMathUpgradeable.sol";
 import {Errors} from "../libraries/Errors.sol";
@@ -25,8 +23,7 @@ contract NFTDerivativeProtocolTokenV2 is
     AccessControlUpgradeable,
     ERC3525Votes,
     SBTStorage,
-    INFTDerivativeProtocolTokenV2,
-    UUPSUpgradeable
+    INFTDerivativeProtocolTokenV2
 {
     //upgrade version
     uint256 internal constant VERSION = 2;
@@ -253,12 +250,6 @@ contract NFTDerivativeProtocolTokenV2 is
             nickName,
             imageURI
         );
-    }
-
-
-    //-- orverride -- //
-    function _authorizeUpgrade(address /*newImplementation*/) internal virtual override {
-        if (!hasRole(UPGRADER_ROLE, _msgSender())) revert Errors.Unauthorized();
     }
     
     //V2

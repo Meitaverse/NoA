@@ -44,5 +44,10 @@ interface ICollectModule {
         uint96 payValue,
         bytes calldata data
     ) external returns (DataTypes.RoyaltyAmounts memory);
+
+    function updateCollectLimitPerAddress(
+        uint256 publishId, 
+        uint16 collectLimitPerAddress
+    ) external;
 }
 

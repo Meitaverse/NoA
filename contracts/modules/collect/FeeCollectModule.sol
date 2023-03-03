@@ -259,5 +259,18 @@ contract FeeCollectModule is ReentrancyGuard, FeeModuleBase, ModuleBase, ICollec
             }
         }
     }
+
+    function updateCollectLimitPerAddress(
+        uint256 publishId, 
+        uint16 collectLimitPerAddress
+    ) external onlyManager {
+        
+        if (_dataByPublicationByProfile[publishId].tokenId > 0) {
+
+            _dataByPublicationByProfile[publishId].collectLimitPerAddress = collectLimitPerAddress;
+
+        }
+
+    }
     
 }

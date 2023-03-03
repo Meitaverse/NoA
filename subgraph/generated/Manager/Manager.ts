@@ -100,11 +100,11 @@ export class Manager__createProjectInputProjectStruct extends ethereum.Tuple {
 
 export class Manager__getGenesisAndPreviousInfoResult {
   value0: BigInt;
-  value1: BigInt;
+  value1: i32;
   value2: BigInt;
-  value3: BigInt;
+  value3: i32;
 
-  constructor(value0: BigInt, value1: BigInt, value2: BigInt, value3: BigInt) {
+  constructor(value0: BigInt, value1: i32, value2: BigInt, value3: i32) {
     this.value0 = value0;
     this.value1 = value1;
     this.value2 = value2;
@@ -114,9 +114,15 @@ export class Manager__getGenesisAndPreviousInfoResult {
   toMap(): TypedMap<string, ethereum.Value> {
     let map = new TypedMap<string, ethereum.Value>();
     map.set("value0", ethereum.Value.fromUnsignedBigInt(this.value0));
-    map.set("value1", ethereum.Value.fromUnsignedBigInt(this.value1));
+    map.set(
+      "value1",
+      ethereum.Value.fromUnsignedBigInt(BigInt.fromI32(this.value1))
+    );
     map.set("value2", ethereum.Value.fromUnsignedBigInt(this.value2));
-    map.set("value3", ethereum.Value.fromUnsignedBigInt(this.value3));
+    map.set(
+      "value3",
+      ethereum.Value.fromUnsignedBigInt(BigInt.fromI32(this.value3))
+    );
     return map;
   }
 
@@ -124,7 +130,7 @@ export class Manager__getGenesisAndPreviousInfoResult {
     return this.value0;
   }
 
-  getValue1(): BigInt {
+  getValue1(): i32 {
     return this.value1;
   }
 
@@ -132,7 +138,52 @@ export class Manager__getGenesisAndPreviousInfoResult {
     return this.value2;
   }
 
-  getValue3(): BigInt {
+  getValue3(): i32 {
+    return this.value3;
+  }
+}
+
+export class Manager__getGenesisAndPreviousInfo1Result {
+  value0: BigInt;
+  value1: i32;
+  value2: BigInt;
+  value3: i32;
+
+  constructor(value0: BigInt, value1: i32, value2: BigInt, value3: i32) {
+    this.value0 = value0;
+    this.value1 = value1;
+    this.value2 = value2;
+    this.value3 = value3;
+  }
+
+  toMap(): TypedMap<string, ethereum.Value> {
+    let map = new TypedMap<string, ethereum.Value>();
+    map.set("value0", ethereum.Value.fromUnsignedBigInt(this.value0));
+    map.set(
+      "value1",
+      ethereum.Value.fromUnsignedBigInt(BigInt.fromI32(this.value1))
+    );
+    map.set("value2", ethereum.Value.fromUnsignedBigInt(this.value2));
+    map.set(
+      "value3",
+      ethereum.Value.fromUnsignedBigInt(BigInt.fromI32(this.value3))
+    );
+    return map;
+  }
+
+  getValue0(): BigInt {
+    return this.value0;
+  }
+
+  getValue1(): i32 {
+    return this.value1;
+  }
+
+  getValue2(): BigInt {
+    return this.value2;
+  }
+
+  getValue3(): i32 {
     return this.value3;
   }
 }
@@ -239,8 +290,8 @@ export class Manager__getPublicationResultValue0Struct extends ethereum.Tuple {
     return this[3].toBigInt();
   }
 
-  get royaltyBasisPoints(): BigInt {
-    return this[4].toBigInt();
+  get royaltyBasisPoints(): i32 {
+    return this[4].toI32();
   }
 
   get currency(): Address {
@@ -305,8 +356,8 @@ export class Manager__getPublicationByProjectTokenResultValue1Struct extends eth
     return this[3].toBigInt();
   }
 
-  get royaltyBasisPoints(): BigInt {
-    return this[4].toBigInt();
+  get royaltyBasisPoints(): i32 {
+    return this[4].toI32();
   }
 
   get currency(): Address {
@@ -419,8 +470,8 @@ export class Manager__getPublishInfoResultValue0PublicationStruct extends ethere
     return this[3].toBigInt();
   }
 
-  get royaltyBasisPoints(): BigInt {
-    return this[4].toBigInt();
+  get royaltyBasisPoints(): i32 {
+    return this[4].toI32();
   }
 
   get currency(): Address {
@@ -485,8 +536,8 @@ export class Manager__prePublishInputPublicationStruct extends ethereum.Tuple {
     return this[3].toBigInt();
   }
 
-  get royaltyBasisPoints(): BigInt {
-    return this[4].toBigInt();
+  get royaltyBasisPoints(): i32 {
+    return this[4].toI32();
   }
 
   get currency(): Address {
@@ -714,7 +765,7 @@ export class Manager extends ethereum.SmartContract {
   ): Manager__getGenesisAndPreviousInfoResult {
     let result = super.call(
       "getGenesisAndPreviousInfo",
-      "getGenesisAndPreviousInfo(uint256,uint256):(uint256,uint256,uint256,uint256)",
+      "getGenesisAndPreviousInfo(uint256,uint256):(uint256,uint16,uint256,uint16)",
       [
         ethereum.Value.fromUnsignedBigInt(projectId),
         ethereum.Value.fromUnsignedBigInt(tokenId)
@@ -723,9 +774,9 @@ export class Manager extends ethereum.SmartContract {
 
     return new Manager__getGenesisAndPreviousInfoResult(
       result[0].toBigInt(),
-      result[1].toBigInt(),
+      result[1].toI32(),
       result[2].toBigInt(),
-      result[3].toBigInt()
+      result[3].toI32()
     );
   }
 
@@ -735,7 +786,7 @@ export class Manager extends ethereum.SmartContract {
   ): ethereum.CallResult<Manager__getGenesisAndPreviousInfoResult> {
     let result = super.tryCall(
       "getGenesisAndPreviousInfo",
-      "getGenesisAndPreviousInfo(uint256,uint256):(uint256,uint256,uint256,uint256)",
+      "getGenesisAndPreviousInfo(uint256,uint256):(uint256,uint16,uint256,uint16)",
       [
         ethereum.Value.fromUnsignedBigInt(projectId),
         ethereum.Value.fromUnsignedBigInt(tokenId)
@@ -748,9 +799,48 @@ export class Manager extends ethereum.SmartContract {
     return ethereum.CallResult.fromValue(
       new Manager__getGenesisAndPreviousInfoResult(
         value[0].toBigInt(),
-        value[1].toBigInt(),
+        value[1].toI32(),
         value[2].toBigInt(),
-        value[3].toBigInt()
+        value[3].toI32()
+      )
+    );
+  }
+
+  getGenesisAndPreviousInfo1(
+    publishId: BigInt
+  ): Manager__getGenesisAndPreviousInfo1Result {
+    let result = super.call(
+      "getGenesisAndPreviousInfo",
+      "getGenesisAndPreviousInfo(uint256):(uint256,uint16,uint256,uint16)",
+      [ethereum.Value.fromUnsignedBigInt(publishId)]
+    );
+
+    return new Manager__getGenesisAndPreviousInfo1Result(
+      result[0].toBigInt(),
+      result[1].toI32(),
+      result[2].toBigInt(),
+      result[3].toI32()
+    );
+  }
+
+  try_getGenesisAndPreviousInfo1(
+    publishId: BigInt
+  ): ethereum.CallResult<Manager__getGenesisAndPreviousInfo1Result> {
+    let result = super.tryCall(
+      "getGenesisAndPreviousInfo",
+      "getGenesisAndPreviousInfo(uint256):(uint256,uint16,uint256,uint16)",
+      [ethereum.Value.fromUnsignedBigInt(publishId)]
+    );
+    if (result.reverted) {
+      return new ethereum.CallResult();
+    }
+    let value = result.value;
+    return ethereum.CallResult.fromValue(
+      new Manager__getGenesisAndPreviousInfo1Result(
+        value[0].toBigInt(),
+        value[1].toI32(),
+        value[2].toBigInt(),
+        value[3].toI32()
       )
     );
   }
@@ -945,7 +1035,7 @@ export class Manager extends ethereum.SmartContract {
   ): Manager__getPublicationResultValue0Struct {
     let result = super.call(
       "getPublication",
-      "getPublication(uint256):((uint256,uint256,uint256,uint256,uint256,address,uint256,string,string,bool,string[],uint256[],address,bytes,address,bytes))",
+      "getPublication(uint256):((uint256,uint256,uint256,uint256,uint16,address,uint256,string,string,bool,string[],uint256[],address,bytes,address,bytes))",
       [ethereum.Value.fromUnsignedBigInt(publishId_)]
     );
 
@@ -959,7 +1049,7 @@ export class Manager extends ethereum.SmartContract {
   ): ethereum.CallResult<Manager__getPublicationResultValue0Struct> {
     let result = super.tryCall(
       "getPublication",
-      "getPublication(uint256):((uint256,uint256,uint256,uint256,uint256,address,uint256,string,string,bool,string[],uint256[],address,bytes,address,bytes))",
+      "getPublication(uint256):((uint256,uint256,uint256,uint256,uint16,address,uint256,string,string,bool,string[],uint256[],address,bytes,address,bytes))",
       [ethereum.Value.fromUnsignedBigInt(publishId_)]
     );
     if (result.reverted) {
@@ -977,7 +1067,7 @@ export class Manager extends ethereum.SmartContract {
   ): Manager__getPublicationByProjectTokenResult {
     let result = super.call(
       "getPublicationByProjectToken",
-      "getPublicationByProjectToken(uint256,uint256):(uint256,(uint256,uint256,uint256,uint256,uint256,address,uint256,string,string,bool,string[],uint256[],address,bytes,address,bytes))",
+      "getPublicationByProjectToken(uint256,uint256):(uint256,(uint256,uint256,uint256,uint256,uint16,address,uint256,string,string,bool,string[],uint256[],address,bytes,address,bytes))",
       [
         ethereum.Value.fromUnsignedBigInt(projectId_),
         ethereum.Value.fromUnsignedBigInt(tokenId_)
@@ -998,7 +1088,7 @@ export class Manager extends ethereum.SmartContract {
   ): ethereum.CallResult<Manager__getPublicationByProjectTokenResult> {
     let result = super.tryCall(
       "getPublicationByProjectToken",
-      "getPublicationByProjectToken(uint256,uint256):(uint256,(uint256,uint256,uint256,uint256,uint256,address,uint256,string,string,bool,string[],uint256[],address,bytes,address,bytes))",
+      "getPublicationByProjectToken(uint256,uint256):(uint256,(uint256,uint256,uint256,uint256,uint16,address,uint256,string,string,bool,string[],uint256[],address,bytes,address,bytes))",
       [
         ethereum.Value.fromUnsignedBigInt(projectId_),
         ethereum.Value.fromUnsignedBigInt(tokenId_)
@@ -1023,7 +1113,7 @@ export class Manager extends ethereum.SmartContract {
   ): Manager__getPublishInfoResultValue0Struct {
     let result = super.call(
       "getPublishInfo",
-      "getPublishInfo(uint256):(((uint256,uint256,uint256,uint256,uint256,address,uint256,string,string,bool,string[],uint256[],address,bytes,address,bytes),uint256,bool,uint256))",
+      "getPublishInfo(uint256):(((uint256,uint256,uint256,uint256,uint16,address,uint256,string,string,bool,string[],uint256[],address,bytes,address,bytes),uint256,bool,uint256))",
       [ethereum.Value.fromUnsignedBigInt(publishId_)]
     );
 
@@ -1037,7 +1127,7 @@ export class Manager extends ethereum.SmartContract {
   ): ethereum.CallResult<Manager__getPublishInfoResultValue0Struct> {
     let result = super.tryCall(
       "getPublishInfo",
-      "getPublishInfo(uint256):(((uint256,uint256,uint256,uint256,uint256,address,uint256,string,string,bool,string[],uint256[],address,bytes,address,bytes),uint256,bool,uint256))",
+      "getPublishInfo(uint256):(((uint256,uint256,uint256,uint256,uint16,address,uint256,string,string,bool,string[],uint256[],address,bytes,address,bytes),uint256,bool,uint256))",
       [ethereum.Value.fromUnsignedBigInt(publishId_)]
     );
     if (result.reverted) {
@@ -1147,7 +1237,7 @@ export class Manager extends ethereum.SmartContract {
   prePublish(publication: Manager__prePublishInputPublicationStruct): BigInt {
     let result = super.call(
       "prePublish",
-      "prePublish((uint256,uint256,uint256,uint256,uint256,address,uint256,string,string,bool,string[],uint256[],address,bytes,address,bytes)):(uint256)",
+      "prePublish((uint256,uint256,uint256,uint256,uint16,address,uint256,string,string,bool,string[],uint256[],address,bytes,address,bytes)):(uint256)",
       [ethereum.Value.fromTuple(publication)]
     );
 
@@ -1159,7 +1249,7 @@ export class Manager extends ethereum.SmartContract {
   ): ethereum.CallResult<BigInt> {
     let result = super.tryCall(
       "prePublish",
-      "prePublish((uint256,uint256,uint256,uint256,uint256,address,uint256,string,string,bool,string[],uint256[],address,bytes,address,bytes)):(uint256)",
+      "prePublish((uint256,uint256,uint256,uint256,uint16,address,uint256,string,string,bool,string[],uint256[],address,bytes,address,bytes)):(uint256)",
       [ethereum.Value.fromTuple(publication)]
     );
     if (result.reverted) {
@@ -1660,8 +1750,8 @@ export class PrePublishCallPublicationStruct extends ethereum.Tuple {
     return this[3].toBigInt();
   }
 
-  get royaltyBasisPoints(): BigInt {
-    return this[4].toBigInt();
+  get royaltyBasisPoints(): i32 {
+    return this[4].toI32();
   }
 
   get currency(): Address {
@@ -2093,6 +2183,40 @@ export class SetTimeLockCall__Outputs {
   }
 }
 
+export class UpdateCollectLimitPerAddressCall extends ethereum.Call {
+  get inputs(): UpdateCollectLimitPerAddressCall__Inputs {
+    return new UpdateCollectLimitPerAddressCall__Inputs(this);
+  }
+
+  get outputs(): UpdateCollectLimitPerAddressCall__Outputs {
+    return new UpdateCollectLimitPerAddressCall__Outputs(this);
+  }
+}
+
+export class UpdateCollectLimitPerAddressCall__Inputs {
+  _call: UpdateCollectLimitPerAddressCall;
+
+  constructor(call: UpdateCollectLimitPerAddressCall) {
+    this._call = call;
+  }
+
+  get publishId(): BigInt {
+    return this._call.inputValues[0].value.toBigInt();
+  }
+
+  get collectLimitPerAddress(): i32 {
+    return this._call.inputValues[1].value.toI32();
+  }
+}
+
+export class UpdateCollectLimitPerAddressCall__Outputs {
+  _call: UpdateCollectLimitPerAddressCall;
+
+  constructor(call: UpdateCollectLimitPerAddressCall) {
+    this._call = call;
+  }
+}
+
 export class UpdateHubCall extends ethereum.Call {
   get inputs(): UpdateHubCall__Inputs {
     return new UpdateHubCall__Inputs(this);
@@ -2160,8 +2284,8 @@ export class UpdatePublishCall__Inputs {
     return this._call.inputValues[1].value.toBigInt();
   }
 
-  get royaltyBasisPoints(): BigInt {
-    return this._call.inputValues[2].value.toBigInt();
+  get royaltyBasisPoints(): i32 {
+    return this._call.inputValues[2].value.toI32();
   }
 
   get amount(): BigInt {

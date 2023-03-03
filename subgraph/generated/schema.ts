@@ -1423,13 +1423,13 @@ export class Publication extends Entity {
     this.set("salePrice", Value.fromBigInt(value));
   }
 
-  get royaltyBasisPoints(): BigInt {
+  get royaltyBasisPoints(): i32 {
     let value = this.get("royaltyBasisPoints");
-    return value!.toBigInt();
+    return value!.toI32();
   }
 
-  set royaltyBasisPoints(value: BigInt) {
-    this.set("royaltyBasisPoints", Value.fromBigInt(value));
+  set royaltyBasisPoints(value: i32) {
+    this.set("royaltyBasisPoints", Value.fromI32(value));
   }
 
   get currency(): Bytes {
@@ -8360,6 +8360,79 @@ export class DnftImageURI extends Entity {
 
   set imageURI(value: string) {
     this.set("imageURI", Value.fromString(value));
+  }
+
+  get timestamp(): BigInt {
+    let value = this.get("timestamp");
+    return value!.toBigInt();
+  }
+
+  set timestamp(value: BigInt) {
+    this.set("timestamp", Value.fromBigInt(value));
+  }
+}
+
+export class TransactionHashHistory extends Entity {
+  constructor(id: string) {
+    super();
+    this.set("id", Value.fromString(id));
+  }
+
+  save(): void {
+    let id = this.get("id");
+    assert(
+      id != null,
+      "Cannot save TransactionHashHistory entity without an ID"
+    );
+    if (id) {
+      assert(
+        id.kind == ValueKind.STRING,
+        `Entities of type TransactionHashHistory must have an ID of type String but the id '${id.displayData()}' is of type ${id.displayKind()}`
+      );
+      store.set("TransactionHashHistory", id.toString(), this);
+    }
+  }
+
+  static load(id: string): TransactionHashHistory | null {
+    return changetype<TransactionHashHistory | null>(
+      store.get("TransactionHashHistory", id)
+    );
+  }
+
+  get id(): string {
+    let value = this.get("id");
+    return value!.toString();
+  }
+
+  set id(value: string) {
+    this.set("id", Value.fromString(value));
+  }
+
+  get eventName(): string {
+    let value = this.get("eventName");
+    return value!.toString();
+  }
+
+  set eventName(value: string) {
+    this.set("eventName", Value.fromString(value));
+  }
+
+  get eventAddress(): Bytes {
+    let value = this.get("eventAddress");
+    return value!.toBytes();
+  }
+
+  set eventAddress(value: Bytes) {
+    this.set("eventAddress", Value.fromBytes(value));
+  }
+
+  get logIndex(): BigInt {
+    let value = this.get("logIndex");
+    return value!.toBigInt();
+  }
+
+  set logIndex(value: BigInt) {
+    this.set("logIndex", Value.fromBigInt(value));
   }
 
   get timestamp(): BigInt {

@@ -37,8 +37,7 @@ interface INFTDerivativeProtocolTokenV2  {
     );
 
     function version() external view returns(uint256);
-
-
+    
     function createProfile(
        address voucher,
        DataTypes.CreateProfileData calldata vars

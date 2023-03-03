@@ -3,7 +3,7 @@ import { hexlify, keccak256, RLP } from 'ethers/lib/utils';
 import { task } from 'hardhat/config';
 import { exportAddress } from "./config";
 import { exportSubgraphNetworksJson } from "./subgraph";
-// import { ethers, upgrades } from 'hardhat';
+
 
 import {
     MIN_DELAY,
@@ -242,7 +242,6 @@ import { BigNumber } from 'ethers';
                 { nonce: deployerNonce++ }
         );
 
-        
         const sbtImpl = await deployContract(
             new NFTDerivativeProtocolTokenV1__factory(deployer).deploy(
                 { nonce: deployerNonce++ }
@@ -262,23 +261,6 @@ import { BigNumber } from 'ethers';
             { nonce: deployerNonce++ }
         );
         const sbtContract = new NFTDerivativeProtocolTokenV1__factory(deployer).attach(sbtProxy.address);
-        
-/*
-        const implV1Factory = new NFTDerivativeProtocolTokenV1__factory(deployer);
-
-        const sbtContract= (await upgrades.deployProxy(
-          implV1Factory,
-          [
-            SBT_NAME, 
-            SBT_SYMBOL, 
-            SBT_DECIMALS,
-            manager.address,
-            sbtMetadataDescriptor.address,
-          ],
-          { kind: "uups", initializer: "initialize" }
-        )) as NFTDerivativeProtocolTokenV1;
-
-        */
 
         console.log('\t-- sbtContract: ', sbtContract.address);
         await exportAddress(hre, sbtContract, 'SBT');
@@ -300,24 +282,7 @@ import { BigNumber } from 'ethers';
             { nonce: deployerNonce++ }
         );
         const governorContract = new GovernorContract__factory(deployer).attach(gonvernorProxy.address);
-        
-
-        //gonvernor
-        /*
-        const governorImpl = new GovernorContract__factory(deployer);
-
-        const governorContract = (await upgrades.deployProxy(
-          governorImpl,
-          [
-            sbtContract.address,
-            timeLock.address,
-            QUORUM_PERCENTAGE, 
-            VOTING_PERIOD,
-            VOTING_DELAY,
-          ],
-          { kind: "uups", initializer: "initialize" }
-        )) as GovernorContract;     
-        */
+      
           
         console.log("\t-- governorContract address: ", governorContract.address);
         await exportAddress(hre, governorContract, 'GovernorContract');
@@ -522,13 +487,13 @@ import { BigNumber } from 'ethers';
         console.log('\t-- INITIAL SUPPLY of the first soul bound token id:', balance);
         
         console.log('\n\t-- Whitelisting sbtContract Contract address --');
-        const transferValueRole = await sbtContract.TRANSFER_VALUE_ROLE();
-        await waitForTx( sbtContract.connect(deployer).grantRole(transferValueRole, manager.address));
-        await waitForTx( sbtContract.connect(deployer).grantRole(transferValueRole, publishModule.address));
-        await waitForTx( sbtContract.connect(deployer).grantRole(transferValueRole, feeCollectModule.address));
-        await waitForTx( sbtContract.connect(deployer).grantRole(transferValueRole, bankTreasuryContract.address));
-        await waitForTx( sbtContract.connect(deployer).grantRole(transferValueRole, voucherContract.address));
-        await waitForTx( sbtContract.connect(deployer).grantRole(transferValueRole, marketPlaceContract.address));
+        // const transferValueRole = await sbtContract.TRANSFER_VALUE_ROLE();
+        await waitForTx( sbtContract.connect(governance).grantTransferRole( manager.address));
+        await waitForTx( sbtContract.connect(governance).grantTransferRole( publishModule.address));
+        await waitForTx( sbtContract.connect(governance).grantTransferRole( feeCollectModule.address));
+        await waitForTx( sbtContract.connect(governance).grantTransferRole( bankTreasuryContract.address));
+        await waitForTx( sbtContract.connect(governance).grantTransferRole( voucherContract.address));
+        await waitForTx( sbtContract.connect(governance).grantTransferRole( marketPlaceContract.address));
         
         await waitForTx(
           bankTreasuryContract.connect(deployer).grantFeeModule(feeCollectModule.address)
@@ -540,7 +505,7 @@ import { BigNumber } from 'ethers';
         await waitForTx(
             marketPlaceContract.connect(governance).grantOperator(governance.address)
         );
-          
+
         console.log('\n\t-- Add publishModule,feeCollectModule,template to moduleGlobals whitelists --');
         await waitForTx( moduleGlobals.connect(governance).whitelistPublishModule(publishModule.address, true));
         await waitForTx( moduleGlobals.connect(governance).whitelistCollectModule(feeCollectModule.address, true));

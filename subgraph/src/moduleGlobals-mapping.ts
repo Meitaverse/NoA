@@ -34,6 +34,7 @@ import {
     TemplateWhitelistedRecord,
     CurrencyWhitelist,
 } from "../generated/schema"
+import { saveTransactionHashHistory } from "./dnft";
 
 export function handleProfileCreatorWhitelisted(event: ProfileCreatorWhitelisted): void {
     log.info("handleProfileCreatorWhitelisted, event.address: {}", [event.address.toHexString()])
@@ -49,6 +50,8 @@ export function handleProfileCreatorWhitelisted(event: ProfileCreatorWhitelisted
         record.save()
         
     } 
+
+    saveTransactionHashHistory("ProfileCreatorWhitelisted", event);
 }
 
 export function handleHubCreatorWhitelisted(event: HubCreatorWhitelisted): void {
@@ -63,6 +66,8 @@ export function handleHubCreatorWhitelisted(event: HubCreatorWhitelisted): void 
         record.timestamp = event.params.timestamp
         record.save()
     } 
+
+    saveTransactionHashHistory("HubCreatorWhitelisted", event);
 
 }
 
@@ -87,6 +92,8 @@ export function handleModuleGlobalsTreasurySet(event: ModuleGlobalsTreasurySet):
         }
 
     } 
+
+    saveTransactionHashHistory("ModuleGlobalsTreasurySet", event);
 }
 
 export function handleModuleGlobalsVoucherSet(event: ModuleGlobalsVoucherSet): void {
@@ -108,6 +115,8 @@ export function handleModuleGlobalsVoucherSet(event: ModuleGlobalsVoucherSet): v
             protocolContract.save()
         }
     } 
+
+    saveTransactionHashHistory("ModuleGlobalsVoucherSet", event);
 }
 
 export function handleModuleGlobalsManagerSet(event: ModuleGlobalsManagerSet): void {
@@ -129,6 +138,8 @@ export function handleModuleGlobalsManagerSet(event: ModuleGlobalsManagerSet): v
             protocolContract.save()
         }
     } 
+
+    saveTransactionHashHistory("ModuleGlobalsManagerSet", event);
 }
     
 
@@ -151,6 +162,8 @@ export function handleModuleGlobalsSBTSet(event: ModuleGlobalsSBTSet): void {
             protocolContract.save()    
         }    
     } 
+
+    saveTransactionHashHistory("ModuleGlobalsSBTSet", event);
 }
 
 export function handleModuleGlobalsPublishRoyaltySet(event: ModuleGlobalsPublishRoyaltySet): void {
@@ -165,7 +178,7 @@ export function handleModuleGlobalsPublishRoyaltySet(event: ModuleGlobalsPublish
         publishRoyalty.timestamp = event.block.timestamp
         publishRoyalty.save()
     }
-
+    saveTransactionHashHistory("ModuleGlobalsPublishRoyaltySet", event);
 }
 
 export function handleModuleGlobalsTreasuryFeeSet(event: ModuleGlobalsTreasuryFeeSet): void {
@@ -180,7 +193,7 @@ export function handleModuleGlobalsTreasuryFeeSet(event: ModuleGlobalsTreasuryFe
         treasuryFeeSetting.timestamp = event.block.timestamp
         treasuryFeeSetting.save()
     }
-
+    saveTransactionHashHistory("ModuleGlobalsTreasuryFeeSet", event);
 }
 
 export function handleModuleGlobalsGovernanceSet(event: ModuleGlobalsGovernanceSet): void {
@@ -195,6 +208,7 @@ export function handleModuleGlobalsGovernanceSet(event: ModuleGlobalsGovernanceS
         history.timestamp = event.params.timestamp
         history.save()
     } 
+    saveTransactionHashHistory("ModuleGlobalsGovernanceSet", event);
 }
 
 export function handleCollectModuleWhitelisted(event: CollectModuleWhitelisted): void {
@@ -209,6 +223,7 @@ export function handleCollectModuleWhitelisted(event: CollectModuleWhitelisted):
         record.timestamp = event.params.timestamp
         record.save()
     } 
+    saveTransactionHashHistory("CollectModuleWhitelisted", event);
 }
 
 export function handlePublishModuleWhitelisted(event: PublishModuleWhitelisted): void {
@@ -223,6 +238,7 @@ export function handlePublishModuleWhitelisted(event: PublishModuleWhitelisted):
         record.timestamp = event.params.timestamp
         record.save()
     } 
+    saveTransactionHashHistory("PublishModuleWhitelisted", event);
 }
 
 export function handleTemplateWhitelisted(event: TemplateWhitelisted): void {
@@ -237,6 +253,7 @@ export function handleTemplateWhitelisted(event: TemplateWhitelisted): void {
         record.timestamp = event.params.timestamp
         record.save()
     } 
+    saveTransactionHashHistory("TemplateWhitelisted", event);
 }
 
 export function handleModuleGlobalsCurrencyWhitelisted(event: ModuleGlobalsCurrencyWhitelisted): void {
@@ -251,4 +268,5 @@ export function handleModuleGlobalsCurrencyWhitelisted(event: ModuleGlobalsCurre
         cwl.timestamp = event.params.timestamp
         cwl.save()
     } 
+    saveTransactionHashHistory("ModuleGlobalsCurrencyWhitelisted", event);
 }

@@ -40,6 +40,7 @@ type VoucherURI @entity {
   "URI"
   uri: String
 
+  "Link to VoucherAsset"
   voucherAsset: VoucherAsset!
 }
 
@@ -360,7 +361,7 @@ type Publication @entity {
   salePrice: BigInt!
 
   "The royalty meassured in basis points"
-  royaltyBasisPoints: BigInt!
+  royaltyBasisPoints: Int!
 
   "The address od currency contract"
   currency: Bytes!
@@ -2194,6 +2195,24 @@ type DnftImageURI @entity {
   imageURI: String!
 
   "The date/time the event emit in seconds since Unix epoch"
+  timestamp: BigInt!
+}
+
+#  TransactionHash done history
+type TransactionHashHistory @entity {
+  "TransactionHash"
+  id: ID!
+
+  "Event Name"
+  eventName: String!
+
+  "Event Address"
+  eventAddress: Bytes!
+
+  "Log Index"
+  logIndex: BigInt!
+
+  "The date/time any event emit in seconds since Unix epoch"
   timestamp: BigInt!
 }
 

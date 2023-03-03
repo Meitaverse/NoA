@@ -295,4 +295,18 @@ library PublishLogic {
             block.timestamp
         );
     }
+
+    function updateCollectLimitPerAddress(
+        address collectModule,
+        uint256 publishId, 
+        uint16 collectLimitPerAddress
+    ) 
+        external 
+    {
+       ICollectModule(collectModule).updateCollectLimitPerAddress(
+            publishId,
+            collectLimitPerAddress
+        );
+
+    }
 }    

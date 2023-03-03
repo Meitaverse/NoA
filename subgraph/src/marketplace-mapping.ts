@@ -55,7 +55,7 @@ import { recordDnftEvent, removePreviousTransferEvent } from "./shared/events";
 import { getLogId } from "./shared/ids";
 import { loadLatestOffer, outbidOrExpirePreviousOffer } from "./shared/offers";
 import { recordSale } from "./shared/revenue";
-import { loadOrCreateDNFT, loadOrCreateDNFTContract } from "./dnft";
+import { loadOrCreateDNFT, loadOrCreateDNFTContract, saveTransactionHashHistory } from "./dnft";
 
 export function loadOrCreateDNFTMarketContract(address: Address): DnftMarketContract {
     let dnftMarketContract = DnftMarketContract.load(address.toHex());
@@ -83,6 +83,8 @@ export function handleAddMarket(event: AddMarket): void {
         market.timestamp = event.block.timestamp
         market.save()
     } 
+
+    saveTransactionHashHistory("AddMarket", event);
 }
 
 export function handleMarketPlaceERC3525Received(event: MarketPlaceERC3525Received): void {
@@ -102,6 +104,8 @@ export function handleMarketPlaceERC3525Received(event: MarketPlaceERC3525Receiv
         history.timestamp = event.block.timestamp
         history.save()
     } 
+
+    saveTransactionHashHistory("MarketPlaceERC3525Received", event);
 }
 
 export function handleRemoveMarket(event: RemoveMarket): void {
@@ -109,6 +113,8 @@ export function handleRemoveMarket(event: RemoveMarket): void {
 
     let _idString = event.params.derivativeNFT.toHexString()
     store.remove("Market", _idString);
+
+    saveTransactionHashHistory("RemoveMarket", event);
 }
 
 export function handleBuyPriceSet(event: BuyPriceSet): void {
@@ -171,7 +177,7 @@ export function handleBuyPriceSet(event: BuyPriceSet): void {
       dnft.ownedOrListedBy = seller.id;
       dnft.save();
     }
-
+    saveTransactionHashHistory("BuyPriceSet", event);
 }
 
 
@@ -232,6 +238,8 @@ export function handleBuyPriceAccepted(event: BuyPriceAccepted): void {
         buyNow.foundationRevenue
       );
     }
+
+    saveTransactionHashHistory("BuyPriceAccepted", event);
 }
   
 
@@ -265,6 +273,8 @@ export function handleBuyPriceInvalidated(event: BuyPriceInvalidated): void {
         buyNow,
       );
     }
+
+    saveTransactionHashHistory("BuyPriceInvalidated", event);
 }
   
 
@@ -299,6 +309,8 @@ export function handleBuyPriceCanceled(event: BuyPriceCanceled): void {
         buyNow,
       );
     }
+
+    saveTransactionHashHistory("BuyPriceCanceled", event);
 }
 
 function loadAuction(marketAddress: Address, auctionId: BigInt): DnftMarketAuction | null {
@@ -451,6 +463,8 @@ export function handleReserveAuctionBidPlaced(event: ReserveAuctionBidPlaced): v
       currentBid.amount
     );
 
+    saveTransactionHashHistory("DnftMarketAuction", event);
+
   }
   
   export function handleReserveAuctionCanceled(event: ReserveAuctionCanceled): void {
@@ -477,6 +491,8 @@ export function handleReserveAuctionBidPlaced(event: ReserveAuctionBidPlaced): v
       auction,
       "Foundation",
     );
+
+    saveTransactionHashHistory("ReserveAuctionCanceled", event);
   }
 
   export function handleReserveAuctionCreated(event: ReserveAuctionCreated): void {
@@ -531,6 +547,8 @@ export function handleReserveAuctionBidPlaced(event: ReserveAuctionBidPlaced): v
         auction.reservePrice
       );
     }
+
+    saveTransactionHashHistory("ReserveAuctionCreated", event);
   }
   
   export function handleReserveAuctionFinalized(event: ReserveAuctionFinalized): void {
@@ -622,6 +640,8 @@ export function handleReserveAuctionBidPlaced(event: ReserveAuctionBidPlaced): v
       null,
       Account.load(currentBid.bidder) as Account,
     );
+
+    saveTransactionHashHistory("ReserveAuctionFinalized", event);
 }
 
 export function handleReserveAuctionUpdated(event: ReserveAuctionUpdated): void {
@@ -643,6 +663,8 @@ export function handleReserveAuctionUpdated(event: ReserveAuctionUpdated): void 
       auction.currency, 
       auction.reservePrice,
     );
+
+    saveTransactionHashHistory("ReserveAuctionUpdated", event);
 }
   
 export function handleReserveAuctionInvalidated(event: ReserveAuctionInvalidated): void {
@@ -669,6 +691,8 @@ export function handleReserveAuctionInvalidated(event: ReserveAuctionInvalidated
       "Foundation",
       auction.currency, 
     );
+
+    saveTransactionHashHistory("ReserveAuctionInvalidated", event);
 }
 
 export function handleOfferAccepted(event: OfferAccepted): void {
@@ -726,6 +750,8 @@ export function handleOfferAccepted(event: OfferAccepted): void {
         offer.foundationRevenue
       );
     }
+
+    saveTransactionHashHistory("OfferAccepted", event);
 }
   
 export function handleOfferInvalidated(event: OfferInvalidated): void {
@@ -757,6 +783,8 @@ export function handleOfferInvalidated(event: OfferInvalidated): void {
         offer
       );
     }
+
+    saveTransactionHashHistory("OfferInvalidated", event);
 }
 
 export function handleOfferMade(event: OfferMade): void {
@@ -796,4 +824,6 @@ export function handleOfferMade(event: OfferMade): void {
       dnft.mostRecentOffer = offer.id;
       dnft.save();
     }
+
+    saveTransactionHashHistory("OfferMade", event);
 }

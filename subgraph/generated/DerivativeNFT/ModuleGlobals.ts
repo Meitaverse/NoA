@@ -126,8 +126,8 @@ export class ModuleGlobals__getPublicationResultValue0Struct extends ethereum.Tu
     return this[3].toBigInt();
   }
 
-  get royaltyBasisPoints(): BigInt {
-    return this[4].toBigInt();
+  get royaltyBasisPoints(): i32 {
+    return this[4].toI32();
   }
 
   get currency(): Address {
@@ -398,7 +398,7 @@ export class ModuleGlobals extends ethereum.SmartContract {
   ): ModuleGlobals__getPublicationResultValue0Struct {
     let result = super.call(
       "getPublication",
-      "getPublication(uint256):((uint256,uint256,uint256,uint256,uint256,address,uint256,string,string,bool,string[],uint256[],address,bytes,address,bytes))",
+      "getPublication(uint256):((uint256,uint256,uint256,uint256,uint16,address,uint256,string,string,bool,string[],uint256[],address,bytes,address,bytes))",
       [ethereum.Value.fromUnsignedBigInt(publishId_)]
     );
 
@@ -412,7 +412,7 @@ export class ModuleGlobals extends ethereum.SmartContract {
   ): ethereum.CallResult<ModuleGlobals__getPublicationResultValue0Struct> {
     let result = super.tryCall(
       "getPublication",
-      "getPublication(uint256):((uint256,uint256,uint256,uint256,uint256,address,uint256,string,string,bool,string[],uint256[],address,bytes,address,bytes))",
+      "getPublication(uint256):((uint256,uint256,uint256,uint256,uint16,address,uint256,string,string,bool,string[],uint256[],address,bytes,address,bytes))",
       [ethereum.Value.fromUnsignedBigInt(publishId_)]
     );
     if (result.reverted) {

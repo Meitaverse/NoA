@@ -367,8 +367,8 @@ export class DerivativeNFT__getSlotDetailResultValue0PublicationStruct extends e
     return this[3].toBigInt();
   }
 
-  get royaltyBasisPoints(): BigInt {
-    return this[4].toBigInt();
+  get royaltyBasisPoints(): i32 {
+    return this[4].toI32();
   }
 
   get currency(): Address {
@@ -433,8 +433,8 @@ export class DerivativeNFT__publishInputPublicationStruct extends ethereum.Tuple
     return this[3].toBigInt();
   }
 
-  get royaltyBasisPoints(): BigInt {
-    return this[4].toBigInt();
+  get royaltyBasisPoints(): i32 {
+    return this[4].toI32();
   }
 
   get currency(): Address {
@@ -786,7 +786,7 @@ export class DerivativeNFT extends ethereum.SmartContract {
   getSlotDetail(slot_: BigInt): DerivativeNFT__getSlotDetailResultValue0Struct {
     let result = super.call(
       "getSlotDetail",
-      "getSlotDetail(uint256):(((uint256,uint256,uint256,uint256,uint256,address,uint256,string,string,bool,string[],uint256[],address,bytes,address,bytes),string,uint256))",
+      "getSlotDetail(uint256):(((uint256,uint256,uint256,uint256,uint16,address,uint256,string,string,bool,string[],uint256[],address,bytes,address,bytes),string,uint256))",
       [ethereum.Value.fromUnsignedBigInt(slot_)]
     );
 
@@ -800,7 +800,7 @@ export class DerivativeNFT extends ethereum.SmartContract {
   ): ethereum.CallResult<DerivativeNFT__getSlotDetailResultValue0Struct> {
     let result = super.tryCall(
       "getSlotDetail",
-      "getSlotDetail(uint256):(((uint256,uint256,uint256,uint256,uint256,address,uint256,string,string,bool,string[],uint256[],address,bytes,address,bytes),string,uint256))",
+      "getSlotDetail(uint256):(((uint256,uint256,uint256,uint256,uint16,address,uint256,string,string,bool,string[],uint256[],address,bytes,address,bytes),string,uint256))",
       [ethereum.Value.fromUnsignedBigInt(slot_)]
     );
     if (result.reverted) {
@@ -926,7 +926,7 @@ export class DerivativeNFT extends ethereum.SmartContract {
   ): BigInt {
     let result = super.call(
       "publish",
-      "publish(uint256,(uint256,uint256,uint256,uint256,uint256,address,uint256,string,string,bool,string[],uint256[],address,bytes,address,bytes),address,uint16):(uint256)",
+      "publish(uint256,(uint256,uint256,uint256,uint256,uint16,address,uint256,string,string,bool,string[],uint256[],address,bytes,address,bytes),address,uint16):(uint256)",
       [
         ethereum.Value.fromUnsignedBigInt(publishId),
         ethereum.Value.fromTuple(publication),
@@ -946,7 +946,7 @@ export class DerivativeNFT extends ethereum.SmartContract {
   ): ethereum.CallResult<BigInt> {
     let result = super.tryCall(
       "publish",
-      "publish(uint256,(uint256,uint256,uint256,uint256,uint256,address,uint256,string,string,bool,string[],uint256[],address,bytes,address,bytes),address,uint16):(uint256)",
+      "publish(uint256,(uint256,uint256,uint256,uint256,uint16,address,uint256,string,string,bool,string[],uint256[],address,bytes,address,bytes),address,uint16):(uint256)",
       [
         ethereum.Value.fromUnsignedBigInt(publishId),
         ethereum.Value.fromTuple(publication),
@@ -1529,8 +1529,8 @@ export class PublishCallPublicationStruct extends ethereum.Tuple {
     return this[3].toBigInt();
   }
 
-  get royaltyBasisPoints(): BigInt {
-    return this[4].toBigInt();
+  get royaltyBasisPoints(): i32 {
+    return this[4].toI32();
   }
 
   get currency(): Address {

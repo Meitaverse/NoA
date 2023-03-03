@@ -5,7 +5,7 @@ pragma solidity ^0.8.12;
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 
 
-import "./OZAccessControlUpgradeable.sol";
+import "../libraries/OZAccessControlUpgradeable.sol";
 
 /**
  * @title Defines a role for Foundation operator accounts.

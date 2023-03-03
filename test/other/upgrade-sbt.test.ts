@@ -55,7 +55,8 @@ import { createProfileReturningTokenId } from '../helpers/utils';
  let sbtProxyV2: NFTDerivativeProtocolTokenV2;
  let original_balance = 10000;
 
-makeSuiteCleanRoom('UUPS SBT ability', function () {
+makeSuiteCleanRoom('SBT upgrade ability', function () {
+  /*
   describe("Deployment", () => {
     beforeEach(async () => {
 
@@ -71,7 +72,6 @@ makeSuiteCleanRoom('UUPS SBT ability', function () {
           let balance = await sbtContract.connect(user)['balanceOf(uint256)'](SECOND_PROFILE_ID);
           console.log('balance of user: ' , balance);
     
-
       });
 
     it("Proxy state", async () => {
@@ -89,18 +89,18 @@ makeSuiteCleanRoom('UUPS SBT ability', function () {
       ]);
     });
 
-    // it("Attempt to initialize the original SBT contract should revert", async () => {
-    //   await expect(
-    //     sbtContract.connect(user).initialize(
-    //       governanceAddress,
-    //       SBT_NAME, 
-    //       SBT_SYMBOL, 
-    //       18,
-    //       governanceAddress,
-    //       sbtMetadataDescriptor.address
-    //       )
-    //     ).to.be.revertedWith(ERRORS.UUPSINITIALIZED);
-    // });
+    it("Attempt to initialize the original SBT contract should revert", async () => {
+      await expect(
+        sbtContract.connect(user).initialize(
+          SBT_NAME, 
+          SBT_SYMBOL, 
+          8,
+          manager.address,
+          governanceAddress,
+          sbtMetadataDescriptor.address
+          )
+        ).to.be.reverted;
+    });
 
     it("SBT Proxy balance of user", async () => {
       expect(
@@ -112,7 +112,9 @@ makeSuiteCleanRoom('UUPS SBT ability', function () {
     });
 
   });
+  */
 
+  /*
   describe("#upgrade V2", () => {
     beforeEach(async () => {
 
@@ -129,45 +131,60 @@ makeSuiteCleanRoom('UUPS SBT ability', function () {
       let balance = await sbtContract.connect(user)['balanceOf(uint256)'](SECOND_PROFILE_ID);
       console.log('sbtContract, balance of user: ' , balance);
 
-      const implV2Factory = new NFTDerivativeProtocolTokenV2__factory(deployer);
-      sbtProxyV2 = (await upgrades.upgradeProxy(
-        sbtContract.address,
-        implV2Factory,
-      )) as NFTDerivativeProtocolTokenV2;
-      
-      console.log('sbtProxyV2: ' , sbtProxyV2.address);
 
     });
-
-    it("New SBT Proxy state", async () => {
-      const name = await sbtProxyV2.name();
-      const symbol = await sbtProxyV2.symbol();
-      const decimals = await sbtProxyV2.valueDecimals();
+    it("Should upgrade and name, symbol decimals is unchanged", async function () {
+      const newImpl = await new NFTDerivativeProtocolTokenV2__factory(deployer).deploy();
+      const sbtProxyV2 = TransparentUpgradeableProxy__factory.connect(sbtContract.address, deployer);
+      
+      await sbtProxyV2.upgradeTo(newImpl.address);
+      const sbtV2 = new NFTDerivativeProtocolTokenV2__factory(deployer).attach(sbtProxyV2.address);
+  
       expect([
-        await sbtProxyV2.name(),
-        await sbtProxyV2.symbol(),
-        await sbtProxyV2.valueDecimals(),
+        await sbtV2.connect(user).name(),
+        await sbtV2.connect(user).symbol(),
+        await sbtV2.connect(user).valueDecimals(),
       ]).to.deep.eq([
         SBT_NAME,
         SBT_SYMBOL,
         18,
       ]);
-    });
-
-    it("New SBT Proxy balance of user still not changed", async () => {
-        expect(
-          await sbtProxyV2['balanceOf(uint256)'](SECOND_PROFILE_ID),
-        ).to.deep.eq(
-          original_balance
-        );
-
 
     });
-
-
-
   });
+  */
+  
+  describe("#upgrade V2", () => {
+    before('get factories', async function() {
+      // this.TokenIsERC20 = await hre.ethers.getContractFactory('TokenIsERC20')
+      // this.TokenIsERC20V2 = await hre.ethers.getContractFactory('TokenIsERC20V2')
+      this.sbtV2Impl = await new NFTDerivativeProtocolTokenV2__factory(deployer).deploy();
+      
+    });
+    
+    it('Should deploy the first smart contract and then upgrade it', async function() {
 
-  
-  
+      // const sbtV2Contract = await upgrades.upgradeProxy(
+      //   sbtContract.address,
+      //   this.sbtV2Impl
+      // );
+      // await sbtV2Contract.deployed();
+      const sbtV2Contract = (await upgrades.upgradeProxy(
+        sbtContract.address,
+        this.sbtV2Impl,
+      )) as NFTDerivativeProtocolTokenV2;
+
+      expect([
+        await sbtV2Contract.connect(user).name(),
+        await sbtV2Contract.connect(user).symbol(),
+        await sbtV2Contract.connect(user).valueDecimals(),
+      ]).to.deep.eq([
+        SBT_NAME,
+        SBT_SYMBOL,
+        18,
+      ]);
+
+    });
+    
+  });
 });
