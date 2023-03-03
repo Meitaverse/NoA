@@ -37,11 +37,11 @@
       "startBlock": 1
     },
     "VoucherMarket": {
-      "address": "0xc5a5C42992dECbae36851359345FE25997F5C42d",
+      "address": "0x998abeb3E57409262aE5b751f60747921B33613E",
       "startBlock": 1
     },
     "FETH": {
-      "address": "0x67d269191c92Caf3cD7723F116c85e6E9bf55933",
+      "address": "0x70e0bA845a1A0F2DA3359C97E0285013525FFC49",
       "startBlock": 1
     },
     "GovernorContract": {

@@ -241,7 +241,7 @@ import { BigNumber } from 'ethers';
                 manager.address,
                 { nonce: deployerNonce++ }
         );
-
+/*
         const sbtImpl = await deployContract(
             new NFTDerivativeProtocolTokenV1__factory(deployer).deploy(
                 { nonce: deployerNonce++ }
@@ -261,6 +261,28 @@ import { BigNumber } from 'ethers';
             { nonce: deployerNonce++ }
         );
         const sbtContract = new NFTDerivativeProtocolTokenV1__factory(deployer).attach(sbtProxy.address);
+*/
+
+        const sbtImpl = await new NFTDerivativeProtocolTokenV1__factory(deployer).deploy( { nonce: deployerNonce++ } );
+
+        let sbt_data = sbtImpl.interface.encodeFunctionData('initialize', [
+            SBT_NAME, 
+            SBT_SYMBOL, 
+            SBT_DECIMALS,
+            manager.address,
+            governance.address,
+            sbtMetadataDescriptor.address,
+        ]);
+
+        let sbtProxy = await new TransparentUpgradeableProxy__factory(deployer).deploy(
+          sbtImpl.address,  //logic
+          deployer.address,  //admin
+          sbt_data,          //initial data
+          { nonce: deployerNonce++ }
+        );
+
+        // Connect the sbt proxy to the NFTDerivativeProtocolTokenV1 factory, must connect by governance, not deployer
+        const sbtContract = NFTDerivativeProtocolTokenV1__factory.connect(sbtProxy.address, governance);
 
         console.log('\t-- sbtContract: ', sbtContract.address);
         await exportAddress(hre, sbtContract, 'SBT');
@@ -269,6 +291,7 @@ import { BigNumber } from 'ethers';
         
         const governorImpl = await new GovernorContract__factory(deployer).deploy({ nonce: deployerNonce++ });
         let initializeDataGovrnor = governorImpl.interface.encodeFunctionData("initialize", [
+            governance.address,
             sbtContract.address,
             timeLock.address,
             QUORUM_PERCENTAGE, 
@@ -281,9 +304,9 @@ import { BigNumber } from 'ethers';
             initializeDataGovrnor,
             { nonce: deployerNonce++ }
         );
+
         const governorContract = new GovernorContract__factory(deployer).attach(gonvernorProxy.address);
       
-          
         console.log("\t-- governorContract address: ", governorContract.address);
         await exportAddress(hre, governorContract, 'GovernorContract');
         await exportSubgraphNetworksJson(hre, governorContract, 'GovernorContract');
