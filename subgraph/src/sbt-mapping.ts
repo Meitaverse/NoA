@@ -135,13 +135,13 @@ export function handleSBTTransferValue(event: TransferValue): void {
 
             
             const sbtAsset_from = loadOrCreateSBTAsset(from)
-            // const result2 = sbt.try_balanceOf1(event.params._fromTokenId)
-            // if (!result2.reverted) {
-            //     log.info("try_balanceOf1, result2.value: {}", [result2.value.toString()])
-            //     sbtAsset_from.balance = result2.value
-            // }
-            if (!sbtAsset_from.balance.isZero())
-                sbtAsset_from.balance = sbtAsset_from.balance.minus(event.params._value)
+            const result2 = sbt.try_balanceOf1(event.params._fromTokenId)
+            if (!result2.reverted) {
+                log.info("try_balanceOf1, result2.value: {}", [result2.value.toString()])
+                sbtAsset_from.balance = result2.value
+            }
+            // if (!sbtAsset_from.balance.isZero())
+            //     sbtAsset_from.balance = sbtAsset_from.balance.minus(event.params._value)
             sbtAsset_from.timestamp = event.block.timestamp
             sbtAsset_from.save()
         }
@@ -158,11 +158,11 @@ export function handleSBTTransferValue(event: TransferValue): void {
                 
             const result2 = sbt.try_balanceOf1(event.params._toTokenId)
     
-            // if (!result2.reverted) {
-            //     log.info("try_balanceOf1, result2.value: {}", [result2.value.toString()])
-            //     sbtAsset_to.balance = result2.value
-            // }
-            sbtAsset_to.balance = sbtAsset_to.balance.plus(event.params._value)
+            if (!result2.reverted) {
+                log.info("try_balanceOf1, result2.value: {}", [result2.value.toString()])
+                sbtAsset_to.balance = result2.value
+            }
+            // sbtAsset_to.balance = sbtAsset_to.balance.plus(event.params._value)
             sbtAsset_to.timestamp = event.block.timestamp
             sbtAsset_to.save()
         }

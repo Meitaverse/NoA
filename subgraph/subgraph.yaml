@@ -422,8 +422,8 @@ dataSources:
       abis:
         - name: DerivativeNFT
           file: ../artifacts/contracts/DerivativeNFT.sol/DerivativeNFT.json
-        - name: ModuleGlobals
-          file: ../artifacts/contracts/modules/ModuleGlobals.sol/ModuleGlobals.json
+        - name: Manager
+          file: ../artifacts/contracts/Manager.sol/Manager.json
       eventHandlers:
         - event: Approval(indexed address,indexed address,indexed uint256)
           handler: handleDNFTApproval
@@ -468,8 +468,8 @@ dataSources:
       abis:
         - name: DerivativeNFT
           file: ../artifacts/contracts/DerivativeNFT.sol/DerivativeNFT.json
-        - name: ModuleGlobals
-          file: ../artifacts/contracts/modules/ModuleGlobals.sol/ModuleGlobals.json
+        - name: Manager
+          file: ../artifacts/contracts/Manager.sol/Manager.json
       eventHandlers:
         - event: Approval(indexed address,indexed address,indexed uint256)
           handler: handleDNFTApproval

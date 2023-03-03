@@ -38,7 +38,7 @@ import { loadProject } from "../shared/project";
 import { loadOrCreateDnftImageURI } from "../shared/dnftImageURI";
 import { loadOrCreatePublish } from "../shared/publish";
 import { loadOrCreateCreator } from "../shared/creators";
-import { ModuleGlobals } from "../../generated/Manager/ModuleGlobals";
+import { Manager } from "../../generated/Manager/Manager";
 
 function getDNFTId(address: Address, id: BigInt): string {
     return address.toHex() + "-" + id.toString();
@@ -474,15 +474,16 @@ export function handleRoyaltiesUpdated(event: RoyaltiesUpdated): void {
     log.info("handleRoyaltiesUpdated, event.address: {}", [event.address.toHexString()])
     let publish = loadOrCreatePublish(event.params.publishId)
     if (publish) {
-        let _id = "GlobalModules"
+        let _id = "Manager"
         const protocolContract = ProtocolContract.load(_id) || new ProtocolContract(_id)
         if (protocolContract) {
-            const moduleGlobals = ModuleGlobals.bind(Address.fromBytes(protocolContract.contract))
-            const result = moduleGlobals.try_getGenesisAndPreviousPublishId(event.params.publishId)
+            const manager = Manager.bind(Address.fromBytes(protocolContract.contract))
+            const result = manager.try_getGenesisAndPreviousPublishId(event.params.publishId)
             if (result.reverted) {
                 log.info("try_getGenesisAndPreviousPublishId, result.reverted", [])
                 return 
             }
+            
             //TODO
             let dnft = loadOrCreateDNFT(event.address, event.params.tokenId, event);
             if (dnft) {

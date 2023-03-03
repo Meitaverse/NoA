@@ -85,7 +85,6 @@ contract PublishModule is FeeModuleBase, IPublishModule, ModuleBase {
                     publishTaxes
                 );
             }
-
             
             _dataPublishdNFTByProject[publishId].publication = publication;
             _dataPublishdNFTByProject[publishId].previousPublishId = previousPublishId;

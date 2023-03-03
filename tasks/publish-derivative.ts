@@ -178,7 +178,7 @@ task("publish-derivative", "publish-derivative function")
       "\t--- salePrice: ", publishInfo.publication.salePrice.toNumber()
     );
     console.log(
-      "\t--- royaltyBasisPoints: ", publishInfo.publication.royaltyBasisPoints.toNumber()
+      "\t--- royaltyBasisPoints: ", publishInfo.publication.royaltyBasisPoints
     );
 
 

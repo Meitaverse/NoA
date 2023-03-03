@@ -75,8 +75,9 @@ import { BigNumber } from 'ethers';
         const user = accounts[2];
         const userTwo = accounts[3];
         const userThree = accounts[4];
+        const admin = accounts[5];
 
-        const proxyAdminAddress = deployer.address;
+        // const proxyAdminAddress = deployer.address;
 
         // Nonce management in case of deployment issues
         let deployerNonce = await ethers.provider.getTransactionCount(deployer.address);
@@ -216,9 +217,9 @@ import { BigNumber } from 'ethers';
 
         let proxy = await deployContract(
             new TransparentUpgradeableProxy__factory(deployer).deploy(
-                managerImpl.address,
-                proxyAdminAddress,
-                data,
+                managerImpl.address, //logic
+                admin.address,       //admin
+                data,                //initial data
                 { nonce: deployerNonce++ }
             )
         );
@@ -228,12 +229,14 @@ import { BigNumber } from 'ethers';
         
 
         // Connect the manager proxy to the Manager factory and the governance for ease of use.
-        const manager = Manager__factory.connect(proxy.address, governance);
+        const manager = Manager__factory.connect(
+          proxy.address, 
+          governance
+        );
 
         // console.log('\t-- manager: ', manager.address);
         await exportSubgraphNetworksJson(hre, manager, 'Manager');
     
-
         console.log('\n\t-- Deploying SBT --');
 
         //SBT descriptor
@@ -263,7 +266,9 @@ import { BigNumber } from 'ethers';
         const sbtContract = new NFTDerivativeProtocolTokenV1__factory(deployer).attach(sbtProxy.address);
 */
 
-        const sbtImpl = await new NFTDerivativeProtocolTokenV1__factory(deployer).deploy( { nonce: deployerNonce++ } );
+        const sbtImpl = await new NFTDerivativeProtocolTokenV1__factory(deployer).deploy( 
+          { nonce: deployerNonce++ } 
+        );
 
         let sbt_data = sbtImpl.interface.encodeFunctionData('initialize', [
             SBT_NAME, 
@@ -275,21 +280,26 @@ import { BigNumber } from 'ethers';
         ]);
 
         let sbtProxy = await new TransparentUpgradeableProxy__factory(deployer).deploy(
-          sbtImpl.address,  //logic
-          deployer.address,  //admin
-          sbt_data,          //initial data
+          sbtImpl.address,       //logic
+          admin.address,         //admin
+          sbt_data,              //initial data
           { nonce: deployerNonce++ }
         );
 
         // Connect the sbt proxy to the NFTDerivativeProtocolTokenV1 factory, must connect by governance, not deployer
-        const sbtContract = NFTDerivativeProtocolTokenV1__factory.connect(sbtProxy.address, governance);
+        const sbtContract = NFTDerivativeProtocolTokenV1__factory.connect(
+          sbtProxy.address, 
+          governance
+        );
 
         console.log('\t-- sbtContract: ', sbtContract.address);
         await exportAddress(hre, sbtContract, 'SBT');
         await exportSubgraphNetworksJson(hre, sbtContract, 'SBT');
 
         
-        const governorImpl = await new GovernorContract__factory(deployer).deploy({ nonce: deployerNonce++ });
+        const governorImpl = await new GovernorContract__factory(deployer).deploy(
+          { nonce: deployerNonce++ }
+        );
         let initializeDataGovrnor = governorImpl.interface.encodeFunctionData("initialize", [
             governance.address,
             sbtContract.address,

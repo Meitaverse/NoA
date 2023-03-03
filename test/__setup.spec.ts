@@ -124,6 +124,7 @@ export const NickName3 = 'BitsoulUser3';
 
 export let accounts: Signer[];
 export let deployer: Signer;
+export let admin: Signer;
 export let user: Signer;
 export let userTwo: Signer;
 export let userThree: Signer;
@@ -197,17 +198,19 @@ before(async function () {
   userTwo = accounts[2];
   governance = accounts[3];
   userThree = accounts[4];
+  admin = accounts[5];
 
   deployerAddress = await deployer.getAddress();
   userAddress = await user.getAddress();
   userTwoAddress = await userTwo.getAddress();
   userThreeAddress = await userThree.getAddress();
   governanceAddress = await governance.getAddress();
-  console.log("deployer address: ", deployerAddress);
+  console.log("deployer address: ", await deployer.getAddress());
   console.log("user address: ", userAddress);
   console.log("userTwo address: ", userTwoAddress);
   console.log("userThree address: ", userThreeAddress);
   console.log("governance address: ", governanceAddress);
+  console.log("admin address: ", await admin.getAddress());
 
   mockModuleData = abiCoder.encode(['uint256'], [1]);
 
@@ -258,7 +261,7 @@ before(async function () {
   // nonce + 1 is impl
   // nonce + 2 is manager proxy
 
-  const managerProxyAddress = computeContractAddress(deployerAddress, nonce + 2); //'0x' + keccak256(RLP.encode([deployerAddress, hubProxyNonce])).substr(26);
+  const managerProxyAddress = computeContractAddress(deployerAddress, nonce + 2); 
   // console.log("managerProxyAddress: ", managerProxyAddress);
 
   derivativeNFTImpl = await new DerivativeNFT__factory(deployer).deploy(
@@ -276,7 +279,7 @@ before(async function () {
   
   let proxy = await new TransparentUpgradeableProxy__factory(deployer).deploy(
     managerImpl.address,
-    deployerAddress,
+    await admin.getAddress(),
     data
   );
 
@@ -303,7 +306,7 @@ before(async function () {
   
   let sbtProxy = await new TransparentUpgradeableProxy__factory(deployer).deploy(
     sbtImpl.address,  //logic
-    deployerAddress,  //admin
+    await admin.getAddress(),  //admin
     sbt_data          //initial data
   );
 
@@ -326,7 +329,7 @@ before(async function () {
   
   let governorProxy = await new TransparentUpgradeableProxy__factory(deployer).deploy(
     governorImpl.address,  //logic
-    deployerAddress,       // admin
+    await admin.getAddress(),       // admin
     governor_data          //initial data
   );
 

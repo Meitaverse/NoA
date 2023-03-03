@@ -100,7 +100,7 @@ task("publish", "publish function")
         currency: sbt.address,
         amount: 11,
         salePrice: DEFAULT_COLLECT_PRICE,
-        royaltyBasisPoints: Default_royaltyBasisPoints,
+        royaltyBasisPoints: GENESIS_FEE_BPS,
         name: "Dollar",
         description: "Hand draw",
         canCollect: true,
@@ -153,7 +153,7 @@ task("publish", "publish function")
       "\t--- salePrice: ", publishInfo.publication.salePrice.toNumber()
     );
     console.log(
-      "\t--- royaltyBasisPoints: ", publishInfo.publication.royaltyBasisPoints.toNumber()
+      "\t--- royaltyBasisPoints: ", publishInfo.publication.royaltyBasisPoints
     );
 
     //updatePublish

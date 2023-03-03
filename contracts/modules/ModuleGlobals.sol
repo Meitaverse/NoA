@@ -307,7 +307,7 @@ contract ModuleGlobals is IModuleGlobals, GlobalStorage {
         return IManager(_manager).getHubInfo(hubId);
         
     }
-
+/*
     /// @notice Just avoid Manager proxy by admin
     function getPublication(uint256 publishId_) external view returns (DataTypes.Publication memory) {
         return IManager(_manager).getPublication(publishId_);
@@ -322,4 +322,5 @@ contract ModuleGlobals is IModuleGlobals, GlobalStorage {
          return IManager(_manager).getGenesisAndPreviousPublishId(publishId);
          
     }
+    */
 }
