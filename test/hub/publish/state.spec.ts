@@ -236,10 +236,7 @@ makeSuiteCleanRoom('Multi state', function () {
                     currency: sbtContract.address,
                     amount: 1,
                     salePrice: DEFAULT_COLLECT_PRICE,
-                                const collectModuleInitData = abiCoder.encode(
-                ['uint256', 'uint16', 'uint16'],
-                [DEFAULT_COLLECT_PRICE, Default_royaltyBasisPoints, 0]
-            );: Default_royaltyBasisPoints,
+                    royaltyBasisPoints: Default_royaltyBasisPoints,
                     name: "Dollar",
                     description: "Hand draw",
                     canCollect: true,
@@ -276,10 +273,7 @@ makeSuiteCleanRoom('Multi state', function () {
                     currency: sbtContract.address,
                     amount: 1,
                     salePrice: DEFAULT_COLLECT_PRICE,
-                                const collectModuleInitData = abiCoder.encode(
-                ['uint256', 'uint16', 'uint16'],
-                [DEFAULT_COLLECT_PRICE, Default_royaltyBasisPoints, 0]
-            );: Default_royaltyBasisPoints,
+                    royaltyBasisPoints: Default_royaltyBasisPoints,
                     name: "Dollar",
                     description: "Hand draw",
                     canCollect: true,
@@ -331,10 +325,7 @@ makeSuiteCleanRoom('Multi state', function () {
                     currency: sbtContract.address,
                     amount: 1,
                     salePrice: DEFAULT_COLLECT_PRICE,
-                                const collectModuleInitData = abiCoder.encode(
-                ['uint256', 'uint16', 'uint16'],
-                [DEFAULT_COLLECT_PRICE, Default_royaltyBasisPoints, 0]
-            );: Default_royaltyBasisPoints,
+                    royaltyBasisPoints: Default_royaltyBasisPoints,
                     name: "Dollar",
                     description: "Hand draw",
                     canCollect: true,
@@ -380,10 +371,7 @@ makeSuiteCleanRoom('Multi state', function () {
                     currency: sbtContract.address,
                     amount: 1,
                     salePrice: DEFAULT_COLLECT_PRICE,
-                                const collectModuleInitData = abiCoder.encode(
-                ['uint256', 'uint16', 'uint16'],
-                [DEFAULT_COLLECT_PRICE, Default_royaltyBasisPoints, 0]
-            );: Default_royaltyBasisPoints,
+                    royaltyBasisPoints: Default_royaltyBasisPoints,
                     name: "Dollar",
                     description: "Hand draw",
                     canCollect: true,
@@ -422,9 +410,10 @@ makeSuiteCleanRoom('Multi state', function () {
                 [template.address, DEFAULT_TEMPLATE_NUMBER],
             );
 
+
             const collectModuleInitData = abiCoder.encode(
-                ['uint256', 'uint16', 'uint256', 'uint256'],
-                [SECOND_PROFILE_ID, GENESIS_FEE_BPS, DEFAULT_COLLECT_PRICE, Default_royaltyBasisPoints]
+              ['uint256', 'uint16', 'uint16'],
+              [DEFAULT_COLLECT_PRICE, Default_royaltyBasisPoints, 0]
             );
 
             //mint 100Value to user
@@ -438,10 +427,7 @@ makeSuiteCleanRoom('Multi state', function () {
                     currency: sbtContract.address,
                     amount: 1,
                     salePrice: DEFAULT_COLLECT_PRICE,
-                                const collectModuleInitData = abiCoder.encode(
-                ['uint256', 'uint16', 'uint16'],
-                [DEFAULT_COLLECT_PRICE, Default_royaltyBasisPoints, 0]
-            );: Default_royaltyBasisPoints,
+                    royaltyBasisPoints: Default_royaltyBasisPoints,
                     name: "Dollar",
                     description: "Hand draw",
                     canCollect: true,
@@ -550,10 +536,7 @@ makeSuiteCleanRoom('Multi state', function () {
                     currency: sbtContract.address,
                     amount: 1,
                     salePrice: DEFAULT_COLLECT_PRICE,
-                                const collectModuleInitData = abiCoder.encode(
-                ['uint256', 'uint16', 'uint16'],
-                [DEFAULT_COLLECT_PRICE, Default_royaltyBasisPoints, 0]
-            );: Default_royaltyBasisPoints,
+                    royaltyBasisPoints: Default_royaltyBasisPoints,
                     name: "Dollar",
                     description: "Hand draw",
                     canCollect: true,
@@ -584,7 +567,7 @@ makeSuiteCleanRoom('Multi state', function () {
             const collectModuleInitData = abiCoder.encode(
               ['uint256', 'uint16', 'uint16'],
               [DEFAULT_COLLECT_PRICE, Default_royaltyBasisPoints, 0]
-             );
+          );
 
             //mint 100Value to user
             await bankTreasuryContract.connect(user).buySBT(SECOND_PROFILE_ID, {value: 100});
@@ -597,10 +580,7 @@ makeSuiteCleanRoom('Multi state', function () {
                     currency: sbtContract.address,
                     amount: 1,
                     salePrice: DEFAULT_COLLECT_PRICE,
-                                const collectModuleInitData = abiCoder.encode(
-                ['uint256', 'uint16', 'uint16'],
-                [DEFAULT_COLLECT_PRICE, Default_royaltyBasisPoints, 0]
-            );: Default_royaltyBasisPoints,
+                    royaltyBasisPoints: Default_royaltyBasisPoints,
                     name: "Dollar",
                     description: "Hand draw",
                     canCollect: true,
@@ -638,10 +618,11 @@ makeSuiteCleanRoom('Multi state', function () {
                 [template.address, DEFAULT_TEMPLATE_NUMBER],
             );
 
+
             const collectModuleInitData = abiCoder.encode(
               ['uint256', 'uint16', 'uint16'],
               [DEFAULT_COLLECT_PRICE, Default_royaltyBasisPoints, 0]
-          );
+            );
 
             //mint 100Value to user
             await bankTreasuryContract.connect(user).buySBT(SECOND_PROFILE_ID, {value: 100});
@@ -654,10 +635,7 @@ makeSuiteCleanRoom('Multi state', function () {
                     currency: sbtContract.address,
                     amount: 1,
                     salePrice: DEFAULT_COLLECT_PRICE,
-                                const collectModuleInitData = abiCoder.encode(
-                ['uint256', 'uint16', 'uint16'],
-                [DEFAULT_COLLECT_PRICE, Default_royaltyBasisPoints, 0]
-            );: Default_royaltyBasisPoints,
+                    royaltyBasisPoints: Default_royaltyBasisPoints,
                     name: "Dollar",
                     description: "Hand draw",
                     canCollect: true,
@@ -698,10 +676,9 @@ makeSuiteCleanRoom('Multi state', function () {
             );
 
             const collectModuleInitData = abiCoder.encode(
-                ['uint256', 'uint16', 'uint256', 'uint256'],
-                [SECOND_PROFILE_ID, GENESIS_FEE_BPS, DEFAULT_COLLECT_PRICE, Default_royaltyBasisPoints]
+              ['uint256', 'uint16', 'uint16'],
+              [DEFAULT_COLLECT_PRICE, Default_royaltyBasisPoints, 0]
             );
-
             //mint 100Value to user
             await bankTreasuryContract.connect(user).buySBT(SECOND_PROFILE_ID, {value: 100});
             
@@ -713,10 +690,7 @@ makeSuiteCleanRoom('Multi state', function () {
                     currency: sbtContract.address,
                     amount: 1,
                     salePrice: DEFAULT_COLLECT_PRICE,
-                                const collectModuleInitData = abiCoder.encode(
-                ['uint256', 'uint16', 'uint16'],
-                [DEFAULT_COLLECT_PRICE, Default_royaltyBasisPoints, 0]
-            );: Default_royaltyBasisPoints,
+                    royaltyBasisPoints: Default_royaltyBasisPoints,
                     name: "Dollar",
                     description: "Hand draw",
                     canCollect: true,
@@ -756,10 +730,10 @@ makeSuiteCleanRoom('Multi state', function () {
             );
 
             const collectModuleInitData = abiCoder.encode(
-                ['uint256', 'uint16', 'uint256', 'uint256'],
-                [SECOND_PROFILE_ID, GENESIS_FEE_BPS, DEFAULT_COLLECT_PRICE, Default_royaltyBasisPoints]
+              ['uint256', 'uint16', 'uint16'],
+              [DEFAULT_COLLECT_PRICE, Default_royaltyBasisPoints, 0]
             );
-
+            
             //mint 100Value to user
             await bankTreasuryContract.connect(user).buySBT(SECOND_PROFILE_ID, {value: 100});
             
@@ -771,10 +745,7 @@ makeSuiteCleanRoom('Multi state', function () {
                     currency: sbtContract.address,
                     amount: 1,
                     salePrice: DEFAULT_COLLECT_PRICE,
-                                const collectModuleInitData = abiCoder.encode(
-                ['uint256', 'uint16', 'uint16'],
-                [DEFAULT_COLLECT_PRICE, Default_royaltyBasisPoints, 0]
-            );: Default_royaltyBasisPoints,
+                    royaltyBasisPoints: Default_royaltyBasisPoints,
                     name: "Dollar",
                     description: "Hand draw",
                     canCollect: true,
