@@ -3,8 +3,7 @@ pragma solidity ^0.8.13;
 
 import "@openzeppelin/contracts-upgradeable/utils/cryptography/ECDSAUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/utils/structs/EnumerableSetUpgradeable.sol";
-import "@openzeppelin/contracts-upgradeable/utils/CountersUpgradeable.sol";
-
+import "@openzeppelin/contracts/utils/Counters.sol";
 import "@solvprotocol/erc-3525/contracts/IERC3525.sol";
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import {Clones} from '@openzeppelin/contracts/proxy/Clones.sol';
@@ -35,13 +34,13 @@ contract Manager is
     using SafeMathUpgradeable128 for uint128;
     using EnumerableSetUpgradeable for EnumerableSetUpgradeable.UintSet;
     using EnumerableSetUpgradeable for EnumerableSetUpgradeable.AddressSet;
-    using CountersUpgradeable for CountersUpgradeable.Counter;
+    using Counters for Counters.Counter;
 
     uint256 internal constant REVISION = 1;
 
     mapping(address => uint256) public sigNonces;
-    // address internal immutable  _DNFT_IMPL;
-    // address internal immutable  _RECEIVER;
+    address internal immutable  _DNFT_IMPL;
+    address internal immutable  _RECEIVER;
 
     string private constant name = "Manager";
 
@@ -366,27 +365,6 @@ contract Manager is
         );
     }
 
-    function updateCollectLimitPerAddress(
-        uint256 publishId, 
-        uint16 collectLimitPerAddress
-    ) 
-        external 
-        whenPublishingEnabled
-        nonReentrant
-    {
-        uint256 soulBoundTokenId = _walletToSoulBoundTokenId[msg.sender];
-        if (soulBoundTokenId == _projectDataByPublishId[publishId].publication.soulBoundTokenId) {
-            PublishLogic.updateCollectLimitPerAddress(
-                _projectDataByPublishId[publishId].publication.collectModule,
-                publishId, 
-                collectLimitPerAddress
-            );
-        } else {
-            revert Errors.NotOwner();
-        }
-
-    }
-
     function publish(
         uint256 publishId
     ) 
@@ -511,10 +489,10 @@ contract Manager is
         return _derivativeNFTByProjectId[projectId];
     }
 
-    function calculateDerivativeNFTAddress(uint256 projectId) external view returns (address deverivateNFTInstance) {
-        bytes32 salt = keccak256(abi.encode(projectId));
-        deverivateNFTInstance = Clones.predictDeterministicAddress(_DNFT_IMPL, salt);
-    }
+    // function calculateDerivativeNFTAddress(uint256 projectId) external view returns (address deverivateNFTInstance) {
+    //     bytes32 salt = keccak256(abi.encode(projectId));
+    //     deverivateNFTInstance = Clones.predictDeterministicAddress(_DNFT_IMPL, salt);
+    // }
 
     function getPublicationByProjectToken(uint256 projectId_, uint256 tokenId_) external view returns (uint256, DataTypes.Publication memory) {
         address derivativeNFT =  _derivativeNFTByProjectId[projectId_];
