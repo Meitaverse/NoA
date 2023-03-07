@@ -88,6 +88,7 @@ abstract contract MockManagerV2Storage {
     
     string internal _svgLogo;
     
+    //V2
     uint256 internal _additionalValue;
   
 }

@@ -49,10 +49,6 @@ contract ManagerV2 is
         _;
     }
 
-    function initialize(uint256 newValue) external initializer {
-        _additionalValue = newValue;
-    }
-
     //-- external -- //
     function getReceiver() external view returns (address) {
         return _RECEIVER;
@@ -802,4 +798,17 @@ contract ManagerV2 is
     uint256[49] private __gap;
 
 
+    //V2
+
+    function reInitialize(uint256 newValue) external initializer {
+        _additionalValue = newValue;
+    }
+
+    function setAdditionalValue(uint256 newValue) external {
+        _additionalValue = newValue;
+    }
+
+    function getAdditionalValue() external view returns (uint256) {
+        return _additionalValue;
+    }
 }

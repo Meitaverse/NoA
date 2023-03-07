@@ -38,24 +38,27 @@ makeSuiteCleanRoom('Upgradeability', function () {
     
     const newImpl = await new ManagerV2__factory(managerLibs, deployer).deploy();
 
-    // managerImpl = await new Manager__factory(managerLibs, deployer).deploy(
-    //   derivativeNFTImpl.address,
-    //   receiverMock.address,
-    // );
   
-    // let data = managerImpl.interface.encodeFunctionData('initialize', [
-    //   governanceAddress
-    // ]);
+    let reInitializeData = newImpl.interface.encodeFunctionData('reInitialize', [
+      valueToSet
+    ]);
 
     const proxyHub = TransparentUpgradeableProxy__factory.connect(manager.address, deployer);
-    await proxyHub.upgradeTo(newImpl.address);
+    
+    // const addTokenData = implV2.interface.encodeFunctionData("addToken", [
+    //   TOKEN1_ADDRESS,
+    // ]);
+
+    
+    await proxyHub.upgradeToAndCall(newImpl.address, reInitializeData);
     const managerV2 = new ManagerV2__factory(managerLibs, deployer).attach(proxyHub.address);
     // console.log("ManagerV1 address: ", manager.address);
     // console.log("ManagerV2 address: ", managerV2.address);
-
+/*
     await expect(
       managerV2.connect(user).setAdditionalValue(valueToSet)
     ).to.not.be.reverted;
+*/
 
      expect(await managerV2.connect(user).getAdditionalValue()).to.eq(valueToSet);
      expect(await managerV2.connect(user).version()).to.eq(2);
