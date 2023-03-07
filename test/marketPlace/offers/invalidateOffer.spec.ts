@@ -41,10 +41,6 @@ import {
   governance,
   manager,
   makeSuiteCleanRoom,
-  MAX_PROFILE_IMAGE_URI_LENGTH,
-  mockModuleData,
-  MOCK_FOLLOW_NFT_URI,
-  MOCK_PROFILE_HANDLE,
   MOCK_PROFILE_URI,
   userAddress,
   user,
@@ -55,17 +51,13 @@ import {
   publishModule,
   feeCollectModule,
   template,
-  receiverMock,
-  moduleGlobals,
   bankTreasuryContract,
-  deployer,
-  voucherContract,
   marketPlaceContract,
   userThree,
   userThreeAddress,
   NickName2
 } from '../../__setup.spec';
-import { ContractTransaction, ethers } from 'ethers';
+import { ethers } from 'ethers';
 import { getEarnestFundsExpectedExpiration } from '../../helpers/earnestFunds';
 
 let derivativeNFT: DerivativeNFT;

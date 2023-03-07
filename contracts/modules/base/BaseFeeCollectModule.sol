@@ -28,9 +28,9 @@ struct MultirecipientProcessCollectData {
 
 /**
  * @title BaseFeeCollectModule
- * @author Lens Protocol
+ * @author Bitsoul Protocol
  *
- * @notice This is an base Lens CollectModule implementation, allowing customization of time to collect, number of collects
+ * @notice This is an base Bitsoul CollectModule implementation, allowing customization of time to collect, number of collects
  * and whether only followers can collect, charging a fee for collect and distributing it among Receiver/Referral/Treasury.
  * @dev Here we use "Base" terminology to anything that represents this base functionality (base structs, base functions, base storage).
  * @dev You can build your own collect modules on top of the "Base" by inheriting this contract and overriding functions.

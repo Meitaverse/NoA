@@ -4,6 +4,8 @@ import { expect, use } from 'chai';
 import { solidity } from 'ethereum-waffle';
 import { BigNumber, BytesLike, Contract, Signer, Wallet } from 'ethers';
 import { ethers } from 'hardhat';
+import hre from 'hardhat';
+
 import {
   MIN_DELAY,
   QUORUM_PERCENTAGE,
@@ -91,8 +93,6 @@ export const MAX_PROFILE_IMAGE_URI_LENGTH = 6000;
 export const SBT_NAME = 'NFT Derivative Protocol Token';
 export const SBT_SYMBOL = 'SBT';
 export const SBT_DECIMALS = 18;
-export const MOCK_PROFILE_HANDLE = 'plant1ghost.eth';
-export const LENS_PERIPHERY_NAME = 'LensPeriphery';
 export const FIRST_PROFILE_ID = 1; 
 export const SECOND_PROFILE_ID = 2;
 export const THIRD_PROFILE_ID = 3;
@@ -150,7 +150,7 @@ export let helper: Helper;
 export let receiverMock: ERC3525ReceiverMock
 export let bankTreasuryContract: BankTreasury
 export let marketLibs:MarketPlaceLibraryAddresses
-export let marketPlaceImpl: MarketPlace
+// export let marketPlaceImpl: MarketPlace
 export let marketPlaceContract: MarketPlace
 export let voucherMarketImpl: VoucherMarket
 export let voucherMarketContract: VoucherMarket
@@ -283,8 +283,8 @@ before(async function () {
     data
   );
 
-  // Connect the manager proxy to the Manager factory, must connect by user, not deployer
-  manager = Manager__factory.connect(proxy.address, user);
+  // Connect the manager proxy to the Manager factory, must connect by admin, not deployer
+  manager = Manager__factory.connect(proxy.address, admin);
   
   console.log("manager.address: ", manager.address);
 
@@ -293,91 +293,86 @@ before(async function () {
     manager.address
   );
 
-  const sbtImpl = await new NFTDerivativeProtocolTokenV1__factory(deployer).deploy();
+  const sbtImpl = await hre.ethers.getContractFactory('NFTDerivativeProtocolTokenV1');
 
-  let sbt_data = sbtImpl.interface.encodeFunctionData('initialize', [
-      SBT_NAME, 
-      SBT_SYMBOL, 
-      SBT_DECIMALS,
-      manager.address,
-      governanceAddress,
-      sbtMetadataDescriptor.address,
-  ]);
-  
-  let sbtProxy = await new TransparentUpgradeableProxy__factory(deployer).deploy(
-    sbtImpl.address,  //logic
-    await admin.getAddress(),  //admin
-    sbt_data          //initial data
-  );
+  sbtContract = await hre.upgrades.deployProxy(sbtImpl, [
+    SBT_NAME, 
+    SBT_SYMBOL, 
+    SBT_DECIMALS,
+    manager.address,
+    governanceAddress,
+    sbtMetadataDescriptor.address,
+  ], {
+    initializer: "initialize"
+  }) as NFTDerivativeProtocolTokenV1;
 
-  // Connect the sbt proxy to the NFTDerivativeProtocolTokenV1 factory, must connect by governance, not deployer
-  sbtContract = NFTDerivativeProtocolTokenV1__factory.connect(sbtProxy.address, governance);
-
+  await sbtContract.deployed()
   console.log("sbtContract.address: ", sbtContract.address);
 
   //gonvernor
-  const governorImpl = await new GovernorContract__factory(deployer).deploy();
 
-  let governor_data = governorImpl.interface.encodeFunctionData('initialize', [
-      governanceAddress,
-      sbtContract.address,
-      timeLock.address,
-      QUORUM_PERCENTAGE, 
-      VOTING_PERIOD,
-      VOTING_DELAY,
-  ]);
-  
-  let governorProxy = await new TransparentUpgradeableProxy__factory(deployer).deploy(
-    governorImpl.address,  //logic
-    await admin.getAddress(),       // admin
-    governor_data          //initial data
-  );
+    const goverorImpl = await hre.ethers.getContractFactory('GovernorContract');
+ 
+    governorContract = await hre.upgrades.deployProxy(
+      goverorImpl, 
+      [
+        governanceAddress,
+        sbtContract.address,
+        timeLock.address,
+        QUORUM_PERCENTAGE, 
+        VOTING_PERIOD,
+        VOTING_DELAY,
+      ], 
+      {
+        initializer: "initialize"
+      }
+    ) as GovernorContract
+    await governorContract.deployed();
 
-  governorContract = GovernorContract__factory.connect(governorProxy.address, governance);
-
-
-  console.log("governorContract address: ", governorContract.address);
+    console.log("governorContract address: ", governorContract.address);
   
   const soulBoundTokenIdOfBankTreaury = FIRST_PROFILE_ID;
 
   //treasury
-  
-  const bankTreasuryImpl = await new BankTreasury__factory(deployer).deploy(
-  );
-  let initializeData = bankTreasuryImpl.interface.encodeFunctionData("initialize", [
-    deployerAddress,
-    governanceAddress,
-    soulBoundTokenIdOfBankTreaury,
-    [userAddress, userTwoAddress, userThreeAddress],
-    NUM_CONFIRMATIONS_REQUIRED,  //All full signed 
-    LOCKUP_DURATION
-  ]);
+  const bankTreasuryImpl = await hre.ethers.getContractFactory('BankTreasury');
+ 
+  bankTreasuryContract = await hre.upgrades.deployProxy(
+    bankTreasuryImpl, 
+    [
+      deployerAddress,
+      governanceAddress,
+      soulBoundTokenIdOfBankTreaury,
+      [userAddress, userTwoAddress, userThreeAddress],
+      NUM_CONFIRMATIONS_REQUIRED,  //All full signed 
+      LOCKUP_DURATION
+    ], 
+    {
+      initializer: "initialize"
+    }
+  ) as BankTreasury
 
-  const bankTreasuryProxy = await new ERC1967Proxy__factory(deployer).deploy(
-    bankTreasuryImpl.address,
-    initializeData
-  );
-  bankTreasuryContract = new BankTreasury__factory(deployer).attach(bankTreasuryProxy.address);
-  
+  await bankTreasuryContract.deployed();
+
   console.log("bankTreasuryContract.address: ", bankTreasuryContract.address);
   
   // voucher
-  
-  const voucherImpl = await new Voucher__factory(deployer).deploy( 
-    sbtContract.address, 
-    bankTreasuryContract.address 
-  );
+  const voucherImpl = await hre.ethers.getContractFactory('Voucher');
 
-  let initializeVoucherData = voucherImpl.interface.encodeFunctionData("initialize", [
-     "Voucher Bitsoul",
-     "Voucher"
-  ]);
-  const voucherProxy = await new ERC1967Proxy__factory(deployer).deploy(
-    voucherImpl.address,
-    initializeVoucherData
-  );
-  voucherContract = new Voucher__factory(deployer).attach(voucherProxy.address);
-  
+  voucherContract = await hre.upgrades.deployProxy(
+    voucherImpl, 
+    [
+      sbtContract.address, 
+      bankTreasuryContract.address,
+      "Voucher Bitsoul",
+      "Voucher",
+    ], 
+    {
+      initializer: "initialize"
+    }
+  ) as Voucher;
+
+  await voucherContract.deployed();
+
   console.log("voucherContract.address: ", voucherContract.address);
 
 
@@ -387,7 +382,8 @@ before(async function () {
   marketLibs = {
     'contracts/libraries/MarketLogic.sol:MarketLogic': marketLogic.address,
   };
-  marketPlaceImpl = await new MarketPlace__factory(marketLibs, deployer).deploy(
+  
+  let marketPlaceImpl = await new MarketPlace__factory(marketLibs, deployer).deploy(
     bankTreasuryContract.address,
     MARKET_MAX_DURATION
   );
@@ -400,6 +396,9 @@ before(async function () {
     marketPlaceData
   );
   marketPlaceContract = new MarketPlace__factory(marketLibs, deployer).attach(marketPlaceProxy.address);
+  
+  // const marketPlaceImpl = await hre.ethers.getContractFactory('MarketPlace');
+
   console.log("marketPlaceContract.address: ", marketPlaceContract.address);
   
 
@@ -428,11 +427,6 @@ before(async function () {
     moduleGlobals.address
   );
 
-  multirecipientFeeCollectModule = await new MultirecipientFeeCollectModule__factory(deployer).deploy(
-    manager.address, 
-    marketPlaceContract.address,
-    moduleGlobals.address
-  );
 
   //DerivativeNFT descriptor
   metadataDescriptor = await new DerivativeMetadataDescriptor__factory(deployer).deploy(
@@ -555,9 +549,7 @@ before(async function () {
     sbtContract.connect(governance).grantTransferRole(feeCollectModule.address)
   ).to.not.be.reverted;
   
-  await expect(
-    sbtContract.connect(governance).grantTransferRole(multirecipientFeeCollectModule.address)
-  ).to.not.be.reverted;
+
   await expect(
     sbtContract.connect(governance).grantTransferRole(bankTreasuryContract.address)
   ).to.not.be.reverted;
@@ -620,11 +612,11 @@ before(async function () {
   ).to.not.be.reverted;
 
 
-  expect((await manager.version()).toNumber()).to.eq(1);
+  expect((await manager.connect(governance).version()).toNumber()).to.eq(1);
 
-  expect(await manager.getWalletBySoulBoundTokenId(FIRST_PROFILE_ID)).to.eq(bankTreasuryContract.address);
+  expect(await manager.connect(governance).getWalletBySoulBoundTokenId(FIRST_PROFILE_ID)).to.eq(bankTreasuryContract.address);
 
-  expect((await sbtContract.version()).toNumber()).to.eq(1);
+  expect((await sbtContract.connect(governance).version()).toNumber()).to.eq(1);
   console.log('sbtContract getManager ok ');
   
   expect((await bankTreasuryContract.getManager()).toUpperCase()).to.eq(manager.address.toUpperCase());

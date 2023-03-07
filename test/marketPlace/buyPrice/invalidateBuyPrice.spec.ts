@@ -31,9 +31,7 @@ import {
   FIRST_HUB_ID,
   FIRST_PROJECT_ID,
   FIRST_DNFT_TOKEN_ID,
-  SECOND_DNFT_TOKEN_ID,
   FIRST_PUBLISH_ID,
-  GENESIS_FEE_BPS,
   DEFAULT_COLLECT_PRICE,
   DEFAULT_TEMPLATE_NUMBER,
   NickName,
@@ -41,10 +39,6 @@ import {
   governance,
   manager,
   makeSuiteCleanRoom,
-  MAX_PROFILE_IMAGE_URI_LENGTH,
-  mockModuleData,
-  MOCK_FOLLOW_NFT_URI,
-  MOCK_PROFILE_HANDLE,
   MOCK_PROFILE_URI,
   userAddress,
   user,
@@ -55,21 +49,14 @@ import {
   publishModule,
   feeCollectModule,
   template,
-  receiverMock,
-  moduleGlobals,
   bankTreasuryContract,
-  deployer,
-  voucherContract,
   marketPlaceContract
 } from '../../__setup.spec';
 
 let derivativeNFT: DerivativeNFT;
 
 const Default_royaltyBasisPoints = 50; //
-const SALE_ID = 1;
-const THIRD_DNFT_TOKEN_ID =3;
 const SALE_PRICE = 100;
-const OFFER_PRICE = 120;
 const INITIAL_EARNESTFUNDS = 10000;
 
 let receipt: TransactionReceipt;

@@ -6,12 +6,6 @@ import { DataTypes } from '../../../typechain/contracts/interfaces/IManager';
 import { MAX_UINT256, ZERO_ADDRESS } from '../../helpers/constants';
 import { ERRORS } from '../../helpers/errors';
 import { 
-    createProfileReturningTokenId,
-    createHubReturningHubId,
-    createProjectReturningProjectId,
-    getTimestamp, 
-    waitForTx,
-    matchEvent,
     getSetDispatcherWithSigParts
 } from '../../helpers/utils';
 
@@ -19,14 +13,8 @@ import {
   SECOND_PROFILE_ID,
   FIRST_HUB_ID,
   FIRST_PROJECT_ID,
-  governance,
   manager,
-  moduleGlobals,
   makeSuiteCleanRoom,
-  MAX_PROFILE_IMAGE_URI_LENGTH,
-  mockModuleData,
-  MOCK_FOLLOW_NFT_URI,
-  MOCK_PROFILE_HANDLE,
   MOCK_PROFILE_URI,
   userAddress,
   user,
@@ -34,23 +22,17 @@ import {
   userTwoAddress,
   sbtContract,
   metadataDescriptor,
-  FIRST_PROFILE_ID,
-  governanceAddress,
   abiCoder,
   template,
   DEFAULT_TEMPLATE_NUMBER,
-  GENESIS_FEE_BPS,
   DEFAULT_COLLECT_PRICE,
   feeCollectModule,
   publishModule,
   FIRST_PUBLISH_ID,
   THIRD_PROFILE_ID,
-  FIRST_DNFT_TOKEN_ID,
   testWallet,
   bankTreasuryContract
 } from '../../__setup.spec';
-import { DerivativeNFT, DerivativeNFT__factory } from '../../../typechain';
-import { parseEther } from 'ethers/lib/utils';
 
 const Default_royaltyBasisPoints = 50; //
 

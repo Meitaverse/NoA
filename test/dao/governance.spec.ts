@@ -1,97 +1,26 @@
-import { BigNumber } from '@ethersproject/bignumber';
-import { parseEther } from '@ethersproject/units';
-import {  ethers } from "hardhat";
 
 import '@nomiclabs/hardhat-ethers';
 import { expect } from 'chai';
 
 import {
-    FUNC,
-    PROPOSAL_DESCRIPTION,
-    NEW_STORE_VALUE,
-    VOTING_DELAY,
-    VOTING_PERIOD,
-    MIN_DELAY,
-    ADDRESS_ZERO,
-} from "../../helper-hardhat-config"
-
-import { moveBlocks } from "../../utils/move-blocks"
-import { moveTime } from "../../utils/move-time"
-
-import { 
-  ERC20__factory,
-  DerivativeNFT,
-  DerivativeNFT__factory,
-  TimeLock,
-  TimeLock__factory,
-  GovernorContract,
-  GovernorContract__factory,
- } from '../../typechain';
-import { MAX_UINT256, ZERO_ADDRESS } from '../helpers/constants';
-import { ERRORS } from '../helpers/errors';
-
-import { 
-  DerivativeNFTState,
-  collectReturningTokenId, 
-  getTimestamp, 
-  matchEvent, 
-  waitForTx 
-} from '../helpers/utils';
-
-
-import {
-  abiCoder,
-  INITIAL_SUPPLY,
-  VOUCHER_AMOUNT_LIMIT,
-  FIRST_PROFILE_ID,
   SECOND_PROFILE_ID,
   THIRD_PROFILE_ID,
-  FOUR_PROFILE_ID,
-  FIRST_HUB_ID,
-  FIRST_PROJECT_ID,
-  FIRST_DNFT_TOKEN_ID,
-  SECOND_DNFT_TOKEN_ID,
-  FIRST_PUBLISH_ID,
-  GENESIS_FEE_BPS,
-  DEFAULT_COLLECT_PRICE,
-  DEFAULT_TEMPLATE_NUMBER,
   NickName,
   NickName3,
-  governance,
   manager,
   makeSuiteCleanRoom,
-  MAX_PROFILE_IMAGE_URI_LENGTH,
-  mockModuleData,
-  MOCK_FOLLOW_NFT_URI,
-  MOCK_PROFILE_HANDLE,
   MOCK_PROFILE_URI,
   userAddress,
   user,
   userTwo,
   userTwoAddress,
-  sbtContract,
-  metadataDescriptor,
-  publishModule,
-  feeCollectModule,
-  template,
-  receiverMock,
-  moduleGlobals,
-  bankTreasuryContract,
-  deployer,
-  voucherContract,
-  governorContract,
   box,
-  timeLock,
   
 } from '../__setup.spec';
 
 import { 
     createProfileReturningTokenId,
   } from '../helpers/utils';
-import { constants } from 'ethers';
-
-  const voteWay = 1 // for
-  const reason = "I like bit soul"
 
 makeSuiteCleanRoom('Bank Treasury', function () {
     beforeEach(async function () {

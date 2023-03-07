@@ -4,63 +4,31 @@ import '@nomiclabs/hardhat-ethers';
 import { expect } from 'chai';
 
 import { 
-  ERC20__factory,
   DerivativeNFT,
-  DerivativeNFT__factory,
  } from '../../typechain';
-import { MAX_UINT256, ZERO_ADDRESS } from '../helpers/constants';
-import { ERRORS } from '../helpers/errors';
-import { TransactionReceipt, TransactionResponse } from '@ethersproject/providers';
+import { TransactionReceipt } from '@ethersproject/providers';
 
 import { 
-  collectReturningTokenId, 
-  getTimestamp, 
   matchEvent, 
   waitForTx 
 } from '../helpers/utils';
 
 
 import {
-  abiCoder,
-  INITIAL_SUPPLY,
-  VOUCHER_AMOUNT_LIMIT,
-  FIRST_PROFILE_ID,
   SECOND_PROFILE_ID,
   THIRD_PROFILE_ID,
-  FOUR_PROFILE_ID,
-  FIRST_HUB_ID,
-  FIRST_PROJECT_ID,
-  FIRST_DNFT_TOKEN_ID,
-  SECOND_DNFT_TOKEN_ID,
-  FIRST_PUBLISH_ID,
-  GENESIS_FEE_BPS,
-  DEFAULT_COLLECT_PRICE,
-  DEFAULT_TEMPLATE_NUMBER,
   NickName,
   NickName3,
-  governance,
   manager,
   makeSuiteCleanRoom,
-  MAX_PROFILE_IMAGE_URI_LENGTH,
-  mockModuleData,
-  MOCK_FOLLOW_NFT_URI,
-  MOCK_PROFILE_HANDLE,
   MOCK_PROFILE_URI,
   userAddress,
   user,
   userTwo,
   userTwoAddress,
   sbtContract,
-  metadataDescriptor,
-  publishModule,
-  feeCollectModule,
-  template,
-  receiverMock,
-  moduleGlobals,
   bankTreasuryContract,
-  deployer,
   voucherContract,
-  currency
   
 } from '../__setup.spec';
 

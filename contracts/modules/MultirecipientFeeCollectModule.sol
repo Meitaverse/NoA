@@ -55,9 +55,9 @@ struct RoyaltyInfoData {
 
 /**
  * @title MultirecipientCollectModule
- * @author Lens Protocol
+ * @author Bitsoul Protocol
  *
- * @notice This is a simple Lens CollectModule implementation, allowing customization of time to collect, number of collects,
+ * @notice This is a simple Bitsoul CollectModule implementation, allowing customization of time to collect, number of collects,
  * splitting collect fee across multiple recipients, and whether only followers can collect.
  * It is charging a fee for collect and distributing it among (one or up to five) Receivers, Referral, Treasury.
  */

@@ -2,17 +2,27 @@
 
 pragma solidity ^0.8.13;
 
+
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
-import "@openzeppelin/contracts-upgradeable/access/AccessControlUpgradeable.sol";
 import "@solvprotocol/erc-3525/contracts/ERC3525Upgradeable.sol";
-import "@solvprotocol/erc-3525/contracts/extensions/IERC3525Metadata.sol";
-import {IERC20Upgradeable} from "@openzeppelin/contracts-upgradeable/token/ERC20/IERC20Upgradeable.sol";
-import {SafeMathUpgradeable} from "@openzeppelin/contracts-upgradeable/utils/math/SafeMathUpgradeable.sol";
+import "../libraries/AdminRoleEnumerable.sol";
+
 import {Errors} from "../libraries/Errors.sol";
 import '../libraries/Constants.sol';
-import {IManager} from "../interfaces/IManager.sol";
 import {ERC3525Votes} from "../extensions/ERC3525Votes.sol";
 import "../storage/SBTStorage.sol";
+
+// import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
+// import "@openzeppelin/contracts-upgradeable/access/AccessControlUpgradeable.sol";
+// import "@solvprotocol/erc-3525/contracts/ERC3525Upgradeable.sol";
+// import "@solvprotocol/erc-3525/contracts/extensions/IERC3525Metadata.sol";
+// import {IERC20Upgradeable} from "@openzeppelin/contracts-upgradeable/token/ERC20/IERC20Upgradeable.sol";
+// import {SafeMathUpgradeable} from "@openzeppelin/contracts-upgradeable/utils/math/SafeMathUpgradeable.sol";
+// import {Errors} from "../libraries/Errors.sol";
+// import '../libraries/Constants.sol';
+// import {IManager} from "../interfaces/IManager.sol";
+// import {ERC3525Votes} from "../extensions/ERC3525Votes.sol";
+// import "../storage/SBTStorage.sol";
 import {INFTDerivativeProtocolTokenV2} from "../interfaces/INFTDerivativeProtocolTokenV2.sol";
 
 /**
@@ -20,7 +30,7 @@ import {INFTDerivativeProtocolTokenV2} from "../interfaces/INFTDerivativeProtoco
  */
 contract NFTDerivativeProtocolTokenV2 is
     Initializable,
-    AccessControlUpgradeable,
+    AdminRoleEnumerable,
     ERC3525Votes,
     SBTStorage,
     INFTDerivativeProtocolTokenV2
@@ -37,8 +47,7 @@ contract NFTDerivativeProtocolTokenV2 is
     address internal SIGNER;
 
     //===== Modifiers =====//
-
-    /**
+/**
      * @dev This modifier reverts if the caller is not the configured governance address.
      */
     modifier onlyManager() {
@@ -46,45 +55,65 @@ contract NFTDerivativeProtocolTokenV2 is
         _;
     }
 
+    modifier onlyGov() {
+        _validateCallerIsGov();
+        _;
+    }
+
+    modifier onlyTransferRole() {
+        require(hasRole(TRANSFER_VALUE_ROLE, msg.sender), "SBT: caller does not have the role");
+        _;
+    }
+
     modifier isTransferAllowed(uint256 tokenId_) {
         if(_sbtDetails[tokenId_].locked) revert Errors.Locked(); 
         _;
     }
+    
+    /**
+     * @notice Adds the account to the list of approved operators.
+     * @dev Only callable by admins as enforced by `grantRole`.
+     * @param account The address to be approved.
+     */
+    function grantTransferRole(address account) external {
+        grantRole(TRANSFER_VALUE_ROLE, account);
+    }
 
-    // V2
+    /**
+     * @notice Removes the account from the list of approved operators.
+     * @dev Only callable by admins as enforced by `revokeRole`.
+     * @param account The address to be removed from the approved list.
+     */
+    function revokeFeeModule(address account) external {
+        revokeRole(TRANSFER_VALUE_ROLE, account);
+    }
+
     function setBankTreasury(address bankTreasury, uint256 amount) 
         external  
+        onlyGov
     {
-        if (!hasRole(DEFAULT_ADMIN_ROLE, _msgSender())) 
-            revert Errors.Unauthorized();
-        
-        if (bankTreasury == address(0)) 
-            revert Errors.InvalidParameter();
-        
-        if (amount == 0) 
-            revert Errors.InvalidParameter();
-        
-        if (_banktreasury == address(0)) {
-            _banktreasury = bankTreasury;
-        }
-        
         total_supply += amount * 1e18;
 
-        if (total_supply > MAX_SUPPLY) 
-            revert Errors.MaxSupplyExceeded();
+        if (bankTreasury == address(0) || amount == 0 || total_supply > MAX_SUPPLY)
+            revert Errors.InvalidParameter();
         
-        uint256  slot = 1;
+        _banktreasury = bankTreasury;
 
         if (treasury_SBT_ID == 0) {
             //create profile for bankTreasury, slot is 1, not vote power
             treasury_SBT_ID = 1;
+
+            _createProfile(
+                _banktreasury,
+                treasury_SBT_ID,   
+                "Bank Treasury",
+                ""
+            );
             
-            uint256 _sbtId = ERC3525Upgradeable._mint(_banktreasury, slot, amount * 1e18);
-            
-            if (_sbtId != treasury_SBT_ID) revert Errors.SetBankTreasuryError();
-        
-        
+           ERC3525Upgradeable._mint(_banktreasury, 1, amount * 1e18);
+
         } else {
+            //emit TransferValue
             ERC3525Upgradeable._mintValue(treasury_SBT_ID, amount * 1e18);
         }
     }
@@ -101,7 +130,7 @@ contract NFTDerivativeProtocolTokenV2 is
         onlyManager  
         returns (uint256) 
     { 
-        if (balanceOf(vars.wallet) > 0) revert Errors.TokenIsClaimed(); 
+        if (this.balanceOf(vars.wallet) > 0) revert Errors.TokenIsClaimed(); 
         
         uint256 tokenId_ = _mint(vars.wallet, 1, 0);
 
@@ -151,7 +180,7 @@ contract NFTDerivativeProtocolTokenV2 is
         if (msg.sender != ownerOf(soulBoundTokenId)) 
             revert Errors.NotOwner();
 
-        uint256 balance = balanceOf(soulBoundTokenId);
+        uint256 balance = this.balanceOf(soulBoundTokenId);
 
         if (balance > 0 ) {
             this.transferValue(soulBoundTokenId, BANK_TREASURY_SOUL_BOUND_TOKENID, balance);
@@ -166,9 +195,10 @@ contract NFTDerivativeProtocolTokenV2 is
         uint256 fromTokenId_,
         uint256 toTokenId_,
         uint256 value_
-    ) external  { 
-        //call only by BankTreasury, FeeCollectModule, publishModule, Voucher Or MarketPlace
-        if (!hasRole(TRANSFER_VALUE_ROLE, _msgSender())) revert Errors.NotTransferValueAuthorised();
+    ) 
+        external  
+        onlyTransferRole
+    { 
         ERC3525Upgradeable._transferValue(fromTokenId_, toTokenId_, value_);
     }
 
@@ -211,10 +241,8 @@ contract NFTDerivativeProtocolTokenV2 is
         super.safeTransferFrom(from_, to_, tokenId_, data_);
     }
 
-    function supportsInterface(bytes4 interfaceId) public view virtual override(AccessControlUpgradeable, ERC3525Upgradeable) returns (bool) {
-        return
-            interfaceId == type(AccessControlUpgradeable).interfaceId || 
-            super.supportsInterface(interfaceId);
+    function supportsInterface(bytes4 interfaceId) public view virtual override(ERC3525Upgradeable) returns (bool) {
+        return super.supportsInterface(interfaceId);
     } 
 
     /// ****************************
@@ -224,9 +252,16 @@ contract NFTDerivativeProtocolTokenV2 is
     function _setManager(address manager) internal {
         _manager = manager;
     }   
+    function _setGovernance(address governance) internal {
+        _governance = governance;
+    }   
 
     function _validateCallerIsManager() internal view {
         if (msg.sender != _manager) revert Errors.NotManager();
+    }
+
+    function _validateCallerIsGov() internal view {
+        if (msg.sender != _governance) revert Errors.NotManager();
     }
 
     function _createProfile(
@@ -235,8 +270,6 @@ contract NFTDerivativeProtocolTokenV2 is
         string memory nickName,
         string memory imageURI
     ) internal {
-        if (tokenId_ == 0) revert Errors.TokenIdIsZero();
-        
         _sbtDetails[tokenId_] = DataTypes.SoulBoundTokenDetail({
             nickName: nickName,
             imageURI: imageURI,
@@ -251,6 +284,13 @@ contract NFTDerivativeProtocolTokenV2 is
             imageURI
         );
     }
+   
+    /**
+     * @dev This empty reserved space is put in place to allow future versions to add new
+     * variables without shifting down storage in the inheritance chain.
+     * See https://docs.openzeppelin.com/contracts/4.x/upgradeable#storage_gaps
+     */
+    uint256[49] private __gap;
     
     //V2
     function setSigner(address signer) external {
@@ -260,6 +300,5 @@ contract NFTDerivativeProtocolTokenV2 is
     function getSigner() external view returns (address) {
         return SIGNER;
     }
-
 
 }

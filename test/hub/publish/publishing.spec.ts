@@ -1,16 +1,10 @@
 import '@nomiclabs/hardhat-ethers';
 import { expect } from 'chai';
-import { BigNumber } from 'ethers';
-import { parseEther } from '@ethersproject/units';
-import { DataTypes } from '../../../typechain/contracts/interfaces/IManager';
-import { ZERO_ADDRESS } from '../../helpers/constants';
 import { ERRORS } from '../../helpers/errors';
 import { 
     createProfileReturningTokenId,
     createHubReturningHubId,
     createProjectReturningProjectId,
-    getTimestamp, 
-    waitForTx 
 } from '../../helpers/utils';
 
 import {
@@ -18,9 +12,7 @@ import {
   SECOND_PROFILE_ID,
   FIRST_HUB_ID,
   FIRST_PROJECT_ID,
-  FIRST_DNFT_TOKEN_ID,
   FIRST_PUBLISH_ID,
-  GENESIS_FEE_BPS,
   DEFAULT_COLLECT_PRICE,
   DEFAULT_TEMPLATE_NUMBER,
   NickName,
@@ -28,21 +20,14 @@ import {
   manager,
   moduleGlobals,
   makeSuiteCleanRoom,
-  MAX_PROFILE_IMAGE_URI_LENGTH,
-  mockModuleData,
-  MOCK_FOLLOW_NFT_URI,
-  MOCK_PROFILE_HANDLE,
   MOCK_PROFILE_URI,
   userAddress,
   user,
-  userTwo,
-  userTwoAddress,
   sbtContract,
   metadataDescriptor,
   publishModule,
   feeCollectModule,
   template,
-  receiverMock,
   bankTreasuryContract,
   
 } from '../../__setup.spec';

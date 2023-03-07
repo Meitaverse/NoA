@@ -41,10 +41,6 @@ import {
   governance,
   manager,
   makeSuiteCleanRoom,
-  MAX_PROFILE_IMAGE_URI_LENGTH,
-  mockModuleData,
-  MOCK_FOLLOW_NFT_URI,
-  MOCK_PROFILE_HANDLE,
   MOCK_PROFILE_URI,
   userAddress,
   user,
@@ -55,13 +51,8 @@ import {
   publishModule,
   feeCollectModule,
   template,
-  receiverMock,
-  moduleGlobals,
   bankTreasuryContract,
-  deployer,
-  voucherContract,
   marketPlaceContract,
-  userThree
 } from '../../__setup.spec';
 import { ethers } from 'ethers';
 

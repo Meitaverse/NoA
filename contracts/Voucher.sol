@@ -67,8 +67,8 @@ contract Voucher is
     mapping(uint256 => uint256) private _totalSupply;
     uint256 private _userAmountLimit;
 
-    address immutable internal sbt;
-    address immutable internal treasury;
+    address internal sbt;
+    address internal treasury;
 
     modifier onlySBTUser(uint256 soulBoundTokenId_) {
         _validateCallerIsSoulBoundTokenOwner(soulBoundTokenId_);
@@ -76,22 +76,22 @@ contract Voucher is
     }
 
     /// @custom:oz-upgrades-unsafe-allow constructor
-    constructor(
-        address _sbt,
-        address _treasury
-    ) {
-        sbt = _sbt;
-        treasury = _treasury;
-    }  
-
+    constructor() {}  
     /**
      * Initializer
      */
-    function initialize(string memory _name, string memory _symbol) public initializer {
+    function initialize(
+        address _sbt,
+        address _treasury,
+        string memory _name, 
+        string memory _symbol
+    ) public initializer {
         __ERC1155_init("");
         __Ownable_init();
         // __Pausable_init();
-
+        __Core_init();
+        sbt = _sbt;
+        treasury = _treasury;
         name = _name;
         symbol = _symbol;
     }

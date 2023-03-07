@@ -29,13 +29,6 @@ interface IManager {
     function getTimeLock() external returns(address);
 
     /**
-     * @notice Sets a soulBoundTokenId's dispatcher via signature with the specified parameters.
-     *
-     * @param vars A SetDispatcherWithSigData struct, including the regular parameters and an EIP712Signature struct.
-     */
-    // function setDispatcherWithSig(DataTypes.SetDispatcherWithSigData calldata vars) external;
-
-    /**
      * @notice Returns the dispatcher associated with a soulBoundToken.
      *         usually get  approve
      *
@@ -45,38 +38,6 @@ interface IManager {
      */
     function getDispatcher(uint256 soulBoundToken) external view returns (address);
 
-    /**
-     * @notice Sets the emergency admin, which is a permissioned role able to set the protocol state. This function
-     * can only be called by the governance address.
-     *
-     * @param newEmergencyAdmin The new emergency admin address to set.
-     */
-    // function setEmergencyAdmin(address newEmergencyAdmin) external;
-
-    /**
-     * @notice Sets the protocol state to either a global pause, a publishing pause or an unpaused state. This function
-     * can only be called by the governance address or the emergency admin address.
-     *
-     * Note that this reverts if the emergency admin calls it if:
-     *      1. The emergency admin is attempting to unpause.
-     *      2. The emergency admin is calling while the protocol is already paused.
-     *
-     * @param newState The state to set, as a member of the ProtocolState enum.
-    */
-    // function setState(DataTypes.ProtocolState newState) external;
-    
-    /**
-     * @notice Sets the derivativeNFT state to either a global pause, a publishing pause or an unpaused state. This function
-     * can only be called by the governance address
-     *
-     * @param projectId The project Id of derivativeNFT contract
-     * @param newState The state to set, as a member of the DerivativeNFTState enum.
-    */    
-    // function setDerivativeNFTState(
-    //     uint256 projectId,
-    //     DataTypes.DerivativeNFTState newState
-    // ) external;
-    
     /**
      * @notice Sets the metadata descriptor of derivativeNFT contract. This function
      * can only be called by the governance address
@@ -102,19 +63,6 @@ interface IManager {
     function createProfile(
         DataTypes.CreateProfileData calldata vars
     ) external returns (uint256);
-    
-    //   /**
-    //  * @notice Update a profile
-    //  *
-    //  * @param soulBoundTokenId The SBT id
-    //  * @param nickName: The nickName to set for the profile, must be non-empty.
-    //  * @param imageURI: The URI to set for the profile image.
-    //  */
-    // function updateProfile(
-    //     uint256 soulBoundTokenId,
-    //     string calldata nickName,
-    //     string calldata imageURI
-    // )  external;
 
     /**
      * @notice Returns the genesis publishId by projectId

@@ -106,7 +106,6 @@ contract BankTreasury is
     ) external override initializer {
         AdminRoleEnumerable._initializeAdminRole(admin);
         __Pausable_init();
-        // __UUPSUpgradeable_init();
         ReentrancyGuardUpgradeable.__ReentrancyGuard_init();
 
         lockupDuration = _lockupDuration;

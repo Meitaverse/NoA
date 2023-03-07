@@ -1,17 +1,13 @@
 import '@nomiclabs/hardhat-ethers';
 import { expect } from 'chai';
 import { BigNumber } from 'ethers';
-import { DataTypes } from '../../../typechain/contracts/interfaces/IManager';
 
-import { ZERO_ADDRESS } from '../../helpers/constants';
 import { ERRORS } from '../../helpers/errors';
 import { 
     createProfileReturningTokenId,
     createHubReturningHubId,
     createProjectReturningProjectId,
     getTimestamp, 
-    waitForTx,
-    matchEvent
 } from '../../helpers/utils';
 
 import {
@@ -22,19 +18,11 @@ import {
   manager,
   moduleGlobals,
   makeSuiteCleanRoom,
-  MAX_PROFILE_IMAGE_URI_LENGTH,
-  mockModuleData,
-  MOCK_FOLLOW_NFT_URI,
-  MOCK_PROFILE_HANDLE,
   MOCK_PROFILE_URI,
   userAddress,
   user,
-  userTwo,
-  userTwoAddress,
   sbtContract,
   metadataDescriptor,
-  FIRST_PROFILE_ID,
-  governanceAddress
 } from '../../__setup.spec';
 
 

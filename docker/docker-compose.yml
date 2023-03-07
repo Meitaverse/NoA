@@ -5,6 +5,7 @@ services:
     image: cartesi/hardhat-node
     ports:
       - "8545:8545"
+      - "8546:8546"
 
   graph-node:
     image: graphprotocol/graph-node

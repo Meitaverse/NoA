@@ -41,10 +41,6 @@ import {
   governance,
   manager,
   makeSuiteCleanRoom,
-  MAX_PROFILE_IMAGE_URI_LENGTH,
-  mockModuleData,
-  MOCK_FOLLOW_NFT_URI,
-  MOCK_PROFILE_HANDLE,
   MOCK_PROFILE_URI,
   userAddress,
   user,
@@ -55,23 +51,15 @@ import {
   publishModule,
   feeCollectModule,
   template,
-  receiverMock,
-  moduleGlobals,
   bankTreasuryContract,
-  deployer,
-  voucherContract,
   marketPlaceContract
 } from '../../__setup.spec';
-import { ContractTransaction } from 'ethers';
 import { getEarnestFundsExpectedExpiration } from '../../helpers/earnestFunds';
 
 let derivativeNFT: DerivativeNFT;
 
 const Default_royaltyBasisPoints = 50; //
-const SALE_ID = 1;
-const THIRD_DNFT_TOKEN_ID =3;
 const SALE_PRICE = 100;
-const OFFER_PRICE = 120;
 const INITIAL_EARNESTFUNDS = 10000;
 
 let receipt: TransactionReceipt;

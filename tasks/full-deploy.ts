@@ -45,7 +45,7 @@ import {
   
   import { DataTypes } from '../typechain/contracts/modules/template/Template';
   import { MarketPlaceLibraryAddresses } from '../typechain/factories/contracts/MarketPlace__factory';
-import { BigNumber } from 'ethers';
+import { BigNumber, ContractFactory } from 'ethers';
   
   const TREASURY_FEE_BPS = 500;
   const RECEIVER_MAGIC_VALUE = '0x009ce20b';
@@ -226,7 +226,6 @@ import { BigNumber } from 'ethers';
        
         console.log('\t-- manager proxy address: ', proxy.address);
         await exportAddress(hre, proxy, 'Manager');
-        
 
         // Connect the manager proxy to the Manager factory and the governance for ease of use.
         const manager = Manager__factory.connect(
@@ -244,136 +243,115 @@ import { BigNumber } from 'ethers';
                 manager.address,
                 { nonce: deployerNonce++ }
         );
-/*
-        const sbtImpl = await deployContract(
-            new NFTDerivativeProtocolTokenV1__factory(deployer).deploy(
-                { nonce: deployerNonce++ }
-            )
-        );
 
-        let initializeSBTData = sbtImpl.interface.encodeFunctionData("initialize", [
-            SBT_NAME, 
-            SBT_SYMBOL, 
-            SBT_DECIMALS,
-            manager.address,
-            sbtMetadataDescriptor.address,
-        ]);
-        const sbtProxy = await new ERC1967Proxy__factory(deployer).deploy(
-            sbtImpl.address,
-            initializeSBTData,
-            { nonce: deployerNonce++ }
-        );
-        const sbtContract = new NFTDerivativeProtocolTokenV1__factory(deployer).attach(sbtProxy.address);
-*/
-
-        const sbtImpl = await new NFTDerivativeProtocolTokenV1__factory(deployer).deploy( 
-          { nonce: deployerNonce++ } 
-        );
-
-        let sbt_data = sbtImpl.interface.encodeFunctionData('initialize', [
+        const sbtImpl = await hre.ethers.getContractFactory('NFTDerivativeProtocolTokenV1');
+        deployerNonce++;
+ 
+        let sbtContract = await hre.upgrades.deployProxy(
+          sbtImpl, 
+          [
             SBT_NAME, 
             SBT_SYMBOL, 
             SBT_DECIMALS,
             manager.address,
             governance.address,
             sbtMetadataDescriptor.address,
-        ]);
+          ], 
+          {
+            initializer: "initialize"
+          }
+        )
+        await sbtContract.deployed();
 
-        let sbtProxy = await new TransparentUpgradeableProxy__factory(deployer).deploy(
-          sbtImpl.address,       //logic
-          admin.address,         //admin
-          sbt_data,              //initial data
-          { nonce: deployerNonce++ }
-        );
-
-        // Connect the sbt proxy to the NFTDerivativeProtocolTokenV1 factory, must connect by governance, not deployer
-        const sbtContract = NFTDerivativeProtocolTokenV1__factory.connect(
-          sbtProxy.address, 
-          governance
-        );
+        deployerNonce++;
+        deployerNonce++;
 
         console.log('\t-- sbtContract: ', sbtContract.address);
         await exportAddress(hre, sbtContract, 'SBT');
         await exportSubgraphNetworksJson(hre, sbtContract, 'SBT');
 
-        
-        const governorImpl = await new GovernorContract__factory(deployer).deploy(
-          { nonce: deployerNonce++ }
-        );
-        let initializeDataGovrnor = governorImpl.interface.encodeFunctionData("initialize", [
+        const goverorImpl = await hre.ethers.getContractFactory('GovernorContract');
+        deployerNonce++;
+ 
+       let governorContract = await hre.upgrades.deployProxy(
+          goverorImpl, 
+          [
             governance.address,
             sbtContract.address,
             timeLock.address,
             QUORUM_PERCENTAGE, 
             VOTING_PERIOD,
             VOTING_DELAY,
-        ]);
+          ], 
+          {
+            initializer: "initialize"
+          }
+        )
+        await governorContract.deployed();
+        deployerNonce++;
 
-        const gonvernorProxy = await new ERC1967Proxy__factory(deployer).deploy(
-            governorImpl.address,
-            initializeDataGovrnor,
-            { nonce: deployerNonce++ }
-        );
-
-        const governorContract = new GovernorContract__factory(deployer).attach(gonvernorProxy.address);
-      
         console.log("\t-- governorContract address: ", governorContract.address);
         await exportAddress(hre, governorContract, 'GovernorContract');
         await exportSubgraphNetworksJson(hre, governorContract, 'GovernorContract');
 
+
+        //treasury
         console.log('\n\t-- Deploying bank treasury --');
         const soulBoundTokenIdOfBankTreaury = 1;
-        const bankTreasuryImpl = await deployContract(
-            new BankTreasury__factory(deployer).deploy(
-                { nonce: deployerNonce++ })
-        );
-
-        let initializeData = bankTreasuryImpl.interface.encodeFunctionData("initialize", [
+       
+        const bankTreasuryImpl = await hre.ethers.getContractFactory('BankTreasury');
+        deployerNonce++;
+ 
+        let bankTreasuryContract = await hre.upgrades.deployProxy(
+          bankTreasuryImpl, 
+          [
             deployer.address,
             governance.address,
             soulBoundTokenIdOfBankTreaury,
             [user.address, userTwo.address, userThree.address],
             NUM_CONFIRMATIONS_REQUIRED,  //All full signed 
             LOCKUP_DURATION, 
-        ]);
-      
-        const bankTreasuryProxy = await new ERC1967Proxy__factory(deployer).deploy(
-          bankTreasuryImpl.address,
-          initializeData,
-          { nonce: deployerNonce++ }
-        );
-        const bankTreasuryContract = new BankTreasury__factory(deployer).attach(bankTreasuryProxy.address);
+          ], 
+          {
+            initializer: "initialize"
+          }
+        )
+        await bankTreasuryContract.deployed();
+        deployerNonce++;
+
         console.log('\t-- bankTreasuryContract: ', bankTreasuryContract.address);
         await exportAddress(hre, bankTreasuryContract, 'BankTreasury');
         await exportSubgraphNetworksJson(hre, bankTreasuryContract, 'BankTreasury');
 
-        
+        //voucher
         console.log('\n\t-- Deploying voucher --');
-        const voucherImpl = await deployContract(
-            new Voucher__factory(deployer).deploy(
-                sbtContract.address, 
-                bankTreasuryContract.address, 
-                { nonce: deployerNonce++ }
-            )
-        );
-
-        let initializeVoucherData = voucherImpl.interface.encodeFunctionData("initialize", [
+        const voucherImpl = await hre.ethers.getContractFactory('Voucher');
+        deployerNonce++;
+ 
+        let voucherContract = await hre.upgrades.deployProxy(
+          voucherImpl, 
+          [
+            sbtContract.address, 
+            bankTreasuryContract.address, 
             "Voucher Bitsoul",
             "Voucher",
-        ]);
-        const voucherProxy = await new ERC1967Proxy__factory(deployer).deploy(
-            voucherImpl.address,
-            initializeVoucherData,
-            { nonce: deployerNonce++ }
-        );
-        const voucherContract = new Voucher__factory(deployer).attach(voucherProxy.address);
+          ], 
+          {
+            initializer: "initialize"
+          }
+        )
+        await voucherContract.deployed();
+        deployerNonce++;      
+
         console.log('\t-- voucherContract: ', voucherContract.address);
         await exportAddress(hre, voucherContract, 'Voucher');
         await exportSubgraphNetworksJson(hre, voucherContract, 'Voucher');
 
         console.log('\n\t-- Deploying market place --');
         let marketLibs:MarketPlaceLibraryAddresses
-        const marketLogic = await new MarketLogic__factory(deployer).deploy({ nonce: deployerNonce++ });
+        const marketLogic = await new MarketLogic__factory(deployer).deploy(
+          { nonce: deployerNonce++ }
+        );
         marketLibs = {
           'contracts/libraries/MarketLogic.sol:MarketLogic': marketLogic.address,
         };
@@ -394,6 +372,7 @@ import { BigNumber } from 'ethers';
             { nonce: deployerNonce++ }
         );
         const marketPlaceContract = new MarketPlace__factory(marketLibs, deployer).attach(marketPlaceProxy.address);
+        
         console.log('\t-- marketPlaceContract: ', marketPlaceContract.address);
         await exportAddress(hre, marketPlaceContract, 'MarketPlace');
         await exportSubgraphNetworksJson(hre, marketPlaceContract, 'MarketPlace');
@@ -423,6 +402,7 @@ import { BigNumber } from 'ethers';
               { nonce: deployerNonce++ }
             )
         );
+
         console.log('\t-- metadataDescriptor: ', metadataDescriptor.address);
         await exportAddress(hre, metadataDescriptor, 'MetadataDescriptor');
 
@@ -459,12 +439,10 @@ import { BigNumber } from 'ethers';
 
         // FETH
         console.log('\n\t-- Deploying FETH --');
-
-
         const fethImpl = await new FETH__factory(deployer).deploy(
             LOCKUP_DURATION,
             { nonce: deployerNonce++ }
-          )
+        )
         
          const royaltyRegistry = await new RoyaltyRegistry__factory(deployer).deploy({ nonce: deployerNonce++ });
         
@@ -490,8 +468,7 @@ import { BigNumber } from 'ethers';
           await exportSubgraphNetworksJson(hre, voucherMarketContract, 'VoucherMarket');
           
           
-          //feth init
-        
+          //feth initial
           let fethData= fethImpl.interface.encodeFunctionData("initialize", [
             voucherMarketContract.address,
           ]);

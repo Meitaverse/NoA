@@ -13,7 +13,6 @@ import "../interfaces/standards/royalties/IRoyaltyInfo.sol";
 import "../interfaces/standards/royalties/ITokenCreator.sol";
 
 import "../libraries/ArrayLibrary.sol";
-// import "../libraries/OZERC165Checker.sol";
 
 import "../libraries/Constants.sol";
 import "./FoundationTreasuryNode.sol";

@@ -4,7 +4,8 @@ pragma solidity ^0.8.0;
 
 /// @author:Bitsoul Protocol
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
-import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
+// import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
+import "@openzeppelin/contracts-upgradeable/security/ReentrancyGuardUpgradeable.sol";
 import "@openzeppelin/contracts/utils/Strings.sol";
 import "@openzeppelin/contracts/utils/introspection/ERC165.sol";
 import "@openzeppelin/contracts/utils/introspection/ERC165Checker.sol";
@@ -20,12 +21,12 @@ import "./ICreatorCore.sol";
 /**
  * @dev Core creator implementation
  */
-abstract contract CreatorCore is Initializable, ReentrancyGuard, ICreatorCore, ERC165 {
+abstract contract CreatorCore is Initializable, ReentrancyGuardUpgradeable, ICreatorCore, ERC165 {
     using Strings for uint256;
     using EnumerableSet for EnumerableSet.AddressSet;
     using AddressUpgradeable for address;
 
-    uint256 internal _tokenCount = 0;
+    uint256 internal _tokenCount;
 
     // Base approve transfers address location
     address internal _approveTransferBase;
@@ -100,8 +101,8 @@ abstract contract CreatorCore is Initializable, ReentrancyGuard, ICreatorCore, E
      */
     bytes4 private constant _INTERFACE_ID_ROYALTIES_EIP2981 = 0x2a55205a;
 
-    function __AccessControl_init() internal onlyInitializing {
-
+    function __Core_init() internal onlyInitializing {
+        _tokenCount = 0;
     }
     /**
      * @dev See {IERC165-supportsInterface}.
