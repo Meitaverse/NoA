@@ -1,5 +1,5 @@
 import '@nomiclabs/hardhat-ethers';
-import { hexlify, keccak256, RLP } from 'ethers/lib/utils';
+import { hexlify, keccak256, parseEther, RLP } from 'ethers/lib/utils';
 import { task } from 'hardhat/config';
 import { exportAddress } from "./config";
 import { exportSubgraphNetworksJson } from "./subgraph";
@@ -51,7 +51,7 @@ import { BigNumber, ContractFactory } from 'ethers';
   const RECEIVER_MAGIC_VALUE = '0x009ce20b';
   const FIRST_PROFILE_ID = 1; 
   export const INITIAL_SUPPLY:BigNumber = BigNumber.from(100000000);  //SBT initital supply, 100000000 * 1e18
-  const VOUCHER_AMOUNT_LIMIT = 100;  
+  const VOUCHER_AMOUNT_LIMIT = parseEther("0.001");  
   const SBT_NAME = 'Bitsoul Protocol';
   const SBT_SYMBOL = 'SOUL';
   const SBT_DECIMALS = 18;

@@ -9,15 +9,14 @@ import "@manifoldxyz/libraries-solidity/contracts/access/AdminControlUpgradeable
 import "@solvprotocol/erc-3525/contracts/IERC3525.sol";
 import "@solvprotocol/erc-3525/contracts/ERC3525Upgradeable.sol";
 
-// import "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol";
-import "./creatorCore/ERC1155CreatorCore.sol";
-import './libraries/Constants.sol';
-import {Errors} from "./libraries/Errors.sol";
+import "../creatorCore/ERC1155CreatorCore.sol";
+import '../libraries/Constants.sol';
+import {Errors} from "../libraries/Errors.sol";
 
 /**
  * @dev ERC1155Creator implementation (using transparent upgradeable proxy)
  */
-contract Voucher is 
+contract VoucherV2 is 
     AdminControlUpgradeable, 
     ERC1155Upgradeable, 
     ERC1155CreatorCore
@@ -77,7 +76,6 @@ contract Voucher is
 
     /// @custom:oz-upgrades-unsafe-allow constructor
     constructor() {}  
-    
     /**
      * Initializer
      */
@@ -96,14 +94,6 @@ contract Voucher is
         name = _name;
         symbol = _symbol;
     }
-
-    // function pause() public adminRequired {
-    //     _pause();
-    // }
-
-    // function unpause() public adminRequired {
-    //     _unpause();
-    // }
 
     /**
      * @dev See {IERC165-supportsInterface}.

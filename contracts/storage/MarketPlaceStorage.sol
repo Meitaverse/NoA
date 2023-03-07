@@ -3,8 +3,7 @@
 pragma solidity ^0.8.13;
 
 import {DataTypes} from '../libraries/DataTypes.sol';
-import "@openzeppelin/contracts/utils/Counters.sol";
-
+import "@openzeppelin/contracts-upgradeable/utils/CountersUpgradeable.sol";
 /**
  * @title MarketPlaceStorage
  * @author Bitsoul Protocol
@@ -15,7 +14,7 @@ import "@openzeppelin/contracts/utils/Counters.sol";
  */
 abstract contract MarketPlaceStorage {
 
-    Counters.Counter internal _nextAuctionId;
+    CountersUpgradeable.Counter internal _nextAuctionId;
 
     mapping(address => uint256) public sigNonces;
 

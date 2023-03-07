@@ -3,8 +3,9 @@ pragma solidity ^0.8.13;
 
 import "@openzeppelin/contracts-upgradeable/utils/cryptography/ECDSAUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/utils/structs/EnumerableSetUpgradeable.sol";
-import "@openzeppelin/contracts/utils/Counters.sol";
+import "@openzeppelin/contracts-upgradeable/utils/CountersUpgradeable.sol";
 import "@solvprotocol/erc-3525/contracts/IERC3525.sol";
+// import "@openzeppelin/contracts-upgradeable/security/ReentrancyGuardUpgradeable.sol";
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import "../interfaces/IDerivativeNFT.sol";
 import "../interfaces/INFTDerivativeProtocolTokenV1.sol";
@@ -23,22 +24,20 @@ import {VersionedInitializable} from '../upgradeability/VersionedInitializable.s
  
 contract ManagerV2 is 
     ReentrancyGuard,
-    // ManagerStorage,
     IManagerV2, 
     NFTDerivativeProtocolMultiState, 
-    MockManagerV2Storage, 
+    MockManagerV2Storage,
     VersionedInitializable 
 {
     using SafeMathUpgradeable128 for uint128;
     using EnumerableSetUpgradeable for EnumerableSetUpgradeable.UintSet;
     using EnumerableSetUpgradeable for EnumerableSetUpgradeable.AddressSet;
-    using Counters for Counters.Counter;
+     using CountersUpgradeable for CountersUpgradeable.Counter;
 
     uint256 internal constant REVISION = 1;
 
     mapping(address => uint256) public sigNonces;
-    // address internal immutable  _DNFT_IMPL;
-    // address internal immutable  _RECEIVER;
+
 
     string private constant name = "Manager";
 
@@ -50,11 +49,14 @@ contract ManagerV2 is
         _;
     }
 
+    function initialize(uint256 newValue) external initializer {
+        _additionalValue = newValue;
+    }
 
     //-- external -- //
-    // function getReceiver() external view returns (address) {
-    //     return _RECEIVER;
-    // }
+    function getReceiver() external view returns (address) {
+        return _RECEIVER;
+    }
 
     function createProfile(
         DataTypes.CreateProfileData calldata vars
@@ -790,5 +792,14 @@ contract ManagerV2 is
         if (byteNickName.length == 0 || byteNickName.length > MAX_NICKNAME_LENGTH)
             revert Errors.NickNameLengthInvalid();
     }
+
+       
+    /**
+     * @dev This empty reserved space is put in place to allow future versions to add new
+     * variables without shifting down storage in the inheritance chain.
+     * See https://docs.openzeppelin.com/contracts/4.x/upgradeable#storage_gaps
+     */
+    uint256[49] private __gap;
+
 
 }

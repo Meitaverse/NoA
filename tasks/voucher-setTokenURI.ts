@@ -16,9 +16,6 @@ import {
   } from '../typechain';
   import { waitForTx , ProtocolState, Error, ZERO_ADDRESS} from './helpers/utils';
   
-  
-  const FIRST_PROFILE_ID = 1; 
-  const VOUCHER_AMOUNT_LIMIT = 100;  
 
   // yarn setup-mumbai
   // yarn hardhat --network local voucher-setTokenURI --tokenid 1 --uri https://nftstorage.link/ipfs/bafybeiej6hnolqihsh7pg22xe4gaf3dlf4qgvfzhenkuwcy67rwmma7bfq

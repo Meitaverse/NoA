@@ -16,10 +16,6 @@ import {
   } from '../typechain';
   import { waitForTx , ProtocolState, Error, ZERO_ADDRESS} from './helpers/utils';
   
-  
-  const FIRST_PROFILE_ID = 1; 
-  const VOUCHER_AMOUNT_LIMIT = 100;  
-
   // yarn setup-mumbai
   // yarn hardhat --network local setup
 

@@ -4,11 +4,10 @@ pragma solidity ^0.8.13;
 
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol";
-// import "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
 import "@openzeppelin/contracts/utils/introspection/IERC165.sol";
 import "@solvprotocol/erc-3525/contracts/IERC3525Receiver.sol";
 import "@solvprotocol/erc-3525/contracts/IERC3525.sol";
-import "@openzeppelin/contracts/utils/Counters.sol";
+import "@openzeppelin/contracts-upgradeable/utils/CountersUpgradeable.sol";
 import './libraries/Constants.sol';
 import {IMarketPlace} from "./interfaces/IMarketPlace.sol";
 import {DataTypes} from './libraries/DataTypes.sol';
@@ -38,9 +37,8 @@ contract MarketPlace is
     PausableUpgradeable,
     AdminRoleEnumerable,
     OperatorRoleEnumerable
-    // UUPSUpgradeable
 {
-    using Counters for Counters.Counter;
+    using CountersUpgradeable for CountersUpgradeable.Counter;
 
     /// @custom:oz-upgrades-unsafe-allow constructor
     constructor(

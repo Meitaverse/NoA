@@ -7,41 +7,23 @@ import hre from 'hardhat'
 import { ethers, upgrades } from 'hardhat';
 
 import {
-  ManagerV2,
-  ManagerV2__factory,
-  TransparentUpgradeableProxy__factory,
-  NFTDerivativeProtocolTokenV2__factory,
-  ERC1967Proxy,
-  ERC1967Proxy__factory,
   NFTDerivativeProtocolTokenV2,
-  BankTreasury,
-  BankTreasuryV2,
-  BankTreasuryV2__factory,
-  NFTDerivativeProtocolTokenV1__factory,
-  NFTDerivativeProtocolTokenV1,
 } from '../../typechain';
-import { ZERO_ADDRESS } from '../helpers/constants';
-import { ERRORS } from '../helpers/errors';
 import {
   MOCK_PROFILE_URI,
   NickName,
-  SBT_DECIMALS,
   SBT_NAME,
   SBT_SYMBOL,
   SECOND_PROFILE_ID,
   bankTreasuryContract,
-  deployer,
-  governanceAddress,
   makeSuiteCleanRoom,
   manager,
   sbtContract,
-  sbtMetadataDescriptor,
   user,
   userAddress,
   userTwoAddress,
 } from '../__setup.spec';
 
- let sbtProxyV2: NFTDerivativeProtocolTokenV2;
  let original_balance = 10000;
 
 makeSuiteCleanRoom('SBT upgrade ability', function () {
@@ -59,9 +41,6 @@ makeSuiteCleanRoom('SBT upgrade ability', function () {
     });
 
     it("Proxy state", async () => {
-      const name = await sbtContract.name();
-      const symbol = await sbtContract.symbol();
-      const decimals = await sbtContract.valueDecimals();
       expect([
         await sbtContract.name(),
         await sbtContract.symbol(),
@@ -71,6 +50,14 @@ makeSuiteCleanRoom('SBT upgrade ability', function () {
         SBT_SYMBOL,
         18,
       ]);
+
+      expect(
+        await sbtContract.version()
+      ).to.deep.eq(
+        1,
+      );
+
+
     });
 
     it('Should upgrade sbt contract, name , symbol, decimals is not chanaged.', async function() {
@@ -89,6 +76,13 @@ makeSuiteCleanRoom('SBT upgrade ability', function () {
         SBT_SYMBOL,
         18,
       ]);
+
+      expect(
+        await sbtV2.version()
+      ).to.deep.eq(
+        2,
+      );
+
 
       expect(
         await sbtV2['balanceOf(uint256)'](SECOND_PROFILE_ID),

@@ -4,46 +4,21 @@ import '@nomiclabs/hardhat-ethers';
 import { expect } from 'chai';
 
 import { 
-  ERC20__factory,
   DerivativeNFT,
-  DerivativeNFT__factory,
   MockERC1155CreatorExtensionOverride,
   MockERC1155CreatorExtensionOverride__factory,
-  MockERC1155CreatorExtensionBurnable,
   MockERC1155CreatorExtensionBurnable__factory,
   MockERC1155CreatorMintPermissions__factory,
  } from '../../typechain';
-import { MAX_UINT256, ZERO_ADDRESS } from '../helpers/constants';
 import { ERRORS } from '../helpers/errors';
 import { TransactionReceipt, TransactionResponse } from '@ethersproject/providers';
 
-import { 
-  collectReturningTokenId, 
-  getTimestamp, 
-  matchEvent, 
-  waitForTx 
-} from '../helpers/utils';
-
 
 import {
-  abiCoder,
-  INITIAL_SUPPLY,
-  VOUCHER_AMOUNT_LIMIT,
-  FIRST_PROFILE_ID,
   SECOND_PROFILE_ID,
   THIRD_PROFILE_ID,
-  FOUR_PROFILE_ID,
-  FIRST_HUB_ID,
-  FIRST_PROJECT_ID,
-  FIRST_DNFT_TOKEN_ID,
-  SECOND_DNFT_TOKEN_ID,
-  FIRST_PUBLISH_ID,
-  GENESIS_FEE_BPS,
-  DEFAULT_COLLECT_PRICE,
-  DEFAULT_TEMPLATE_NUMBER,
   NickName,
   NickName3,
-  governance,
   manager,
   makeSuiteCleanRoom,
   MOCK_PROFILE_URI,
@@ -52,16 +27,9 @@ import {
   userTwo,
   userTwoAddress,
   sbtContract,
-  metadataDescriptor,
-  publishModule,
-  feeCollectModule,
-  template,
-  receiverMock,
-  moduleGlobals,
   bankTreasuryContract,
   deployer,
   voucherContract,
-  currency,
   deployerAddress,
   userThreeAddress,
   userThree,
@@ -70,12 +38,9 @@ import {
 import { 
   createProfileReturningTokenId,
 } from '../helpers/utils';
-import { ContractTransaction, ethers } from 'ethers';
 
-let derivativeNFT: DerivativeNFT;
 const FIRST_VOUCHER_TOKEN_ID = 1;
 const SECOND_VOUCHER_TOKEN_ID = 2;
-let receipt: TransactionReceipt;
 let original_balance = 10000;
 let baseApprover: MockERC1155CreatorExtensionOverride
 let extApprover: MockERC1155CreatorExtensionOverride

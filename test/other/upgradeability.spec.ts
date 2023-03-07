@@ -8,7 +8,6 @@ import {
   TransparentUpgradeableProxy__factory,
   ERC1967Proxy,
   ERC1967Proxy__factory,
-  ManagerV2_BadRevision__factory,
 } from '../../typechain';
 import {
   deployer,

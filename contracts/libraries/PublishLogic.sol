@@ -12,6 +12,7 @@ import {IDerivativeNFT} from "../interfaces/IDerivativeNFT.sol";
 import {ICollectModule} from '../interfaces/ICollectModule.sol';
 import {IPublishModule} from '../interfaces/IPublishModule.sol';
 import {IBankTreasury} from '../interfaces/IBankTreasury.sol';
+
 /**
  * @title PublishLogic
  * @author bitsoul Protocol

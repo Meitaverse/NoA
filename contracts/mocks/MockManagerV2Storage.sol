@@ -4,7 +4,7 @@ pragma solidity ^0.8.13;
 
 import {DataTypes} from '../libraries/DataTypes.sol';
 import "@openzeppelin/contracts-upgradeable/utils/structs/EnumerableSetUpgradeable.sol";
-import "@openzeppelin/contracts/utils/Counters.sol";
+import "@openzeppelin/contracts-upgradeable/utils/CountersUpgradeable.sol";
 
 /**
  * @title MockManagerV2Storage
@@ -25,8 +25,11 @@ abstract contract MockManagerV2Storage {
         keccak256(
             'EIP712Domain(string name,string version,uint256 chainId,address verifyingContract)'
         );
+        
 
-    
+    address internal  _DNFT_IMPL;
+    address internal  _RECEIVER;
+            
     // hubId => HubData
     mapping(uint256 => DataTypes.HubInfoData) internal _hubInfos;
 
@@ -79,9 +82,9 @@ abstract contract MockManagerV2Storage {
     address internal _emergencyAdmin;
     address internal _owner;
 
-    Counters.Counter internal _nextHubId;
-    Counters.Counter internal _nextProjectId;
-    Counters.Counter internal _nextPublishId;
+    CountersUpgradeable.Counter internal _nextHubId;
+    CountersUpgradeable.Counter internal _nextProjectId;
+    CountersUpgradeable.Counter internal _nextPublishId;
     
     string internal _svgLogo;
     

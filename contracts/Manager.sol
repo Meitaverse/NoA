@@ -3,7 +3,9 @@ pragma solidity ^0.8.13;
 
 import "@openzeppelin/contracts-upgradeable/utils/cryptography/ECDSAUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/utils/structs/EnumerableSetUpgradeable.sol";
-import "@openzeppelin/contracts/utils/Counters.sol";
+// import "@openzeppelin/contracts/utils/Counters.sol";
+import "@openzeppelin/contracts-upgradeable/utils/CountersUpgradeable.sol";
+
 import "@solvprotocol/erc-3525/contracts/IERC3525.sol";
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import {Clones} from '@openzeppelin/contracts/proxy/Clones.sol';
@@ -34,13 +36,13 @@ contract Manager is
     using SafeMathUpgradeable128 for uint128;
     using EnumerableSetUpgradeable for EnumerableSetUpgradeable.UintSet;
     using EnumerableSetUpgradeable for EnumerableSetUpgradeable.AddressSet;
-    using Counters for Counters.Counter;
+    using CountersUpgradeable for CountersUpgradeable.Counter;
 
     uint256 internal constant REVISION = 1;
 
     mapping(address => uint256) public sigNonces;
-    address internal immutable  _DNFT_IMPL;
-    address internal immutable  _RECEIVER;
+    // address internal immutable  _DNFT_IMPL;
+    // address internal immutable  _RECEIVER;
 
     string private constant name = "Manager";
 
@@ -510,10 +512,10 @@ contract Manager is
         return _derivativeNFTByProjectId[projectId];
     }
 
-    // function calculateDerivativeNFTAddress(uint256 projectId) external view returns (address deverivateNFTInstance) {
-    //     bytes32 salt = keccak256(abi.encode(projectId));
-    //     deverivateNFTInstance = Clones.predictDeterministicAddress(_DNFT_IMPL, salt);
-    // }
+    function calculateDerivativeNFTAddress(uint256 projectId) external view returns (address deverivateNFTInstance) {
+        bytes32 salt = keccak256(abi.encode(projectId));
+        deverivateNFTInstance = Clones.predictDeterministicAddress(_DNFT_IMPL, salt);
+    }
 
     function getPublicationByProjectToken(uint256 projectId_, uint256 tokenId_) external view returns (uint256, DataTypes.Publication memory) {
         address derivativeNFT =  _derivativeNFTByProjectId[projectId_];
