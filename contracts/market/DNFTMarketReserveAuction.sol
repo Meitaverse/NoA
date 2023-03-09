@@ -39,7 +39,7 @@ abstract contract DNFTMarketReserveAuction is
   // uint256[5] private __gap_was_config;
 
   /// @notice How long an auction lasts for once the first bid has been received.
-  uint256 private immutable DURATION;
+  uint256 private  DURATION; //immutable
 
   /// @notice The window for auction extensions, any bid placed in the final 15 minutes
   /// of an auction will reset the time remaining to 15 minutes.
@@ -56,12 +56,14 @@ abstract contract DNFTMarketReserveAuction is
     _;
   }
 
+  /// @custom:oz-upgrades-unsafe-allow constructor
+  constructor() initializer{}
+
   /**
    * @notice Configures the duration for auctions.
    * @param duration The duration for auctions, in seconds.
    */
-  constructor(uint256 duration) {
-
+  function __dNFT_market_reserve_auction_init(uint256 duration) internal onlyInitializing{
     if (duration > MAX_MAX_DURATION) {
       // This ensures that math in this file will not overflow due to a huge duration.
       revert Errors.DNFTMarketReserveAuction_Exceeds_Max_Duration(MAX_MAX_DURATION);

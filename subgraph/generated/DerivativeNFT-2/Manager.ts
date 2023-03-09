@@ -1329,14 +1329,6 @@ export class ConstructorCall__Inputs {
   constructor(call: ConstructorCall) {
     this._call = call;
   }
-
-  get dNftV1_(): Address {
-    return this._call.inputValues[0].value.toAddress();
-  }
-
-  get receiver_(): Address {
-    return this._call.inputValues[1].value.toAddress();
-  }
 }
 
 export class ConstructorCall__Outputs {
@@ -1684,8 +1676,16 @@ export class InitializeCall__Inputs {
     this._call = call;
   }
 
-  get governance(): Address {
+  get dNftV1_(): Address {
     return this._call.inputValues[0].value.toAddress();
+  }
+
+  get receiver_(): Address {
+    return this._call.inputValues[1].value.toAddress();
+  }
+
+  get governance(): Address {
+    return this._call.inputValues[2].value.toAddress();
   }
 }
 
@@ -2179,40 +2179,6 @@ export class SetTimeLockCall__Outputs {
   _call: SetTimeLockCall;
 
   constructor(call: SetTimeLockCall) {
-    this._call = call;
-  }
-}
-
-export class UpdateCollectLimitPerAddressCall extends ethereum.Call {
-  get inputs(): UpdateCollectLimitPerAddressCall__Inputs {
-    return new UpdateCollectLimitPerAddressCall__Inputs(this);
-  }
-
-  get outputs(): UpdateCollectLimitPerAddressCall__Outputs {
-    return new UpdateCollectLimitPerAddressCall__Outputs(this);
-  }
-}
-
-export class UpdateCollectLimitPerAddressCall__Inputs {
-  _call: UpdateCollectLimitPerAddressCall;
-
-  constructor(call: UpdateCollectLimitPerAddressCall) {
-    this._call = call;
-  }
-
-  get publishId(): BigInt {
-    return this._call.inputValues[0].value.toBigInt();
-  }
-
-  get collectLimitPerAddress(): i32 {
-    return this._call.inputValues[1].value.toI32();
-  }
-}
-
-export class UpdateCollectLimitPerAddressCall__Outputs {
-  _call: UpdateCollectLimitPerAddressCall;
-
-  constructor(call: UpdateCollectLimitPerAddressCall) {
     this._call = call;
   }
 }

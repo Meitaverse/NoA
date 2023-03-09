@@ -26,6 +26,7 @@ import {
 } from '../__setup.spec';
 
  let original_balance = 10000;
+ const valueToSet = 123;
 
 makeSuiteCleanRoom('Voucher upgrade ability', function () {
   
@@ -103,20 +104,22 @@ makeSuiteCleanRoom('Voucher upgrade ability', function () {
       );
     });
 
-    // it('Should upgrade sbt contract and can call V2 function.', async function() {
+    it('Should upgrade voucher contract and can call V2 function.', async function() {
       
-    //   const sbtV2 = (await upgrades.upgradeProxy(
-    //     sbtContract.address,
-    //     this.sbtV2Impl,
-    //   )) as NFTDerivativeProtocolTokenV2;
+      const voucherV2 = (await upgrades.upgradeProxy(
+        voucherContract.address,
+        this.voucherV2Impl,
+      )) as VoucherV2;
+      
 
-    //     await sbtV2.connect(user).setSigner(userTwoAddress);
-
-    //     expect (
-    //       await sbtV2.connect(user).getSigner()
-    //     ).to.eq(userTwoAddress);
+        await expect(
+          voucherV2.connect(user).setAdditionalValue(valueToSet)
+        ).to.not.be.reverted;
+    
+         expect(await voucherV2.connect(user).getAdditionalValue()).to.eq(valueToSet);
+         
+         expect(await voucherV2.version()).to.eq(2);
         
-
-    // });
+    });
   });
 });

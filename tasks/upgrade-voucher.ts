@@ -9,10 +9,12 @@ import {
   Manager__factory,
   Voucher__factory,
   NFTDerivativeProtocolTokenV2,
+  Voucher,
+  VoucherV2,
 } from '../typechain';
 
-  // yarn hardhat --network local upgrade-sbt
-task('upgrade-sbt', 'upgrade sbt contract').setAction(async ({}, hre) => {
+  // yarn hardhat --network local upgrade-voucher
+task('upgrade-voucher', 'upgrade voucher contract').setAction(async ({}, hre) => {
         // Note that the use of these signers is a placeholder and is not meant to be used in
         // production.
         const ethers = hre.ethers;
@@ -30,28 +32,13 @@ task('upgrade-sbt', 'upgrade sbt contract').setAction(async ({}, hre) => {
         const voucher = await loadContract(hre, Voucher__factory, "Voucher");
         const moduleGlobals = await loadContract(hre, ModuleGlobals__factory, "ModuleGlobals");
 
-        console.log('\n\t ---- version: ', await  sbt.version());
+        let voucherV2Impl = await hre.ethers.getContractFactory('VoucherV2');
 
-        let balance = await sbt['balanceOf(uint256)'](1);
-        console.log('\n\t ----Before upgrade, balance of treasury: ', balance);
+        const voucherV2 = (await hre.upgrades.upgradeProxy(
+          voucher.address,
+          voucherV2Impl,
+        )) as VoucherV2;
 
-
-        let sbtV2Impl = await hre.ethers.getContractFactory('NFTDerivativeProtocolTokenV2');
-        
-        const sbtV2 = (await hre.upgrades.upgradeProxy(
-          sbt.address,
-          sbtV2Impl,
-        )) as NFTDerivativeProtocolTokenV2;
-
-        await sbtV2.connect(governance).setBankTreasury(
-          bankTreasury.address, 
-          50000
-      );
-        
-        console.log('\n\t ---- version: ', await sbtV2.version());
-
-        balance = await sbtV2['balanceOf(uint256)'](1);
-        console.log('\n\t ---- After upgraded, balance of treasury: ', balance);
-  
+        console.log('\n\t ---- version: ', await voucherV2.version());
 
 });

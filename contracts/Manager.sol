@@ -39,8 +39,9 @@ contract Manager is
     uint256 internal constant REVISION = 1;
 
     mapping(address => uint256) public sigNonces;
-    address internal immutable  _DNFT_IMPL;
-    address internal immutable  _RECEIVER;
+
+    address internal  _DNFT_IMPL; //immutable
+    address internal  _RECEIVER;  //immutable
 
     string private constant name = "Manager";
 
@@ -52,18 +53,18 @@ contract Manager is
         _;
     }
 
-    constructor(
+    constructor() {}
+
+    function initialize(
         address dNftV1_, 
-        address receiver_
-    )  {
+        address receiver_,
+        address governance
+    ) external initializer {
         if (dNftV1_ == address(0)) revert Errors.InitParamsInvalid();
         if (receiver_ == address(0)) revert Errors.InitParamsInvalid();
         
         _DNFT_IMPL = dNftV1_;
-        _RECEIVER = receiver_;
-    }
-
-    function initialize(address governance) external override initializer {
+        _RECEIVER = receiver_;        
         //default Paused
         _setState(DataTypes.ProtocolState.Paused);
         _owner = msg.sender;
@@ -789,5 +790,6 @@ contract Manager is
         if (byteNickName.length == 0 || byteNickName.length > MAX_NICKNAME_LENGTH)
             revert Errors.NickNameLengthInvalid();
     }
+
 
 }

@@ -22,31 +22,25 @@ import {
     ModuleGlobals__factory,
     TransparentUpgradeableProxy__factory,
     ERC3525ReceiverMock__factory,
-    GovernorContract__factory,
-    BankTreasury__factory,
     DerivativeNFT__factory,
-    NFTDerivativeProtocolTokenV1__factory,
     Manager__factory,
-    Voucher__factory,
     DerivativeMetadataDescriptor__factory,
     Template__factory,
     MarketPlace__factory,
     SBTMetadataDescriptor__factory,
-    MarketLogic__factory,
     Currency__factory,
     FETH__factory,
     RoyaltyRegistry__factory,
     VoucherMarket__factory,
-    NFTDerivativeProtocolTokenV1,
-    GovernorContract,
+    MarketPlace,
   } from '../typechain';
   import { deployContract, waitForTx , ProtocolState, Error, ZERO_ADDRESS} from './helpers/utils';
   import { ManagerLibraryAddresses } from '../typechain/factories/contracts/Manager__factory';
   
   import { DataTypes } from '../typechain/contracts/modules/template/Template';
-  import { MarketPlaceLibraryAddresses } from '../typechain/factories/contracts/MarketPlace__factory';
-import { BigNumber, ContractFactory } from 'ethers';
+  import { BigNumber, ContractFactory } from 'ethers';
   
+const MARKET_MAX_DURATION = 86400000; //1000 days in seconds
   const TREASURY_FEE_BPS = 500;
   const RECEIVER_MAGIC_VALUE = '0x009ce20b';
   const FIRST_PROFILE_ID = 1; 
@@ -184,15 +178,15 @@ import { BigNumber, ContractFactory } from 'ethers';
       
         const derivativeNFTImplAddress =
             '0x' + keccak256(RLP.encode([deployer.address, derivativeNFTNonce])).substr(26);
-
+        console.log('\t-- derivativeNFTImpl address: ', derivativeNFTImplAddress);
+        
         const managerProxyAddress =
-            '0x' + keccak256(RLP.encode([deployer.address, managerProxyNonce])).substr(26);
+        '0x' + keccak256(RLP.encode([deployer.address, managerProxyNonce])).substr(26);
+        console.log('\t-- managerProxy address: ', managerProxyAddress);
         
 
         const managerImpl = await deployContract(
             new Manager__factory(managerLibs, deployer).deploy(
-                derivativeNFTImplAddress, 
-                receiverMock.address,
                 { nonce: deployerNonce++,}
             )
         );
@@ -212,6 +206,8 @@ import { BigNumber, ContractFactory } from 'ethers';
         console.log('\n\t-- Deploying Manager --');
 
         let data = managerImpl.interface.encodeFunctionData('initialize', [
+            derivativeNFTImplAddress, 
+            receiverMock.address,
             governance.address
           ]);
 
@@ -270,11 +266,11 @@ import { BigNumber, ContractFactory } from 'ethers';
         await exportAddress(hre, sbtContract, 'SBT');
         await exportSubgraphNetworksJson(hre, sbtContract, 'SBT');
 
-        const goverorImpl = await hre.ethers.getContractFactory('GovernorContract');
+        const governorImpl = await hre.ethers.getContractFactory('GovernorContract');
         deployerNonce++;
  
        let governorContract = await hre.upgrades.deployProxy(
-          goverorImpl, 
+          governorImpl, 
           [
             governance.address,
             sbtContract.address,
@@ -341,38 +337,32 @@ import { BigNumber, ContractFactory } from 'ethers';
           }
         )
         await voucherContract.deployed();
-        deployerNonce++;      
+        deployerNonce++;
 
         console.log('\t-- voucherContract: ', voucherContract.address);
         await exportAddress(hre, voucherContract, 'Voucher');
         await exportSubgraphNetworksJson(hre, voucherContract, 'Voucher');
 
         console.log('\n\t-- Deploying market place --');
-        let marketLibs:MarketPlaceLibraryAddresses
-        const marketLogic = await new MarketLogic__factory(deployer).deploy(
-          { nonce: deployerNonce++ }
-        );
-        marketLibs = {
-          'contracts/libraries/MarketLogic.sol:MarketLogic': marketLogic.address,
-        };
-        const marketPlaceImpl = await deployContract(
-            new MarketPlace__factory(marketLibs, deployer).deploy(
-                bankTreasuryContract.address,
-                MARKET_DURATION,
-                { nonce: deployerNonce++ })
-        );
-
-        let initializeDataMarket = marketPlaceImpl.interface.encodeFunctionData("initialize", [
-          governance.address
-        ]);
       
-        const marketPlaceProxy = await new ERC1967Proxy__factory(deployer).deploy(
-            marketPlaceImpl.address,
-            initializeDataMarket,
-            { nonce: deployerNonce++ }
-        );
-        const marketPlaceContract = new MarketPlace__factory(marketLibs, deployer).attach(marketPlaceProxy.address);
-        
+        const marketPlaceImpl = await hre.ethers.getContractFactory('MarketPlace');
+        deployerNonce++;
+
+        const marketPlaceContract = await hre.upgrades.deployProxy(
+          marketPlaceImpl, 
+          [
+            governance.address,
+            MARKET_MAX_DURATION,
+            bankTreasuryContract.address,
+          ], 
+          {
+            initializer: "initialize"
+          }
+        ) as MarketPlace;
+
+        await marketPlaceContract.deployed()
+        deployerNonce++;
+      
         console.log('\t-- marketPlaceContract: ', marketPlaceContract.address);
         await exportAddress(hre, marketPlaceContract, 'MarketPlace');
         await exportSubgraphNetworksJson(hre, marketPlaceContract, 'MarketPlace');

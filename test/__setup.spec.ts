@@ -35,24 +35,18 @@ import {
   ERC3525ReceiverMock,
   ERC3525ReceiverMock__factory,
   GovernorContract,
-  GovernorContract__factory,
   BankTreasury,
-  BankTreasury__factory,
   DerivativeNFT,
   DerivativeNFT__factory,
   NFTDerivativeProtocolTokenV1,
-  NFTDerivativeProtocolTokenV1__factory,
   Manager,
   Manager__factory,
   Voucher,
-  Voucher__factory,
   DerivativeMetadataDescriptor,
   DerivativeMetadataDescriptor__factory,
   Template,
   Template__factory,
   MultirecipientFeeCollectModule,
-  MultirecipientFeeCollectModule__factory,
-  MarketLogic__factory,
   FETH,
   FETH__factory,
   MarketPlace,
@@ -80,7 +74,6 @@ import {
 
 
 import { DataTypes } from '../typechain/contracts/modules/template/Template';
-import { MarketPlaceLibraryAddresses } from '../typechain/factories/contracts/MarketPlace__factory';
 
 use(solidity);
 
@@ -134,6 +127,7 @@ export let userAddress: string;
 export let userTwoAddress: string;
 export let userThreeAddress: string;
 export let governanceAddress: string;
+export let adminAddress: string;
 export let governorContract: GovernorContract;
 export let testWallet: Wallet;
 export let managerImpl: Manager;
@@ -149,8 +143,6 @@ export let moduleGlobals: ModuleGlobals;
 export let helper: Helper;
 export let receiverMock: ERC3525ReceiverMock
 export let bankTreasuryContract: BankTreasury
-export let marketLibs:MarketPlaceLibraryAddresses
-// export let marketPlaceImpl: MarketPlace
 export let marketPlaceContract: MarketPlace
 export let voucherMarketImpl: VoucherMarket
 export let voucherMarketContract: VoucherMarket
@@ -205,6 +197,7 @@ before(async function () {
   userTwoAddress = await userTwo.getAddress();
   userThreeAddress = await userThree.getAddress();
   governanceAddress = await governance.getAddress();
+  adminAddress = await admin.getAddress();
   console.log("deployer address: ", await deployer.getAddress());
   console.log("user address: ", userAddress);
   console.log("userTwo address: ", userTwoAddress);
@@ -253,7 +246,9 @@ before(async function () {
     'contracts/libraries/InteractionLogic.sol:InteractionLogic': interactionLogic.address,
     'contracts/libraries/PublishLogic.sol:PublishLogic': publishLogic.address,
   };
-  
+  console.log("interactionLogic address: ", interactionLogic.address);
+  console.log("publishLogic address: ", publishLogic.address);
+
 
   // Here, we pre-compute the nonces and addresses used to deploy the contracts.
   const nonce = await deployer.getTransactionCount();
@@ -262,29 +257,28 @@ before(async function () {
   // nonce + 2 is manager proxy
 
   const managerProxyAddress = computeContractAddress(deployerAddress, nonce + 2); 
-  // console.log("managerProxyAddress: ", managerProxyAddress);
+  console.log("managerProxyAddress: ", managerProxyAddress);
 
   derivativeNFTImpl = await new DerivativeNFT__factory(deployer).deploy(
     managerProxyAddress
   );
 
-  managerImpl = await new Manager__factory(managerLibs, deployer).deploy(
-    derivativeNFTImpl.address,
-    receiverMock.address,
-  );
+  managerImpl = await new Manager__factory(managerLibs, deployer).deploy();
 
   let data = managerImpl.interface.encodeFunctionData('initialize', [
+    derivativeNFTImpl.address,
+    receiverMock.address,
     governanceAddress
   ]);
   
   let proxy = await new TransparentUpgradeableProxy__factory(deployer).deploy(
     managerImpl.address,
-    await admin.getAddress(),
+    adminAddress,
     data
   );
 
-  // Connect the manager proxy to the Manager factory, must connect by admin, not deployer
-  manager = Manager__factory.connect(proxy.address, admin);
+  // Connect the manager proxy to the Manager factory, must connect by governance, not deployer
+  manager = Manager__factory.connect(proxy.address, governance);
   
   console.log("manager.address: ", manager.address);
 
@@ -377,27 +371,21 @@ before(async function () {
 
 
   //market place
+  const marketPlaceImpl = await hre.ethers.getContractFactory('MarketPlace');
 
-  const marketLogic = await new MarketLogic__factory(deployer).deploy();
-  marketLibs = {
-    'contracts/libraries/MarketLogic.sol:MarketLogic': marketLogic.address,
-  };
-  
-  let marketPlaceImpl = await new MarketPlace__factory(marketLibs, deployer).deploy(
-    bankTreasuryContract.address,
-    MARKET_MAX_DURATION
-  );
-  let marketPlaceData = marketPlaceImpl.interface.encodeFunctionData("initialize", [
-    governanceAddress,
-  ]);
+  marketPlaceContract = await hre.upgrades.deployProxy(
+    marketPlaceImpl, 
+    [
+      governanceAddress,
+      MARKET_MAX_DURATION,
+      bankTreasuryContract.address,
+    ], 
+    {
+      initializer: "initialize"
+    }
+  ) as MarketPlace;
 
-  const marketPlaceProxy = await new ERC1967Proxy__factory(deployer).deploy(
-    marketPlaceImpl.address,
-    marketPlaceData
-  );
-  marketPlaceContract = new MarketPlace__factory(marketLibs, deployer).attach(marketPlaceProxy.address);
-  
-  // const marketPlaceImpl = await hre.ethers.getContractFactory('MarketPlace');
+  await marketPlaceContract.deployed()
 
   console.log("marketPlaceContract.address: ", marketPlaceContract.address);
   

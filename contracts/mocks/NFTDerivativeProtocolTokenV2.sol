@@ -11,18 +11,6 @@ import {Errors} from "../libraries/Errors.sol";
 import '../libraries/Constants.sol';
 import {ERC3525Votes} from "../extensions/ERC3525Votes.sol";
 import "../storage/SBTStorage.sol";
-
-// import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
-// import "@openzeppelin/contracts-upgradeable/access/AccessControlUpgradeable.sol";
-// import "@solvprotocol/erc-3525/contracts/ERC3525Upgradeable.sol";
-// import "@solvprotocol/erc-3525/contracts/extensions/IERC3525Metadata.sol";
-// import {IERC20Upgradeable} from "@openzeppelin/contracts-upgradeable/token/ERC20/IERC20Upgradeable.sol";
-// import {SafeMathUpgradeable} from "@openzeppelin/contracts-upgradeable/utils/math/SafeMathUpgradeable.sol";
-// import {Errors} from "../libraries/Errors.sol";
-// import '../libraries/Constants.sol';
-// import {IManager} from "../interfaces/IManager.sol";
-// import {ERC3525Votes} from "../extensions/ERC3525Votes.sol";
-// import "../storage/SBTStorage.sol";
 import {INFTDerivativeProtocolTokenV2} from "../interfaces/INFTDerivativeProtocolTokenV2.sol";
 
 /**
@@ -37,7 +25,7 @@ contract NFTDerivativeProtocolTokenV2 is
 {
     //upgrade version
     uint256 internal constant VERSION = 2;
-    uint256 public constant MAX_SUPPLY = 10000000000 * 1e18;
+    uint256 public constant MAX_SUPPLY = 20000000000 * 1e18;
     bytes32 public constant TRANSFER_VALUE_ROLE = keccak256("TRANSFER_VALUE_ROLE");
     bytes32 public constant UPGRADER_ROLE = keccak256("UPGRADER_ROLE");
 

@@ -11,14 +11,14 @@ import {DataTypes} from '../libraries/DataTypes.sol';
  * @notice This is the interface for the Manager contract
  */
 interface IManager {
-    /**
-     * @notice Initializes the Manager, setting the initial governance address
-     *
-     * @param governance_ The address of Governance.
-     */
-    function initialize(    
-        address governance_
-    ) external;
+    // /**
+    //  * @notice Initializes the Manager, setting the initial governance address
+    //  *
+    //  * @param governance_ The address of Governance.
+    //  */
+    // function initialize(    
+    //     address governance_
+    // ) external;
     
     function getGlobalModule() external returns(address);
 

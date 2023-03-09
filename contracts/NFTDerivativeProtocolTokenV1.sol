@@ -26,7 +26,7 @@ contract NFTDerivativeProtocolTokenV1 is
     INFTDerivativeProtocolTokenV1
 {
     uint256 internal constant VERSION = 1;
-    uint256 internal constant MAX_SUPPLY = 10000000000 * 1e18;
+    uint256 internal constant MAX_SUPPLY = 20000000000 * 1e18;
     bytes32 public constant TRANSFER_VALUE_ROLE = keccak256("TRANSFER_VALUE_ROLE");
 
     uint256 private treasury_SBT_ID;
@@ -300,7 +300,8 @@ contract NFTDerivativeProtocolTokenV1 is
             imageURI
         );
     }
-   
+
+
     /**
      * @dev This empty reserved space is put in place to allow future versions to add new
      * variables without shifting down storage in the inheritance chain.

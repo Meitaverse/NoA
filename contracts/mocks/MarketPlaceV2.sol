@@ -8,21 +8,21 @@ import "@openzeppelin/contracts/utils/introspection/IERC165.sol";
 import "@solvprotocol/erc-3525/contracts/IERC3525Receiver.sol";
 import "@solvprotocol/erc-3525/contracts/IERC3525.sol";
 import "@openzeppelin/contracts-upgradeable/utils/CountersUpgradeable.sol";
-import './libraries/Constants.sol';
-import {DataTypes} from './libraries/DataTypes.sol';
-import {Events} from"./libraries/Events.sol";
-import {Errors} from "./libraries/Errors.sol";
-import {MarketPlaceStorage} from  "./storage/MarketPlaceStorage.sol";
-import {IModuleGlobals} from "./interfaces/IModuleGlobals.sol";
-import {DNFTMarketCore} from "./market/DNFTMarketCore.sol";
-import {DNFTMarketOffer} from "./market/DNFTMarketOffer.sol";
-import {DNFTMarketBuyPrice} from "./market/DNFTMarketBuyPrice.sol";
-import {DNFTMarketReserveAuction} from "./market/DNFTMarketReserveAuction.sol";
-import {AdminRoleEnumerable} from "./market/AdminRoleEnumerable.sol";
-import {OperatorRoleEnumerable} from "./market/OperatorRoleEnumerable.sol";
+import '../libraries/Constants.sol';
+import {DataTypes} from '../libraries/DataTypes.sol';
+import {Events} from"../libraries/Events.sol";
+import {Errors} from "../libraries/Errors.sol";
+import {MarketPlaceStorage} from  "../storage/MarketPlaceStorage.sol";
+import {IModuleGlobals} from "../interfaces/IModuleGlobals.sol";
+import {DNFTMarketCore} from "../market/DNFTMarketCore.sol";
+import {DNFTMarketOffer} from "../market/DNFTMarketOffer.sol";
+import {DNFTMarketBuyPrice} from "../market/DNFTMarketBuyPrice.sol";
+import {DNFTMarketReserveAuction} from "../market/DNFTMarketReserveAuction.sol";
+import {AdminRoleEnumerable} from "../market/AdminRoleEnumerable.sol";
+import {OperatorRoleEnumerable} from "../market/OperatorRoleEnumerable.sol";
 
 
-contract MarketPlace is
+contract MarketPlaceV2 is
     Initializable,
     MarketPlaceStorage,
     DNFTMarketCore,
@@ -37,15 +37,7 @@ contract MarketPlace is
 {
     using CountersUpgradeable for CountersUpgradeable.Counter;
 
-    /// @custom:oz-upgrades-unsafe-allow constructor
-    constructor() initializer{}
-
-    function initialize(address admin, uint256 duration, address treasury) external initializer {
-        AdminRoleEnumerable._initializeAdminRole(admin);
-        __Pausable_init();
-        __dNFT_market_reserve_auction_init(duration);
-        __dNFT_market_core_init(treasury);
-    }
+    uint256 internal _additionalValue;
 
     // --- override --- //
 
@@ -221,5 +213,19 @@ contract MarketPlace is
         onlyOperator
     {
         markets[derivativeNFT].isOpen = isOpen;
+    }
+
+        //V2
+
+    function setAdditionalValue(uint256 newValue) external {
+        _additionalValue = newValue;
+    }
+
+    function getAdditionalValue() external view returns (uint256) {
+        return _additionalValue;
+    }
+
+    function version() external pure  returns (uint256) {
+        return 2;
     }
 }

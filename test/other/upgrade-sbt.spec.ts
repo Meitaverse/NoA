@@ -10,12 +10,15 @@ import {
   NFTDerivativeProtocolTokenV2,
 } from '../../typechain';
 import {
+  FIRST_PROFILE_ID,
+  INITIAL_SUPPLY,
   MOCK_PROFILE_URI,
   NickName,
   SBT_NAME,
   SBT_SYMBOL,
   SECOND_PROFILE_ID,
   bankTreasuryContract,
+  governance,
   makeSuiteCleanRoom,
   manager,
   sbtContract,
@@ -100,8 +103,8 @@ makeSuiteCleanRoom('SBT upgrade ability', function () {
         this.sbtV2Impl,
       )) as NFTDerivativeProtocolTokenV2;
 
-        //user buy some SBT Values 
-        await bankTreasuryContract.connect(user).buySBT(SECOND_PROFILE_ID, {value: original_balance});
+      //user buy some SBT Values 
+      await bankTreasuryContract.connect(user).buySBT(SECOND_PROFILE_ID, {value: original_balance});
         
       expect(
         await sbtV2['balanceOf(uint256)'](SECOND_PROFILE_ID),
@@ -118,13 +121,24 @@ makeSuiteCleanRoom('SBT upgrade ability', function () {
         this.sbtV2Impl,
       )) as NFTDerivativeProtocolTokenV2;
 
-        await sbtV2.connect(user).setSigner(userTwoAddress);
+      await sbtV2.connect(user).setSigner(userTwoAddress);
 
-        expect (
-          await sbtV2.connect(user).getSigner()
-        ).to.eq(userTwoAddress);
-        
-
+      expect (
+        await sbtV2.connect(user).getSigner()
+      ).to.eq(userTwoAddress);
+      
+      await sbtV2.connect(governance).setBankTreasury(
+          bankTreasuryContract.address, 
+          50000
+      );
+      let balance =  await sbtV2['balanceOf(uint256)'](FIRST_PROFILE_ID); 
+      console.log('\n\t ---- After upgrade and mint SBT, balance of treasury: ', balance);
+  
     });
+
   });
 });
+
+function waitForTx(arg0: Promise<import("ethers").ContractTransaction>) {
+  throw new Error('Function not implemented.');
+}

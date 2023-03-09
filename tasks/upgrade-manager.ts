@@ -8,11 +8,14 @@ import {
   NFTDerivativeProtocolTokenV1__factory,
   Manager__factory,
   Voucher__factory,
-  NFTDerivativeProtocolTokenV2,
+  InteractionLogic__factory,
+  ManagerV2__factory,
+  PublishLogic__factory,
+  TransparentUpgradeableProxy__factory,
 } from '../typechain';
 
-  // yarn hardhat --network local upgrade-sbt
-task('upgrade-sbt', 'upgrade sbt contract').setAction(async ({}, hre) => {
+  // yarn hardhat --network local upgrade-manager
+task('upgrade-manager', 'upgrade manager contract').setAction(async ({}, hre) => {
         // Note that the use of these signers is a placeholder and is not meant to be used in
         // production.
         const ethers = hre.ethers;
@@ -22,6 +25,7 @@ task('upgrade-sbt', 'upgrade sbt contract').setAction(async ({}, hre) => {
         const user = accounts[2];
         const userTwo = accounts[3];
         const userThree = accounts[4];
+        const admin = accounts[5];
 
         const managerImpl = await loadContract(hre, Manager__factory, "ManagerImpl");
         const manager = await loadContract(hre, Manager__factory, "Manager");
@@ -30,28 +34,27 @@ task('upgrade-sbt', 'upgrade sbt contract').setAction(async ({}, hre) => {
         const voucher = await loadContract(hre, Voucher__factory, "Voucher");
         const moduleGlobals = await loadContract(hre, ModuleGlobals__factory, "ModuleGlobals");
 
-        console.log('\n\t ---- version: ', await  sbt.version());
-
-        let balance = await sbt['balanceOf(uint256)'](1);
-        console.log('\n\t ----Before upgrade, balance of treasury: ', balance);
 
 
-        let sbtV2Impl = await hre.ethers.getContractFactory('NFTDerivativeProtocolTokenV2');
+        const interactionLogicAddress = "0xCf7Ed3AccA5a467e9e704C703E8D87F634fB0Fc9";
+        const publishLogicAddress = "0xDc64a140Aa3E981100a9becA4E685f962f0cF6C9";
+        let managerLibs = {
+          'contracts/libraries/InteractionLogic.sol:InteractionLogic': interactionLogicAddress,
+          'contracts/libraries/PublishLogic.sol:PublishLogic': publishLogicAddress,
+        };
         
-        const sbtV2 = (await hre.upgrades.upgradeProxy(
-          sbt.address,
-          sbtV2Impl,
-        )) as NFTDerivativeProtocolTokenV2;
-
-        await sbtV2.connect(governance).setBankTreasury(
-          bankTreasury.address, 
-          50000
-      );
+        const newImpl = await new ManagerV2__factory(managerLibs, deployer).deploy();
+        const proxyManager = TransparentUpgradeableProxy__factory.connect(
+          manager.address, 
+          admin
+        );
         
-        console.log('\n\t ---- version: ', await sbtV2.version());
-
-        balance = await sbtV2['balanceOf(uint256)'](1);
-        console.log('\n\t ---- After upgraded, balance of treasury: ', balance);
-  
-
+        await proxyManager.upgradeTo(
+          newImpl.address
+        );
+        const managerV2 = new ManagerV2__factory(managerLibs, deployer).attach(proxyManager.address);
+       
+        let valueToSet = 100;
+       
+        await managerV2.connect(user).setAdditionalValue(valueToSet);
 });

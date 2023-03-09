@@ -1162,14 +1162,6 @@ export class ConstructorCall__Inputs {
   constructor(call: ConstructorCall) {
     this._call = call;
   }
-
-  get _sbt(): Address {
-    return this._call.inputValues[0].value.toAddress();
-  }
-
-  get _treasury(): Address {
-    return this._call.inputValues[1].value.toAddress();
-  }
 }
 
 export class ConstructorCall__Outputs {
@@ -1295,12 +1287,20 @@ export class InitializeCall__Inputs {
     this._call = call;
   }
 
+  get _sbt(): Address {
+    return this._call.inputValues[0].value.toAddress();
+  }
+
+  get _treasury(): Address {
+    return this._call.inputValues[1].value.toAddress();
+  }
+
   get _name(): string {
-    return this._call.inputValues[0].value.toString();
+    return this._call.inputValues[2].value.toString();
   }
 
   get _symbol(): string {
-    return this._call.inputValues[1].value.toString();
+    return this._call.inputValues[3].value.toString();
   }
 }
 

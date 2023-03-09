@@ -69,31 +69,34 @@ contract VoucherV2 is
     address internal sbt;
     address internal treasury;
 
+    uint256 internal _additionalValue;
+
+
     modifier onlySBTUser(uint256 soulBoundTokenId_) {
         _validateCallerIsSoulBoundTokenOwner(soulBoundTokenId_);
         _;
     }
 
-    /// @custom:oz-upgrades-unsafe-allow constructor
-    constructor() {}  
-    /**
-     * Initializer
-     */
-    function initialize(
-        address _sbt,
-        address _treasury,
-        string memory _name, 
-        string memory _symbol
-    ) public initializer {
-        __ERC1155_init("");
-        __Ownable_init();
-        // __Pausable_init();
-        __Core_init();
-        sbt = _sbt;
-        treasury = _treasury;
-        name = _name;
-        symbol = _symbol;
-    }
+    // /// @custom:oz-upgrades-unsafe-allow constructor
+    // constructor() {}  
+    // /**
+    //  * Initializer
+    //  */
+    // function initialize(
+    //     address _sbt,
+    //     address _treasury,
+    //     string memory _name, 
+    //     string memory _symbol
+    // ) public initializer {
+    //     __ERC1155_init("");
+    //     __Ownable_init();
+    //     // __Pausable_init();
+    //     __Core_init();
+    //     sbt = _sbt;
+    //     treasury = _treasury;
+    //     name = _name;
+    //     symbol = _symbol;
+    // }
 
     /**
      * @dev See {IERC165-supportsInterface}.
@@ -523,5 +526,19 @@ contract VoucherV2 is
          }
 
          revert Errors.NotProfileOwner();
+    }
+
+    //V2
+
+    function setAdditionalValue(uint256 newValue) external {
+        _additionalValue = newValue;
+    }
+
+    function getAdditionalValue() external view returns (uint256) {
+        return _additionalValue;
+    }
+
+    function version() external pure  returns (uint256) {
+        return 2;
     }
 }

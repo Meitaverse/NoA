@@ -34,29 +34,22 @@ import {
   bankTreasuryContract,
   PublishRoyaltySBT,
   voucherContract,
-  marketPlaceContract
+  marketPlaceContract,
+  admin,
+  adminAddress
   
 } from '../__setup.spec';
 
 makeSuiteCleanRoom('deployment validation', () => {
 
-  it('Should fail to deploy a Manager implementation with zero address DerivativeNFT impl', async function () {
-    await expect(
-      new Manager__factory(managerLibs, deployer).deploy(ZERO_ADDRESS, receiverMock.address)
-    ).to.be.revertedWith(ERRORS.INIT_PARAMS_INVALID);
-  });
-
-  it('Should fail to deploy a Manager implementation with zero address receiver impl', async function () {
-    await expect(
-      new Manager__factory(managerLibs, deployer).deploy( derivativeNFTImpl.address, ZERO_ADDRESS)
-    ).to.be.revertedWith(ERRORS.INIT_PARAMS_INVALID);
-  });
 
 
 
   it('Deployer should not be able to initialize implementation due to address(this) check', async function () {
     await expect(
       managerImpl.initialize(
+        derivativeNFTImpl.address, 
+        ZERO_ADDRESS,
         governanceAddress
         )
     ).to.be.revertedWith(ERRORS.CANNOT_INIT_IMPL);
@@ -66,6 +59,8 @@ makeSuiteCleanRoom('deployment validation', () => {
     // Initialization happens in __setup.spec.ts
     await expect(
       manager.connect(user).initialize(
+        derivativeNFTImpl.address, 
+        ZERO_ADDRESS,
         userAddress, 
         )
       ).to.be.revertedWith(ERRORS.INITIALIZED);
@@ -74,22 +69,25 @@ makeSuiteCleanRoom('deployment validation', () => {
 
   it('Deployer should deploy a Manager implementation, a proxy, initialize it, and fail to initialize it again', async function () {
     const newImpl = await new Manager__factory(managerLibs, deployer).deploy(
-      derivativeNFTImpl.address,
-      receiverMock.address,
+      
     );
 
     let data = newImpl.interface.encodeFunctionData('initialize', [
+      derivativeNFTImpl.address,
+      receiverMock.address,
       governanceAddress,
     ]);
 
     const proxy = await new TransparentUpgradeableProxy__factory(deployer).deploy(
       newImpl.address,
-      deployerAddress,
+      adminAddress,
       data
     );
 
     await expect(
       Manager__factory.connect(proxy.address, user).initialize(
+        derivativeNFTImpl.address,
+        receiverMock.address,
         userAddress, 
         )
     ).to.be.revertedWith(ERRORS.INITIALIZED);
@@ -102,50 +100,24 @@ makeSuiteCleanRoom('deployment validation', () => {
   });
   
   it('Deployer should be able to call admin-only functions on proxy', async function () {
-    const proxy = TransparentUpgradeableProxy__factory.connect(manager.address, deployer);
-    const newImpl = await new Manager__factory(managerLibs, deployer).deploy(userAddress, userAddress);
+    const proxy = TransparentUpgradeableProxy__factory.connect(manager.address, admin);
+    const newImpl = await new Manager__factory(managerLibs, admin).deploy();
     await expect(proxy.upgradeTo(newImpl.address)).to.not.be.reverted;
   });
   
   it('Deployer should transfer admin to user, deployer should fail to call admin-only functions, user should call admin-only functions', async function () {
-    const proxy = TransparentUpgradeableProxy__factory.connect(manager.address, deployer);
+    const proxy = TransparentUpgradeableProxy__factory.connect(manager.address, admin);
     
     await expect(proxy.changeAdmin(userAddress)).to.not.be.reverted;
     
     await expect(proxy.upgradeTo(userAddress)).to.be.revertedWith(ERRORS.NO_SELECTOR);
     await expect(proxy.upgradeToAndCall(userAddress, [])).to.be.revertedWith(ERRORS.NO_SELECTOR);
     
-    const newImpl = await new Manager__factory(managerLibs, deployer).deploy(userAddress, userAddress);
+    const newImpl = await new Manager__factory(managerLibs, admin).deploy();
     
     await expect(proxy.connect(user).upgradeTo(newImpl.address)).to.not.be.reverted;
   });
   
-  /*
-  it('Should fail to deploy a fee collect module with zero address hub', async function () {
-    await expect(
-      new TimedFeeCollectModule__factory(deployer).deploy(ZERO_ADDRESS, moduleGlobals.address)
-    ).to.be.revertedWith(ERRORS.INIT_PARAMS_INVALID);
-  });
-
-  it('Should fail to deploy a fee collect module with zero address module globals', async function () {
-    await expect(
-      new TimedFeeCollectModule__factory(deployer).deploy(manager.address, ZERO_ADDRESS)
-    ).to.be.revertedWith(ERRORS.INIT_PARAMS_INVALID);
-  });
-
-  it('Should fail to deploy a fee follow module with zero address hub', async function () {
-    await expect(
-      new FeeFollowModule__factory(deployer).deploy(ZERO_ADDRESS, moduleGlobals.address)
-    ).to.be.revertedWith(ERRORS.INIT_PARAMS_INVALID);
-  });
-
-  it('Should fail to deploy a fee follow module with zero address module globals', async function () {
-    await expect(
-      new FeeFollowModule__factory(deployer).deploy(manager.address, ZERO_ADDRESS)
-    ).to.be.revertedWith(ERRORS.INIT_PARAMS_INVALID);
-  });
-  */
-
   it('Should fail to deploy module globals with zero address manager', async function () {
     await expect(
       new ModuleGlobals__factory(deployer).deploy(
@@ -284,8 +256,6 @@ makeSuiteCleanRoom('deployment validation', () => {
   it('Manager version is 1', async function () {
     expect(await manager.version()).to.eq(1);
   });
-
-  
 
 
 });

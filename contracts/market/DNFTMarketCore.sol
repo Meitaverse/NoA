@@ -34,19 +34,13 @@ abstract contract DNFTMarketCore is Initializable {
   uint16 internal constant BUY_REFERRER_FEE_DENOMINATOR = 100; //BASIS_POINTS / 100; // 1%
   
 
-  // IManager internal immutable manager;
-  IBankTreasury internal immutable treasury;
-  // INFTDerivativeProtocolTokenV1 internal immutable sbt;
+  IBankTreasury internal treasury;
 
+  /// @custom:oz-upgrades-unsafe-allow constructor
+  constructor() initializer {}
 
-  constructor(
-      // address manager_,
-      address treasury_
-      // address sbt_
-  ) {
-      // manager = IManager(manager_);
-      treasury = IBankTreasury(treasury_);
-      // sbt = INFTDerivativeProtocolTokenV1(sbt_);
+  function __dNFT_market_core_init(address treasury_) internal onlyInitializing{
+     treasury = IBankTreasury(treasury_);
   }
 
   function _getWallet(uint256 soulBoundTokenId) internal virtual returns(address);
