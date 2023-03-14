@@ -407,7 +407,7 @@ const MARKET_MAX_DURATION = 86400000; //1000 days in seconds
         );
         console.log('\t-- feeCollectModule: ', feeCollectModule.address);
         await exportAddress(hre, feeCollectModule, 'FeeCollectModule');
-
+          
         console.log('\n\t-- Deploying publishModule --');
         const publishModule = await deployContract(
             new PublishModule__factory(deployer).deploy(
@@ -418,7 +418,7 @@ const MARKET_MAX_DURATION = 86400000; //1000 days in seconds
         );
         console.log('\t-- publishModule: ', publishModule.address);
         await exportAddress(hre, publishModule, 'PublishModule');
-        
+       
         // Currency -ERC20
         console.log('\n\t-- Deploying Currency --');
         const currency = await deployContract(
@@ -434,14 +434,14 @@ const MARKET_MAX_DURATION = 86400000; //1000 days in seconds
             { nonce: deployerNonce++ }
         )
         
-         const royaltyRegistry = await new RoyaltyRegistry__factory(deployer).deploy({ nonce: deployerNonce++ });
+        const royaltyRegistry = await new RoyaltyRegistry__factory(deployer).deploy({ nonce: deployerNonce++ });
         
-         const voucherMarketImpl = await new VoucherMarket__factory(deployer).deploy(
+        const voucherMarketImpl = await new VoucherMarket__factory(deployer).deploy(
             bankTreasuryContract.address,
             fethImpl.address,
             royaltyRegistry.address,
             { nonce: deployerNonce++ }
-          );
+        );
         
           let voucherMarketData= voucherMarketImpl.interface.encodeFunctionData("initialize", [
             await governance.getAddress(),

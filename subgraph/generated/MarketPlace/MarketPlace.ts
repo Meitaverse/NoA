@@ -905,14 +905,6 @@ export class ConstructorCall__Inputs {
   constructor(call: ConstructorCall) {
     this._call = call;
   }
-
-  get treasury(): Address {
-    return this._call.inputValues[0].value.toAddress();
-  }
-
-  get duration(): BigInt {
-    return this._call.inputValues[1].value.toBigInt();
-  }
 }
 
 export class ConstructorCall__Outputs {
@@ -1310,6 +1302,14 @@ export class InitializeCall__Inputs {
 
   get admin(): Address {
     return this._call.inputValues[0].value.toAddress();
+  }
+
+  get duration(): BigInt {
+    return this._call.inputValues[1].value.toBigInt();
+  }
+
+  get treasury(): Address {
+    return this._call.inputValues[2].value.toAddress();
   }
 }
 

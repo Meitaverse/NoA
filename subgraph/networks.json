@@ -47,6 +47,14 @@
     "GovernorContract": {
       "address": "0x0DCd1Bf9A1b36cE34237eEaFef220932846BCD82",
       "startBlock": 1
+    },
+    "DerivativeNFT-3": {
+      "address": "0x8397F5193911320363fB256C8aC9aC232F94F4c5",
+      "startBlock": 1
+    },
+    "DerivativeNFT-4": {
+      "address": "0x057A8409A41FE90115d8552d0500F149e0445E54",
+      "startBlock": 1
     }
   }
 }
