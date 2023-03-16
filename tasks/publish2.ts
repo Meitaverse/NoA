@@ -96,25 +96,48 @@ task("publish2", "publish function")
       await bankTreasury.connect(userTwo).buySBT(PROFILE_ID, {value: 100000000});
     }
     console.log('\t--- balance of userTwo: ', (await sbt["balanceOf(uint256)"](PROFILE_ID)).toNumber());
+    
+    // console.log({
+    //   soulBoundTokenId: PROFILE_ID,
+    //   hubId: SECOND_HUB_ID,
+    //   projectId: projectid,
+    //   currency: sbt.address,
+    //   amount: "1",
+    //   salePrice: "1",
+    //   royaltyBasisPoints: "1",
+    //   name: "Dollar6", //MUST different!!!
+    //   description: "Hand draw6",
+    //   canCollect: true,
+    //   materialURIs: [],
+    //   fromTokenIds: [],  //Set empty for genesis.
+    //   collectModule: feeCollectModule.address,
+    //   collectModuleInitData: "0x000000000000000000000000000000000000000000000000000000000000000a00000000000000000000000000000000000000000000000000000000000000320000000000000000000000000000000000000000000000000000000000000000",
+    //   publishModule: publishModule.address,
+    //   publishModuleInitData: publishModuleinitData,
+    // });
+/*
 
+*/
     const receipt = await waitForTx(
       manager.connect(userTwo).prePublish({
-        soulBoundTokenId: PROFILE_ID,
-        hubId: SECOND_HUB_ID,
-        projectId: projectid,
-        currency: sbt.address,
+        soulBoundTokenId: 6,
+        hubId: 2,
+        projectId: "5",
+        currency: "0x82e01223d51eb87e16a03e24687edf0f294da6f1",
         amount: "1",
         salePrice: "1",
         royaltyBasisPoints: "1",
-        name: "Dollar6", //MUST different!!!
-        description: "Hand draw6",
+        name: "Dollar62231231",
+        description: "Hand draw62123123",
         canCollect: true,
         materialURIs: [],
-        fromTokenIds: [],  //Set empty for genesis.
-        collectModule: feeCollectModule.address,
-        collectModuleInitData: "0x000000000000000000000000000000000000000000000000000000000000000a00000000000000000000000000000000000000000000000000000000000000320000000000000000000000000000000000000000000000000000000000000000",
-        publishModule: publishModule.address,
-        publishModuleInitData: publishModuleinitData,
+        fromTokenIds: [],
+        collectModule: "0x1fa02b2d6a771842690194cf62d91bdd92bfe28d",
+        collectModuleInitData:
+          "0x000000000000000000000000000000000000000000000000000000000000000a00000000000000000000000000000000000000000000000000000000000000320000000000000000000000000000000000000000000000000000000000000000",
+        publishModule: "0xdbc43ba45381e02825b14322cddd15ec4b3164e6",
+        publishModuleInitData:
+          "0x0000000000000000000000008f86403a4de0bb5791fa46b8e795c547942fe4cf0000000000000000000000000000000000000000000000000000000000000001",
       })
     );
 
