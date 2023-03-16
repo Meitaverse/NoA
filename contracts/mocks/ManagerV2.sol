@@ -30,10 +30,6 @@ contract ManagerV2 is
         return _additionalValue;
     }
 
-    function version() public pure override returns(uint256) {
-        return 2;
-    }
-
     function getRevision() internal pure virtual override(Manager, VersionedInitializable) returns (uint256) {
         return 2;
     }
