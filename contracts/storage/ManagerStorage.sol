@@ -72,6 +72,10 @@ abstract contract ManagerStorage {
 
     address internal MODULE_GLOBALS;
     address internal _governance;
+    address internal _sbt;
+    address internal _voucher;
+    address internal _treasury;
+    address internal _market;
     address internal _timeLock; //TimeLock address
 
     uint256 internal _profileCounter;

@@ -7,8 +7,6 @@ pragma solidity ^0.8.0;
 import "@openzeppelin/contracts-upgradeable/token/ERC1155/ERC1155Upgradeable.sol";
 import "@manifoldxyz/libraries-solidity/contracts/access/AdminControlUpgradeable.sol";
 import "@solvprotocol/erc-3525/contracts/IERC3525.sol";
-import "@solvprotocol/erc-3525/contracts/ERC3525Upgradeable.sol";
-
 // import "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol";
 import "./creatorCore/ERC1155CreatorCore.sol";
 import './libraries/Constants.sol';

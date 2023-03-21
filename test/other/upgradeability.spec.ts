@@ -33,6 +33,7 @@ import {
   FIRST_HUB_ID,
   metadataDescriptor,
   FIRST_PROJECT_ID,
+  admin,
 } from '../__setup.spec';
 
 import { 
@@ -53,7 +54,7 @@ makeSuiteCleanRoom('Upgradeability', function () {
   // We're going to validate the first 23 slots and the 24rd slot before and after the change
   it("Should upgrade and set a new variable's value, previous storage is unchanged, new value is accurate", async function () {
     const newImpl = await new ManagerV2__factory(managerLibs, deployer).deploy();
-    const proxyManager = TransparentUpgradeableProxy__factory.connect(manager.address, deployer);
+    const proxyManager = TransparentUpgradeableProxy__factory.connect(manager.address, admin);
 
     // const data = newImpl.interface.encodeFunctionData('reInitialize', [
     //   derivativeNFTImpl.address,
@@ -64,6 +65,7 @@ makeSuiteCleanRoom('Upgradeability', function () {
     //   data
     // );
     await proxyManager.upgradeTo( newImpl.address );
+    
     const managerV2 = new ManagerV2__factory(managerLibs, deployer).attach(proxyManager.address);
 
     await expect(
@@ -76,7 +78,7 @@ makeSuiteCleanRoom('Upgradeability', function () {
 
   it("Should upgrade and old functions still work", async function () {
     const newImpl = await new ManagerV2__factory(managerLibs, deployer).deploy();
-    const proxyManager = TransparentUpgradeableProxy__factory.connect(manager.address, deployer);
+    const proxyManager = TransparentUpgradeableProxy__factory.connect(manager.address, admin);
     
     await proxyManager.upgradeTo(
       newImpl.address, 

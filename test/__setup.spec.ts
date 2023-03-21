@@ -504,7 +504,22 @@ before(async function () {
   expect((await moduleGlobals.getSBT()).toUpperCase()).to.eq(sbtContract.address.toUpperCase());
 
 
-  //manager set moduleGlobals
+  //manager set sbt, voucher, treasury, market, moduleGlobals
+
+
+  await manager.connect(governance).setSBT(sbtContract.address);
+  console.log('manager setSBT ok ');
+
+  await manager.connect(governance).setVoucher(voucherContract.address);
+  console.log('manager setVoucher ok ');
+
+  await manager.connect(governance).setTreasury(bankTreasuryContract.address);
+  console.log('manager setTreasury ok ');
+
+  await manager.connect(governance).setMarket(marketPlaceContract.address);
+  console.log('manager setMarket ok ');
+
+  //notice setGlobalModules MUST call lastest!!!
   await manager.connect(governance).setGlobalModules(moduleGlobals.address);
   console.log('manager setGlobalModules ok ');
 
@@ -523,7 +538,6 @@ before(async function () {
   )).to.not.be.reverted;
   console.log('sbtContract setBankTreasury ok ');
   
-  // const transferValueRole = await sbtContract.TRANSFER_VALUE_ROLE();
 
   await expect(
     sbtContract.connect(governance).grantTransferRole(manager.address)
@@ -602,7 +616,7 @@ before(async function () {
 
   expect((await manager.connect(governance).version()).toNumber()).to.eq(1);
 
-  expect(await manager.connect(governance).getWalletBySoulBoundTokenId(FIRST_PROFILE_ID)).to.eq(bankTreasuryContract.address);
+  expect(await manager.getWalletBySoulBoundTokenId(FIRST_PROFILE_ID)).to.eq(bankTreasuryContract.address);
 
   expect((await sbtContract.connect(governance).version()).toNumber()).to.eq(1);
   console.log('sbtContract getManager ok ');

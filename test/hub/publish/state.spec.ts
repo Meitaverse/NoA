@@ -33,6 +33,7 @@ import {
   feeCollectModule,
   template,
   bankTreasuryContract,
+  admin,
   
 } from '../../__setup.spec';
 import { DerivativeNFT, DerivativeNFT__factory } from '../../../typechain';
@@ -768,25 +769,25 @@ makeSuiteCleanRoom('Multi state', function () {
     
     context('Negatives setEmergencyAdmin', function () {
         it('User should fail to set the emergency admin', async function () {
-            await expect(manager.setEmergencyAdmin(userAddress)).to.be.revertedWith(
-            ERRORS.NOT_GOVERNANCE
+            await expect(manager.connect(user).setEmergencyAdmin(userAddress)).to.be.revertedWith(
+              ERRORS.NOT_GOVERNANCE
             );
         });
 
         it('Governance should set user as emergency admin, user should fail to set protocol state to Unpaused', async function () {
             await expect(manager.connect(governance).setEmergencyAdmin(userAddress)).to.not.be.reverted;
-            await expect(manager.setState(ProtocolState.Unpaused)).to.be.revertedWith(
+            await expect(manager.connect(user).setState(ProtocolState.Unpaused)).to.be.revertedWith(
               ERRORS.EMERGENCY_ADMIN_CANNOT_UNPAUSE
             );
         });
 
         it('Governance should set user as emergency admin, user should fail to set protocol state to PublishingPaused or Paused from Paused', async function () {
             await expect(manager.connect(governance).setEmergencyAdmin(userAddress)).to.not.be.reverted;
-            await expect(manager.connect(governance).setState(ProtocolState.Paused)).to.not.be.reverted;
-            await expect(manager.setState(ProtocolState.PublishingPaused)).to.be.revertedWith(
+            await expect(manager.connect(user).setState(ProtocolState.Paused)).to.not.be.reverted;
+            await expect(manager.connect(user).setState(ProtocolState.PublishingPaused)).to.be.revertedWith(
               ERRORS.PAUSED
             );
-            await expect(manager.setState(ProtocolState.Paused)).to.be.revertedWith(ERRORS.PAUSED);
+            await expect(manager.connect(user).setState(ProtocolState.Paused)).to.be.revertedWith(ERRORS.PAUSED);
           });
     });
     
@@ -794,9 +795,9 @@ makeSuiteCleanRoom('Multi state', function () {
         it('Governance should set user as emergency admin, user sets protocol state but fails to set emergency admin, governance sets emergency admin to the zero address, user fails to set protocol state', async function () {
             await expect(manager.connect(governance).setEmergencyAdmin(userAddress)).to.not.be.reverted;
     
-            await expect(manager.setState(ProtocolState.PublishingPaused)).to.not.be.reverted;
-            await expect(manager.setState(ProtocolState.Paused)).to.not.be.reverted;
-            await expect(manager.setEmergencyAdmin(ZERO_ADDRESS)).to.be.revertedWith(
+            await expect(manager.connect(governance).setState(ProtocolState.PublishingPaused)).to.not.be.reverted;
+            await expect(manager.connect(governance).setState(ProtocolState.Paused)).to.not.be.reverted;
+            await expect(manager.connect(user).setEmergencyAdmin(ZERO_ADDRESS)).to.be.revertedWith(
               ERRORS.NOT_GOVERNANCE
             );
     
@@ -804,13 +805,13 @@ makeSuiteCleanRoom('Multi state', function () {
               manager.connect(governance).setEmergencyAdmin(ZERO_ADDRESS)
             ).to.not.be.reverted;
     
-            await expect(manager.setState(ProtocolState.Paused)).to.be.revertedWith(
+            await expect(manager.connect(user).setState(ProtocolState.Paused)).to.be.revertedWith(
               ERRORS.NOT_GOVERNANCE_OR_EMERGENCY_ADMIN
             );
-            await expect(manager.setState(ProtocolState.PublishingPaused)).to.be.revertedWith(
+            await expect(manager.connect(user).setState(ProtocolState.PublishingPaused)).to.be.revertedWith(
               ERRORS.NOT_GOVERNANCE_OR_EMERGENCY_ADMIN
             );
-            await expect(manager.setState(ProtocolState.Unpaused)).to.be.revertedWith(
+            await expect(manager.connect(user).setState(ProtocolState.Unpaused)).to.be.revertedWith(
               ERRORS.NOT_GOVERNANCE_OR_EMERGENCY_ADMIN
             );
           });
@@ -834,9 +835,9 @@ makeSuiteCleanRoom('Multi state', function () {
           it('Governance should set user as emergency admin, user should set protocol state to PublishingPaused, then Paused, then fail to set it to PublishingPaused', async function () {
             await expect(manager.connect(governance).setEmergencyAdmin(userAddress)).to.not.be.reverted;
     
-            await expect(manager.setState(ProtocolState.PublishingPaused)).to.not.be.reverted;
-            await expect(manager.setState(ProtocolState.Paused)).to.not.be.reverted;
-            await expect(manager.setState(ProtocolState.PublishingPaused)).to.be.revertedWith(
+            await expect(manager.connect(governance).setState(ProtocolState.PublishingPaused)).to.not.be.reverted;
+            await expect(manager.connect(governance).setState(ProtocolState.Paused)).to.not.be.reverted;
+            await expect(manager.connect(user).setState(ProtocolState.PublishingPaused)).to.be.revertedWith(
               ERRORS.PAUSED
             );
           });
@@ -844,8 +845,8 @@ makeSuiteCleanRoom('Multi state', function () {
           it('Governance should set user as emergency admin, user should set protocol state to PublishingPaused, then set it to PublishingPaused again without reverting', async function () {
             await expect(manager.connect(governance).setEmergencyAdmin(userAddress)).to.not.be.reverted;
     
-            await expect(manager.setState(ProtocolState.PublishingPaused)).to.not.be.reverted;
-            await expect(manager.setState(ProtocolState.PublishingPaused)).to.not.be.reverted;
+            await expect(manager.connect(governance).setState(ProtocolState.PublishingPaused)).to.not.be.reverted;
+            await expect(manager.connect(governance).setState(ProtocolState.PublishingPaused)).to.not.be.reverted;
           });
     });
 

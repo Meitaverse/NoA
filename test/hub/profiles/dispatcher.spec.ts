@@ -31,7 +31,9 @@ import {
   FIRST_PUBLISH_ID,
   THIRD_PROFILE_ID,
   testWallet,
-  bankTreasuryContract
+  bankTreasuryContract,
+  admin,
+  governance
 } from '../../__setup.spec';
 
 const Default_royaltyBasisPoints = 50; //
@@ -91,7 +93,7 @@ makeSuiteCleanRoom('Dispatcher Functionality', function () {
     context('Scenarios', function () {
       it('User should set user two as a dispatcher on their profile, user two should createHub, createProject, prePublish, publish and airdrop', async function () {
         
-        await manager.setDispatcher(SECOND_PROFILE_ID, userTwoAddress);
+        await manager.connect(user).setDispatcher(SECOND_PROFILE_ID, userTwoAddress);
       
         await 
           manager.connect(userTwo).createHub({
@@ -223,7 +225,7 @@ makeSuiteCleanRoom('Dispatcher Functionality', function () {
         );
 
         await expect(
-          manager.setDispatcherWithSig({
+          manager.connect(governance).setDispatcherWithSig({
             soulBoundTokenId: SECOND_PROFILE_ID,
             dispatcher: userTwoAddress,
             sig: {
@@ -246,7 +248,7 @@ makeSuiteCleanRoom('Dispatcher Functionality', function () {
         );
 
         await expect(
-          manager.setDispatcherWithSig({
+          manager.connect(governance).setDispatcherWithSig({
             soulBoundTokenId: SECOND_PROFILE_ID,
             dispatcher: userTwoAddress,
             sig: {
@@ -270,7 +272,7 @@ makeSuiteCleanRoom('Dispatcher Functionality', function () {
         );
 
         await expect(
-          manager.setDispatcherWithSig({
+          manager.connect(governance).setDispatcherWithSig({
             soulBoundTokenId: SECOND_PROFILE_ID,
             dispatcher: userTwoAddress,
             sig: {
@@ -297,7 +299,7 @@ makeSuiteCleanRoom('Dispatcher Functionality', function () {
         );
 
         await expect(
-          manager.setDispatcherWithSig({
+          manager.connect(governance).setDispatcherWithSig({
             soulBoundTokenId: SECOND_PROFILE_ID,
             dispatcher: userTwoAddress,
             sig: {

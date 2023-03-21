@@ -97,7 +97,7 @@ task("publish", "publish function")
         soulBoundTokenId: SECOND_PROFILE_ID,
         hubId: FIRST_HUB_ID,
         projectId: projectid,
-        currency: sbt.address,
+        currency: sbt.address, //SOUL / WETH
         amount: 11,
         salePrice: DEFAULT_COLLECT_PRICE,
         royaltyBasisPoints: GENESIS_FEE_BPS,

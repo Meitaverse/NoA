@@ -478,6 +478,23 @@ const MARKET_MAX_DURATION = 86400000; //1000 days in seconds
             manager.connect(governance).setGlobalModules(moduleGlobals.address)
         );
   
+        await waitForTx(
+            manager.connect(governance).setSBT(sbtContract.address)
+        );
+      
+        await waitForTx(
+            manager.connect(governance).setVoucher(voucherContract.address)
+        );
+
+        await waitForTx(
+            manager.connect(governance).setTreasury(bankTreasuryContract.address)
+        );
+      
+        await waitForTx(
+            manager.connect(governance).setMarket(marketPlaceContract.address)
+        );
+      
+        
         console.log('\n\t-- sbtContract set bankTreasuryContract address and INITIAL SUPPLY --');
         await waitForTx(sbtContract.connect(governance).setBankTreasury(
             bankTreasuryContract.address, 

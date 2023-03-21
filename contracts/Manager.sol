@@ -22,7 +22,6 @@ import "./libraries/SafeMathUpgradeable128.sol";
 import {IBankTreasury} from "./interfaces/IBankTreasury.sol";
 import {VersionedInitializable} from './upgradeability/VersionedInitializable.sol';
 import {IModuleGlobals} from "./interfaces/IModuleGlobals.sol";
-// import "hardhat/console.sol";
 
 contract Manager is 
     ReentrancyGuard,
@@ -85,8 +84,6 @@ contract Manager is
         nonReentrant
         returns (uint256) 
     {
-        address _sbt = IModuleGlobals(MODULE_GLOBALS).getSBT();
-        address _voucher = IModuleGlobals(MODULE_GLOBALS).getVoucher();
         if (!IModuleGlobals(MODULE_GLOBALS).isWhitelistProfileCreator(vars.wallet)) 
            revert Errors.ProfileCreatorNotWhitelisted();
         if (_sbt == address(0)) revert Errors.SBTNotSet();
@@ -180,15 +177,14 @@ contract Manager is
         uint256 projectId = _generateNextProjectId();
         _projectNameHashByEventId[keccak256(bytes(project.name))] = projectId;
 
-        address _sbt = IModuleGlobals(MODULE_GLOBALS).getSBT();
         address creator = IERC3525(_sbt).ownerOf(project.soulBoundTokenId);
 
         address derivativeNFT = InteractionLogic.createProject(
             creator,
             _DNFT_IMPL,
-            IModuleGlobals(MODULE_GLOBALS).getSBT(),
-            IModuleGlobals(MODULE_GLOBALS).getTreasury(),
-            IModuleGlobals(MODULE_GLOBALS).getMarketPlace(),
+            _sbt,
+            _treasury,
+            _market,
             projectId,
             project,
             _RECEIVER,
@@ -196,7 +192,6 @@ contract Manager is
             _projectInfoByProjectId
         );
 
-        // store derivativeNFT map to projectId
         _projectIdToderivativeNFT[derivativeNFT] = projectId;
 
         return projectId;
@@ -449,8 +444,8 @@ contract Manager is
               _projectDataByPublishId[collectData.publishId].tokenId,
               newTokenId,
               _derivativeNFTByProjectId[_projectDataByPublishId[collectData.publishId].publication.projectId],
-              IModuleGlobals(MODULE_GLOBALS).getSBT(),
-              IModuleGlobals(MODULE_GLOBALS).getTreasury()
+              _sbt,
+              _treasury
             ),
             _pubByIdByProfile,
             _projectDataByPublishId
@@ -618,6 +613,23 @@ contract Manager is
         _setGovernance(newGovernance);
     }
 
+    function setSBT(address sbt) external nonReentrant onlyGov {
+        _sbt = sbt;
+    }
+
+    function setVoucher(address voucher) external nonReentrant onlyGov {
+        _voucher = voucher;
+    }
+
+    function setTreasury(address treasury) external nonReentrant onlyGov {
+         _soulBoundTokenIdToWallet[1] = treasury; 
+        _treasury = treasury;
+    }
+
+    function setMarket(address market) external nonReentrant onlyGov {
+        _market = market;
+    }
+
     function setTimeLock(address timeLock) external nonReentrant onlyGov {
         _timeLock = timeLock;
     }
@@ -633,7 +645,6 @@ contract Manager is
     function setGlobalModules(address moduleGlobals) external nonReentrant onlyGov {
         if (moduleGlobals == address(0)) revert Errors.InitParamsInvalid();
         MODULE_GLOBALS = moduleGlobals;
-        _soulBoundTokenIdToWallet[1] = IModuleGlobals(MODULE_GLOBALS).getTreasury();
         emit Events.GlobalModulesSet(moduleGlobals);  
     }
 
@@ -655,7 +666,6 @@ contract Manager is
         nonReentrant
         whenNotPaused
     {
-        address _sbt = IModuleGlobals(MODULE_GLOBALS).getSBT();
         address owner = IERC3525(_sbt).ownerOf(vars.soulBoundTokenId);
         unchecked {
             _validateRecoveredAddress(
@@ -680,7 +690,6 @@ contract Manager is
     //--- internal  ---//
 
     function  _validateCallerIsSoulBoundTokenOwnerOrDispathcher(uint256 soulBoundTokenId_) internal view {
-         address _sbt = IModuleGlobals(MODULE_GLOBALS).getSBT();
          if (IERC3525(_sbt).ownerOf(soulBoundTokenId_) == msg.sender || _dispatcherByProfile[soulBoundTokenId_] == msg.sender) {
             return;
          }
@@ -692,7 +701,6 @@ contract Manager is
     }
     
     function _validateCallerIsSoulBoundTokenOwner(uint256 soulBoundTokenId_) internal view {
-        address _sbt = IModuleGlobals(MODULE_GLOBALS).getSBT();
         if (IERC3525(_sbt).ownerOf(soulBoundTokenId_) != msg.sender) revert Errors.NotProfileOwner();
     }
     
@@ -707,6 +715,7 @@ contract Manager is
 
         emit Events.ManagerGovernanceSet(msg.sender, prevGovernance, newGovernance, block.timestamp);
     }
+
 
     function _generateNextHubId() internal returns (uint256) {
         _nextHubId.increment();
@@ -790,6 +799,4 @@ contract Manager is
         if (byteNickName.length == 0 || byteNickName.length > MAX_NICKNAME_LENGTH)
             revert Errors.NickNameLengthInvalid();
     }
-
-
 }
