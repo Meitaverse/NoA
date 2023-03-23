@@ -1310,6 +1310,15 @@ export class Hub extends Entity {
     this.set("projects", Value.fromStringArray(value));
   }
 
+  get projectCount(): i32 {
+    let value = this.get("projectCount");
+    return value!.toI32();
+  }
+
+  set projectCount(value: i32) {
+    this.set("projectCount", Value.fromI32(value));
+  }
+
   get name(): string {
     let value = this.get("name");
     return value!.toString();
@@ -1745,6 +1754,23 @@ export class Project extends Entity {
     this.set("defaultRoyaltyBPS", Value.fromI32(value));
   }
 
+  get transactionHash(): Bytes | null {
+    let value = this.get("transactionHash");
+    if (!value || value.kind == ValueKind.NULL) {
+      return null;
+    } else {
+      return value.toBytes();
+    }
+  }
+
+  set transactionHash(value: Bytes | null) {
+    if (!value) {
+      this.unset("transactionHash");
+    } else {
+      this.set("transactionHash", Value.fromBytes(<Bytes>value));
+    }
+  }
+
   get permitByHubOwner(): boolean {
     let value = this.get("permitByHubOwner");
     return value!.toBoolean();
@@ -1788,6 +1814,56 @@ export class Project extends Entity {
 
   set timestamp(value: BigInt) {
     this.set("timestamp", Value.fromBigInt(value));
+  }
+}
+
+export class QueryProject extends Entity {
+  constructor(id: string) {
+    super();
+    this.set("id", Value.fromString(id));
+  }
+
+  save(): void {
+    let id = this.get("id");
+    assert(id != null, "Cannot save QueryProject entity without an ID");
+    if (id) {
+      assert(
+        id.kind == ValueKind.STRING,
+        `Entities of type QueryProject must have an ID of type String but the id '${id.displayData()}' is of type ${id.displayKind()}`
+      );
+      store.set("QueryProject", id.toString(), this);
+    }
+  }
+
+  static load(id: string): QueryProject | null {
+    return changetype<QueryProject | null>(store.get("QueryProject", id));
+  }
+
+  get id(): string {
+    let value = this.get("id");
+    return value!.toString();
+  }
+
+  set id(value: string) {
+    this.set("id", Value.fromString(value));
+  }
+
+  get projects(): Array<string> {
+    let value = this.get("projects");
+    return value!.toStringArray();
+  }
+
+  set projects(value: Array<string>) {
+    this.set("projects", Value.fromStringArray(value));
+  }
+
+  get projectsCount(): i32 {
+    let value = this.get("projectsCount");
+    return value!.toI32();
+  }
+
+  set projectsCount(value: i32) {
+    this.set("projectsCount", Value.fromI32(value));
   }
 }
 

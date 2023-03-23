@@ -24,7 +24,6 @@ import {SafeERC20} from '@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol
  *
  * @param genesisSoulBoundTokenId The genesis SoulBoundTokenId with this publication.
  * @param previousSoulBoundTokenId The previous SoulBoundTokenId with this publication.
- * @param tokenId The tokenId with this publication.
  * @param currencycurrency The currency
  * @param amount The total supply with this publication.
  * @param salePrice The collecting cost associated with this publication.
@@ -36,7 +35,7 @@ import {SafeERC20} from '@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol
 struct ProfilePublicationData {
     uint256 genesisSoulBoundTokenId;      
     uint256 previousSoulBoundTokenId;     
-    uint256 tokenId;                       
+    // uint256 tokenId;                       
     address currency;                        
     uint256 amount;                        
     uint256 salePrice;                     
@@ -44,6 +43,7 @@ struct ProfilePublicationData {
     uint16 collectLimitPerAddress;
     uint16 genesisFee;                     
     uint16 previousFee;              
+    uint32 utcTimestampStartAt;              
 }
 
 /**
@@ -77,15 +77,15 @@ contract FeeCollectModule is ReentrancyGuard, FeeModuleBase, ModuleBase, ICollec
 
     function initializePublicationCollectModule(
         uint256 publishId,
-        uint256 tokenId,
+        // uint256 tokenId,
         address currency,
         uint256 amount,
         bytes calldata data 
     ) external override nonReentrant onlyManager {
-        (uint256 salePrice, uint16 royaltyBasisPoints, uint16 collectLimitPerAddress) = abi.decode
+        (uint256 salePrice, uint16 royaltyBasisPoints, uint16 collectLimitPerAddress, uint32 utcTimestampStartAt) = abi.decode
         (
             data,
-            (uint256, uint16, uint16)
+            (uint256, uint16, uint16, uint32)
         );
 
         if ( !_currencyWhitelisted(currency))
@@ -108,7 +108,7 @@ contract FeeCollectModule is ReentrancyGuard, FeeModuleBase, ModuleBase, ICollec
             ) = IManager(MANAGER).getGenesisAndPreviousInfo(publishId);
 
              //Save 
-            _dataByPublicationByProfile[publishId].tokenId = tokenId;
+            // _dataByPublicationByProfile[publishId].tokenId = tokenId;
             _dataByPublicationByProfile[publishId].currency = currency;
             _dataByPublicationByProfile[publishId].amount = amount;
             _dataByPublicationByProfile[publishId].salePrice = salePrice;
@@ -118,6 +118,7 @@ contract FeeCollectModule is ReentrancyGuard, FeeModuleBase, ModuleBase, ICollec
             _dataByPublicationByProfile[publishId].previousSoulBoundTokenId = previousSoulBoundTokenId;
             _dataByPublicationByProfile[publishId].genesisFee = genesisFee;
             _dataByPublicationByProfile[publishId].previousFee = previousRoyaltyBasisPoints;
+            _dataByPublicationByProfile[publishId].utcTimestampStartAt = utcTimestampStartAt;
         }
     }
 
@@ -200,7 +201,14 @@ contract FeeCollectModule is ReentrancyGuard, FeeModuleBase, ModuleBase, ICollec
         }
 
         //TODO
+
         {
+            // check utcTimestampStartAt
+            if (_dataByPublicationByProfile[publishId].utcTimestampStartAt > block.timestamp) {
+                revert Errors.CollectNotStartYet();
+            }
+
+            //check collect limit
             if (_dataByPublicationByProfile[publishId].collectLimitPerAddress > 0 && 
                 uints > _dataByPublicationByProfile[publishId].collectLimitPerAddress) {
                 revert Errors.CollectPerAddrLimitExceeded();
@@ -265,11 +273,9 @@ contract FeeCollectModule is ReentrancyGuard, FeeModuleBase, ModuleBase, ICollec
         uint16 collectLimitPerAddress
     ) external onlyManager {
         
-        if (_dataByPublicationByProfile[publishId].tokenId > 0) {
+        _dataByPublicationByProfile[publishId].collectLimitPerAddress = collectLimitPerAddress;
 
-            _dataByPublicationByProfile[publishId].collectLimitPerAddress = collectLimitPerAddress;
-
-        }
+        
 
     }
     

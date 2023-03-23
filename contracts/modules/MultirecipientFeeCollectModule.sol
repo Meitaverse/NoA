@@ -76,7 +76,7 @@ contract MultirecipientFeeCollectModule is BaseFeeCollectModule {
      */
     function initializePublicationCollectModule(
         uint256 publishId,
-        uint256 tokenId,
+        // uint256 tokenId,
         address currency,
         uint256 amount,
         bytes calldata data        
@@ -86,7 +86,7 @@ contract MultirecipientFeeCollectModule is BaseFeeCollectModule {
             (MultirecipientFeeCollectModuleInitData)
         );
 
-        tokenId;
+        // tokenId;
 
         BaseFeeCollectModuleInitData memory baseInitData = BaseFeeCollectModuleInitData({
             // ownershipSoulBoundTokenId: ownershipSoulBoundTokenId,

@@ -235,4 +235,5 @@ library Errors {
   error SBT_No_Funds_To_Withdraw();
   error Market_DNFT_Is_Not_Open(address dnft);
   error DerivativeNFTIsInMarket();
+  error CollectNotStartYet();
 }

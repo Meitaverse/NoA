@@ -96,9 +96,18 @@ makeSuiteCleanRoom('Publishing', function () {
                 [template.address, DEFAULT_TEMPLATE_NUMBER],
             );
 
+            const collectLimitPerAddress = 0; // 0 表示不限制每个地址能collect的次数
+            
+    
+            const utcTimestamp = 0
+            
+        
+            
+            
+        
             const collectModuleInitData = abiCoder.encode(
-                ['uint256', 'uint16', 'uint16'],
-                [DEFAULT_COLLECT_PRICE, Default_royaltyBasisPoints, 0]
+                ['uint256', 'uint16', 'uint16', 'uint32'],
+                [DEFAULT_COLLECT_PRICE, Default_royaltyBasisPoints, collectLimitPerAddress, utcTimestamp]
             );
 
             //mint 100Value to user
@@ -144,11 +153,19 @@ makeSuiteCleanRoom('Publishing', function () {
                 [template.address, DEFAULT_TEMPLATE_NUMBER],
             );
 
-            const collectModuleInitData = abiCoder.encode(
-                ['uint256', 'uint16', 'uint16'],
-                [DEFAULT_COLLECT_PRICE, Default_royaltyBasisPoints, 0]
-            );
+            const collectLimitPerAddress = 0; // 0 表示不限制每个地址能collect的次数
+            
 
+            const utcTimestamp = 0
+            
+        
+            
+            
+        
+            const collectModuleInitData = abiCoder.encode(
+                ['uint256', 'uint16', 'uint16', 'uint32'],
+                [DEFAULT_COLLECT_PRICE, Default_royaltyBasisPoints, collectLimitPerAddress, utcTimestamp]
+            );
             //mint 100Value to user
             await bankTreasuryContract.connect(user).buySBT(SECOND_PROFILE_ID, {value: 100});
             
@@ -185,9 +202,18 @@ makeSuiteCleanRoom('Publishing', function () {
                 [template.address, DEFAULT_TEMPLATE_NUMBER],
             );
 
+            const collectLimitPerAddress = 0; // 0 表示不限制每个地址能collect的次数
+            
+    
+            const utcTimestamp = 0
+            
+        
+            
+            
+        
             const collectModuleInitData = abiCoder.encode(
-                ['uint256', 'uint16', 'uint16'],
-                [DEFAULT_COLLECT_PRICE, Default_royaltyBasisPoints, 0]
+                ['uint256', 'uint16', 'uint16', 'uint32'],
+                [DEFAULT_COLLECT_PRICE, Default_royaltyBasisPoints, collectLimitPerAddress, utcTimestamp]
             );
                 
             //mint 100Value to user
@@ -244,9 +270,18 @@ makeSuiteCleanRoom('Publishing', function () {
                 [template.address, DEFAULT_TEMPLATE_NUMBER],
             );
 
+            const collectLimitPerAddress = 0; // 0 表示不限制每个地址能collect的次数
+            
+    
+            const utcTimestamp = 0
+            
+        
+            
+            
+        
             const collectModuleInitData = abiCoder.encode(
-                ['uint256', 'uint16', 'uint16'],
-                [DEFAULT_COLLECT_PRICE, Default_royaltyBasisPoints, 0]
+                ['uint256', 'uint16', 'uint16', 'uint32'],
+                [DEFAULT_COLLECT_PRICE, Default_royaltyBasisPoints, collectLimitPerAddress, utcTimestamp]
             );
             
             //mint 100Value to user
@@ -282,6 +317,8 @@ makeSuiteCleanRoom('Publishing', function () {
            
             expect(await moduleGlobals.isWhitelistTemplate(template.address)).to.eq(false);
         });
+        
+       
 
     });
 });

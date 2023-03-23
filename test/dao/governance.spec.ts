@@ -46,8 +46,6 @@ makeSuiteCleanRoom('Bank Treasury', function () {
              }) 
         ).to.eq(THIRD_PROFILE_ID);
 
-  
-
         expect(await manager.getWalletBySoulBoundTokenId(SECOND_PROFILE_ID)).to.eq(userAddress);
         expect(await manager.getWalletBySoulBoundTokenId(THIRD_PROFILE_ID)).to.eq(userTwoAddress);
     });

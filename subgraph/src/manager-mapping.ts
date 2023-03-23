@@ -322,6 +322,7 @@ export function handleDerivativeNFTDeployed(event: DerivativeNFTDeployed): void 
         project.image = result.value.image
         project.metadataURI = result.value.metadataURI
         project.descriptor = result.value.descriptor
+        project.transactionHash = event.transaction.hash;
         project.defaultRoyaltyBPS = result.value.defaultRoyaltyPoints
         project.permitByHubOwner = result.value.permitByHubOwner
         project.derivativeNFT = loadOrCreateDNFTContract(event.params.derivativeNFT).id;

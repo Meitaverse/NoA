@@ -17,6 +17,14 @@ import {
   waitForTx 
 } from '../../helpers/utils';
 
+import {
+  moveTime,
+} from '../../../utils/move-time';
+
+import {
+  moveBlocks,
+} from '../../../utils/move-blocks';
+
 
 import {
   abiCoder,
@@ -58,6 +66,7 @@ import {
   createHubReturningHubId,
   createProjectReturningProjectId,
 } from '../../helpers/utils';
+import { MIN_DELAY, VOTING_PERIOD } from '../../../helper-hardhat-config';
 
 let derivativeNFT: DerivativeNFT;
 
@@ -145,10 +154,13 @@ makeSuiteCleanRoom('Fee Collect Module', function () {
           [template.address, DEFAULT_TEMPLATE_NUMBER],
         );
 
+        const collectLimitPerAddress = 0; // 0 表示不限制每个地址能collect的次数
+        const utcTimestamp = 0
+        
         const collectModuleInitData = abiCoder.encode(
-          ['uint256', 'uint16', 'uint16'],
-          [DEFAULT_COLLECT_PRICE, Default_royaltyBasisPoints, 0]
-      );
+            ['uint256', 'uint16', 'uint16', 'uint32'],
+            [DEFAULT_COLLECT_PRICE, Default_royaltyBasisPoints, collectLimitPerAddress, utcTimestamp]
+        );
 
         await expect(
           manager.connect(user).prePublish({
@@ -184,10 +196,13 @@ makeSuiteCleanRoom('Fee Collect Module', function () {
           [template.address, DEFAULT_TEMPLATE_NUMBER],
         );
 
+        const collectLimitPerAddress = 0; // 0 表示不限制每个地址能collect的次数
+        const utcTimestamp = 0
+        
         const collectModuleInitData = abiCoder.encode(
-          ['uint256', 'uint16', 'uint16'],
-          [DEFAULT_COLLECT_PRICE, Default_royaltyBasisPoints, 0]
-      );
+            ['uint256', 'uint16', 'uint16', 'uint32'],
+            [DEFAULT_COLLECT_PRICE, Default_royaltyBasisPoints, collectLimitPerAddress, utcTimestamp]
+        );
 
         await expect(
           manager.connect(user).prePublish({
@@ -210,11 +225,12 @@ makeSuiteCleanRoom('Fee Collect Module', function () {
           })
         ).to.be.revertedWith(ERRORS.INVALID_PARAMETER);
         
-      });      
+      });  
 
+      
     });
 
-    context('Collecting', function () {
+    context('Collect UTC start time', function () {
       beforeEach(async function () {
 
         const publishModuleinitData = abiCoder.encode(
@@ -222,10 +238,100 @@ makeSuiteCleanRoom('Fee Collect Module', function () {
           [template.address, DEFAULT_TEMPLATE_NUMBER],
         );
 
+        const collectLimitPerAddress = 0; // 0 表示不限制每个地址能collect的次数
+        const date = new Date(); // 创建一个 Date 对象
+        const utcTimestamp = Math.floor(date.getTime() / 1000 + MIN_DELAY); // 获取 UTC 时间戳（单位为秒）
+    
         const collectModuleInitData = abiCoder.encode(
-          ['uint256', 'uint16', 'uint16'],
-          [DEFAULT_COLLECT_PRICE, Default_royaltyBasisPoints, 0]
-      );
+            ['uint256', 'uint16', 'uint16', 'uint32'],
+            [DEFAULT_COLLECT_PRICE, Default_royaltyBasisPoints, collectLimitPerAddress, utcTimestamp]
+        );
+
+        await expect(
+            manager.connect(user).prePublish({
+              soulBoundTokenId: SECOND_PROFILE_ID,
+              hubId: FIRST_HUB_ID,
+              projectId: FIRST_PROJECT_ID,
+              currency: sbtContract.address,
+              amount: 1,
+              salePrice: DEFAULT_COLLECT_PRICE,
+              royaltyBasisPoints: GENESIS_FEE_BPS,              
+              name: "Dollar",
+              description: "Hand draw",
+              canCollect: true,
+              materialURIs: [],
+              fromTokenIds: [],
+              collectModule: feeCollectModule.address,
+              collectModuleInitData: collectModuleInitData,
+              publishModule: publishModule.address,
+              publishModuleInitData: publishModuleinitData,
+          })
+          ).to.not.be.reverted;
+
+          const dNFTTokenId = await manager.connect(user).callStatic.publish(FIRST_PUBLISH_ID);
+          await expect(
+            manager.connect(user).publish(FIRST_PUBLISH_ID)
+          ).to.not.be.reverted;
+
+          expect(dNFTTokenId).to.eq(FIRST_DNFT_TOKEN_ID);  
+
+          expect(
+            await derivativeNFT.ownerOf(FIRST_DNFT_TOKEN_ID)
+          ).to.eq(userAddress);
+          
+          let fetchedData = await feeCollectModule.getPublicationData(FIRST_PUBLISH_ID);
+          expect(fetchedData.genesisFee).to.eq(GENESIS_FEE_BPS);
+          expect(fetchedData.salePrice).to.eq(DEFAULT_COLLECT_PRICE);
+          expect(fetchedData.royaltyBasisPoints).to.eq(Default_royaltyBasisPoints);
+
+          expect(
+            await derivativeNFT['balanceOf(uint256)'](FIRST_DNFT_TOKEN_ID)
+          ).to.eq(1);
+      });
+
+      it('UserTwo should fail to collect when block timestamp is not started', async function () {
+        await expect(
+           manager.connect(userTwo).collect({
+              publishId: FIRST_PUBLISH_ID,
+              collectorSoulBoundTokenId: THIRD_PROFILE_ID,
+              collectUnits: 1,
+              data: [],
+          })
+        ).to.be.revertedWith(ERRORS.Collect_Not_Start_Yet);
+      });
+
+      it('UserTwo should success to collect when block timestamp move to one hour', async function () {
+        await moveTime(MIN_DELAY + 1);
+        await moveBlocks(1);
+
+        await expect(
+           manager.connect(userTwo).collect({
+              publishId: FIRST_PUBLISH_ID,
+              collectorSoulBoundTokenId: THIRD_PROFILE_ID,
+              collectUnits: 1,
+              data: [],
+          })
+        ).to.not.be.reverted;
+      });
+
+    });
+
+    context('Collecting', function () {
+
+      beforeEach(async function () {
+
+        const publishModuleinitData = abiCoder.encode(
+          ['address', 'uint256'],
+          [template.address, DEFAULT_TEMPLATE_NUMBER],
+        );
+
+        const collectLimitPerAddress = 0; // 0 表示不限制每个地址能collect的次数
+        const utcTimestamp = 0
+
+        const collectModuleInitData = abiCoder.encode(
+            ['uint256', 'uint16', 'uint16', 'uint32'],
+            [DEFAULT_COLLECT_PRICE, Default_royaltyBasisPoints, collectLimitPerAddress, 0]
+        );
 
         await expect(
             manager.connect(user).prePublish({
@@ -280,7 +386,6 @@ makeSuiteCleanRoom('Fee Collect Module', function () {
       it('Governance should set the treasury fee BPS to zero, userTwo call permit userTwo collecting should not emit a transfer event to the treasury', async function () {
         await expect(moduleGlobals.connect(governance).setTreasuryFee(0)).to.not.be.reverted;
 
-          
         let [totalFees, 
             creatorRev, 
             previousCreatorRev, 
@@ -343,19 +448,8 @@ makeSuiteCleanRoom('Fee Collect Module', function () {
         console.log("\t\t --- previousCreatorAmount:", previousCreatorRev);
         console.log("\t\t --- adjustedAmount:", sellerRev);
 
-        // expect(
-        //   await collectReturningTokenId({
-        //       sender: userTwo,
-        //       vars: {
-        //         publishId: FIRST_PUBLISH_ID,
-        //         collectorSoulBoundTokenId: THIRD_PROFILE_ID,
-        //         collectUnits: 1,
-        //         data : [],
-        //       },
-        //   }) 
-        //   ).to.eq(SECOND_DNFT_TOKEN_ID);
 
-        await  manager.connect(userTwo).collect({
+        await manager.connect(userTwo).collect({
             publishId: FIRST_PUBLISH_ID,
             collectorSoulBoundTokenId: THIRD_PROFILE_ID,
             collectUnits: 1,
@@ -387,10 +481,13 @@ makeSuiteCleanRoom('Fee Collect Module', function () {
           [template.address, DEFAULT_TEMPLATE_NUMBER],
         );
 
+        const collectLimitPerAddress = 0; // 0 表示不限制每个地址能collect的次数
+        const utcTimestamp = 0     
+    
         const collectModuleInitData = abiCoder.encode(
-          ['uint256', 'uint16', 'uint16'],
-          [DEFAULT_COLLECT_PRICE, Default_royaltyBasisPoints, 0]
-      );
+            ['uint256', 'uint16', 'uint16', 'uint32'],
+            [DEFAULT_COLLECT_PRICE, Default_royaltyBasisPoints, collectLimitPerAddress, utcTimestamp]
+        );
 
         await expect(
             manager.connect(user).prePublish({
@@ -490,10 +587,13 @@ makeSuiteCleanRoom('Fee Collect Module', function () {
           [template.address, DEFAULT_TEMPLATE_NUMBER],
         );
 
+        const collectLimitPerAddress = 0; // 0 表示不限制每个地址能collect的次数
+        const utcTimestamp = 0
+
         const collectModuleInitData = abiCoder.encode(
-          ['uint256', 'uint16', 'uint16'],
-          [DEFAULT_COLLECT_PRICE, Default_royaltyBasisPoints, 0]
-      );
+            ['uint256', 'uint16', 'uint16', 'uint32'],
+            [DEFAULT_COLLECT_PRICE, Default_royaltyBasisPoints, collectLimitPerAddress, utcTimestamp]
+        );
 
         await expect(
             manager.connect(user).prePublish({
@@ -538,3 +638,5 @@ makeSuiteCleanRoom('Fee Collect Module', function () {
 
   });
 });
+
+

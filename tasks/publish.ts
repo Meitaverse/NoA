@@ -70,11 +70,20 @@ task("publish", "publish function")
     const Default_royaltyBasisPoints = 50; //
     const GENESIS_FEE_BPS = 100;
     const DEFAULT_TEMPLATE_NUMBER = 1;
+    const collectLimitPerAddress = 0; //每个地址最多可以收藏多少个， 0 - unlimited
+    
+    const date = new Date(); // 创建一个 Date 对象
+
+    const utcTimestamp = Math.floor(date.getTime() / 1000); // 获取 UTC 时间戳（单位为秒）
+    const localTimestamp = Math.floor((date.getTime() + (date.getTimezoneOffset() * 60 * 1000)) / 1000); // 获取本地时间戳（单位为秒）
+
+    
+    
 
     const collectModuleInitData = abiCoder.encode(
-      ['uint256', 'uint16', 'uint16'],
-      [DEFAULT_COLLECT_PRICE, Default_royaltyBasisPoints, 0]
-  );
+        ['uint256', 'uint16', 'uint16', 'uint32'],
+        [DEFAULT_COLLECT_PRICE, Default_royaltyBasisPoints, collectLimitPerAddress, utcTimestamp]
+    );
 
     const publishModuleinitData = abiCoder.encode(
         ['address', 'uint256'],
@@ -103,7 +112,7 @@ task("publish", "publish function")
         royaltyBasisPoints: GENESIS_FEE_BPS,
         name: "Dollar",
         description: "Hand draw",
-        canCollect: true,
+        canCollect: true, //是否可以收藏， false - 不可以收藏, true - 可以收藏
         materialURIs: [],
         fromTokenIds: [],
         collectModule: feeCollectModule.address,

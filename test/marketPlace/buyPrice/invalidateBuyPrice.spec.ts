@@ -164,11 +164,20 @@ makeSuiteCleanRoom('Market Place', function () {
       [template.address, DEFAULT_TEMPLATE_NUMBER],
     );
 
-    const collectModuleInitData = abiCoder.encode(
-      ['uint256', 'uint16', 'uint16'],
-      [DEFAULT_COLLECT_PRICE, Default_royaltyBasisPoints, 0]
-  );
+    const collectLimitPerAddress = 0; // 0 表示不限制每个地址能collect的次数
+    
 
+    const utcTimestamp = 0
+    
+
+    
+    
+
+    const collectModuleInitData = abiCoder.encode(
+        ['uint256', 'uint16', 'uint16', 'uint32'],
+        [DEFAULT_COLLECT_PRICE, Default_royaltyBasisPoints, collectLimitPerAddress, utcTimestamp]
+    );
+    
     await expect(
         manager.connect(user).prePublish({
           soulBoundTokenId: SECOND_PROFILE_ID,

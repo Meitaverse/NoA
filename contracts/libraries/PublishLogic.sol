@@ -156,7 +156,7 @@ library PublishLogic {
         
         ICollectModule(collectModule).initializePublicationCollectModule(
             publishId,
-            newTokenId,
+            // newTokenId,
             currency,
             amount,
             collectModuleInitData 

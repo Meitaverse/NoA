@@ -2123,6 +2123,66 @@ export class SetGovernanceCall__Outputs {
   }
 }
 
+export class SetMarketCall extends ethereum.Call {
+  get inputs(): SetMarketCall__Inputs {
+    return new SetMarketCall__Inputs(this);
+  }
+
+  get outputs(): SetMarketCall__Outputs {
+    return new SetMarketCall__Outputs(this);
+  }
+}
+
+export class SetMarketCall__Inputs {
+  _call: SetMarketCall;
+
+  constructor(call: SetMarketCall) {
+    this._call = call;
+  }
+
+  get market(): Address {
+    return this._call.inputValues[0].value.toAddress();
+  }
+}
+
+export class SetMarketCall__Outputs {
+  _call: SetMarketCall;
+
+  constructor(call: SetMarketCall) {
+    this._call = call;
+  }
+}
+
+export class SetSBTCall extends ethereum.Call {
+  get inputs(): SetSBTCall__Inputs {
+    return new SetSBTCall__Inputs(this);
+  }
+
+  get outputs(): SetSBTCall__Outputs {
+    return new SetSBTCall__Outputs(this);
+  }
+}
+
+export class SetSBTCall__Inputs {
+  _call: SetSBTCall;
+
+  constructor(call: SetSBTCall) {
+    this._call = call;
+  }
+
+  get sbt(): Address {
+    return this._call.inputValues[0].value.toAddress();
+  }
+}
+
+export class SetSBTCall__Outputs {
+  _call: SetSBTCall;
+
+  constructor(call: SetSBTCall) {
+    this._call = call;
+  }
+}
+
 export class SetStateCall extends ethereum.Call {
   get inputs(): SetStateCall__Inputs {
     return new SetStateCall__Inputs(this);
@@ -2179,6 +2239,66 @@ export class SetTimeLockCall__Outputs {
   _call: SetTimeLockCall;
 
   constructor(call: SetTimeLockCall) {
+    this._call = call;
+  }
+}
+
+export class SetTreasuryCall extends ethereum.Call {
+  get inputs(): SetTreasuryCall__Inputs {
+    return new SetTreasuryCall__Inputs(this);
+  }
+
+  get outputs(): SetTreasuryCall__Outputs {
+    return new SetTreasuryCall__Outputs(this);
+  }
+}
+
+export class SetTreasuryCall__Inputs {
+  _call: SetTreasuryCall;
+
+  constructor(call: SetTreasuryCall) {
+    this._call = call;
+  }
+
+  get treasury(): Address {
+    return this._call.inputValues[0].value.toAddress();
+  }
+}
+
+export class SetTreasuryCall__Outputs {
+  _call: SetTreasuryCall;
+
+  constructor(call: SetTreasuryCall) {
+    this._call = call;
+  }
+}
+
+export class SetVoucherCall extends ethereum.Call {
+  get inputs(): SetVoucherCall__Inputs {
+    return new SetVoucherCall__Inputs(this);
+  }
+
+  get outputs(): SetVoucherCall__Outputs {
+    return new SetVoucherCall__Outputs(this);
+  }
+}
+
+export class SetVoucherCall__Inputs {
+  _call: SetVoucherCall;
+
+  constructor(call: SetVoucherCall) {
+    this._call = call;
+  }
+
+  get voucher(): Address {
+    return this._call.inputValues[0].value.toAddress();
+  }
+}
+
+export class SetVoucherCall__Outputs {
+  _call: SetVoucherCall;
+
+  constructor(call: SetVoucherCall) {
     this._call = call;
   }
 }

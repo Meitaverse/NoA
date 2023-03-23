@@ -124,3 +124,9 @@ Queries (HTTP):     http://localhost:8000/subgraphs/name/NoA/MySubgraph
 [Royalty Registry](https://royaltyregistry.xyz/)
 
 
+
+## PostgreSQL
+```
+$ psql -p 5432 -h localhost -U graph-node graph-node
+password : let-me-in
+```
