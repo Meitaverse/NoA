@@ -442,6 +442,8 @@ type Project @entity {
   "Descriptor contract of project"     
   descriptor: Bytes
 
+  transactionHash: Bytes
+
   "The default royalty in basis points"
   defaultRoyaltyBPS: Int!
   

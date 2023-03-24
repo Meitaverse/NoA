@@ -58,36 +58,36 @@ export class FeeCollectModule__getPublicationDataResultValue0Struct extends ethe
     return this[1].toBigInt();
   }
 
-  get tokenId(): BigInt {
-    return this[2].toBigInt();
-  }
-
   get currency(): Address {
-    return this[3].toAddress();
+    return this[2].toAddress();
   }
 
   get amount(): BigInt {
-    return this[4].toBigInt();
+    return this[3].toBigInt();
   }
 
   get salePrice(): BigInt {
-    return this[5].toBigInt();
+    return this[4].toBigInt();
   }
 
   get royaltyBasisPoints(): BigInt {
-    return this[6].toBigInt();
+    return this[5].toBigInt();
   }
 
   get collectLimitPerAddress(): i32 {
-    return this[7].toI32();
+    return this[6].toI32();
   }
 
   get genesisFee(): i32 {
-    return this[8].toI32();
+    return this[7].toI32();
   }
 
   get previousFee(): i32 {
-    return this[9].toI32();
+    return this[8].toI32();
+  }
+
+  get utcTimestampStartAt(): BigInt {
+    return this[9].toBigInt();
   }
 }
 
@@ -219,7 +219,7 @@ export class FeeCollectModule extends ethereum.SmartContract {
   ): FeeCollectModule__getPublicationDataResultValue0Struct {
     let result = super.call(
       "getPublicationData",
-      "getPublicationData(uint256):((uint256,uint256,uint256,address,uint256,uint256,uint256,uint16,uint16,uint16))",
+      "getPublicationData(uint256):((uint256,uint256,address,uint256,uint256,uint256,uint16,uint16,uint16,uint32))",
       [ethereum.Value.fromUnsignedBigInt(publishId)]
     );
 
@@ -235,7 +235,7 @@ export class FeeCollectModule extends ethereum.SmartContract {
   > {
     let result = super.tryCall(
       "getPublicationData",
-      "getPublicationData(uint256):((uint256,uint256,uint256,address,uint256,uint256,uint256,uint16,uint16,uint16))",
+      "getPublicationData(uint256):((uint256,uint256,address,uint256,uint256,uint256,uint16,uint16,uint16,uint32))",
       [ethereum.Value.fromUnsignedBigInt(publishId)]
     );
     if (result.reverted) {
@@ -362,20 +362,16 @@ export class InitializePublicationCollectModuleCall__Inputs {
     return this._call.inputValues[0].value.toBigInt();
   }
 
-  get tokenId(): BigInt {
-    return this._call.inputValues[1].value.toBigInt();
-  }
-
   get currency(): Address {
-    return this._call.inputValues[2].value.toAddress();
+    return this._call.inputValues[1].value.toAddress();
   }
 
   get amount(): BigInt {
-    return this._call.inputValues[3].value.toBigInt();
+    return this._call.inputValues[2].value.toBigInt();
   }
 
   get data(): Bytes {
-    return this._call.inputValues[4].value.toBytes();
+    return this._call.inputValues[3].value.toBytes();
   }
 }
 
