@@ -10,6 +10,8 @@
     "size": "npm run compile && hardhat size-contracts",
     "full-deploy-local": "hardhat full-deploy --network local",
     "full-deploy-mumbai": "hardhat full-deploy --network mumbai",
+    "mumbai-nft-deploy": "hardhat mumbai-nft-deploy --network mumbai",
+    "local-nft-deploy": "hardhat mumbai-nft-deploy --network local",
     "full-deploy-verify-mumbai": "hardhat testnet-full-deploy-verify --network mumbai",
     "setup-mumbai": "hardhat setup --network mumbai",
     "coverage": "npm run compile && hardhat coverage --temp temp-artifacts --testfiles test/emptyrun.coverage.ts && hardhat coverage --temp temp-artifacts --testfiles '!test/emptyrun.coverage.ts'",
