@@ -269,6 +269,8 @@ dataSources:
       abis:
         - name: Events
           file: ../artifacts/contracts/libraries/Events.sol/Events.json
+        - name: ModuleGlobals
+          file: ../artifacts/contracts/modules/ModuleGlobals.sol/ModuleGlobals.json
       eventHandlers:
         - event: ProfileCreatorWhitelisted(indexed address,indexed bool,indexed
             address,uint256)

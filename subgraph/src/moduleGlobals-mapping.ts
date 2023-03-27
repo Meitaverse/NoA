@@ -34,6 +34,12 @@ import {
     TemplateWhitelistedRecord,
     CurrencyWhitelist,
 } from "../generated/schema"
+
+import {
+    ModuleGlobals
+} from "../generated/ModuleGlobals/ModuleGlobals"
+
+
 import { saveTransactionHashHistory } from "./dnft";
 
 export function handleProfileCreatorWhitelisted(event: ProfileCreatorWhitelisted): void {
@@ -263,6 +269,17 @@ export function handleModuleGlobalsCurrencyWhitelisted(event: ModuleGlobalsCurre
     const cwl = CurrencyWhitelist.load(_idString) || new CurrencyWhitelist(_idString)
 
     if (cwl) {
+        const moduleGlobals = ModuleGlobals.bind(event.address)
+        const result = moduleGlobals.try_getCurrencyInfo(event.params.currency)
+        if (result.reverted) {
+            log.info("try_getCurrencyInfo, result.reverted, currency:{}", [event.params.currency.toHex()])
+            return 
+        } 
+
+        cwl.currencyName = result.value.currencyName;
+        cwl.currencySymbol = result.value.currencySymbol;
+        cwl.currencyDecimals = result.value.currencyDecimals;
+        
         cwl.currency = event.params.currency
         cwl.whitelisted = event.params.newWhitelisted
         cwl.timestamp = event.params.timestamp

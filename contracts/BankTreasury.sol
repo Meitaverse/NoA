@@ -751,7 +751,6 @@ contract BankTreasury is
         if (currencyAmount == 0 || sbtAmount == 0) {
             delete _exchangePrice[currency];
         }else {
-            
 
             _exchangePrice[currency] = DataTypes.ExchangePrice(
                 currencyAmount, 

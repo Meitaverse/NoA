@@ -239,6 +239,33 @@ export class CurrencyWhitelist extends Entity {
     this.set("id", Value.fromString(value));
   }
 
+  get currencyName(): string {
+    let value = this.get("currencyName");
+    return value!.toString();
+  }
+
+  set currencyName(value: string) {
+    this.set("currencyName", Value.fromString(value));
+  }
+
+  get currencySymbol(): string {
+    let value = this.get("currencySymbol");
+    return value!.toString();
+  }
+
+  set currencySymbol(value: string) {
+    this.set("currencySymbol", Value.fromString(value));
+  }
+
+  get currencyDecimals(): i32 {
+    let value = this.get("currencyDecimals");
+    return value!.toI32();
+  }
+
+  set currencyDecimals(value: i32) {
+    this.set("currencyDecimals", Value.fromI32(value));
+  }
+
   get currency(): Bytes {
     let value = this.get("currency");
     return value!.toBytes();

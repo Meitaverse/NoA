@@ -73,12 +73,7 @@ task("publish", "publish function")
     const collectLimitPerAddress = 0; //每个地址最多可以收藏多少个， 0 - unlimited
     
     const date = new Date(); // 创建一个 Date 对象
-
     const utcTimestamp = Math.floor(date.getTime() / 1000); // 获取 UTC 时间戳（单位为秒）
-    const localTimestamp = Math.floor((date.getTime() + (date.getTimezoneOffset() * 60 * 1000)) / 1000); // 获取本地时间戳（单位为秒）
-
-    
-    
 
     const collectModuleInitData = abiCoder.encode(
         ['uint256', 'uint16', 'uint16', 'uint32'],
@@ -89,6 +84,7 @@ task("publish", "publish function")
         ['address', 'uint256'],
         [template.address, DEFAULT_TEMPLATE_NUMBER],
     );
+    
     const FIRST_PROFILE_ID =1;
     let balance_bank =(await sbt["balanceOf(uint256)"](FIRST_PROFILE_ID));
     console.log('\n\t--- balance of bank : ', balance_bank);

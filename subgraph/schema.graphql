@@ -49,6 +49,15 @@ type CurrencyWhitelist @entity {
   "CurrencyAddress-Name"
   id: ID!
 
+  "Currency Name"
+  currencyName: String!
+
+  "Currency Symbol"
+  currencySymbol: String!
+
+  "Currency Decimals"
+  currencyDecimals: Int!
+
   "The currency contract"
   currency: Bytes!
 

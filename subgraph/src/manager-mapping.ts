@@ -17,9 +17,6 @@ import {
     StateSet,
 } from "../generated/Manager/Events"
 
-// import {
-//     ModuleGlobals
-// } from "../generated/Manager/ModuleGlobals"
 
 import {
     Manager
