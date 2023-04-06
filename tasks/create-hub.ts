@@ -17,22 +17,19 @@ import { waitForTx, findEvent} from './helpers/utils';
 export let runtimeHRE: HardhatRuntimeEnvironment;
 
 
-// yarn hardhat --network local create-hub
+// yarn hardhat --network local create-hub --accountid 2 --profileid 2
 
 task("create-hub", "create-hub function")
-.setAction(async ({}: {}, hre) =>  {
+.addParam("accountid", "account id to collect ,from 2 to 9")
+.addParam("profileid", "profileid")
+.setAction(async ({accountid,profileid}: {accountid : number, profileid: number}, hre) =>  {
   runtimeHRE = hre;
   const ethers = hre.ethers;
   const accounts = await ethers.getSigners();
   const deployer = accounts[0];
   const governance = accounts[1];  
-  const user = accounts[2];
-  const userTwo = accounts[3];
-  const userThree = accounts[4];
-
-  const userAddress = user.address;
-  const userTwoAddress = userTwo.address;
-  const userThreeAddress = userThree.address;
+  const hubOwner = accounts[accountid];
+  const hubOwnerAddress = hubOwner.address;
 
   const managerImpl = await loadContract(hre, Manager__factory, "ManagerImpl");
   const manager = await loadContract(hre, Manager__factory, "Manager");
@@ -43,26 +40,23 @@ task("create-hub", "create-hub function")
 
   console.log('\t-- deployer: ', deployer.address);
   console.log('\t-- governance: ', governance.address);
-  console.log('\t-- user: ', user.address);
-  console.log('\t-- userTwo: ', userTwo.address);
-  console.log('\t-- userThree: ', userThree.address);
+  console.log('\t-- v: ', hubOwner.address);
 
   console.log(
       "\t--- ModuleGlobals governance address: ", await moduleGlobals.getGovernance()
   );
   
   // permit user to create a hub
-  const SECOND_PROFILE_ID =2;
-  await waitForTx( moduleGlobals.connect(governance).whitelistHubCreator(SECOND_PROFILE_ID, true));
+  await waitForTx( moduleGlobals.connect(governance).whitelistHubCreator(profileid, true));
 
   console.log(
-    "\n\t--- moduleGlobals whitelistHubCreator set true for user: ", userAddress
+    "\n\t--- moduleGlobals whitelistHubCreator set true for user: ", hubOwnerAddress
   );
     
   
   const receipt = await waitForTx(
-      manager.connect(user).createHub({
-        soulBoundTokenId: SECOND_PROFILE_ID,
+      manager.connect(hubOwner).createHub({
+        soulBoundTokenId: profileid,
         name: "bitsoul",
         description: "Hub for bitsoul",
         imageURI: "https://ipfs.io/ipfs/QmVnu7JQVoDRqSgHBzraYp7Hy78HwJtLFi6nUFCowTGdzp/11.png",
@@ -82,14 +76,10 @@ task("create-hub", "create-hub function")
     "\t\t--- HubCreated, hubId: ", hubId
   );
 
-  let hubOwner = event.args.hubOwner.toString();
-  console.log(
-    "\t\t--- HubCreated, hubOwner: ", hubOwner
-  );
 
   // let hubId =1;
 
-  let hubInfo = await manager.connect(user).getHubInfo(hubId);
+  let hubInfo = await manager.connect(hubOwner).getHubInfo(hubId);
 
   console.log(
     "\t\t--- hub info - soulBoundTokenId:  ", hubInfo.soulBoundTokenId.toNumber()

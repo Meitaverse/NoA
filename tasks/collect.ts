@@ -22,7 +22,7 @@ import { BigNumber } from "ethers";
 
 export let runtimeHRE: HardhatRuntimeEnvironment;
 
-// yarn hardhat --network local collect --projectid 27 --publishid 22 --collectorid 2
+// yarn hardhat --network local collect --projectid 1 --publishid 2 --collectorid 3
 
 task("collect", "collect a dNFT function")
 .addParam("projectid", "project id ")

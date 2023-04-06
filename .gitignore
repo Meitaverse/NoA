@@ -12,3 +12,4 @@ artifacts
 typechain-types
 build/
 docker/data
+subgraph/generated

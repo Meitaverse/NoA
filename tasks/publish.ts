@@ -22,15 +22,8 @@ import { waitForTx, findEvent} from './helpers/utils';
 
 export let runtimeHRE: HardhatRuntimeEnvironment;
 
-// yarn hardhat --network local publish --projectid 27  --publishid 21 --accountid 7 --hubid 2 --profileid 4
-/*
-publish data:
-{
-  "id": "21",
-  "name": "新的nfttttt",
-  "amount": "111"
-},
-*/
+// yarn hardhat --network local publish --projectid 1  --publishid 0 --accountid 2 --hubid 1 --profileid 2
+
 
 task("publish", "publish function")
 .addParam("projectid", "project id to publish")
@@ -44,8 +37,6 @@ task("publish", "publish function")
   const accounts = await ethers.getSigners();
   const deployer = accounts[0];
   const governance = accounts[1];  
-
-
 
 
   const managerImpl = await loadContract(hre, Manager__factory, "ManagerImpl");

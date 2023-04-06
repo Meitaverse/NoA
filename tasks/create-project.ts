@@ -39,7 +39,6 @@ task("create-project", "create-project function")
 
   const user = accounts[accountid];
 
-  const userAddress = user.address;
 
   const managerImpl = await loadContract(hre, Manager__factory, "ManagerImpl");
   const manager = await loadContract(hre, Manager__factory, "Manager");

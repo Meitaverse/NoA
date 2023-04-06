@@ -2,74 +2,44 @@
   "manifestVersion": "3.2",
   "admin": {
     "address": "0x610178dA211FEF7D417bC0e6FeD39F05609AD788",
-    "txHash": "0x6324c80e9e4e32639e45bcd2c019dfea5a205fd6358893b765bd00a112bfa3cd"
+    "txHash": "0xe8c9de9652bf1e346bb80a7c2dda9a6e7b957c09c547df1348e974b8b92077b0"
   },
   "proxies": [
     {
-      "address": "0x84eA74d481Ee0A5332c457a4d796187F6Ba67fEB",
-      "txHash": "0x417491e2deba74584d16f00b6fa141bab47cf271dafea4c534beef5fc49efd28",
-      "kind": "transparent"
-    },
-    {
-      "address": "0x9E545E3C0baAB3E08CdfD552C960A1050f373042",
-      "txHash": "0x55afd408931f9e879b09447b725612c515d42220fc0b94dee2bd4b80ac3f0fd3",
-      "kind": "transparent"
-    },
-    {
-      "address": "0x1613beB3B2C4f22Ee086B2b38C1476A3cE7f78E8",
-      "txHash": "0x2691c29189656e4076bf9c76bd0184517b00901f801cb4694099548267dff848",
-      "kind": "transparent"
-    },
-    {
-      "address": "0x851356ae760d987E095750cCeb3bC6014560891C",
-      "txHash": "0x0aedb8358f34669d4f76c6061fa5ffeebb8d2e4b26f28508a3124f1abf6bd0b2",
-      "kind": "transparent"
-    },
-    {
-      "address": "0xf5059a5D33d5853360D16C683c16e67980206f36",
-      "txHash": "0xa9c200c8d0d71077a173824fb62da41c0d4014c75831987b7696ab57fab15df4",
-      "kind": "transparent"
-    },
-    {
-      "address": "0x95401dc811bb5740090279Ba06cfA8fcF6113778",
-      "txHash": "0x7d2cbcfbebf93029b88f726cee317281708dbb46d0a9cd70c3c90702182f6d18",
-      "kind": "transparent"
-    },
-    {
       "address": "0xB7f8BC63BbcaD18155201308C8f3540b07f84F5e",
-      "txHash": "0x7a9cd7779e1eae3462963e268a6db025b4d92888917a99434ce3558cfbd03483",
+      "txHash": "0x67220d35b5b13401cb6377d410c7ab9d36bcf7fb8711afc8f5a9b7d7cf617ce5",
       "kind": "transparent"
     },
     {
       "address": "0x0DCd1Bf9A1b36cE34237eEaFef220932846BCD82",
-      "txHash": "0xc0e0a8f21f1337d9f9716aee0c1a0a2153144d7eb652cb56d608adc9d47f914c",
+      "txHash": "0x1c26ec99a36ae9037154c4c63f5c64e946f3fd48fb682c6eefa45192955d68da",
       "kind": "transparent"
     },
     {
       "address": "0x959922bE3CAee4b8Cd9a407cc3ac1C251C2007B1",
-      "txHash": "0x682c9343bc72ad42e24a97c3e12d3b5b17f07b938e24c4139ab356bd291679c3",
+      "txHash": "0xc6018624753d04b5ff136e309843f7ba86773f8e05edc7db67a37992f890af68",
       "kind": "transparent"
     },
     {
       "address": "0x68B1D87F95878fE05B998F19b66F4baba5De1aed",
-      "txHash": "0x8b04b29076293271481768dfd028261bd16d99eddb85ef1b3eeb9a507f4fd15a",
+      "txHash": "0x5ed5081d881e8f4d1f0b19f55b3b202090001c0d616a0c1684c9b072a056e138",
       "kind": "transparent"
     },
     {
       "address": "0xc6e7DF5E7b4f2A278906862b61205850344D4e7d",
-      "txHash": "0x37885f47b879a085e5910ead90d0151940d44d7d830e52f806f8fc6ef434dcac",
+      "txHash": "0x552b05b8891a7c507613671a502c2edd6e18ed0dd7198b0a55ede83d353c6e68",
       "kind": "transparent"
     },
     {
       "address": "0x4ed7c70F96B99c776995fB64377f0d4aB3B0e1C1",
-      "txHash": "0x0e83a140a616ef27f4e5d8ed1f84d594ad990d5c75fe197c4d45fb67dee6ca0c",
+      "txHash": "0x6e9871932727ec2572b1a05b79cf285227d58202e5a1c65c73a851cfc52bf1dd",
       "kind": "transparent"
     }
   ],
   "impls": {
     "2b29a7eb2e2eed103bc87af3d0f12d017b3e9ed0971266ef9f3b44ad582123f5": {
       "address": "0x8A791620dd6260079BF849Dc5567aDC3F2FdC318",
-      "txHash": "0x855581354e771a5146d453645df6a39b31c36df286ba44b01ac9b41f38866039",
+      "txHash": "0x9f84d5953fc0980f5051a8fc1ddda39ad24a0b83e74a601b1a046f0aa077d3bd",
       "layout": {
         "solcVersion": "0.8.17",
         "storage": [
@@ -102,7 +72,7 @@
             "label": "_roles",
             "offset": 0,
             "slot": "51",
-            "type": "t_mapping(t_bytes32,t_struct(RoleData)50475_storage)",
+            "type": "t_mapping(t_bytes32,t_struct(RoleData)50528_storage)",
             "contract": "OZAccessControlUpgradeable",
             "src": "contracts/libraries/OZAccessControlUpgradeable.sol:64"
           },
@@ -255,7 +225,7 @@
             "label": "_checkpoints",
             "offset": 0,
             "slot": "1206",
-            "type": "t_mapping(t_address,t_array(t_struct(Checkpoint)44356_storage)dyn_storage)",
+            "type": "t_mapping(t_address,t_array(t_struct(Checkpoint)44409_storage)dyn_storage)",
             "contract": "ERC3525Votes",
             "src": "contracts/extensions/ERC3525Votes.sol:36"
           },
@@ -263,7 +233,7 @@
             "label": "_totalSupplyCheckpoints",
             "offset": 0,
             "slot": "1207",
-            "type": "t_array(t_struct(Checkpoint)44356_storage)dyn_storage",
+            "type": "t_array(t_struct(Checkpoint)44409_storage)dyn_storage",
             "contract": "ERC3525Votes",
             "src": "contracts/extensions/ERC3525Votes.sol:37"
           },
@@ -279,7 +249,7 @@
             "label": "_sbtDetails",
             "offset": 0,
             "slot": "1209",
-            "type": "t_mapping(t_uint256,t_struct(SoulBoundTokenDetail)47549_storage)",
+            "type": "t_mapping(t_uint256,t_struct(SoulBoundTokenDetail)47602_storage)",
             "contract": "SBTStorage",
             "src": "contracts/storage/SBTStorage.sol:10"
           },
@@ -337,7 +307,7 @@
             "label": "bytes32[]",
             "numberOfBytes": "32"
           },
-          "t_array(t_struct(Checkpoint)44356_storage)dyn_storage": {
+          "t_array(t_struct(Checkpoint)44409_storage)dyn_storage": {
             "label": "struct ERC3525Votes.Checkpoint[]",
             "numberOfBytes": "32"
           },
@@ -381,7 +351,7 @@
             "label": "mapping(address => address)",
             "numberOfBytes": "32"
           },
-          "t_mapping(t_address,t_array(t_struct(Checkpoint)44356_storage)dyn_storage)": {
+          "t_mapping(t_address,t_array(t_struct(Checkpoint)44409_storage)dyn_storage)": {
             "label": "mapping(address => struct ERC3525Votes.Checkpoint[])",
             "numberOfBytes": "32"
           },
@@ -401,7 +371,7 @@
             "label": "mapping(address => uint256)",
             "numberOfBytes": "32"
           },
-          "t_mapping(t_bytes32,t_struct(RoleData)50475_storage)": {
+          "t_mapping(t_bytes32,t_struct(RoleData)50528_storage)": {
             "label": "mapping(bytes32 => struct OZAccessControlUpgradeable.RoleData)",
             "numberOfBytes": "32"
           },
@@ -413,7 +383,7 @@
             "label": "mapping(uint256 => mapping(address => uint256))",
             "numberOfBytes": "32"
           },
-          "t_mapping(t_uint256,t_struct(SoulBoundTokenDetail)47549_storage)": {
+          "t_mapping(t_uint256,t_struct(SoulBoundTokenDetail)47602_storage)": {
             "label": "mapping(uint256 => struct DataTypes.SoulBoundTokenDetail)",
             "numberOfBytes": "32"
           },
@@ -461,7 +431,7 @@
             ],
             "numberOfBytes": "64"
           },
-          "t_struct(Checkpoint)44356_storage": {
+          "t_struct(Checkpoint)44409_storage": {
             "label": "struct ERC3525Votes.Checkpoint",
             "members": [
               {
@@ -491,7 +461,7 @@
             ],
             "numberOfBytes": "32"
           },
-          "t_struct(RoleData)50475_storage": {
+          "t_struct(RoleData)50528_storage": {
             "label": "struct OZAccessControlUpgradeable.RoleData",
             "members": [
               {
@@ -527,7 +497,7 @@
             ],
             "numberOfBytes": "64"
           },
-          "t_struct(SoulBoundTokenDetail)47549_storage": {
+          "t_struct(SoulBoundTokenDetail)47602_storage": {
             "label": "struct DataTypes.SoulBoundTokenDetail",
             "members": [
               {
@@ -614,7 +584,7 @@
     },
     "4350891c8f3f631f88c92e8c34c92023f78caabf1af406ba377e594c8096e860": {
       "address": "0xA51c1fc2f0D1a1b8494Ed1FE312d7C3a78Ed91C0",
-      "txHash": "0x6f4c87a367428ba7ba2d7e56696beefbaa0eaad992e2e339343aa6cdc21ad78e",
+      "txHash": "0xa9dd9c6894e31f4a82dcb288f23720e79af7135960e7f1b7421bf81f011a033a",
       "layout": {
         "solcVersion": "0.8.17",
         "storage": [
@@ -871,7 +841,7 @@
             "label": "_roles",
             "offset": 0,
             "slot": "654",
-            "type": "t_mapping(t_bytes32,t_struct(RoleData)50475_storage)",
+            "type": "t_mapping(t_bytes32,t_struct(RoleData)50528_storage)",
             "contract": "OZAccessControlUpgradeable",
             "src": "contracts/libraries/OZAccessControlUpgradeable.sol:64"
           },
@@ -945,7 +915,7 @@
             "label": "mapping(address => bool)",
             "numberOfBytes": "32"
           },
-          "t_mapping(t_bytes32,t_struct(RoleData)50475_storage)": {
+          "t_mapping(t_bytes32,t_struct(RoleData)50528_storage)": {
             "label": "mapping(bytes32 => struct OZAccessControlUpgradeable.RoleData)",
             "numberOfBytes": "32"
           },
@@ -1111,7 +1081,7 @@
             ],
             "numberOfBytes": "128"
           },
-          "t_struct(RoleData)50475_storage": {
+          "t_struct(RoleData)50528_storage": {
             "label": "struct OZAccessControlUpgradeable.RoleData",
             "members": [
               {
@@ -1172,7 +1142,7 @@
     },
     "bd4ff3d5393775dd617e47fddd31aa343265daad8ee5e515442e2d490ec5b7bd": {
       "address": "0x0B306BF915C4d645ff596e518fAf3F9669b97016",
-      "txHash": "0x15ccca5228fed0963c252f5ef184160a9580e02696f99596fdaf38e1e806000c",
+      "txHash": "0x7303254b35db618a3190c16703be713c0b634b022bce3fd0e4d8b433a777e12a",
       "layout": {
         "solcVersion": "0.8.17",
         "storage": [
@@ -1205,7 +1175,7 @@
             "label": "_roles",
             "offset": 0,
             "slot": "51",
-            "type": "t_mapping(t_bytes32,t_struct(RoleData)50475_storage)",
+            "type": "t_mapping(t_bytes32,t_struct(RoleData)50528_storage)",
             "contract": "OZAccessControlUpgradeable",
             "src": "contracts/libraries/OZAccessControlUpgradeable.sol:64"
           },
@@ -1403,7 +1373,7 @@
             "label": "mapping(address => uint256)",
             "numberOfBytes": "32"
           },
-          "t_mapping(t_bytes32,t_struct(RoleData)50475_storage)": {
+          "t_mapping(t_bytes32,t_struct(RoleData)50528_storage)": {
             "label": "mapping(bytes32 => struct OZAccessControlUpgradeable.RoleData)",
             "numberOfBytes": "32"
           },
@@ -1475,7 +1445,7 @@
             ],
             "numberOfBytes": "32"
           },
-          "t_struct(RoleData)50475_storage": {
+          "t_struct(RoleData)50528_storage": {
             "label": "struct OZAccessControlUpgradeable.RoleData",
             "members": [
               {
@@ -1566,7 +1536,7 @@
     },
     "b6e3326d55638b7bd78b5f900b1deaf9522b9cdaf5de4b3056391512a4aa0e8a": {
       "address": "0x9A9f2CCfdE556A7E9Ff0848998Aa4a0CFD8863AE",
-      "txHash": "0x5a32d4a752911ac75198024247936929d5185e91e242e56449512b60e578082b",
+      "txHash": "0xd18356124bc44b384cd5a3aa2bcb78777a6d5e87f826f1b28267ebd478dbd382",
       "layout": {
         "solcVersion": "0.8.17",
         "storage": [
@@ -1695,7 +1665,7 @@
             "label": "_transactions",
             "offset": 0,
             "slot": "62",
-            "type": "t_array(t_struct(Transaction)47768_storage)dyn_storage",
+            "type": "t_array(t_struct(Transaction)47821_storage)dyn_storage",
             "contract": "BankTreasuryStorage",
             "src": "contracts/storage/BankTreasuryStorage.sol:36"
           },
@@ -1703,7 +1673,7 @@
             "label": "_exchangePrice",
             "offset": 0,
             "slot": "63",
-            "type": "t_mapping(t_address,t_struct(ExchangePrice)47741_storage)",
+            "type": "t_mapping(t_address,t_struct(ExchangePrice)47794_storage)",
             "contract": "BankTreasuryStorage",
             "src": "contracts/storage/BankTreasuryStorage.sol:38"
           },
@@ -1711,7 +1681,7 @@
             "label": "accountToInfo",
             "offset": 0,
             "slot": "64",
-            "type": "t_mapping(t_uint256,t_mapping(t_address,t_struct(AccountInfo)48008_storage))",
+            "type": "t_mapping(t_uint256,t_mapping(t_address,t_struct(AccountInfo)48061_storage))",
             "contract": "BankTreasuryStorage",
             "src": "contracts/storage/BankTreasuryStorage.sol:41"
           },
@@ -1719,7 +1689,7 @@
             "label": "_founders",
             "offset": 0,
             "slot": "65",
-            "type": "t_mapping(t_uint256,t_mapping(t_uint256,t_struct(PercentFounderData)48017_storage))",
+            "type": "t_mapping(t_uint256,t_mapping(t_uint256,t_struct(PercentFounderData)48070_storage))",
             "contract": "BankTreasuryStorage",
             "src": "contracts/storage/BankTreasuryStorage.sol:44"
           },
@@ -1727,7 +1697,7 @@
             "label": "_projectRevenues",
             "offset": 0,
             "slot": "66",
-            "type": "t_mapping(t_uint256,t_struct(FounderRevenueData)48022_storage)",
+            "type": "t_mapping(t_uint256,t_struct(FounderRevenueData)48075_storage)",
             "contract": "BankTreasuryStorage",
             "src": "contracts/storage/BankTreasuryStorage.sol:47"
           },
@@ -1759,7 +1729,7 @@
             "label": "_roles",
             "offset": 0,
             "slot": "167",
-            "type": "t_mapping(t_bytes32,t_struct(RoleData)50475_storage)",
+            "type": "t_mapping(t_bytes32,t_struct(RoleData)50528_storage)",
             "contract": "OZAccessControlUpgradeable",
             "src": "contracts/libraries/OZAccessControlUpgradeable.sol:64"
           },
@@ -1797,7 +1767,7 @@
             "label": "bytes32[]",
             "numberOfBytes": "32"
           },
-          "t_array(t_struct(Transaction)47768_storage)dyn_storage": {
+          "t_array(t_struct(Transaction)47821_storage)dyn_storage": {
             "label": "struct DataTypes.Transaction[]",
             "numberOfBytes": "32"
           },
@@ -1825,7 +1795,7 @@
             "label": "bytes",
             "numberOfBytes": "32"
           },
-          "t_enum(CurrencyType)47534": {
+          "t_enum(CurrencyType)47587": {
             "label": "enum DataTypes.CurrencyType",
             "members": [
               "ETHER",
@@ -1838,11 +1808,11 @@
             "label": "mapping(address => bool)",
             "numberOfBytes": "32"
           },
-          "t_mapping(t_address,t_struct(AccountInfo)48008_storage)": {
+          "t_mapping(t_address,t_struct(AccountInfo)48061_storage)": {
             "label": "mapping(address => struct DataTypes.AccountInfo)",
             "numberOfBytes": "32"
           },
-          "t_mapping(t_address,t_struct(ExchangePrice)47741_storage)": {
+          "t_mapping(t_address,t_struct(ExchangePrice)47794_storage)": {
             "label": "mapping(address => struct DataTypes.ExchangePrice)",
             "numberOfBytes": "32"
           },
@@ -1850,7 +1820,7 @@
             "label": "mapping(address => uint256)",
             "numberOfBytes": "32"
           },
-          "t_mapping(t_bytes32,t_struct(RoleData)50475_storage)": {
+          "t_mapping(t_bytes32,t_struct(RoleData)50528_storage)": {
             "label": "mapping(bytes32 => struct OZAccessControlUpgradeable.RoleData)",
             "numberOfBytes": "32"
           },
@@ -1862,19 +1832,19 @@
             "label": "mapping(uint256 => mapping(address => bool))",
             "numberOfBytes": "32"
           },
-          "t_mapping(t_uint256,t_mapping(t_address,t_struct(AccountInfo)48008_storage))": {
+          "t_mapping(t_uint256,t_mapping(t_address,t_struct(AccountInfo)48061_storage))": {
             "label": "mapping(uint256 => mapping(address => struct DataTypes.AccountInfo))",
             "numberOfBytes": "32"
           },
-          "t_mapping(t_uint256,t_mapping(t_uint256,t_struct(PercentFounderData)48017_storage))": {
+          "t_mapping(t_uint256,t_mapping(t_uint256,t_struct(PercentFounderData)48070_storage))": {
             "label": "mapping(uint256 => mapping(uint256 => struct DataTypes.PercentFounderData))",
             "numberOfBytes": "32"
           },
-          "t_mapping(t_uint256,t_struct(FounderRevenueData)48022_storage)": {
+          "t_mapping(t_uint256,t_struct(FounderRevenueData)48075_storage)": {
             "label": "mapping(uint256 => struct DataTypes.FounderRevenueData)",
             "numberOfBytes": "32"
           },
-          "t_mapping(t_uint256,t_struct(PercentFounderData)48017_storage)": {
+          "t_mapping(t_uint256,t_struct(PercentFounderData)48070_storage)": {
             "label": "mapping(uint256 => struct DataTypes.PercentFounderData)",
             "numberOfBytes": "32"
           },
@@ -1886,7 +1856,7 @@
             "label": "string",
             "numberOfBytes": "32"
           },
-          "t_struct(AccountInfo)48008_storage": {
+          "t_struct(AccountInfo)48061_storage": {
             "label": "struct DataTypes.AccountInfo",
             "members": [
               {
@@ -1903,7 +1873,7 @@
               },
               {
                 "label": "lockups",
-                "type": "t_struct(Lockups)49655_storage",
+                "type": "t_struct(Lockups)49708_storage",
                 "offset": 0,
                 "slot": "1"
               },
@@ -1928,7 +1898,7 @@
             ],
             "numberOfBytes": "64"
           },
-          "t_struct(ExchangePrice)47741_storage": {
+          "t_struct(ExchangePrice)47794_storage": {
             "label": "struct DataTypes.ExchangePrice",
             "members": [
               {
@@ -1946,7 +1916,7 @@
             ],
             "numberOfBytes": "64"
           },
-          "t_struct(FounderRevenueData)48022_storage": {
+          "t_struct(FounderRevenueData)48075_storage": {
             "label": "struct DataTypes.FounderRevenueData",
             "members": [
               {
@@ -1964,7 +1934,7 @@
             ],
             "numberOfBytes": "32"
           },
-          "t_struct(Lockups)49655_storage": {
+          "t_struct(Lockups)49708_storage": {
             "label": "struct LockedBalance.Lockups",
             "members": [
               {
@@ -1976,7 +1946,7 @@
             ],
             "numberOfBytes": "32"
           },
-          "t_struct(PercentFounderData)48017_storage": {
+          "t_struct(PercentFounderData)48070_storage": {
             "label": "struct DataTypes.PercentFounderData",
             "members": [
               {
@@ -2006,7 +1976,7 @@
             ],
             "numberOfBytes": "96"
           },
-          "t_struct(RoleData)50475_storage": {
+          "t_struct(RoleData)50528_storage": {
             "label": "struct OZAccessControlUpgradeable.RoleData",
             "members": [
               {
@@ -2042,7 +2012,7 @@
             ],
             "numberOfBytes": "64"
           },
-          "t_struct(Transaction)47768_storage": {
+          "t_struct(Transaction)47821_storage": {
             "label": "struct DataTypes.Transaction",
             "members": [
               {
@@ -2053,7 +2023,7 @@
               },
               {
                 "label": "currencyType",
-                "type": "t_enum(CurrencyType)47534",
+                "type": "t_enum(CurrencyType)47587",
                 "offset": 20,
                 "slot": "0"
               },
@@ -2127,7 +2097,7 @@
     },
     "341fe15db0d4c1b3c7e668f57e3afcbe68509f00f8f36520a41806434f1de7be": {
       "address": "0x3Aa5ebB10DC797CAC828524e59A333d0A371443c",
-      "txHash": "0x06bce94f5943cbba5ae92db5afd6e3a898d2d158e126cad79028605912436690",
+      "txHash": "0x307cbd5f8f2fe26729d16018e5b25766963f88d09641706b482b0cce75cd2787",
       "layout": {
         "solcVersion": "0.8.17",
         "storage": [
@@ -2328,7 +2298,7 @@
             "label": "_extensionRoyalty",
             "offset": 0,
             "slot": "266",
-            "type": "t_mapping(t_address,t_array(t_struct(RoyaltyConfig)41976_storage)dyn_storage)",
+            "type": "t_mapping(t_address,t_array(t_struct(RoyaltyConfig)42029_storage)dyn_storage)",
             "contract": "CreatorCore",
             "src": "contracts/creatorCore/CreatorCore.sol:58"
           },
@@ -2336,7 +2306,7 @@
             "label": "_tokenRoyalty",
             "offset": 0,
             "slot": "267",
-            "type": "t_mapping(t_uint256,t_array(t_struct(RoyaltyConfig)41976_storage)dyn_storage)",
+            "type": "t_mapping(t_uint256,t_array(t_struct(RoyaltyConfig)42029_storage)dyn_storage)",
             "contract": "CreatorCore",
             "src": "contracts/creatorCore/CreatorCore.sol:59"
           },
@@ -2402,7 +2372,7 @@
             "label": "bytes32[]",
             "numberOfBytes": "32"
           },
-          "t_array(t_struct(RoyaltyConfig)41976_storage)dyn_storage": {
+          "t_array(t_struct(RoyaltyConfig)42029_storage)dyn_storage": {
             "label": "struct CreatorCore.RoyaltyConfig[]",
             "numberOfBytes": "32"
           },
@@ -2430,7 +2400,7 @@
             "label": "mapping(address => address)",
             "numberOfBytes": "32"
           },
-          "t_mapping(t_address,t_array(t_struct(RoyaltyConfig)41976_storage)dyn_storage)": {
+          "t_mapping(t_address,t_array(t_struct(RoyaltyConfig)42029_storage)dyn_storage)": {
             "label": "mapping(address => struct CreatorCore.RoyaltyConfig[])",
             "numberOfBytes": "32"
           },
@@ -2458,7 +2428,7 @@
             "label": "mapping(uint256 => address)",
             "numberOfBytes": "32"
           },
-          "t_mapping(t_uint256,t_array(t_struct(RoyaltyConfig)41976_storage)dyn_storage)": {
+          "t_mapping(t_uint256,t_array(t_struct(RoyaltyConfig)42029_storage)dyn_storage)": {
             "label": "mapping(uint256 => struct CreatorCore.RoyaltyConfig[])",
             "numberOfBytes": "32"
           },
@@ -2490,7 +2460,7 @@
             ],
             "numberOfBytes": "64"
           },
-          "t_struct(RoyaltyConfig)41976_storage": {
+          "t_struct(RoyaltyConfig)42029_storage": {
             "label": "struct CreatorCore.RoyaltyConfig",
             "members": [
               {
@@ -2541,9 +2511,9 @@
         }
       }
     },
-    "971cb424c77aed721e6e5c53d3c9b8d368cd1b16984bdbafbce2eb72eb1458a3": {
+    "5c73f16b6745f253614a8c85e75f85463079ce69c11352cb13b16a6d392627c9": {
       "address": "0x59b670e9fA9D0A427751Af201D676719a970857b",
-      "txHash": "0x5ae3ab624d9cefd36b24729abdee18ac9b3428e8a73573de5a5c8ace109745b0",
+      "txHash": "0xbe48991be130c43cd1845ad81c7c3fc58e12ae2955c99c5964053864ced2f929",
       "layout": {
         "solcVersion": "0.8.17",
         "storage": [
@@ -2592,7 +2562,7 @@
             "label": "markets",
             "offset": 0,
             "slot": "4",
-            "type": "t_mapping(t_address,t_struct(Market)47720_storage)",
+            "type": "t_mapping(t_address,t_struct(Market)47773_storage)",
             "contract": "MarketPlaceStorage",
             "src": "contracts/storage/MarketPlaceStorage.sol:24"
           },
@@ -2600,7 +2570,7 @@
             "label": "treasury",
             "offset": 0,
             "slot": "5",
-            "type": "t_contract(IBankTreasury)45698",
+            "type": "t_contract(IBankTreasury)45751",
             "contract": "DNFTMarketCore",
             "src": "contracts/market/DNFTMarketCore.sol:37"
           },
@@ -2616,7 +2586,7 @@
             "label": "auctionIdToAuction",
             "offset": 0,
             "slot": "7",
-            "type": "t_mapping(t_uint256,t_struct(ReserveAuctionStorage)47992_storage)",
+            "type": "t_mapping(t_uint256,t_struct(ReserveAuctionStorage)48045_storage)",
             "contract": "DNFTMarketReserveAuction",
             "src": "contracts/market/DNFTMarketReserveAuction.sol:29"
           },
@@ -2632,7 +2602,7 @@
             "label": "dnftContractToTokenIdToBuyPrice",
             "offset": 0,
             "slot": "9",
-            "type": "t_mapping(t_address,t_mapping(t_uint256,t_struct(BuyPrice)47873_storage))",
+            "type": "t_mapping(t_address,t_mapping(t_uint256,t_struct(BuyPrice)47926_storage))",
             "contract": "DNFTMarketBuyPrice",
             "src": "contracts/market/DNFTMarketBuyPrice.sol:26"
           },
@@ -2640,7 +2610,7 @@
             "label": "nftContractToIdToOffer",
             "offset": 0,
             "slot": "10",
-            "type": "t_mapping(t_address,t_mapping(t_uint256,t_struct(Offer)47899_storage))",
+            "type": "t_mapping(t_address,t_mapping(t_uint256,t_struct(Offer)47952_storage))",
             "contract": "DNFTMarketOffer",
             "src": "contracts/market/DNFTMarketOffer.sol:28"
           },
@@ -2672,7 +2642,7 @@
             "label": "_roles",
             "offset": 0,
             "slot": "111",
-            "type": "t_mapping(t_bytes32,t_struct(RoleData)50475_storage)",
+            "type": "t_mapping(t_bytes32,t_struct(RoleData)50528_storage)",
             "contract": "OZAccessControlUpgradeable",
             "src": "contracts/libraries/OZAccessControlUpgradeable.sol:64"
           },
@@ -2718,11 +2688,11 @@
             "label": "bytes32",
             "numberOfBytes": "32"
           },
-          "t_contract(IBankTreasury)45698": {
+          "t_contract(IBankTreasury)45751": {
             "label": "contract IBankTreasury",
             "numberOfBytes": "20"
           },
-          "t_enum(FeePayType)47530": {
+          "t_enum(FeePayType)47583": {
             "label": "enum DataTypes.FeePayType",
             "members": [
               "SELLER_PAY",
@@ -2730,7 +2700,7 @@
             ],
             "numberOfBytes": "1"
           },
-          "t_enum(FeeShareType)47527": {
+          "t_enum(FeeShareType)47580": {
             "label": "enum DataTypes.FeeShareType",
             "members": [
               "LEVEL_TWO",
@@ -2738,11 +2708,11 @@
             ],
             "numberOfBytes": "1"
           },
-          "t_mapping(t_address,t_mapping(t_uint256,t_struct(BuyPrice)47873_storage))": {
+          "t_mapping(t_address,t_mapping(t_uint256,t_struct(BuyPrice)47926_storage))": {
             "label": "mapping(address => mapping(uint256 => struct DataTypes.BuyPrice))",
             "numberOfBytes": "32"
           },
-          "t_mapping(t_address,t_mapping(t_uint256,t_struct(Offer)47899_storage))": {
+          "t_mapping(t_address,t_mapping(t_uint256,t_struct(Offer)47952_storage))": {
             "label": "mapping(address => mapping(uint256 => struct DataTypes.Offer))",
             "numberOfBytes": "32"
           },
@@ -2750,7 +2720,7 @@
             "label": "mapping(address => mapping(uint256 => uint256))",
             "numberOfBytes": "32"
           },
-          "t_mapping(t_address,t_struct(Market)47720_storage)": {
+          "t_mapping(t_address,t_struct(Market)47773_storage)": {
             "label": "mapping(address => struct DataTypes.Market)",
             "numberOfBytes": "32"
           },
@@ -2758,7 +2728,7 @@
             "label": "mapping(address => uint256)",
             "numberOfBytes": "32"
           },
-          "t_mapping(t_bytes32,t_struct(RoleData)50475_storage)": {
+          "t_mapping(t_bytes32,t_struct(RoleData)50528_storage)": {
             "label": "mapping(bytes32 => struct OZAccessControlUpgradeable.RoleData)",
             "numberOfBytes": "32"
           },
@@ -2766,15 +2736,15 @@
             "label": "mapping(bytes32 => uint256)",
             "numberOfBytes": "32"
           },
-          "t_mapping(t_uint256,t_struct(BuyPrice)47873_storage)": {
+          "t_mapping(t_uint256,t_struct(BuyPrice)47926_storage)": {
             "label": "mapping(uint256 => struct DataTypes.BuyPrice)",
             "numberOfBytes": "32"
           },
-          "t_mapping(t_uint256,t_struct(Offer)47899_storage)": {
+          "t_mapping(t_uint256,t_struct(Offer)47952_storage)": {
             "label": "mapping(uint256 => struct DataTypes.Offer)",
             "numberOfBytes": "32"
           },
-          "t_mapping(t_uint256,t_struct(ReserveAuctionStorage)47992_storage)": {
+          "t_mapping(t_uint256,t_struct(ReserveAuctionStorage)48045_storage)": {
             "label": "mapping(uint256 => struct DataTypes.ReserveAuctionStorage)",
             "numberOfBytes": "32"
           },
@@ -2794,7 +2764,7 @@
             ],
             "numberOfBytes": "64"
           },
-          "t_struct(BuyPrice)47873_storage": {
+          "t_struct(BuyPrice)47926_storage": {
             "label": "struct DataTypes.BuyPrice",
             "members": [
               {
@@ -2872,7 +2842,7 @@
             ],
             "numberOfBytes": "32"
           },
-          "t_struct(Market)47720_storage": {
+          "t_struct(Market)47773_storage": {
             "label": "struct DataTypes.Market",
             "members": [
               {
@@ -2883,13 +2853,13 @@
               },
               {
                 "label": "feeShareType",
-                "type": "t_enum(FeeShareType)47527",
+                "type": "t_enum(FeeShareType)47580",
                 "offset": 1,
                 "slot": "0"
               },
               {
                 "label": "feePayType",
-                "type": "t_enum(FeePayType)47530",
+                "type": "t_enum(FeePayType)47583",
                 "offset": 2,
                 "slot": "0"
               },
@@ -2914,7 +2884,7 @@
             ],
             "numberOfBytes": "96"
           },
-          "t_struct(Offer)47899_storage": {
+          "t_struct(Offer)47952_storage": {
             "label": "struct DataTypes.Offer",
             "members": [
               {
@@ -2974,7 +2944,7 @@
             ],
             "numberOfBytes": "224"
           },
-          "t_struct(ReserveAuctionStorage)47992_storage": {
+          "t_struct(ReserveAuctionStorage)48045_storage": {
             "label": "struct DataTypes.ReserveAuctionStorage",
             "members": [
               {
@@ -3076,7 +3046,7 @@
             ],
             "numberOfBytes": "512"
           },
-          "t_struct(RoleData)50475_storage": {
+          "t_struct(RoleData)50528_storage": {
             "label": "struct OZAccessControlUpgradeable.RoleData",
             "members": [
               {

@@ -2278,6 +2278,44 @@ export class SetTimeLockCall__Outputs {
   }
 }
 
+export class SetTokenImageURICall extends ethereum.Call {
+  get inputs(): SetTokenImageURICall__Inputs {
+    return new SetTokenImageURICall__Inputs(this);
+  }
+
+  get outputs(): SetTokenImageURICall__Outputs {
+    return new SetTokenImageURICall__Outputs(this);
+  }
+}
+
+export class SetTokenImageURICall__Inputs {
+  _call: SetTokenImageURICall;
+
+  constructor(call: SetTokenImageURICall) {
+    this._call = call;
+  }
+
+  get projectId(): BigInt {
+    return this._call.inputValues[0].value.toBigInt();
+  }
+
+  get tokenId(): BigInt {
+    return this._call.inputValues[1].value.toBigInt();
+  }
+
+  get imageURI(): string {
+    return this._call.inputValues[2].value.toString();
+  }
+}
+
+export class SetTokenImageURICall__Outputs {
+  _call: SetTokenImageURICall;
+
+  constructor(call: SetTokenImageURICall) {
+    this._call = call;
+  }
+}
+
 export class SetTreasuryCall extends ethereum.Call {
   get inputs(): SetTreasuryCall__Inputs {
     return new SetTreasuryCall__Inputs(this);
