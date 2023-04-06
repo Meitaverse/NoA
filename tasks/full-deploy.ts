@@ -550,6 +550,8 @@ const MARKET_MAX_DURATION = 86400000; //1000 days in seconds
         );
 
         console.log('\n\t-- Add publishModule,feeCollectModule,template to moduleGlobals whitelists --');
+        await waitForTx( moduleGlobals.connect(governance).setSBT(sbtContract.address));
+
         await waitForTx( moduleGlobals.connect(governance).whitelistPublishModule(publishModule.address, true));
         await waitForTx( moduleGlobals.connect(governance).whitelistCollectModule(feeCollectModule.address, true));
         await waitForTx( moduleGlobals.connect(governance).whitelistTemplate(template.address, true));
