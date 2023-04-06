@@ -31,7 +31,6 @@ abstract contract ModuleBase {
         MANAGER = manager_;
         if (market_ == address(0)) revert Errors.InitParamsInvalid();
         MARKET = market_;
-        emit Events.ModuleBaseConstructed(manager_, market_, block.timestamp);
     }
 
     

@@ -95,7 +95,7 @@ interface IBankTreasuryV2 {
     function distributeFundsToUserRevenue(
         uint256 publishId,
         address currency,
-        uint256 payValue,
+        uint96 payValue,
         DataTypes.CollectFeeUsers memory collectFeeUsers,
         DataTypes.RoyaltyAmounts memory royaltyAmounts
     ) external;

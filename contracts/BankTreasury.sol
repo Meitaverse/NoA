@@ -99,11 +99,11 @@ contract BankTreasury is
     function initialize(
         address admin,
         address governance,
-        uint256 soulBoundTokenId,
+        address  projectFounder,
         address[] memory signers,
         uint256 _numConfirmationsRequired,
         uint256 _lockupDuration
-    ) external override initializer {
+    ) external initializer {
         AdminRoleEnumerable._initializeAdminRole(admin);
         __Pausable_init();
         ReentrancyGuardUpgradeable.__ReentrancyGuard_init();
@@ -116,10 +116,11 @@ contract BankTreasury is
         if (governance == address(0)) revert Errors.InitParamsInvalid();
         _setGovernance(governance);
 
-        if (soulBoundTokenId == 0) revert Errors.SoulBoundTokenIdNotExists();
-        soulBoundTokenIdBankTreasury = soulBoundTokenId;
+        if ( projectFounder == address(0)) revert Errors.InitParamsInvalid();
+        _setProjectFounder(projectFounder);
 
         if (signers.length == 0) revert Errors.SignersRequired();
+
         if (!(_numConfirmationsRequired > 0 && _numConfirmationsRequired <= signers.length))
             revert Errors.InvalidSignersNumbers();
 
@@ -253,7 +254,7 @@ contract BankTreasury is
         nonReentrant
     {
         if (soulBoundTokenId == 0 || 
-            soulBoundTokenId == soulBoundTokenIdBankTreasury || 
+            soulBoundTokenId == BANK_TREASURY_SOUL_BOUND_TOKENID || 
             currency == address(0) || 
             amount == 0) 
             revert Errors.InvalidParameter();
@@ -272,7 +273,7 @@ contract BankTreasury is
             //deposit SBT Value
             INFTDerivativeProtocolTokenV1(_sbt).transferValue(
                 soulBoundTokenId,
-                soulBoundTokenIdBankTreasury,
+                BANK_TREASURY_SOUL_BOUND_TOKENID,
                 amount
             );
         } else {
@@ -576,7 +577,7 @@ contract BankTreasury is
         address _sbt = IModuleGlobals(MODULE_GLOBALS).getSBT();
         if (_sbt == currency) {
             INFTDerivativeProtocolTokenV1(_sbt).transferValue(
-                soulBoundTokenIdBankTreasury, 
+                BANK_TREASURY_SOUL_BOUND_TOKENID, 
                 soulBoundTokenId, 
                 amount
             );
@@ -617,7 +618,7 @@ contract BankTreasury is
 
         address _sbt = IModuleGlobals(MODULE_GLOBALS).getSBT();
         INFTDerivativeProtocolTokenV1(_sbt).transferValue(
-            soulBoundTokenIdBankTreasury, 
+            BANK_TREASURY_SOUL_BOUND_TOKENID, 
             soulBoundTokenId, 
             sbtValue
         );
@@ -675,7 +676,7 @@ contract BankTreasury is
        
         INFTDerivativeProtocolTokenV1(currency).transferValue(
             soulBoundTokenId, 
-            soulBoundTokenIdBankTreasury, 
+            BANK_TREASURY_SOUL_BOUND_TOKENID, 
             amountOfSBT
         );
 
@@ -715,7 +716,7 @@ contract BankTreasury is
         }
 
         INFTDerivativeProtocolTokenV1(_sbt).transferValue(
-            soulBoundTokenIdBankTreasury, 
+            BANK_TREASURY_SOUL_BOUND_TOKENID, 
             soulBoundTokenId, 
             sbtValue
         );
@@ -778,7 +779,7 @@ contract BankTreasury is
     function distributeFundsToUserRevenue(
         uint256 publishId,
         address currency,
-        uint256 payValue,
+        uint96 payValue,
         DataTypes.CollectFeeUsers memory collectFeeUsers,
         DataTypes.RoyaltyAmounts memory royaltyAmounts
     ) 
@@ -803,14 +804,14 @@ contract BankTreasury is
                 revert Errors.InvalidRoyalties();
             }
 
-            _addBalanceTo(_freeFromEscrow(currency, soulBoundTokenIdBankTreasury), royaltyAmounts.treasuryAmount);
+            _addBalanceTo(_freeFromEscrow(currency, BANK_TREASURY_SOUL_BOUND_TOKENID), royaltyAmounts.treasuryAmount);
             _addBalanceTo(_freeFromEscrow(currency, collectFeeUsers.genesisSoulBoundTokenId), royaltyAmounts.genesisAmount);
             _addBalanceTo(_freeFromEscrow(currency, collectFeeUsers.previousSoulBoundTokenId), royaltyAmounts.previousAmount);
             _addBalanceTo(_freeFromEscrow(currency, collectFeeUsers.referrerSoulBoundTokenId), royaltyAmounts.referrerAmount);
             //owner or seller
             _addBalanceTo(_freeFromEscrow(currency, collectFeeUsers.ownershipSoulBoundTokenId), royaltyAmounts.adjustedAmount);
 
-             emit Events.Distribute(
+            emit Events.Distribute(
                     publishId,
                     currency,
                     uint96(payValue),
@@ -819,6 +820,81 @@ contract BankTreasury is
             );
         }
     }
+
+    function distributeFundsToProjectFounderRevenue(
+        uint256 projectId,
+        address currency,
+        uint96 payValue
+    ) 
+        external 
+        whenNotPaused 
+        nonReentrant 
+    {
+        // valid caller is only have fee module grant role 
+
+        if (!isFeeModule(msg.sender)) {
+            revert Errors.Only_Fee_Modules_Allowed();
+        }
+
+       DataTypes.FounderRevenueData storage founderRevenueData =  _projectRevenues[projectId];
+       founderRevenueData.currency = currency;
+       founderRevenueData.revenue += payValue;
+
+        emit Events.DistributeProjectFounder(
+                projectId,
+                currency,
+                uint96(payValue)
+        );
+        
+    }
+
+    function claimProjectFounderRevenue(
+        uint256 projectId, 
+        uint256 tokenId
+    ) external whenNotPaused nonReentrant {
+        if (projectId == 0) {
+            revert Errors.ProjectIdIsZero();
+        }
+
+        DataTypes.FounderRevenueData storage founderRevenueData =  _projectRevenues[projectId];
+        uint256 amount = founderRevenueData.revenue;
+        if (amount == 0) {
+            revert Errors.ProjectRevenueIsZero();
+        }
+
+        address currency = founderRevenueData.currency;
+
+        // get project founder percent from _projectFounder
+        uint256 percent = IERC3525(_projectFounder).balanceOf(tokenId);
+       
+        if (percent == 0 || percent > BASIS_POINTS) {
+            revert Errors.ProjectFounderPercentIsZeroOrExceed();
+        }
+        uint96 claimAmount = uint96(amount * percent / 10000);
+
+        uint256 soulBoundTokenId;
+
+        //get soulBoundTokenId by msg.sender
+        address _manager = IModuleGlobals(MODULE_GLOBALS).getManager(); 
+        soulBoundTokenId = IManager(_manager).getSoulBoundTokenIdByWallet(msg.sender);
+
+        //decress project revenue
+        founderRevenueData.revenue -= claimAmount;
+
+        // add to earnest funds
+        _addBalanceTo(_freeFromEscrow(currency, soulBoundTokenId), claimAmount);
+
+        emit Events.ClaimProjectFounder(
+            projectId,
+            tokenId,
+            msg.sender,
+            soulBoundTokenId,
+            currency,
+            claimAmount
+        );
+    }
+
+    
 
     function refundEarnestFunds(
         uint256 soulBoundTokenId,
@@ -913,6 +989,10 @@ contract BankTreasury is
     //--- internal  ---//
     function _setGovernance(address newGovernance) internal {
         _governance = newGovernance;
+    }
+
+    function _setProjectFounder(address newProjectFounder) internal {
+        _projectFounder = newProjectFounder;
     }
 
     function _setFoundationMarket(address payable newFoundationMarket) internal {

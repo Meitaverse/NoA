@@ -212,7 +212,7 @@ contract BankTreasuryV2 is
         nonReentrant
     {
         if (soulBoundTokenId == 0 || 
-            soulBoundTokenId == soulBoundTokenIdBankTreasury || 
+            soulBoundTokenId == BANK_TREASURY_SOUL_BOUND_TOKENID || 
             currency == address(0) || 
             amount == 0) 
             revert Errors.InvalidParameter();
@@ -231,7 +231,7 @@ contract BankTreasuryV2 is
             //deposit SBT Value
             INFTDerivativeProtocolTokenV1(_sbt).transferValue(
                 soulBoundTokenId,
-                soulBoundTokenIdBankTreasury,
+                BANK_TREASURY_SOUL_BOUND_TOKENID,
                 amount
             );
         } else {
@@ -533,7 +533,7 @@ contract BankTreasuryV2 is
         address _sbt = IModuleGlobals(MODULE_GLOBALS).getSBT();
         if (_sbt == currency) {
             INFTDerivativeProtocolTokenV1(_sbt).transferValue(
-                soulBoundTokenIdBankTreasury, 
+                BANK_TREASURY_SOUL_BOUND_TOKENID, 
                 soulBoundTokenId, 
                 amount
             );
@@ -571,7 +571,7 @@ contract BankTreasuryV2 is
 
         address _sbt = IModuleGlobals(MODULE_GLOBALS).getSBT();
         INFTDerivativeProtocolTokenV1(_sbt).transferValue(
-            soulBoundTokenIdBankTreasury, 
+            BANK_TREASURY_SOUL_BOUND_TOKENID, 
             soulBoundTokenId, 
             sbtValue
         );
@@ -605,7 +605,7 @@ contract BankTreasuryV2 is
 
         address _sbt = IModuleGlobals(MODULE_GLOBALS).getSBT();
         INFTDerivativeProtocolTokenV1(_sbt).transferValue(
-            soulBoundTokenIdBankTreasury, 
+            BANK_TREASURY_SOUL_BOUND_TOKENID, 
             soulBoundTokenId, 
             sbtValue
         );
@@ -636,7 +636,7 @@ contract BankTreasuryV2 is
        
         INFTDerivativeProtocolTokenV1(currency).transferValue(
             soulBoundTokenId, 
-            soulBoundTokenIdBankTreasury, 
+            BANK_TREASURY_SOUL_BOUND_TOKENID, 
             amountOfSBT
         );
 
@@ -675,7 +675,7 @@ contract BankTreasuryV2 is
         }
 
         INFTDerivativeProtocolTokenV1(_sbt).transferValue(
-            soulBoundTokenIdBankTreasury, 
+            BANK_TREASURY_SOUL_BOUND_TOKENID, 
             soulBoundTokenId, 
             sbtValue
         );
@@ -732,7 +732,7 @@ contract BankTreasuryV2 is
     function distributeFundsToUserRevenue(
         uint256 publishId,
         address currency,
-        uint256 payValue,
+        uint96 payValue,
         DataTypes.CollectFeeUsers memory collectFeeUsers,
         DataTypes.RoyaltyAmounts memory royaltyAmounts
     ) 
@@ -757,7 +757,7 @@ contract BankTreasuryV2 is
                 revert Errors.InvalidRoyalties();
             }
 
-            _addBalanceTo(_freeFromEscrow(currency, soulBoundTokenIdBankTreasury), royaltyAmounts.treasuryAmount);
+            _addBalanceTo(_freeFromEscrow(currency, BANK_TREASURY_SOUL_BOUND_TOKENID), royaltyAmounts.treasuryAmount);
             _addBalanceTo(_freeFromEscrow(currency, collectFeeUsers.genesisSoulBoundTokenId), royaltyAmounts.genesisAmount);
             _addBalanceTo(_freeFromEscrow(currency, collectFeeUsers.previousSoulBoundTokenId), royaltyAmounts.previousAmount);
             _addBalanceTo(_freeFromEscrow(currency, collectFeeUsers.referrerSoulBoundTokenId), royaltyAmounts.referrerAmount);

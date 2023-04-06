@@ -79,7 +79,7 @@ library DataTypes {
      * @param metadataURI metadata 
      * @param descriptor descriptor for SVG 
      * @param defaultRoyaltyPoints the default Royalty Points
-     * @param permitByHubOwner True: User prePublish will permit by hub owner, default false
+     * @param permitByHubOwner  Default false. If true: User prePublish must permit by hub owner 
      */
     struct ProjectData {
         uint256 hubId;
@@ -508,6 +508,18 @@ library DataTypes {
         LockedBalance.Lockups lockups;
         /// @notice Returns the amount which a spender is still allowed to withdraw from this account.
         mapping(address => uint256) allowance;
+    }
+
+    struct PercentFounderData {
+       uint256 escrowAmount;
+       uint256 unEscrowTimestamp;
+       bool isConfirmedByGenesis;
+       uint16 percent;
+    }
+
+    struct FounderRevenueData {
+        address currency;
+        uint96 revenue;
     }
 
 

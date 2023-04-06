@@ -590,6 +590,41 @@ export class Manager extends ethereum.SmartContract {
     return new Manager("Manager", address);
   }
 
+  calculateDerivativeNFTAddress(
+    projectIdStart: BigInt,
+    projectIdEnd: BigInt
+  ): Array<Address> {
+    let result = super.call(
+      "calculateDerivativeNFTAddress",
+      "calculateDerivativeNFTAddress(uint256,uint256):(address[])",
+      [
+        ethereum.Value.fromUnsignedBigInt(projectIdStart),
+        ethereum.Value.fromUnsignedBigInt(projectIdEnd)
+      ]
+    );
+
+    return result[0].toAddressArray();
+  }
+
+  try_calculateDerivativeNFTAddress(
+    projectIdStart: BigInt,
+    projectIdEnd: BigInt
+  ): ethereum.CallResult<Array<Address>> {
+    let result = super.tryCall(
+      "calculateDerivativeNFTAddress",
+      "calculateDerivativeNFTAddress(uint256,uint256):(address[])",
+      [
+        ethereum.Value.fromUnsignedBigInt(projectIdStart),
+        ethereum.Value.fromUnsignedBigInt(projectIdEnd)
+      ]
+    );
+    if (result.reverted) {
+      return new ethereum.CallResult();
+    }
+    let value = result.value;
+    return ethereum.CallResult.fromValue(value[0].toAddressArray());
+  }
+
   calculateRoyalty(publishId: BigInt): i32 {
     let result = super.call(
       "calculateRoyalty",

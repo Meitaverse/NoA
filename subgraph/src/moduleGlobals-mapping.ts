@@ -167,6 +167,21 @@ export function handleModuleGlobalsSBTSet(event: ModuleGlobalsSBTSet): void {
             protocolContract.contract = event.params.newSBT
             protocolContract.save()    
         }    
+
+        //save to CurrencyWhitelist
+        let _idString2 = event.params.newSBT.toHexString()
+        const cwl = CurrencyWhitelist.load(_idString2) || new CurrencyWhitelist(_idString2)
+
+        if (cwl) {
+            cwl.currencyName = "NFT Derivative Protocol Token";
+            cwl.currencySymbol = "SBT";
+            cwl.currencyDecimals = 18;
+            
+            cwl.currency = event.params.newSBT
+            cwl.whitelisted = true
+            cwl.timestamp = event.params.timestamp
+            cwl.save()
+        } 
     } 
 
     saveTransactionHashHistory("ModuleGlobalsSBTSet", event);

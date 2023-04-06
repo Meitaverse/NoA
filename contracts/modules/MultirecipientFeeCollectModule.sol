@@ -1,5 +1,21 @@
 // SPDX-License-Identifier: MIT
+/*
 
+这是一个基于以太坊的智能合约，用于实现多收款人费用收集模块。它允许自定义收集时间、收集次数上限、将收集费用分配给多个收款人，并可设置仅关注者才能收集。该合约使用OpenZeppelin的IERC20和SafeERC20库以及Aave的Errors库。
+
+合约中的主要结构：
+
+RecipientData 结构：包含收款人地址和分配给收款人的分数（占总分数的百分比）。
+MultirecipientFeeCollectModuleInitData 结构：包含初始化多收款人费用收集模块所需的数据。
+MultirecipientFeeCollectProfilePublicationData 结构：包含在执行收集操作时需要用到的关于多收款人费用收集的相关数据。
+该合约的主要功能：
+
+initializePublicationCollectModule 函数：初始化多收款人费用收集模块。验证并存储收款人数据，存储基础出版物收集参数。
+_validateAndStoreRecipients 函数：验证收款人数组并将它们存储到与基础模块分开的存储中。
+_transferToRecipients 函数：将费用按照设置的分数分配给多个收款人。
+getPublicationData 函数：返回给定出版物的出版物数据，如果该出版物未使用此模块初始化，则返回空结构。
+此智能合约可以用于实现收费的内容收集功能，允许多个收款人在收集过程中共享费用。
+*/
 pragma solidity ^0.8.10;
 
 import {Errors} from '../libraries/Errors.sol';

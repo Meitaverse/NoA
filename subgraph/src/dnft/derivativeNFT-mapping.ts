@@ -117,9 +117,9 @@ export function handleDNFTTransfer(event: Transfer): void {
 
             // Transfer
             log.info("recordDnftEvent", [])
+            
             let dnft = loadOrCreateDNFT(event.address, event.params._tokenId, event);
             if (dnft) {
-
                 // Transfer
                 recordDnftEvent(
                     event,

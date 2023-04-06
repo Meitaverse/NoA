@@ -37,6 +37,7 @@ import {
     Account,
     DNFT,
     PreparePublishFeesHistory,
+    DnftImageURI,
 } from "../generated/schema"
 
 import { loadProject } from "./shared/project";
@@ -46,7 +47,7 @@ import { loadOrCreateAccount } from "./shared/accounts";
 import { loadOrCreateDNFT, loadOrCreateDNFTContract, saveTransactionHashHistory } from "./dnft";
 import { loadOrCreateSoulBoundToken } from "./shared/soulBoundToken";
 import { getLogId } from "./shared/ids";
-import { TREASURY_SBT_ID } from "./shared/constants";
+import { DEFAULT_DNFT_IMAGEURI, TREASURY_SBT_ID } from "./shared/constants";
 
 export function handleEmergencyAdminSet(event: EmergencyAdminSet): void {
     log.info("handleEmergencyAdminSet, event.address: {}", [event.address.toHexString()])
@@ -177,7 +178,7 @@ export function handlePublishPrepared(event: PublishPrepared): void {
         
             if (publisher && hub && project) {
         
-                let publication  = new Publication(event.params.publishId.toString());
+               let publication  = new Publication(event.params.publishId.toString());
             
                 publication.publishId = event.params.publishId
                 publication.publisher = publisher.id
@@ -351,8 +352,6 @@ export function handlePublishCreated(event: PublishCreated): void {
                 publish.hub = hub.id
                 publish.project = project.id
                 publish.derivativeNFT = project.derivativeNFT 
-                // publish.dnft = dnft.id
-                // publish.newTokenId = event.params.newTokenId
                 publish.amount = event.params.amount
                 publish.collectModuleInitData = event.params.collectModuleInitData
                 publish.timestamp = event.block.timestamp
@@ -366,6 +365,11 @@ export function handlePublishCreated(event: PublishCreated): void {
 
 export function handlePublishMinted(event: PublishMinted): void {
 
+    log.info("handlePublishMinted, event.address: {}, publishId:{}, newTokenId:{}", [
+        event.address.toHexString(),
+        event.params.publishId.toString(),
+        event.params.newTokenId.toString(),
+    ])
     const publish = loadOrCreatePublish(event.params.publishId);
     if (publish) {
         publish.newTokenId = event.params.newTokenId
@@ -373,12 +377,36 @@ export function handlePublishMinted(event: PublishMinted): void {
         if (dnft) {
             publish.dnft = dnft.id
 
-            log.info("handlePublishMinted, derivativeNFT: {}, publishId:{}, newTokenId:{}", [
+            log.info("handlePublishMinted, dnft not null, derivativeNFT: {}", [
                 publish.derivativeNFT,
-                event.address.toHexString(),
-                event.params.publishId.toString(),
-                event.params.newTokenId.toString(),
             ])
+
+            //TODO set image uri to DnftImageURI
+            let dnftContract = loadOrCreateDNFTContract(Address.fromString(publish.derivativeNFT));
+            let _idString = event.address.toHex() + "-" + event.params.newTokenId.toString()
+            const derivativeNFTImageURI = DnftImageURI.load(_idString) || new DnftImageURI(_idString)
+
+        
+            if (derivativeNFTImageURI) {
+                derivativeNFTImageURI.tokenId = event.params.newTokenId
+                derivativeNFTImageURI.derivativeNFT = dnftContract.id
+                let publication  = Publication.load(event.params.publishId.toString());
+                if (publication) {
+                    let uris = publication.materialURIs || [];
+                    if (uris)
+                    {
+                        if (uris.length>0)
+                            derivativeNFTImageURI.imageURI = uris[0];
+                        else 
+                            derivativeNFTImageURI.imageURI = DEFAULT_DNFT_IMAGEURI;
+                    }
+                } else {
+                    derivativeNFTImageURI.imageURI = DEFAULT_DNFT_IMAGEURI;
+                }
+
+                derivativeNFTImageURI.timestamp = event.block.timestamp
+                derivativeNFTImageURI.save()
+            }
         }    
     }
 
@@ -413,6 +441,7 @@ export function handleDerivativeNFTCollected(event: DerivativeNFTCollected): voi
                 if (derivativeNFT) history.derivativeNFT = derivativeNFT.id;
                 if (from) history.from = from.id;
                 if (to) history.to = to.id
+                //TODO
                 if (dnft) history.dnft = dnft.id
                 history.tokenId = event.params.tokenId
                 history.units = event.params.value

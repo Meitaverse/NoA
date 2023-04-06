@@ -374,14 +374,20 @@ contract Manager is
         } else {
 
             _validateCallerIsSoulBoundTokenOwnerOrDispathcher(_projectDataByPublishId[publishId].publication.soulBoundTokenId);
-            if (_projectInfoByProjectId[_projectDataByPublishId[publishId].publication.projectId].permitByHubOwner) {
-                //hub owner permit publish
-                if ( !_isHubOwnerPermitBypublishId[publishId]) {
-                    revert Errors.HubOwnerNotPermitPublish();
-                }
-            }
+            
+            DataTypes.HubInfoData storage hub = _hubInfos[_projectDataByPublishId[publishId].publication.hubId];
 
             address publisher = _soulBoundTokenIdToWallet[_projectDataByPublishId[publishId].publication.soulBoundTokenId];
+
+            if (publisher != hub.hubOwner ) {
+                if (_projectInfoByProjectId[_projectDataByPublishId[publishId].publication.projectId].permitByHubOwner) {
+                    //hub owner permit publish
+                    if ( !_isHubOwnerPermitBypublishId[publishId]) {
+                        revert Errors.HubOwnerNotPermitPublish();
+                    }
+                }
+            }
+            
             address derivativeNFT = _derivativeNFTByProjectId[_projectDataByPublishId[publishId].publication.projectId];
             if (_projectDataByPublishId[publishId].publication.amount == 0) 
             revert Errors.AmountIsZero();
@@ -410,6 +416,19 @@ contract Manager is
         }
     }
 
+    function setTokenImageURI(uint256 projectId, uint256 tokenId, string memory imageURI)
+        external
+        onlyGov
+        whenPublishingEnabled 
+    {
+        if (projectId == 0) 
+            revert Errors.InvalidProjectId();
+
+        address derivativeNFT =  _derivativeNFTByProjectId[projectId];
+        IDerivativeNFT(derivativeNFT).setTokenImageURI(tokenId, imageURI);
+
+    }
+
     function collect(
         DataTypes.CollectData calldata collectData
     ) 
@@ -422,7 +441,7 @@ contract Manager is
 
         address derivativeNFT =  _derivativeNFTByProjectId[_projectDataByPublishId[collectData.publishId].publication.projectId];
 
- 
+
         //check can collect?
         if (!_projectDataByPublishId[collectData.publishId].publication.canCollect) {
             revert Errors.PublisherSetCanNotCollect();
@@ -485,10 +504,18 @@ contract Manager is
         return _derivativeNFTByProjectId[projectId];
     }
 
-    // function calculateDerivativeNFTAddress(uint256 projectId) external view returns (address deverivateNFTInstance) {
-    //     bytes32 salt = keccak256(abi.encode(projectId));
-    //     deverivateNFTInstance = Clones.predictDeterministicAddress(_DNFT_IMPL, salt);
-    // }
+    function calculateDerivativeNFTAddress(
+        uint256 projectIdStart,
+        uint256 projectIdEnd
+    ) external view returns (address[] memory) {
+        address[] memory deverivateNFTInstances = new address[](projectIdEnd - projectIdStart + 1);
+        for (uint256 i = projectIdStart; i < projectIdEnd; i++) {
+            bytes32 salt = keccak256(abi.encode(i));
+            address deverivateNFTInstance = Clones.predictDeterministicAddress(_DNFT_IMPL, salt);
+            deverivateNFTInstances[i] = deverivateNFTInstance;
+        }
+        return deverivateNFTInstances;
+    }
 
     function getPublicationByProjectToken(uint256 projectId_, uint256 tokenId_) external view returns (uint256, DataTypes.Publication memory) {
         address derivativeNFT =  _derivativeNFTByProjectId[projectId_];

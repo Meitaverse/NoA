@@ -236,4 +236,9 @@ library Errors {
   error Market_DNFT_Is_Not_Open(address dnft);
   error DerivativeNFTIsInMarket();
   error CollectNotStartYet();
+  error TokenIsNotSoulBound();
+  error NotProjectOwner();
+  error ProjectIdIsZero();
+  error ProjectRevenueIsZero();
+  error ProjectFounderPercentIsZeroOrExceed();
 }

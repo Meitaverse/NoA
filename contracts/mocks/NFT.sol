@@ -3,9 +3,13 @@
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 import "@openzeppelin/contracts/token/ERC721/extensions/ERC721URIStorage.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
+import "@openzeppelin/contracts/utils/Strings.sol";
+import "@openzeppelin/contracts/utils/Base64.sol";
 
 contract NFT is ERC721, ERC721URIStorage, Ownable {
-    constructor() ERC721("APE", "APE") {}
+    using Strings for uint256;
+
+    constructor() ERC721("Bored Ape Yacht Club", "BAYC") {}
 
     function mint(address to, uint256 tokenId) public onlyOwner {
         _mint(to, tokenId);
@@ -27,7 +31,23 @@ contract NFT is ERC721, ERC721URIStorage, Ownable {
     }
 
     function tokenURI(uint256 tokenId) public view override(ERC721, ERC721URIStorage) returns (string memory) {
-        return super.tokenURI(tokenId);
+        bytes memory dataURI = abi.encodePacked(
+            '{',
+                '"name": "BAYC #', tokenId.toString(), '",',
+                '"description": "Bored Ape Yacht Club by Yuga Labs",',
+                '"image": "', super.tokenURI(tokenId), '"',
+            '}'
+        );
+
+        return string(
+            abi.encodePacked(
+                "data:application/json;base64,", 
+                Base64.encode(dataURI)
+            )
+        );
+
+        // return super.tokenURI(tokenId);
+
     }
 
 

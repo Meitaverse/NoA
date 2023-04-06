@@ -1,0 +1,472 @@
+specVersion: {{specVersion}}
+description: {{description}}
+repository: {{repository}}
+schema: 
+  file: {{file}}
+dataSources: 
+
+{{#SBT}}
+  - kind: ethereum/contract
+    name: {{item}}
+    network: mainnet
+    source:
+      abi: SBT
+      address: "0xB7f8BC63BbcaD18155201308C8f3540b07f84F5e"
+      startBlock: 1
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.6
+      language: wasm/assemblyscript
+      entities:
+        - ProfileCreated
+        - ProfileUpdated
+        - Approval
+        - ApprovalForAll
+        - ApprovalValue
+        - Transfer
+        - TransferValue
+        - SlotChanged
+      abis:
+        - name: SBT
+          file: ../artifacts/contracts/NFTDerivativeProtocolTokenV1.sol/NFTDerivativeProtocolTokenV1.json
+      eventHandlers:
+        - event: ProfileCreated(indexed uint256,indexed address,indexed
+            address,string,string)
+          handler: handleProfileCreated
+        - event: ProfileUpdated(indexed uint256,string,string)
+          handler: handleProfileUpdated
+        - event: Approval(indexed address,indexed address,indexed uint256)
+          handler: handleApproval
+        - event: ApprovalForAll(indexed address,indexed address,bool)
+          handler: handleApprovalForAll
+        - event: ApprovalValue(indexed uint256,indexed address,uint256)
+          handler: handleApprovalValue
+        - event: Transfer(indexed address,indexed address,indexed uint256)
+          handler: handleSBTTransfer
+        - event: TransferValue(indexed uint256,indexed uint256,uint256)
+          handler: handleSBTTransferValue
+        - event: SlotChanged(indexed uint256,indexed uint256,indexed uint256)
+          handler: handleSBTSlotChanged
+      file: ./src/sbt-mapping.ts
+{{/SBT}}
+
+{{#Manager}}      
+  - kind: ethereum/contract
+    name: {{item}}
+    network: mainnet
+    source:
+      abi: Events
+      address: "0xa513E6E4b8f2a923D98304ec87F64353C4D5C853"
+      startBlock: 1
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.6
+      language: wasm/assemblyscript
+      entities:
+        - EmergencyAdminSet
+        - ManagerGovernanceSet
+        - GlobalModulesSet
+        - HubCreated
+        - HubUpdated
+        - PublishPrepared
+        - PublishUpdated
+        - PublishCreated
+        - PublishMinted
+        - DerivativeNFTDeployed
+        - DerivativeNFTCollected
+        - DerivativeNFTAirdroped
+        - DispatcherSet
+        - StateSet
+      abis:
+        - name: DerivativeNFT
+          file: ../artifacts/contracts/DerivativeNFT.sol/DerivativeNFT.json
+        - name: Manager
+          file: ../artifacts/contracts/Manager.sol/Manager.json
+        - name: Events
+          file: ../artifacts/contracts/libraries/Events.sol/Events.json
+        - name: ModuleGlobals
+          file: ../artifacts/contracts/modules/ModuleGlobals.sol/ModuleGlobals.json
+      eventHandlers:
+        - event: EmergencyAdminSet(indexed address,indexed address,indexed
+            address,uint256)
+          handler: handleEmergencyAdminSet
+        - event: ManagerGovernanceSet(indexed address,indexed address,indexed
+            address,uint256)
+          handler: handleManagerGovernanceSet
+        - event: GlobalModulesSet(indexed address)
+          handler: handleGlobalModulesSet
+        - event: HubCreated(indexed address,indexed uint256)
+          handler: handleHubCreated
+        - event: HubUpdated(indexed uint256)
+          handler: handleHubUpdated
+        - event: PublishPrepared(uint256,uint256,uint256)
+          handler: handlePublishPrepared
+        - event: PublishUpdated(uint256,uint256)
+          handler: handlePublishUpdated
+        - event: PublishCreated(indexed uint256,indexed
+            uint256,uint256,uint256,uint256,bytes)
+          handler: handlePublishCreated
+        - event: PublishMinted(indexed uint256,indexed uint256)
+          handler: handlePublishMinted
+        - event: DerivativeNFTDeployed(address,indexed uint256,indexed uint256,indexed
+            uint256,address)
+          handler: handleDerivativeNFTDeployed
+        - event: DerivativeNFTCollected(uint256,address,indexed uint256,indexed
+            uint256,indexed uint256,uint256,uint256)
+          handler: handleDerivativeNFTCollected
+        - event: DerivativeNFTAirdroped(uint256,uint256,address,uint256,uint256,uint256[],uint256[],uint256[],uint256)
+          handler: handleDerivativeNFTAirdroped
+        - event: DispatcherSet(indexed uint256,indexed address,uint256)
+          handler: handleDispatcherSet
+        - event: StateSet(indexed address,indexed uint8,indexed uint8,uint256)
+          handler: handleStateSet
+      file: ./src/manager-mapping.ts
+{{/Manager}}  
+
+{{#BankTreasury}}
+  - kind: ethereum/contract
+    name: {{item}}
+    network: mainnet
+    source:
+      abi: Events
+      address: "0x0B306BF915C4d645ff596e518fAf3F9669b97016"
+      startBlock: 1
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.6
+      language: wasm/assemblyscript
+      entities:
+        - DepositEther
+        - DepositByFallback
+        - SBTValueReceived
+        - Deposit
+        - BuySBTByEth
+        - BuySBTByERC20
+        - ExchangeERC20BySBT
+        - ExchangePriceSet
+        - SubmitTransaction
+        - ConfirmTransaction
+        - ExecuteTransaction
+        - ExecuteTransactionERC3525
+        - RevokeConfirmation
+        - VoucherDeposited
+        - BalanceLocked
+        - BalanceUnlocked
+        - OfferTransfered
+        - WithdrawnEarnestFunds
+        - Distribute
+      abis:
+        - name: SBT
+          file: ../artifacts/contracts/NFTDerivativeProtocolTokenV1.sol/NFTDerivativeProtocolTokenV1.json
+        - name: BankTreasury
+          file: ../artifacts/contracts/BankTreasury.sol/BankTreasury.json
+        - name: Events
+          file: ../artifacts/contracts/libraries/Events.sol/Events.json
+        - name: ModuleGlobals
+          file: ../artifacts/contracts/modules/ModuleGlobals.sol/ModuleGlobals.json
+      eventHandlers:
+        - event: DepositEther(indexed address,indexed uint256,indexed address,uint256)
+          handler: handleDepositEther
+        - event: DepositByFallback(indexed address,uint256,bytes,indexed address,uint256)
+          handler: handleDepositByFallback
+        - event: SBTValueReceived(indexed address,indexed address,indexed
+            uint256,uint256,uint256,bytes,uint256)
+          handler: handleSBTValueReceived
+        - event: Deposit(indexed address,indexed uint256,indexed address,uint256)
+          handler: handleDeposit
+        - event: BuySBTByEth(indexed uint256,indexed address,indexed uint256,uint256)
+          handler: handleBuySBTByEth
+        - event: BuySBTByERC20(indexed uint256,indexed address,indexed
+            address,uint256,uint256)
+          handler: handleBuySBTByERC20
+        - event: ExchangeERC20BySBT(indexed uint256,indexed address,indexed
+            uint256,uint256)
+          handler: handleExchangeERC20BySBT
+        - event: ExchangePriceSet(indexed address,indexed uint256,uint256)
+          handler: handleExchangePriceSet
+        - event: SubmitTransaction(indexed address,indexed uint256,indexed
+            address,address,uint256,bytes)
+          handler: handleSubmitTransaction
+        - event: ConfirmTransaction(indexed address,indexed uint256)
+          handler: handleConfirmTransaction
+        - event: ExecuteTransaction(indexed address,indexed
+            uint256,address,address,uint256)
+          handler: handleExecuteTransaction
+        - event: ExecuteTransactionERC3525(indexed address,indexed uint256,indexed
+            uint256,uint256,uint256)
+          handler: handleExecuteTransactionERC3525
+        - event: RevokeConfirmation(indexed address,indexed uint256)
+          handler: handleRevokeConfirmation
+        - event: VoucherDeposited(indexed uint256,indexed address,indexed uint256,uint256)
+          handler: handleVoucherDeposited
+        - event: BalanceLocked(indexed address,indexed uint256,indexed
+            uint256,address,uint256)
+          handler: handleBalanceLocked
+        - event: BalanceUnlocked(indexed address,indexed uint256,indexed
+            uint256,address,uint256)
+          handler: handleBalanceUnlocked
+        - event: OfferTransfered(indexed address,indexed uint256,address,indexed
+            uint256,address,uint256)
+          handler: handleOfferTransfered
+        - event: WithdrawnEarnestFunds(indexed uint256,indexed address,indexed
+            address,uint256)
+          handler: handleWithdrawnEarnestFunds
+        - event: Distribute(uint256,address,uint96,(uint256,uint256,uint256,uint256,uint256),(uint96,uint96,uint96,uint96,uint96))
+          handler: handleDistribute
+      file: ./src/bankTreasury-mapping.ts
+{{/BankTreasury}}
+
+{{#Voucher}}
+  - kind: ethereum/contract
+    name: {{item}}
+    network: mainnet
+    source:
+      abi: Voucher
+      address: "0x9A9f2CCfdE556A7E9Ff0848998Aa4a0CFD8863AE"
+      startBlock: 1
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.6
+      language: wasm/assemblyscript
+      entities:
+        - UserAmountLimitSet
+        - GenerateVoucher
+        - TokenURISet
+        - TransferBatch
+        - TransferSingle
+      abis:
+        - name: Voucher
+          file: ../artifacts/contracts/Voucher.sol/Voucher.json
+      eventHandlers:
+        - event: UserAmountLimitSet(uint256,uint256)
+          handler: handleUserAmountLimitSet
+        - event: GenerateVoucher(indexed uint256,indexed
+            uint256,address[],uint256[],string[],uint256[])
+          handler: handleGenerateVoucher
+        - event: TokenURISet(indexed uint256,indexed string)
+          handler: handleTokenURISet
+        - event: TransferBatch(indexed address,indexed address,indexed
+            address,uint256[],uint256[])
+          handler: handleTransferBatch
+        - event: TransferSingle(indexed address,indexed address,indexed
+            address,uint256,uint256)
+          handler: handleTransferSingle
+      file: ./src/voucher-mapping.ts
+{{/Voucher}}
+
+{{#ModuleGlobals}}      
+  - kind: ethereum/contract
+    name: {{item}}
+    network: mainnet
+    source:
+      abi: Events
+      address: "0xc6e7DF5E7b4f2A278906862b61205850344D4e7d"
+      startBlock: 1
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.6
+      language: wasm/assemblyscript
+      entities:
+        - CollectModuleWhitelisted
+        - PublishModuleWhitelisted
+        - TemplateWhitelisted
+        - ProfileCreatorWhitelisted
+        - HubCreatorWhitelisted
+        - ModuleGlobalsTreasurySet
+        - ModuleGlobalsVoucherSet
+        - ModuleGlobalsManagerSet
+        - ModuleGlobalsSBTSet
+        - ModuleGlobalsGovernanceSet
+        - ModuleGlobalsPublishRoyaltySet
+        - ModuleGlobalsTreasuryFeeSet
+        - ModuleGlobalsCurrencyWhitelisted
+      abis:
+        - name: Events
+          file: ../artifacts/contracts/libraries/Events.sol/Events.json
+        - name: ModuleGlobals
+          file: ../artifacts/contracts/modules/ModuleGlobals.sol/ModuleGlobals.json
+      eventHandlers:
+        - event: ProfileCreatorWhitelisted(indexed address,indexed bool,indexed
+            address,uint256)
+          handler: handleProfileCreatorWhitelisted
+        - event: HubCreatorWhitelisted(indexed uint256,indexed bool,indexed
+            address,uint256)
+          handler: handleHubCreatorWhitelisted
+        - event: ModuleGlobalsTreasurySet(indexed address,indexed address,uint256)
+          handler: handleModuleGlobalsTreasurySet
+        - event: ModuleGlobalsVoucherSet(indexed address,indexed address,uint256)
+          handler: handleModuleGlobalsVoucherSet
+        - event: ModuleGlobalsManagerSet(indexed address,indexed address,uint256)
+          handler: handleModuleGlobalsManagerSet
+        - event: ModuleGlobalsSBTSet(indexed address,indexed address,uint256)
+          handler: handleModuleGlobalsSBTSet
+        - event: ModuleGlobalsPublishRoyaltySet(indexed uint256,indexed uint256,uint256)
+          handler: handleModuleGlobalsPublishRoyaltySet
+        - event: ModuleGlobalsTreasuryFeeSet(indexed uint16,indexed uint16,uint256)
+          handler: handleModuleGlobalsTreasuryFeeSet
+        - event: ModuleGlobalsGovernanceSet(indexed address,indexed address,uint256)
+          handler: handleModuleGlobalsGovernanceSet
+        - event: CollectModuleWhitelisted(indexed address,indexed bool,uint256)
+          handler: handleCollectModuleWhitelisted
+        - event: PublishModuleWhitelisted(indexed address,indexed bool,uint256)
+          handler: handlePublishModuleWhitelisted
+        - event: TemplateWhitelisted(indexed address,indexed bool,uint256)
+          handler: handleTemplateWhitelisted
+        - event: ModuleGlobalsCurrencyWhitelisted(indexed address,indexed bool,indexed
+            bool,uint256)
+          handler: handleModuleGlobalsCurrencyWhitelisted
+      file: ./src/moduleGlobals-mapping.ts
+{{/ModuleGlobals}}   
+
+{{#Receiver}}
+  - kind: ethereum/contract
+    name:  {{item}}
+    network: mainnet
+    source:
+      abi: Events
+      address: "0x9fE46736679d2D9a65F0992F2272dE9f3c7fa6e0"
+      startBlock: 1
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.6
+      language: wasm/assemblyscript
+      entities:
+        - ReceiverReceived
+      abis:
+        - name: Events
+          file: ../artifacts/contracts/libraries/Events.sol/Events.json
+      eventHandlers:
+        - event: ReceiverReceived(indexed address,indexed uint256,indexed
+            uint256,uint256,bytes,uint256)
+          handler: handleReceiverReceived
+      file: ./src/receiver-mapping.ts
+{{/Receiver}}
+
+{{#MarketPlace}}  
+  - kind: ethereum/contract
+    name: {{item}}
+    network: mainnet
+    source:
+      abi: Events
+      address: "0x3Aa5ebB10DC797CAC828524e59A333d0A371443c"
+      startBlock: 1
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.6
+      language: wasm/assemblyscript
+      entities:
+        - MarketPlaceERC3525Received
+        - AddMarket
+        - RemoveMarket
+        - ReserveAuctionBidPlaced
+        - ReserveAuctionCanceled
+        - ReserveAuctionCreated
+        - ReserveAuctionFinalized
+        - ReserveAuctionInvalidated
+        - ReserveAuctionUpdated
+        - OfferMade
+        - OfferAccepted
+        - OfferInvalidated
+        - BuyPriceSet
+        - BuyPriceCanceled
+        - BuyPriceInvalidated
+        - BuyPriceAccepted
+      abis:
+        - name: DerivativeNFT
+          file: ../artifacts/contracts/DerivativeNFT.sol/DerivativeNFT.json
+        - name: MarketPlace
+          file: ../artifacts/contracts/MarketPlace.sol/MarketPlace.json
+        - name: FeeCollectModule
+          file: ../artifacts/contracts/modules/collect/FeeCollectModule.sol/FeeCollectModule.json
+        - name: Events
+          file: ../artifacts/contracts/libraries/Events.sol/Events.json
+      eventHandlers:
+        - event: MarketPlaceERC3525Received(indexed address,indexed address,indexed
+            uint256,uint256,uint256,bytes,uint256)
+          handler: handleMarketPlaceERC3525Received
+        - event: AddMarket(address,uint256,uint8,uint8,uint16,address)
+          handler: handleAddMarket
+        - event: RemoveMarket(address)
+          handler: handleRemoveMarket
+        - event: ReserveAuctionBidPlaced(indexed uint256,indexed uint256,indexed
+            uint256,uint256,address,address,uint256,uint256)
+          handler: handleReserveAuctionBidPlaced
+        - event: ReserveAuctionCanceled(indexed uint256)
+          handler: handleReserveAuctionCanceled
+        - event: ReserveAuctionCreated(indexed address,indexed uint256)
+          handler: handleReserveAuctionCreated
+        - event: ReserveAuctionFinalized(indexed uint256,indexed address,indexed
+            address,(uint96,uint96,uint96,uint96,uint96))
+          handler: handleReserveAuctionFinalized
+        - event: ReserveAuctionInvalidated(indexed uint256)
+          handler: handleReserveAuctionInvalidated
+        - event: ReserveAuctionUpdated(indexed uint256,uint256)
+          handler: handleReserveAuctionUpdated
+        - event: OfferMade(indexed address,indexed uint256,indexed
+            uint256,address,address,uint256,uint256)
+          handler: handleOfferMade
+        - event: OfferAccepted(indexed address,indexed uint256,indexed
+            address,address,address,(uint96,uint96,uint96,uint96,uint96))
+          handler: handleOfferAccepted
+        - event: OfferInvalidated(indexed address,indexed uint256)
+          handler: handleOfferInvalidated
+        - event: BuyPriceSet(indexed address,indexed uint256)
+          handler: handleBuyPriceSet
+        - event: BuyPriceCanceled(indexed address,indexed uint256)
+          handler: handleBuyPriceCanceled
+        - event: BuyPriceInvalidated(indexed address,indexed uint256)
+          handler: handleBuyPriceInvalidated
+        - event: BuyPriceAccepted(indexed address,indexed uint256,indexed
+            address,address,address,(uint96,uint96,uint96,uint96,uint96))
+          handler: handleBuyPriceAccepted
+      file: ./src/marketplace-mapping.ts
+{{/MarketPlace}}  
+
+{{#DerivativeNFTs}}
+  - kind: ethereum/contract
+    name:  {{item}}
+    network: mainnet
+    source:
+      abi: DerivativeNFT
+      address: "0x6566AEEFD57Fd2BBB28c4ebE030777138095D9E8"
+      startBlock: 1
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.6
+      language: wasm/assemblyscript
+      entities:
+        - Approval
+        - ApprovalForAll
+        - ApprovalValue
+        - Transfer
+        - TransferValue
+        - SlotChanged
+        - DerivativeNFTImageURISet
+        - DefaultRoyaltiesUpdated
+        - RoyaltiesUpdated
+      abis:
+        - name: DerivativeNFT
+          file: ../artifacts/contracts/DerivativeNFT.sol/DerivativeNFT.json
+        - name: Manager
+          file: ../artifacts/contracts/Manager.sol/Manager.json
+      eventHandlers:
+        - event: Approval(indexed address,indexed address,indexed uint256)
+          handler: handleDNFTApproval
+        - event: ApprovalForAll(indexed address,indexed address,bool)
+          handler: handleDNFTApprovalForAll
+        - event: ApprovalValue(indexed uint256,indexed address,uint256)
+          handler: handleDNFTApprovalValue
+        - event: Transfer(indexed address,indexed address,indexed uint256)
+          handler: handleDNFTTransfer
+        - event: TransferValue(indexed uint256,indexed uint256,uint256)
+          handler: handleDNFTTransferValue
+        - event: SlotChanged(indexed uint256,indexed uint256,indexed uint256)
+          handler: handleDNFTSlotChanged
+        - event: DerivativeNFTImageURISet(indexed uint256,string,uint256)
+          handler: handleDNFTImageURISet
+        - event: DefaultRoyaltiesUpdated(uint256,address,uint16)
+          handler: handleDefaultRoyaltiesUpdated
+        - event: RoyaltiesUpdated(indexed uint256,indexed uint256,indexed address,uint16)
+          handler: handleRoyaltiesUpdated
+      file: ./src/dnft/derivativeNFT-mapping.ts
+{{/DerivativeNFTs}}

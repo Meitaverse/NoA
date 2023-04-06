@@ -56,7 +56,7 @@ interface IDerivativeNFT {
      * @param tokenId The token Id
      * @param imageURI The image URI
      */
-   function setTokenImageURI(uint256 tokenId, string calldata imageURI) external;
+   function setTokenImageURI(uint256 tokenId, string memory imageURI) external;
 
     /**
      * @notice set the meta data descriptor of derivativeNFT contract

@@ -23,23 +23,23 @@ import { waitForTx, findEvent} from './helpers/utils';
 export let runtimeHRE: HardhatRuntimeEnvironment;
 
 
-// yarn hardhat --network local create-project --name bitsoul2
+// yarn hardhat --network local create-project --name bitsoultai2 --accountid 2 --hubid 1 --profileid 2
 
 task("create-project", "create-project function")
 .addParam("name", "unique project name")
-.setAction(async ({name}: {name: string}, hre) =>  {
+.addParam("accountid", "account id")
+.addParam("hubid", "hubid owned by the project")
+.addParam("profileid", "profileid")
+.setAction(async ({name, hubid,accountid,profileid}: {name: string, hubid: number,accountid:number,profileid:number}, hre) =>  {
   runtimeHRE = hre;
   const ethers = hre.ethers;
   const accounts = await ethers.getSigners();
   const deployer = accounts[0];
   const governance = accounts[1];  
-  const user = accounts[2];
-  const userTwo = accounts[3];
-  const userThree = accounts[4];
+
+  const user = accounts[accountid];
 
   const userAddress = user.address;
-  const userTwoAddress = userTwo.address;
-  const userThreeAddress = userThree.address;
 
   const managerImpl = await loadContract(hre, Manager__factory, "ManagerImpl");
   const manager = await loadContract(hre, Manager__factory, "Manager");
@@ -53,19 +53,16 @@ task("create-project", "create-project function")
   console.log('\t-- deployer: ', deployer.address);
   console.log('\t-- governance: ', governance.address);
   console.log('\t-- user: ', user.address);
-  console.log('\t-- userTwo: ', userTwo.address);
-  console.log('\t-- userThree: ', userThree.address);
 
   console.log(
       "\t--- ModuleGlobals governance address: ", await moduleGlobals.getGovernance()
     );
   
-    const SECOND_PROFILE_ID =2; 
-    const FIRST_HUB_ID =1; 
+    
     const receipt = await waitForTx(
         manager.connect(user).createProject({
-          soulBoundTokenId: SECOND_PROFILE_ID,
-          hubId: FIRST_HUB_ID,
+          soulBoundTokenId: profileid,
+          hubId: hubid,
           name: name, 
           description: "Hub for bitsoul",
           image: "image",
@@ -121,18 +118,18 @@ task("create-project", "create-project function")
 
     console.log('\t---derivativeNFT address: ',  derivativeNFT.address);
 
-    let projectContractName:string;
-    if (projectId == 1)
-      projectContractName = "DerivativeNFT";
-    else 
-      projectContractName = `DerivativeNFT-${projectId}`;
+    // let projectContractName:string;
+    // if (projectId == 1)
+    //   projectContractName = "DerivativeNFT";
+    // else 
+    //   projectContractName = `DerivativeNFT-${projectId}`;
 
-    await exportSubgraphNetworksJson(hre, derivativeNFT, projectContractName);
+    // await exportSubgraphNetworksJson(hre, derivativeNFT, projectContractName);
 
-
+ 
     //addMarket
     let feeCollectModuleAddress = "0x322813Fd9A801c5507c9de605d63CEA4f2CE6c44";
-    
+   
     await waitForTx(
       marketPlace.connect(governance).addMarket(
         derivativeNFT.address,

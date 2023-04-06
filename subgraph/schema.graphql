@@ -369,7 +369,6 @@ type Publication @entity {
   "The sale price of publication while collector pay for" 
   salePrice: BigInt!
 
-
   "The royalty meassured in basis points"
   royaltyBasisPoints: Int!
 

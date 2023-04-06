@@ -6,7 +6,7 @@ import "../libraries/DataTypes.sol";
 contract SBTStorage  {
     uint256 internal total_supply; 
 
-    // slot => slotDetail
+    // soulBoundTokenId => slotDetail
     mapping(uint256 => DataTypes.SoulBoundTokenDetail) internal _sbtDetails;
 
     address internal  _manager;

@@ -12,12 +12,12 @@ contract BankTreasuryStorage  {
     /// @notice The interval to which lockup expiries are rounded, limiting the max number of outstanding lockup buckets.
    uint256 internal  lockupInterval;
  
-    //SBT id of BankTreasury
-    uint256 public soulBoundTokenIdBankTreasury;
     
     mapping(address => uint256) public sigNonces;
 
     address internal  _governance;
+
+    address internal  _projectFounder;
 
     /// @notice The Foundation market contract with permissions to manage lockups.
     address payable internal _foundationMarket;
@@ -39,4 +39,11 @@ contract BankTreasuryStorage  {
 
     /// @notice Stores per-account details.
     mapping(uint256 => mapping(address => DataTypes.AccountInfo)) internal accountToInfo;
+
+    //projectId => founder SBT Id => ProjectFounderRevenueData
+    mapping(uint256 => mapping(uint256 => DataTypes.PercentFounderData)) internal _founders;
+    
+     //projectId =>  project revenue amount
+    mapping(uint256 => DataTypes.FounderRevenueData) internal _projectRevenues;
+
 }

@@ -11,23 +11,6 @@ import {DataTypes} from '../libraries/DataTypes.sol';
  * @notice This is the interface for the BankTreasuryBase contract, from which the BankTreasury inherit.
  */
 interface IBankTreasury {
-    /**
-     * @notice Initializes the bank treasury, setting the manager as the privileged minter and storing the associated SoulBoundToken ID.
-     * @param admin The admin address
-     * @param goverance The goverance contract
-     * @param soulBoundTokenId The  soulBoundToken Id of BankTreasury contract
-     * @param _owners The array Address of owner contract
-     * @param _numConfirmationsRequired The number confirmation required
-     * @param _lockupDuration The lock duration in seconds
-     */
-    function initialize(
-        address admin,
-        address goverance,
-        uint256 soulBoundTokenId,
-        address[] memory _owners, 
-        uint256 _numConfirmationsRequired,
-        uint256 _lockupDuration
-    ) external;
 
     function getGlobalModule() external view returns(address);
     
@@ -114,14 +97,23 @@ interface IBankTreasury {
     function distributeFundsToUserRevenue(
         uint256 publishId,
         address currency,
-        uint256 payValue,
+        uint96 payValue,
         DataTypes.CollectFeeUsers memory collectFeeUsers,
         DataTypes.RoyaltyAmounts memory royaltyAmounts
     ) external;
 
-
     /**
-     * @notice Used by the market contract only:
+     * @notice Save funds to project founder revenues, user can cliam it useing project id and ProjectFounder token id
+     *
+     */
+    function distributeFundsToProjectFounderRevenue(
+        uint256 projectId,
+        address currency,
+        uint96 payValue
+    )  external;
+    
+    /**
+     * @notice Used by the market contract and publishLogic contract only:
      *      Use free earnest funs balance for pay 
      * @dev Used by the market when buy or placeBid
      * @param soulBoundTokenId The soulBoundTokenId of account

@@ -24,7 +24,7 @@ import {SafeERC20} from '@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol
  *
  * @param genesisSoulBoundTokenId The genesis SoulBoundTokenId with this publication.
  * @param previousSoulBoundTokenId The previous SoulBoundTokenId with this publication.
- * @param currencycurrency The currency
+ * @param currency The currency contract address
  * @param amount The total supply with this publication.
  * @param salePrice The collecting cost associated with this publication.
  * @param royaltyBasisPoints The royalty basis points for derivative or OpenSea
@@ -35,7 +35,6 @@ import {SafeERC20} from '@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol
 struct ProfilePublicationData {
     uint256 genesisSoulBoundTokenId;      
     uint256 previousSoulBoundTokenId;     
-    // uint256 tokenId;                       
     address currency;                        
     uint256 amount;                        
     uint256 salePrice;                     
@@ -51,7 +50,7 @@ struct ProfilePublicationData {
  * @author Bitsoul Protocol
  *
  * @notice This is a simple dNFT CollectModule implementation, inheriting from the ICollectModule interface and
- * the FeeCollectModuleBase abstract contract.
+ * the FeeModuleBase abstract contract.
  *
  * This module works by allowing unlimited collects for a publication at a given price.
  */
@@ -77,7 +76,6 @@ contract FeeCollectModule is ReentrancyGuard, FeeModuleBase, ModuleBase, ICollec
 
     function initializePublicationCollectModule(
         uint256 publishId,
-        // uint256 tokenId,
         address currency,
         uint256 amount,
         bytes calldata data 
@@ -108,7 +106,6 @@ contract FeeCollectModule is ReentrancyGuard, FeeModuleBase, ModuleBase, ICollec
             ) = IManager(MANAGER).getGenesisAndPreviousInfo(publishId);
 
              //Save 
-            // _dataByPublicationByProfile[publishId].tokenId = tokenId;
             _dataByPublicationByProfile[publishId].currency = currency;
             _dataByPublicationByProfile[publishId].amount = amount;
             _dataByPublicationByProfile[publishId].salePrice = salePrice;
@@ -200,8 +197,6 @@ contract FeeCollectModule is ReentrancyGuard, FeeModuleBase, ModuleBase, ICollec
             );
         }
 
-        //TODO
-
         {
             // check utcTimestampStartAt
             if (_dataByPublicationByProfile[publishId].utcTimestampStartAt > block.timestamp) {
@@ -272,11 +267,7 @@ contract FeeCollectModule is ReentrancyGuard, FeeModuleBase, ModuleBase, ICollec
         uint256 publishId, 
         uint16 collectLimitPerAddress
     ) external onlyManager {
-        
         _dataByPublicationByProfile[publishId].collectLimitPerAddress = collectLimitPerAddress;
-
-        
-
     }
     
 }

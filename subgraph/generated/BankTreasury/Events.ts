@@ -308,6 +308,44 @@ export class BuySBTByEth__Params {
   }
 }
 
+export class ClaimProjectFounder extends ethereum.Event {
+  get params(): ClaimProjectFounder__Params {
+    return new ClaimProjectFounder__Params(this);
+  }
+}
+
+export class ClaimProjectFounder__Params {
+  _event: ClaimProjectFounder;
+
+  constructor(event: ClaimProjectFounder) {
+    this._event = event;
+  }
+
+  get projectId(): BigInt {
+    return this._event.parameters[0].value.toBigInt();
+  }
+
+  get tokenId(): BigInt {
+    return this._event.parameters[1].value.toBigInt();
+  }
+
+  get caller(): Address {
+    return this._event.parameters[2].value.toAddress();
+  }
+
+  get soulBoundTokenId(): BigInt {
+    return this._event.parameters[3].value.toBigInt();
+  }
+
+  get currency(): Address {
+    return this._event.parameters[4].value.toAddress();
+  }
+
+  get claimAmount(): BigInt {
+    return this._event.parameters[5].value.toBigInt();
+  }
+}
+
 export class CollectModuleWhitelisted extends ethereum.Event {
   get params(): CollectModuleWhitelisted__Params {
     return new CollectModuleWhitelisted__Params(this);
@@ -770,6 +808,32 @@ export class DistributeRoyaltyAmountsStruct extends ethereum.Tuple {
   }
 }
 
+export class DistributeProjectFounder extends ethereum.Event {
+  get params(): DistributeProjectFounder__Params {
+    return new DistributeProjectFounder__Params(this);
+  }
+}
+
+export class DistributeProjectFounder__Params {
+  _event: DistributeProjectFounder;
+
+  constructor(event: DistributeProjectFounder) {
+    this._event = event;
+  }
+
+  get projectId(): BigInt {
+    return this._event.parameters[0].value.toBigInt();
+  }
+
+  get currenccy(): Address {
+    return this._event.parameters[1].value.toAddress();
+  }
+
+  get payValue(): BigInt {
+    return this._event.parameters[2].value.toBigInt();
+  }
+}
+
 export class EmergencyAdminSet extends ethereum.Event {
   get params(): EmergencyAdminSet__Params {
     return new EmergencyAdminSet__Params(this);
@@ -921,28 +985,6 @@ export class ExecuteTransactionERC3525__Params {
 
   get value(): BigInt {
     return this._event.parameters[4].value.toBigInt();
-  }
-}
-
-export class FeeModuleBaseConstructed extends ethereum.Event {
-  get params(): FeeModuleBaseConstructed__Params {
-    return new FeeModuleBaseConstructed__Params(this);
-  }
-}
-
-export class FeeModuleBaseConstructed__Params {
-  _event: FeeModuleBaseConstructed;
-
-  constructor(event: FeeModuleBaseConstructed) {
-    this._event = event;
-  }
-
-  get moduleGlobals(): Address {
-    return this._event.parameters[0].value.toAddress();
-  }
-
-  get timestamp(): BigInt {
-    return this._event.parameters[1].value.toBigInt();
   }
 }
 
@@ -1167,32 +1209,6 @@ export class MarketPlaceERC3525Received__Params {
 
   get gas(): BigInt {
     return this._event.parameters[6].value.toBigInt();
-  }
-}
-
-export class ModuleBaseConstructed extends ethereum.Event {
-  get params(): ModuleBaseConstructed__Params {
-    return new ModuleBaseConstructed__Params(this);
-  }
-}
-
-export class ModuleBaseConstructed__Params {
-  _event: ModuleBaseConstructed;
-
-  constructor(event: ModuleBaseConstructed) {
-    this._event = event;
-  }
-
-  get manager(): Address {
-    return this._event.parameters[0].value.toAddress();
-  }
-
-  get market(): Address {
-    return this._event.parameters[1].value.toAddress();
-  }
-
-  get timestamp(): BigInt {
-    return this._event.parameters[2].value.toBigInt();
   }
 }
 

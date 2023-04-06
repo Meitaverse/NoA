@@ -18,24 +18,22 @@ import {
 import { loadContract } from "./config";
 
 import { waitForTx, findEvent} from './helpers/utils';
+import { BigNumber } from "ethers";
 
 export let runtimeHRE: HardhatRuntimeEnvironment;
 
-// yarn hardhat --network local collect --collectorid 3 --publishid 1
+// yarn hardhat --network local collect --projectid 27 --publishid 22 --collectorid 2
 
 task("collect", "collect a dNFT function")
+.addParam("projectid", "project id ")
 .addParam("collectorid", "soul bound token id ")
 .addParam("publishid", "publish id")
-.setAction(async ({collectorid, publishid}: {collectorid:number, publishid:number}, hre) =>  {
+.setAction(async ({projectid, collectorid, publishid}: {projectid:number, collectorid:number, publishid:number}, hre) =>  {
   runtimeHRE = hre;
   const ethers = hre.ethers;
   const accounts = await ethers.getSigners();
   const deployer = accounts[0];
   const governance = accounts[1];  
-  const user = accounts[2];
-  const userTwo = accounts[3];
-  const userThree = accounts[4];
-  const userFour = accounts[5];
 
   const managerImpl = await loadContract(hre, Manager__factory, "ManagerImpl");
   const manager = await loadContract(hre, Manager__factory, "Manager");
@@ -49,10 +47,6 @@ task("collect", "collect a dNFT function")
 
   console.log('\t-- deployer: ', deployer.address);
   console.log('\t-- governance: ', governance.address);
-  console.log('\t-- user: ', user.address);
-  console.log('\t-- userTwo: ', userTwo.address);
-  console.log('\t-- userThree: ', userThree.address);
-  console.log('\t-- userFour: ', userFour.address);
 
   console.log(
       "\t--- ModuleGlobals governance address: ", await moduleGlobals.getGovernance()
@@ -60,16 +54,14 @@ task("collect", "collect a dNFT function")
 
     let collector = accounts[collectorid];
     console.log('\n\t-- collector: ', collector.address);
-    let balance =(await sbt["balanceOf(uint256)"](collectorid)).toNumber();
-    // if (balance == 0) {
-    //   //mint 10000000 Value to user
-    //   await bankTreasury.connect(collector).buySBT(collectorid, {value: 10000000});
-    // }
-    console.log('\t--- balance of collector: ', (await sbt["balanceOf(uint256)"](collectorid)).toNumber());
+    let balance = await sbt["balanceOf(uint256)"](collectorid);
+    if (balance == BigNumber.from(0)) {
+      //mint 10000000 Value to user
+      await bankTreasury.connect(collector).buySBT(collectorid, {value: 10000000});
+    }
+    console.log('\t--- balance of collector: ', (await sbt["balanceOf(uint256)"](collectorid)));
 
 
-    const FIRST_PROJECT_ID = 1; 
-   
     console.log(
       "\n\t--- Collet  ..."
     );
@@ -123,8 +115,8 @@ task("collect", "collect a dNFT function")
 
     let derivativeNFT: DerivativeNFT;
     derivativeNFT = DerivativeNFT__factory.connect(
-      await manager.connect(collector).getDerivativeNFT(FIRST_PROJECT_ID),
-      user
+      await manager.connect(collector).getDerivativeNFT(projectid),
+      collector
     );
       
     console.log('\n\t--- ownerOf newTokenId : ', await derivativeNFT.ownerOf(newTokenId));

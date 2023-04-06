@@ -33,6 +33,8 @@ import {
     RoyaltyRegistry__factory,
     VoucherMarket__factory,
     MarketPlace,
+    ProjectFounderDescriptor__factory,
+    ProjectFounder,
   } from '../typechain';
   import { deployContract, waitForTx , ProtocolState, Error, ZERO_ADDRESS} from './helpers/utils';
   import { ManagerLibraryAddresses } from '../typechain/factories/contracts/Manager__factory';
@@ -290,10 +292,34 @@ const MARKET_MAX_DURATION = 86400000; //1000 days in seconds
         await exportAddress(hre, governorContract, 'GovernorContract');
         await exportSubgraphNetworksJson(hre, governorContract, 'GovernorContract');
 
+        //projectFounder descriptor
+        const projectFounderDescriptor = await new ProjectFounderDescriptor__factory(deployer).deploy();
+        deployerNonce++;
+
+        //projectFounder
+        const projectFounderImpl = await hre.ethers.getContractFactory('ProjectFounder');
+        deployerNonce++;
+
+        const projectFounderContract = await hre.upgrades.deployProxy(
+          projectFounderImpl,
+          [
+            "ProjectFounder",
+            "PF",
+            manager.address,
+            governance.address,
+            sbtContract.address,
+            projectFounderDescriptor.address,
+          ], 
+          {
+            initializer: "initialize"
+          }
+
+        ) as ProjectFounder;
+
+        deployerNonce++;
 
         //treasury
         console.log('\n\t-- Deploying bank treasury --');
-        const soulBoundTokenIdOfBankTreaury = 1;
        
         const bankTreasuryImpl = await hre.ethers.getContractFactory('BankTreasury');
         deployerNonce++;
@@ -303,7 +329,7 @@ const MARKET_MAX_DURATION = 86400000; //1000 days in seconds
           [
             deployer.address,
             governance.address,
-            soulBoundTokenIdOfBankTreaury,
+            projectFounderContract.address,
             [user.address, userTwo.address, userThree.address],
             NUM_CONFIRMATIONS_REQUIRED,  //All full signed 
             LOCKUP_DURATION, 
@@ -572,6 +598,24 @@ const MARKET_MAX_DURATION = 86400000; //1000 days in seconds
         
         if (await marketPlaceContract.getGlobalModule() == ZERO_ADDRESS) {
             console.log('\n\t ==== error: marketPlace not set ModuleGlobas ====');
+        }
+
+        const projectIdStart = 1;
+        const projectend = 100;
+
+        const derivativeNFTAddresses = await manager.calculateDerivativeNFTAddress(projectIdStart, projectend);
+        console.log('Derivative NFT Addresses:');
+        for (let i = projectIdStart; i < projectend; i++) {
+              let projectContractName:string;
+               projectContractName = `DerivativeNFT-${i}`;
+
+              let derivativeNFT = DerivativeNFT__factory.connect(
+                    derivativeNFTAddresses[i],
+                    user
+                  );
+              // console.log(`\t--- projectContractName: ${projectContractName}  ${derivativeNFTAddresses[i]}` );
+              await exportSubgraphNetworksJson(hre, derivativeNFT, projectContractName);
+      
         }
 
         console.log('\n\n\t-- All contracts success deployed!');

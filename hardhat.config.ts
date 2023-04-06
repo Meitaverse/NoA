@@ -132,6 +132,7 @@ const config: HardhatUserConfig = {
       ':BankTreasury$',
       ':RoyaltyRegistry$',
       ':DerivativeNFT$', 
+      ':ProjectFounder$', 
       ':NFTDerivativeProtocolTokenV1$', 
       'GovernorContract$'],
   },

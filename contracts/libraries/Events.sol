@@ -239,26 +239,6 @@ library Events {
         uint256 timestamp
     );
 
-    /**
-     * @notice Emitted when a module inheriting from the `FeeModuleBase` is constructed.
-     *
-     * @param moduleGlobals The ModuleGlobals contract address used.
-     * @param timestamp The current block timestamp.
-     */
-    event FeeModuleBaseConstructed(address indexed moduleGlobals, uint256 timestamp);
-
-    /**
-     * @notice Emitted when a module inheriting from the `ModuleBase` is constructed.
-     *
-     * @param manager The Manager contract address used.
-     * @param market The MarketPlace contract address used.
-     * @param timestamp The current block timestamp.
-     */
-    event ModuleBaseConstructed(
-        address indexed manager, 
-        address indexed market, 
-        uint256 timestamp
-        );
 
     /**
      * @notice Emitted when the ModuleGlobals governance address is set.
@@ -943,6 +923,19 @@ library Events {
     /**
      * @dev Emitted when pay fees
      *
+     * @param projectId  The project Id 
+     * @param currenccy  The ERC20 contract
+     * @param payValue  The value will pay
+     */
+    event DistributeProjectFounder (
+        uint256 projectId, 
+        address currenccy,
+        uint96 payValue
+    );
+
+    /**
+     * @dev Emitted when pay fees
+     *
      * @param publishId  The publishId 
      * @param currenccy  The ERC20 contract
      * @param payValue  The value will pay
@@ -1069,7 +1062,24 @@ library Events {
         uint256 timestamp
     );
 
-
+    /**
+     * @notice Emitted when a project founder claim a projectId's revenue
+     *
+     * @param projectId The projectId
+     * @param tokenId The tokenId of ProjectFounder contract
+     * @param caller The caller address.
+     * @param soulBoundTokenId The SBT id of caller.
+     * @param currency The currency address.
+     * @param claimAmount The amount of percent.
+     */
+    event ClaimProjectFounder (
+       uint256  projectId,
+       uint256  tokenId,
+       address  caller,
+       uint256  soulBoundTokenId,
+       address  currency,
+       uint96   claimAmount
+    );
 
 }
 

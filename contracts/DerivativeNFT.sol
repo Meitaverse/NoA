@@ -281,6 +281,10 @@ contract DerivativeNFT is
             );
         }
 
+        //valid materialURIs length
+        if (publication.materialURIs.length > 0)
+            _setTokenImageURI(newTokenId, publication.materialURIs[0]);
+        
         return newTokenId;
     }
 
@@ -352,9 +356,10 @@ contract DerivativeNFT is
         ERC3525Upgradeable._transferValue(fromTokenId_, toTokenId_, value_);
     }
 
-    function setTokenImageURI(uint256 tokenId, string calldata imageURI)
+    function setTokenImageURI(uint256 tokenId, string memory imageURI)
         external
         whenPublishingEnabled
+        onlyManager
     { 
         _setTokenImageURI(tokenId, imageURI);
     }
@@ -518,7 +523,7 @@ contract DerivativeNFT is
         return uint24(_nextSlotId.current());
     }
 
-    function _setTokenImageURI(uint256 tokenId, string calldata imageURI) internal {
+    function _setTokenImageURI(uint256 tokenId, string memory imageURI) internal {
         if (bytes(imageURI).length > MAX_PROFILE_IMAGE_URI_LENGTH)
             revert Errors.ProfileImageURILengthInvalid(); 
 

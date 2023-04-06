@@ -22,25 +22,30 @@ import { waitForTx, findEvent} from './helpers/utils';
 
 export let runtimeHRE: HardhatRuntimeEnvironment;
 
-// yarn hardhat --network local publish --projectid 1
+// yarn hardhat --network local publish --projectid 27  --publishid 21 --accountid 7 --hubid 2 --profileid 4
+/*
+publish data:
+{
+  "id": "21",
+  "name": "新的nfttttt",
+  "amount": "111"
+},
+*/
 
 task("publish", "publish function")
 .addParam("projectid", "project id to publish")
-.setAction(async ({projectid}: {projectid: number}, hre) =>  {
+.addParam("publishid", "publish id to publish")
+.addParam("accountid", "accountid")
+.addParam("hubid", "hubid")
+.addParam("profileid", "profileid")
+.setAction(async ({projectid,publishid,accountid,hubid,profileid}: {projectid: number,publishid:number,accountid:number,hubid:number,profileid:number}, hre) =>  {
   runtimeHRE = hre;
   const ethers = hre.ethers;
   const accounts = await ethers.getSigners();
   const deployer = accounts[0];
   const governance = accounts[1];  
-  const user = accounts[2];
-  const userTwo = accounts[3];
-  const userThree = accounts[4];
 
 
-  const userAddress = user.address;
-  const userTwoAddress = userTwo.address;
-  const userThreeAddress = userThree.address;
-  
 
 
   const managerImpl = await loadContract(hre, Manager__factory, "ManagerImpl");
@@ -53,20 +58,16 @@ task("publish", "publish function")
   const publishModule = await loadContract(hre, PublishModule__factory, "PublishModule");
   const template = await loadContract(hre, Template__factory, "Template");
 
+  let eventsLib = await new Events__factory(deployer).deploy();
+
   console.log('\t-- deployer: ', deployer.address);
   console.log('\t-- governance: ', governance.address);
-  console.log('\t-- user: ', user.address);
-  console.log('\t-- userTwo: ', userTwo.address);
-  console.log('\t-- userThree: ', userThree.address);
 
-  console.log(
-      "\t--- ModuleGlobals governance address: ", await moduleGlobals.getGovernance()
-    );
-  
+  let publisher = accounts[accountid];
+  console.log('\t-- publisher: ', publisher.address);
+    
     let abiCoder = ethers.utils.defaultAbiCoder;
-    const SECOND_PROFILE_ID =2; 
-    const FIRST_HUB_ID =1; 
-    const DEFAULT_COLLECT_PRICE = 10;
+    const DEFAULT_COLLECT_PRICE = 1;
     const Default_royaltyBasisPoints = 50; //
     const GENESIS_FEE_BPS = 100;
     const DEFAULT_TEMPLATE_NUMBER = 1;
@@ -89,25 +90,28 @@ task("publish", "publish function")
     let balance_bank =(await sbt["balanceOf(uint256)"](FIRST_PROFILE_ID));
     console.log('\n\t--- balance of bank : ', balance_bank);
 
- 
+ /*
     let balance =(await sbt["balanceOf(uint256)"](SECOND_PROFILE_ID)).toNumber();
     if (balance == 0) {
-      //mint 10000000 Value to user
-      await bankTreasury.connect(user).buySBT(SECOND_PROFILE_ID, {value: 100000000});
+      //mint 10000000 Value to publisher
+      await bankTreasury.connect(publisher).buySBT(SECOND_PROFILE_ID, {value: 100000000});
     }
-    console.log('\t--- balance of user: ', (await sbt["balanceOf(uint256)"](SECOND_PROFILE_ID)).toNumber());
+    console.log('\t--- balance of publisher: ', (await sbt["balanceOf(uint256)"](SECOND_PROFILE_ID)).toNumber());
+*/
+if (publishid == 0) {
+    console.log(`Dollar${+new Date()}`);
 
     const receipt = await waitForTx(
-      manager.connect(user).prePublish({
-        soulBoundTokenId: SECOND_PROFILE_ID,
-        hubId: FIRST_HUB_ID,
+      manager.connect(publisher).prePublish({
+        soulBoundTokenId: profileid,
+        hubId: hubid,
         projectId: projectid,
         currency: sbt.address, //SOUL / WETH
         amount: 11,
         salePrice: DEFAULT_COLLECT_PRICE,
         royaltyBasisPoints: GENESIS_FEE_BPS,
-        name: "Dollar",
-        description: "Hand draw",
+        name: `Dollar${+new Date()}`,
+        description: "Hand drawbbb222",
         canCollect: true, //是否可以收藏， false - 不可以收藏, true - 可以收藏
         materialURIs: [],
         fromTokenIds: [],
@@ -118,7 +122,6 @@ task("publish", "publish function")
       })
     );
 
-    let eventsLib = await new Events__factory(deployer).deploy();
 
     const event = findEvent(receipt, 'PublishPrepared', eventsLib);
     const NEW_PUBLISH_ID = event.args.publishId.toNumber();
@@ -133,8 +136,10 @@ task("publish", "publish function")
       "\t\t--- previousPublishId: ", previousPublishId
     );
 
+    publishid = NEW_PUBLISH_ID
 
-    let publishInfo = await manager.connect(user).getPublishInfo(NEW_PUBLISH_ID);
+
+    let publishInfo = await manager.connect(publisher).getPublishInfo(NEW_PUBLISH_ID);
 
     console.log(
       "\n\t--- soulBoundTokenId: ", publishInfo.publication.soulBoundTokenId.toNumber()
@@ -160,11 +165,12 @@ task("publish", "publish function")
     console.log(
       "\t--- royaltyBasisPoints: ", publishInfo.publication.royaltyBasisPoints
     );
+  }
 
     //updatePublish
 /*
     await waitForTx(
-      manager.connect(user).updatePublish(
+      manager.connect(publisher).updatePublish(
         NEW_PUBLISH_ID,
         DEFAULT_COLLECT_PRICE + 10,
         50 + 50,
@@ -179,7 +185,7 @@ task("publish", "publish function")
       "\n\t--- After update publish..."
     );
 
-    publishInfo = await manager.connect(user).getPublishInfo(FIRST_PUBLISH_ID);
+    publishInfo = await manager.connect(publisher).getPublishInfo(FIRST_PUBLISH_ID);
     console.log(
       "\n\t--- salePrice: ", publishInfo.publication.salePrice
     );
@@ -197,16 +203,20 @@ task("publish", "publish function")
     );
 */
 
+  
 
+    
     console.log(
       "\n\t--- Publish  ..."
     );
 
     const receipt2 =  await waitForTx(
-      manager.connect(user).publish(
-        NEW_PUBLISH_ID,
+      manager.connect(publisher).publish(
+        publishid
       )
     );
+    
+
     const event2 = findEvent(receipt2, 'PublishCreated', eventsLib);
     
     const amount = event2.args.amount.toNumber();
@@ -226,13 +236,13 @@ task("publish", "publish function")
     balance_bank =(await sbt["balanceOf(uint256)"](FIRST_PROFILE_ID));
     console.log('\n\t--- balance of bank : ', balance_bank);
 
-    let balance_left =(await sbt["balanceOf(uint256)"](SECOND_PROFILE_ID)).toNumber();
-    console.log('\t--- balance of user after publish : ', balance_left);
+    let balance_left =await sbt["balanceOf(uint256)"](profileid);
+    console.log('\t--- balance of publisher after publish : ', balance_left);
     
     let derivativeNFT: DerivativeNFT;
     derivativeNFT = DerivativeNFT__factory.connect(
-      await manager.connect(user).getDerivativeNFT(projectid),
-      user
+      await manager.connect(publisher).getDerivativeNFT(projectid),
+      publisher
       );
       
     console.log('\n\t--- ownerOf newTokenId : ', await derivativeNFT.ownerOf(newTokenId));

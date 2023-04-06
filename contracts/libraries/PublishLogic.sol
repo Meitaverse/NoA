@@ -156,7 +156,6 @@ library PublishLogic {
         
         ICollectModule(collectModule).initializePublicationCollectModule(
             publishId,
-            // newTokenId,
             currency,
             amount,
             collectModuleInitData 
@@ -213,14 +212,14 @@ library PublishLogic {
         uint96 payValue = uint96(collectDataParam.collectUnits * _projectDataByPublishId[collectDataParam.publishId].publication.salePrice);
 
         if (collectDataParam.sbt == _projectDataByPublishId[collectDataParam.publishId].publication.currency) {
-            //Transfer Value of total pay to treasury 
+            //Transfer Value of total pay to treasury, then in the collectModule processCollect, the treasury will transfer the value to the earnest funds of collector 
             INFTDerivativeProtocolTokenV1(collectDataParam.sbt).transferValue(
                 collectDataParam.collectorSoulBoundTokenId, 
                 BANK_TREASURY_SOUL_BOUND_TOKENID, 
                 payValue
             );
         } else {
-            //Use free earnest funs balance for pay 
+            //Use free earnest funs balance for pay, then in the collectModule processCollect, the treasury will transfer the value to the earnest funds of collector 
             IBankTreasury(collectDataParam.treasury).useEarnestFundsForPay(
                 collectDataParam.collectorSoulBoundTokenId, 
                 _projectDataByPublishId[collectDataParam.publishId].publication.currency,

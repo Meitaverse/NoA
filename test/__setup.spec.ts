@@ -59,6 +59,8 @@ import {
   Currency__factory,
   RoyaltyRegistry,
   RoyaltyRegistry__factory,
+  ProjectFounder,
+  ProjectFounderDescriptor__factory,
 } from '../typechain';
 
 import { ManagerLibraryAddresses } from '../typechain/factories/contracts/Manager__factory';
@@ -129,6 +131,7 @@ export let userThreeAddress: string;
 export let governanceAddress: string;
 export let adminAddress: string;
 export let governorContract: GovernorContract;
+export let projectFounderContract: ProjectFounder;
 export let testWallet: Wallet;
 export let managerImpl: Manager;
 export let manager: Manager;
@@ -325,17 +328,37 @@ before(async function () {
 
     console.log("governorContract address: ", governorContract.address);
   
-  const soulBoundTokenIdOfBankTreaury = FIRST_PROFILE_ID;
+    //projectFounder descriptor
+   const projectFounderDescriptor = await new ProjectFounderDescriptor__factory(deployer).deploy();
+
+  //projectFounder
+  const projectFounderImpl = await hre.ethers.getContractFactory('ProjectFounder');
+  projectFounderContract = await hre.upgrades.deployProxy(
+    projectFounderImpl,
+    [
+      "ProjectFounder",
+      "PF",
+      manager.address,
+      governanceAddress,
+      sbtContract.address,
+      projectFounderDescriptor.address,
+    ], 
+    {
+      initializer: "initialize"
+    }
+  
+  ) as ProjectFounder;
+ 
 
   //treasury
   const bankTreasuryImpl = await hre.ethers.getContractFactory('BankTreasury');
- 
+  
   bankTreasuryContract = await hre.upgrades.deployProxy(
     bankTreasuryImpl, 
     [
       deployerAddress,
       governanceAddress,
-      soulBoundTokenIdOfBankTreaury,
+      projectFounderContract.address,
       [userAddress, userTwoAddress, userThreeAddress],
       NUM_CONFIRMATIONS_REQUIRED,  //All full signed 
       LOCKUP_DURATION
