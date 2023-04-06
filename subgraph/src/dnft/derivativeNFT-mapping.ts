@@ -11,7 +11,7 @@ import {
     DerivativeNFTImageURISet,
     DefaultRoyaltiesUpdated,
     RoyaltiesUpdated
-} from "../../generated/DerivativeNFT/DerivativeNFT"
+} from "../../generated/DerivativeNFT-1/DerivativeNFT"
 
 import {
     DnftTransfer,
